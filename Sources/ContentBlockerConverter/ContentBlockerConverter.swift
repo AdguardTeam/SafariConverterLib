@@ -16,7 +16,7 @@ class ContentBlockerConverter {
             
             return try Distributor(limit: limit, advancedBlocking: advancedBlocking).createConversionResult(data: compilationResult);
         } catch {
-            NSLog("AG: ContentBlockerConverter: Unexpected error");
+            NSLog("AG: ContentBlockerConverter: Unexpected error: \(error)");
         }
         
         return nil;

@@ -140,12 +140,6 @@ class BlockerEntryFactory {
         return result;
     }
     
-    /**
-     * Creates a regular expression that will be used in the trigger["url-filter"].
-     * This method transforms
-     *
-     * @param {*} urlFilterRule UrlFilterRule object
-     */
     private func createUrlFilterString(rule: NetworkRule) -> String {
         let isWebSocket = rule.isWebSocket;
 
@@ -281,31 +275,21 @@ class BlockerEntryFactory {
                 trigger.resourceType = nil;
             }
             
-            // TODO: Finish this
-            // const parseDomainResult = parseRuleDomain(rule.getUrlRuleText());
-            
-//            if (parseDomainResult !== null &&
-//                parseDomainResult.path !== null &&
-//                parseDomainResult.path !== "^" &&
-//                parseDomainResult.path !== "/") {
-//                // http://jira.performix.ru/browse/AG-8664
-//                adguard.console.debug('Whitelist special warning for rule: ' + rule.ruleText);
-//
-//                return;
-//            }
-//
-//            if (parseDomainResult === null || parseDomainResult.domain === null) {
-//                adguard.console.debug('Error parse domain from rule: ' + rule.ruleText);
-//                return;
-//            }
-//
-//            const domain = parseDomainResult.domain;
-//
-//            const included = [];
-//            const excluded = [];
-//
-            
-            //rule.permittedDomains.append(domain);
+            let parseDomainResult = rule.parseRuleDomain();
+            if (parseDomainResult != nil &&
+                parseDomainResult!.path != nil &&
+                parseDomainResult!.path != "^" &&
+                parseDomainResult!.path != "/") {
+                // http://jira.performix.ru/browse/AG-8664
+                return;
+            }
+
+            if (parseDomainResult == nil || parseDomainResult!.domain == nil) {
+                return;
+            }
+
+            let domain = parseDomainResult!.domain!;
+            rule.permittedDomains.append(domain);
             try addDomainOptions(rule: rule, trigger: &trigger);
             
             trigger.urlFilter = BlockerEntryFactory.URL_FILTER_URL_RULES_EXCEPTIONS;
@@ -340,8 +324,6 @@ class BlockerEntryFactory {
     
     /**
      * Safari doesn't support some regular expressions
-     *
-     * @param regExp
      */
     private func validateRegExp(regExp: String) throws -> Void {
         // Safari doesn't support {digit} in regular expressions
@@ -390,8 +372,6 @@ class BlockerEntryFactory {
     
     /**
      * Validates url blocking rule and discards rules considered dangerous or invalid.
-     *
-     * @param rule
      */
     private func validateCssFilterRule(entry: BlockerEntry) throws -> Void {
         if (entry.action.type == "css" &&

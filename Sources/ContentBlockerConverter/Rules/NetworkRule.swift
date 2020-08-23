@@ -59,6 +59,60 @@ class NetworkRule: Rule {
         return permittedContentType.count == 1 && permittedContentType[0] == contentType;
     }
     
+    func parseRuleDomain() -> DomainInfo? {
+        let startsWith = ["http://www.", "https://www.", "http://", "https://", "||", "//"];
+        let contains = ["/", "^"];
+        
+        var startIndex = 0;
+
+        for start in startsWith {
+            if (self.urlRuleText.hasPrefix(start)) {
+                startIndex = start.count;
+                break;
+            }
+        }
+
+        // Exclusive for domain
+        let exceptRule = "domain=";
+        let domainIndex = self.urlRuleText.indexOf(target: exceptRule);
+        if (domainIndex > -1 && self.urlRuleText.indexOf(target: "$") > -1) {
+            startIndex = domainIndex + exceptRule.count;
+        }
+
+        if (startIndex == -1) {
+            return nil;
+        }
+
+        var symbolIndex = -1;
+        for containsPrefix in contains {
+            let index = self.urlRuleText.indexOf(target: containsPrefix, startIndex: startIndex);
+            if (index >= 0) {
+                symbolIndex = index;
+                break;
+            }
+        }
+        
+        var pathEndIndex = self.urlRuleText.indexOf(target: "$");
+        if (pathEndIndex == -1) {
+            pathEndIndex = urlRuleText.count;
+        }
+
+        let domain = symbolIndex == -1 ? self.urlRuleText.subString(startIndex: startIndex) : self.urlRuleText.subString(startIndex: startIndex, toIndex: symbolIndex);
+        let path = symbolIndex == -1 ? nil : self.urlRuleText.subString(startIndex: symbolIndex, toIndex: pathEndIndex);
+
+        if (!domain.isMatch(regex: "^[a-zA-Z0-9][a-zA-Z0-9-.]*[a-zA-Z0-9]\\.[a-zA-Z-]{2,}$")) {
+            // Not a valid domain name, ignore it
+            return nil;
+        }
+
+        return DomainInfo(domain: domain, path: path);
+    };
+    
+    struct DomainInfo {
+        var domain: String?;
+        var path: String?;
+    }
+    
     enum ContentType {
         case ALL
         case IMAGE

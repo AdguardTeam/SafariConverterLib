@@ -4,6 +4,54 @@ import XCTest
 @testable import ContentBlockerConverter
 
 final class ConverterTests: XCTestCase {
+    func testConvertNetworkRule() {
+        let converter = BlockerEntryFactory(advancedBlockingEnabled: false);
+
+        let rule = NetworkRule();
+        rule.ruleText = "||example.com/path$image,domain=test.com";
+        rule.permittedDomains = ["test.com"];
+
+        let result = converter.createBlockerEntry(rule: rule);
+        XCTAssertNotNil(result);
+        XCTAssertEqual(result!.trigger.urlFilter, "^[htpsw]+:\\/\\/");
+        XCTAssertEqual(result!.trigger.ifDomain![0], "test.com");
+        XCTAssertEqual(result!.trigger.unlessDomain, nil);
+        XCTAssertEqual(result!.trigger.shortcut, nil);
+        XCTAssertEqual(result!.trigger.regex, nil);
+
+        XCTAssertEqual(result!.action.type, "block");
+        XCTAssertEqual(result!.action.selector, nil);
+        XCTAssertEqual(result!.action.css, nil);
+        XCTAssertEqual(result!.action.script, nil);
+        XCTAssertEqual(result!.action.scriptlet, nil);
+        XCTAssertEqual(result!.action.scriptletParam, nil);
+    }
+    
+    func testConvertNetworkRuleWhitelist() {
+        let converter = BlockerEntryFactory(advancedBlockingEnabled: false);
+
+        let rule = NetworkRule();
+        rule.isWhiteList = true;
+        rule.isDocumentWhiteList = true;
+        rule.ruleText = "@@||example.com^$document";
+        rule.urlRuleText = "||example.com^$document";
+
+        var result = converter.createBlockerEntry(rule: rule);
+        XCTAssertNotNil(result);
+        XCTAssertEqual(result!.trigger.urlFilter, ".*");
+        XCTAssertEqual(result!.trigger.ifDomain![0], "example.com");
+        XCTAssertEqual(result!.trigger.unlessDomain, nil);
+        
+        rule.ruleText = "@@||example.com$document";
+        rule.urlRuleText = "||example.com$document";
+
+        result = converter.createBlockerEntry(rule: rule);
+        XCTAssertNotNil(result);
+        XCTAssertEqual(result!.trigger.urlFilter, "^[htpsw]+:\\/\\/");
+        XCTAssertEqual(result!.trigger.ifDomain![0], "example.com");
+        XCTAssertEqual(result!.trigger.unlessDomain, nil);
+    }
+    
     func testConvertScriptRule() {
         let converter = BlockerEntryFactory(advancedBlockingEnabled: true);
 
@@ -309,6 +357,8 @@ final class ConverterTests: XCTestCase {
     }
     
     static var allTests = [
+        ("testConvertNetworkRule", testConvertNetworkRule),
+        ("testConvertNetworkRuleWhitelist", testConvertNetworkRuleWhitelist),
         ("testConvertScriptRule", testConvertScriptRule),
         ("testConvertScriptRuleWhitelist", testConvertScriptRuleWhitelist),
         ("testConvertScriptletRule", testConvertScriptletRule),

@@ -4,6 +4,8 @@ import Foundation
  * AG Rule class
  */
 class Rule {
+    var ruleText = "";
+    
     var isWhiteList = false;
     var isImportant = false;
     var isScript = false;

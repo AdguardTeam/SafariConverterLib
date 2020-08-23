@@ -37,6 +37,18 @@ extension String {
         return index
     }
     
+    func subString(startIndex: Int) -> String {
+        let start = self.index(self.startIndex, offsetBy: startIndex);
+        let end = self.index(self.endIndex, offsetBy: 0);
+        return String(self[start ..< end])
+    }
+    
+    func subString(startIndex: Int, toIndex: Int) -> String {
+        let start = self.index(self.startIndex, offsetBy: startIndex);
+        let end = self.index(self.startIndex, offsetBy: toIndex);
+        return String(self[start ..< end])
+    }
+    
     func subString(from:Int, toSubstring s2 : String) -> String? {
         guard let r = self.range(of:s2) else {return nil}
         var s = self.prefix(upTo:r.lowerBound)
