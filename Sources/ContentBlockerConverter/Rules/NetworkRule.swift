@@ -32,9 +32,10 @@ class NetworkRule: Rule {
     var permittedContentType: [ContentType] = [];
     var restrictedContentType: [ContentType] = [];
     
+    var urlRegExpSource: String? = nil;
+    
     func getUrlRegExpSource() -> String? {
-        // TODO: getUrlRegExpSource
-        return nil;
+        return urlRegExpSource;
     }
     
     func hasContentType(contentType: ContentType) -> Bool {

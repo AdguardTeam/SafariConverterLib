@@ -3,7 +3,7 @@ import Foundation
 import XCTest
 @testable import ContentBlockerConverter
 
-final class BuilderTests: XCTestCase {
+final class DistributorTests: XCTestCase {
     func testEmpty() {
         let builder = Distributor(limit: 0, advancedBlocking: true);
         

@@ -148,11 +148,6 @@ class BlockerEntryFactory {
             return isWebSocket ? BlockerEntryFactory.URL_FILTER_WS_ANY_URL : BlockerEntryFactory.URL_FILTER_ANY_URL;
         }
 
-        // TODO: Support regex rules
-//        if (urlFilterRule.isRegexRule && urlFilterRule.urlRegExp) {
-//            return urlFilterRule.urlRegExp.source;
-//        }
-
         let urlRegExpSource = rule.getUrlRegExpSource();
         if (urlRegExpSource == nil) {
             // Rule with empty regexp
@@ -327,28 +322,27 @@ class BlockerEntryFactory {
      */
     private func validateRegExp(regExp: String) throws -> Void {
         // Safari doesn't support {digit} in regular expressions
-        if (regExp.isMatch(regex: "/{[0-9,]+}/g")) {
+        if (regExp.isMatch(regex: "\\{[0-9,]+\\}")) {
             throw ConversionError.unsupportedRegExp(message: "Safari doesn't support '{digit}' in regular expressions");
         }
 
         // Safari doesn't support | in regular expressions
-        if (regExp.isMatch(regex: "/[^\\]+\\|+\\S*/g")) {
+        if (regExp.isMatch(regex: "[^\\\\]+\\|+\\S*")) {
             throw ConversionError.unsupportedRegExp(message: "Safari doesn't support '|' in regular expressions");
         }
 
         // Safari doesn't support non-ASCII characters in regular expressions
-        if (regExp.isMatch(regex: "/[^\\x00-\\x7F]/g")) {
+        if (regExp.isMatch(regex: "[^\\x00-\\x7F]")) {
             throw ConversionError.unsupportedRegExp(message: "Safari doesn't support non-ASCII characters in regular expressions");
         }
 
         // Safari doesn't support negative lookahead (?!...) in regular expressions
-        if (regExp.isMatch(regex: "/\\(?!.*\\)/g")) {
+        if (regExp.isMatch(regex: "\\(\\?!.*\\)")) {
             throw ConversionError.unsupportedRegExp(message: "Safari doesn't support negative lookahead in regular expressions");
         }
 
-
         // Safari doesn't support metacharacters in regular expressions
-        if (regExp.isMatch(regex: "/[^\\]\\[bBdDfnrsStvwW]/g")) {
+        if (regExp.isMatch(regex: "[^\\\\]\\\\[bBdDfnrsStvwW]")) {
             throw ConversionError.unsupportedRegExp(message: "Safari doesn't support metacharacters in regular expressions");
         }
     };

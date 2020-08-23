@@ -4,8 +4,9 @@ import XCTest
 public func allTests() -> [XCTestCaseEntry] {
     return [
         testCase(RuleConverterTests.allTests),
+        testCase(NetworkRuleTests.allTests),
         testCase(RuleFactoryTests.allTests),
-        testCase(BlcokerEntryFactoryTests.allTests),
+        testCase(BlockerEntryFactoryTests.allTests),
         testCase(CompilerTests.allTests),
         testCase(ConversionResultTests.allTests),
         testCase(DistiributorTests.allTests),

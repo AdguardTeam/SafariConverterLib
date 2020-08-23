@@ -3,18 +3,41 @@ import Foundation
 import XCTest
 @testable import ContentBlockerConverter
 
-final class ConverterTests: XCTestCase {
+final class BlockerEntryFactoryTests: XCTestCase {
     func testConvertNetworkRule() {
         let converter = BlockerEntryFactory(advancedBlockingEnabled: false);
 
         let rule = NetworkRule();
-        rule.ruleText = "||example.com/path$image,domain=test.com";
+        rule.ruleText = "||example.com/path$domain=test.com";
         rule.permittedDomains = ["test.com"];
 
         let result = converter.createBlockerEntry(rule: rule);
         XCTAssertNotNil(result);
         XCTAssertEqual(result!.trigger.urlFilter, "^[htpsw]+:\\/\\/");
         XCTAssertEqual(result!.trigger.ifDomain![0], "test.com");
+        XCTAssertEqual(result!.trigger.unlessDomain, nil);
+        XCTAssertEqual(result!.trigger.shortcut, nil);
+        XCTAssertEqual(result!.trigger.regex, nil);
+
+        XCTAssertEqual(result!.action.type, "block");
+        XCTAssertEqual(result!.action.selector, nil);
+        XCTAssertEqual(result!.action.css, nil);
+        XCTAssertEqual(result!.action.script, nil);
+        XCTAssertEqual(result!.action.scriptlet, nil);
+        XCTAssertEqual(result!.action.scriptletParam, nil);
+    }
+    
+    func testConvertNetworkRuleRegExp() {
+        let converter = BlockerEntryFactory(advancedBlockingEnabled: false);
+
+        let rule = NetworkRule();
+        rule.urlRuleText = "/regex/$script";
+        rule.urlRegExpSource = "regex";
+
+        let result = converter.createBlockerEntry(rule: rule);
+        XCTAssertNotNil(result);
+        XCTAssertEqual(result!.trigger.urlFilter, "regex");
+        XCTAssertEqual(result!.trigger.ifDomain, nil);
         XCTAssertEqual(result!.trigger.unlessDomain, nil);
         XCTAssertEqual(result!.trigger.shortcut, nil);
         XCTAssertEqual(result!.trigger.regex, nil);
@@ -206,14 +229,26 @@ final class ConverterTests: XCTestCase {
     }
     
     func testConvertInvalidRegexNetworkRule() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: true);
+        let converter = BlockerEntryFactory(advancedBlockingEnabled: false);
 
-        let rule = createTestNetworkRule();
+        let rule = NetworkRule();
+        rule.urlRuleText = "/regex/$script";
         
-        // TODO: check invalid regex
-
-//        let result = converter.convertRuleToBlockerEntry(rule: rule);
-//        XCTAssertNil(result);
+        rule.urlRegExpSource = "regex{0,9}";
+        var result = converter.createBlockerEntry(rule: rule);
+        XCTAssertNil(result);
+        
+        rule.urlRegExpSource = "regex|test";
+        result = converter.createBlockerEntry(rule: rule);
+        XCTAssertNil(result);
+        
+        rule.urlRegExpSource = "test(?!test)";
+        result = converter.createBlockerEntry(rule: rule);
+        XCTAssertNil(result);
+        
+        rule.urlRegExpSource = "test\\b";
+        result = converter.createBlockerEntry(rule: rule);
+        XCTAssertNil(result);
     }
     
     func testConvertInvalidNetworkRule() {
@@ -358,6 +393,7 @@ final class ConverterTests: XCTestCase {
     
     static var allTests = [
         ("testConvertNetworkRule", testConvertNetworkRule),
+        ("testConvertNetworkRuleRegExp", testConvertNetworkRuleRegExp),
         ("testConvertNetworkRuleWhitelist", testConvertNetworkRuleWhitelist),
         ("testConvertScriptRule", testConvertScriptRule),
         ("testConvertScriptRuleWhitelist", testConvertScriptRuleWhitelist),
