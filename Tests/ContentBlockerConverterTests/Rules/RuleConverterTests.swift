@@ -46,6 +46,7 @@ final class RuleConverterTests: XCTestCase {
         XCTAssertEqual(res[0], exp);
     }
     
+    // TODO: Add more tests
 //    QUnit.test('Test converter scriptlet abp rule', (assert) => {
 //        const rule = "example.org#$#hide-if-contains li.serp-item 'li.serp-item div.label'";
 //        const exp = 'example.org#%#//scriptlet("abp-hide-if-contains", "li.serp-item", "li.serp-item div.label")';

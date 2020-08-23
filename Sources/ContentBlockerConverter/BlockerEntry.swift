@@ -9,17 +9,24 @@ struct BlockerEntry: Codable {
     
     struct Trigger : Codable {
         var ifDomain: [String]?
-        let urlFilter: String?
+        var urlFilter: String?
         var unlessDomain: [String]?
         
         var shortcut: String?
         var regex: NSRegularExpression?
+        
+        var loadType: [String]?
+        var resourceType: [String]?
+        var caseSensitive: Bool?
         
         enum CodingKeys: String, CodingKey {
             case ifDomain = "if-domain"
             case urlFilter = "url-filter"
             case unlessDomain = "unless-domain"
             case shortcut = "url-shortcut"
+            case loadType = "load-type"
+            case resourceType = "resource-type"
+            case caseSensitive = "url-filter-is-case-sensitive"
         }
         
         mutating func setShortcut(shortcutValue: String?) {

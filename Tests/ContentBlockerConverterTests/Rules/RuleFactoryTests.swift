@@ -17,6 +17,8 @@ final class RuleFactoryTests: XCTestCase {
         var rule = RuleFactory.createRule(ruleText: "test");
         XCTAssertNotNil(rule);
     }
+    
+    //TODO: More tests
 
     static var allTests = [
         ("testInvalids", testInvalids),

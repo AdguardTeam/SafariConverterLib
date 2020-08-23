@@ -10,6 +10,9 @@ class Rule {
     var isScriptlet = false;
     var isDocumentWhiteList = false;
     
+    var permittedDomains = [String]();
+    var restrictedDomains = [String]();
+    
     func isSingleOption(optionName: String) -> Bool {
         return false;
     }

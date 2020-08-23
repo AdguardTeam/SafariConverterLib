@@ -14,6 +14,8 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result?.converted, "[\n\n]");
     }
     
+    // TODO: Add tests from js
+    
 //    QUnit.test("Convert a comment", function(assert) {
 //        const ruleText = "! this is a comment";
 //        const result = SafariContentBlockerConverter.convertArray([ruleText]);
