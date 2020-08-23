@@ -1,9 +1,9 @@
 import Foundation
 
 /**
- * Builder
+ * Distributor
  */
-class Builder {
+class Distributor {
     
     private let limit: Int;
     private let advancedBlockedEnabled: Bool;

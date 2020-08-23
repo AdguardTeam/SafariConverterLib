@@ -5,10 +5,10 @@ public func allTests() -> [XCTestCaseEntry] {
     return [
         testCase(RuleConverterTests.allTests),
         testCase(RuleFactoryTests.allTests),
-        testCase(ConverterTests.allTests),
+        testCase(BlcokerEntryFactoryTests.allTests),
         testCase(CompilerTests.allTests),
         testCase(ConversionResultTests.allTests),
-        testCase(BuilderTests.allTests),
+        testCase(DistiributorTests.allTests),
         testCase(ContentBlockerConverterTests.allTests),
     ]
 }

@@ -8,12 +8,12 @@ class Compiler {
     private let optimize: Bool
     private let advancedBlockedEnabled: Bool
     
-    private let converter: Converter;
+    private let blockerEntryFactory: BlockerEntryFactory;
     
     init(optimize: Bool, advancedBlocking: Bool) {
         self.optimize = optimize;
         self.advancedBlockedEnabled = advancedBlocking;
-        self.converter = Converter(advancedBlockingEnabled: advancedBlocking);
+        self.blockerEntryFactory = BlockerEntryFactory(advancedBlockingEnabled: advancedBlocking);
     }
     
     /**
@@ -25,7 +25,7 @@ class Compiler {
         var compilationResult = CompilationResult();
         
         for rule in modifiedRules {
-            let converted = self.converter.convertRuleToBlockerEntry(rule: rule);
+            let converted = self.blockerEntryFactory.createBlockerEntry(rule: rule);
             if (converted == nil) {
                 continue;
             }

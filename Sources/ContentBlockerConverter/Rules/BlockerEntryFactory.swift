@@ -1,9 +1,9 @@
 import Foundation
 
 /**
- * Converter class
+ * Blocker entries factory class
  */
-class Converter {
+class BlockerEntryFactory {
     /**
      * It's important to mention why do we need these regular expressions.
      * The thing is that on iOS it is crucial to use regexes as simple as possible.
@@ -53,7 +53,7 @@ class Converter {
     /**
      * Converts rule object to blocker entry
      */
-    func convertRuleToBlockerEntry(rule: Rule) -> BlockerEntry? {
+    func createBlockerEntry(rule: Rule) -> BlockerEntry? {
         do {
             if (rule is NetworkRule) {
                 return try convertNetworkRule(rule: rule as! NetworkRule);
@@ -101,7 +101,7 @@ class Converter {
     };
     
     private func convertScriptRule(rule: CosmeticRule) throws -> BlockerEntry? {
-        var trigger = BlockerEntry.Trigger(urlFilter: Converter.URL_FILTER_SCRIPT_RULES);
+        var trigger = BlockerEntry.Trigger(urlFilter: BlockerEntryFactory.URL_FILTER_SCRIPT_RULES);
         var action = BlockerEntry.Action(type: "script", script: rule.script);
         
         setWhiteList(rule: rule, action: &action);
@@ -111,7 +111,7 @@ class Converter {
     }
     
     private func convertScriptletRule(rule: CosmeticRule) throws -> BlockerEntry? {
-        var trigger = BlockerEntry.Trigger(urlFilter: Converter.URL_FILTER_SCRIPTLET_RULES);
+        var trigger = BlockerEntry.Trigger(urlFilter: BlockerEntryFactory.URL_FILTER_SCRIPTLET_RULES);
         var action = BlockerEntry.Action(type: "scriptlet", scriptlet: rule.scriptlet, scriptletParam: rule.scriptletParam);
         
         setWhiteList(rule: rule, action: &action);
@@ -121,7 +121,7 @@ class Converter {
     }
     
     private func convertCssRule(rule: CosmeticRule) throws -> BlockerEntry? {
-        var trigger = BlockerEntry.Trigger(urlFilter: Converter.URL_FILTER_CSS_RULES);
+        var trigger = BlockerEntry.Trigger(urlFilter: BlockerEntryFactory.URL_FILTER_CSS_RULES);
         var action = BlockerEntry.Action(type:"css-display-none");
 
         if (rule.isExtendedCss || rule.isInjectCss) {
@@ -150,8 +150,8 @@ class Converter {
         let isWebSocket = rule.isWebSocket;
 
         // Use a single standard regex for rules that are supposed to match every URL
-        if (Converter.ANY_URL_TEMPLATES.firstIndex(of: rule.urlRuleText) ?? -1 >= 0) {
-            return isWebSocket ? Converter.URL_FILTER_WS_ANY_URL : Converter.URL_FILTER_ANY_URL;
+        if (BlockerEntryFactory.ANY_URL_TEMPLATES.firstIndex(of: rule.urlRuleText) ?? -1 >= 0) {
+            return isWebSocket ? BlockerEntryFactory.URL_FILTER_WS_ANY_URL : BlockerEntryFactory.URL_FILTER_ANY_URL;
         }
 
         // TODO: Support regex rules
@@ -162,13 +162,13 @@ class Converter {
         let urlRegExpSource = rule.getUrlRegExpSource();
         if (urlRegExpSource == nil) {
             // Rule with empty regexp
-            return Converter.URL_FILTER_ANY_URL;
+            return BlockerEntryFactory.URL_FILTER_ANY_URL;
         }
 
         // Prepending WebSocket protocol to resolve this:
         // https://github.com/AdguardTeam/AdguardBrowserExtension/issues/957
         if (isWebSocket && !urlRegExpSource!.hasPrefix("^") && !urlRegExpSource!.hasPrefix("ws")) {
-            return Converter.URL_FILTER_WS_ANY_URL + ".*" + urlRegExpSource!;
+            return BlockerEntryFactory.URL_FILTER_WS_ANY_URL + ".*" + urlRegExpSource!;
         }
 
         return urlRegExpSource!;
@@ -308,7 +308,7 @@ class Converter {
             //rule.permittedDomains.append(domain);
             try addDomainOptions(rule: rule, trigger: &trigger);
             
-            trigger.urlFilter = Converter.URL_FILTER_URL_RULES_EXCEPTIONS;
+            trigger.urlFilter = BlockerEntryFactory.URL_FILTER_URL_RULES_EXCEPTIONS;
             trigger.resourceType = nil;
         }
     };
@@ -325,7 +325,7 @@ class Converter {
         
         for domain in domains {
             if (domain.hasSuffix(".*")) {
-                for tld in Converter.TOP_LEVEL_DOMAINS_LIST {
+                for tld in BlockerEntryFactory.TOP_LEVEL_DOMAINS_LIST {
                     var modified = String(domain.prefix(domain.count - 2));
                     modified = modified + "." + tld;
                     result.append(modified);

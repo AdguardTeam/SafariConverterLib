@@ -5,7 +5,7 @@ import XCTest
 
 final class BuilderTests: XCTestCase {
     func testEmpty() {
-        let builder = Builder(limit: 0, advancedBlocking: true);
+        let builder = Distributor(limit: 0, advancedBlocking: true);
         
         let result = try! builder.createConversionResult(data: CompilationResult());
         
@@ -19,7 +19,7 @@ final class BuilderTests: XCTestCase {
     
     func testApplyWildcards() {
         
-        let builder = Builder(limit: 0, advancedBlocking: true);
+        let builder = Distributor(limit: 0, advancedBlocking: true);
         
         let testTrigger = BlockerEntry.Trigger(
             ifDomain: ["test_if_domain", "*wildcarded_if_domain"],

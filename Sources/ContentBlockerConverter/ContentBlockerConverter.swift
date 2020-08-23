@@ -14,7 +14,7 @@ class ContentBlockerConverter {
             let parsedRules = RuleFactory.createRules(lines: rules);
             let compilationResult = Compiler(optimize: optimize, advancedBlocking: advancedBlocking).compileRules(rules: parsedRules);
             
-            return try Builder(limit: limit, advancedBlocking: advancedBlocking).createConversionResult(data: compilationResult);
+            return try Distributor(limit: limit, advancedBlocking: advancedBlocking).createConversionResult(data: compilationResult);
         } catch {
             NSLog("AG: ContentBlockerConverter: Unexpected error");
         }
