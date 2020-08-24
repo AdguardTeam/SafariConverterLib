@@ -121,12 +121,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
     func testConvertScriptletRule() {
         let converter = BlockerEntryFactory(advancedBlockingEnabled: true);
 
-        // TODO: Parse scriptlet
-        let rule = try! CosmeticRule(ruleText: "~example.org#%#test");
-        rule.isScript = false;
-        rule.isScriptlet = true;
-        rule.scriptlet = "test scriptlet";
-        rule.scriptletParam = "test scriptlet param";
+        let rule = try! CosmeticRule(ruleText: "~example.org#%#//scriptlet(\"test-name\")");
 
         let result = converter.createBlockerEntry(rule: rule);
         XCTAssertNotNil(result);
@@ -140,8 +135,8 @@ final class BlockerEntryFactoryTests: XCTestCase {
         XCTAssertEqual(result!.action.selector, nil);
         XCTAssertEqual(result!.action.css, nil);
         XCTAssertEqual(result!.action.script, nil);
-        XCTAssertEqual(result!.action.scriptlet, "test scriptlet");
-        XCTAssertEqual(result!.action.scriptletParam, "test scriptlet param");
+        XCTAssertEqual(result!.action.scriptlet, "test-name");
+        XCTAssertEqual(result!.action.scriptletParam, "[]");
     }
     
     func testConvertScriptletRuleWhitelist() {

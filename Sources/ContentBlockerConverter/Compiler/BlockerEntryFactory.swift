@@ -59,10 +59,10 @@ class BlockerEntryFactory {
                 return try convertNetworkRule(rule: rule as! NetworkRule);
             } else {
                 if (self.advancedBlockingEnabled) {
-                    if (rule.isScript) {
-                        return try convertScriptRule(rule: rule as! CosmeticRule);
-                    } else if (rule.isScriptlet) {
+                    if (rule.isScriptlet) {
                         return try convertScriptletRule(rule: rule as! CosmeticRule);
+                    } else if (rule.isScript) {
+                        return try convertScriptRule(rule: rule as! CosmeticRule);
                     }
                 }
                 
