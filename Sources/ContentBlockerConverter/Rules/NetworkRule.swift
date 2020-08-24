@@ -4,6 +4,8 @@ import Foundation
  * Network rule class
  */
 class NetworkRule: Rule {
+    private static let MASK_WHITE_LIST = "@@";
+    
     var isCspRule = false;
     var isWebSocket = false;
     
@@ -40,6 +42,74 @@ class NetworkRule: Rule {
     
     override init(ruleText: String) throws {
         try super.init(ruleText: ruleText);
+        
+        let ruleParts = try! NetworkRule.parseRuleText(ruleText: ruleText);
+        self.urlRuleText = ruleParts.pattern!;
+        self.isWhiteList = ruleParts.whitelist;
+        
+        // TODO: set
+//        var isImportant = false;
+//
+//        var isScript = false;
+//        var isScriptlet = false;
+//        var isDocumentWhiteList = false;
+    }
+    
+    /**
+     * parseRuleText splits the rule text into multiple parts.
+     * @param ruleText - original rule text
+     * @returns basic rule parts
+     *
+     * @throws error if the rule is empty (for instance, empty string or `@@`)
+     */
+    private static func parseRuleText(ruleText: String) throws -> BasicRuleParts {
+        var ruleParts = BasicRuleParts();
+
+        var startIndex = 0;
+        if (ruleText.hasPrefix(NetworkRule.MASK_WHITE_LIST)) {
+            ruleParts.whitelist = true;
+            startIndex = MASK_WHITE_LIST.count;
+        }
+
+        if (ruleText.count <= startIndex) {
+            throw SyntaxError.invalidRule(message: "Rule is too short");
+        }
+
+        // Setting pattern to rule text (for the case of empty options)
+        ruleParts.pattern = ruleText.subString(startIndex: startIndex);
+
+        // Avoid parsing options inside of a regex rule
+        if (ruleParts.pattern!.hasPrefix("/")
+            && ruleParts.pattern!.hasSuffix("/")
+            && (ruleParts.pattern?.indexOf(target: "$replace=") == nil)) {
+            return ruleParts;
+        }
+
+//        let foundEscaped = false;
+//        for (let i = ruleText.length - 2; i >= startIndex; i -= 1) {
+//            const c = ruleText.charAt(i);
+//
+//            if (c === OPTIONS_DELIMITER) {
+//                if (i > startIndex && ruleText.charAt(i - 1) === escapeCharacter) {
+//                    foundEscaped = true;
+//                } else {
+//                    ruleParts.pattern = ruleText.substring(startIndex, i);
+//                    ruleParts.options = ruleText.substring(i + 1);
+//
+//                    if (foundEscaped) {
+//                        // Find and replace escaped options delimiter
+//                        ruleParts.options = ruleParts.options.replace(reEscapedOptionsDelimiter, OPTIONS_DELIMITER);
+//                        // Reset the regexp state
+//                        reEscapedOptionsDelimiter.lastIndex = 0;
+//                    }
+//
+//                    // Options delimiter was found, exiting loop
+//                    break;
+//                }
+//            }
+//        }
+
+        return ruleParts;
     }
     
     func getUrlRegExpSource() -> String? {
@@ -116,6 +186,12 @@ class NetworkRule: Rule {
 
         return DomainInfo(domain: domain, path: path);
     };
+    
+    struct BasicRuleParts {
+        var pattern: String?;
+        var options: String?;
+        var whitelist = false;
+    }
     
     struct DomainInfo {
         var domain: String?;
