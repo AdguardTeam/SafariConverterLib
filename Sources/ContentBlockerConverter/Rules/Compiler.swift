@@ -4,6 +4,8 @@ import Foundation
  * Compiler class
  */
 class Compiler {
+    // Max number of CSS selectors per rule (look at compactCssRules function)
+    private static let MAX_SELECTORS_PER_WIDE_RULE = 250;
     
     private let optimize: Bool
     private let advancedBlockedEnabled: Bool
@@ -21,6 +23,16 @@ class Compiler {
      */
     func compileRules(rules: [Rule]) -> CompilationResult {
         let modifiedRules = Compiler.applyBadFilterExceptions(rules: rules);
+        
+        var cssBlocking = [BlockerEntry]();
+        var cssExceptions = [BlockerEntry]();
+        
+        var extendedCssBlocking = [BlockerEntry]();
+        var scriptRules = [BlockerEntry]();
+        var scriptExceptionRules = [BlockerEntry]();
+        var scriptlets = [BlockerEntry]();
+        var scriptletsExceptions = [BlockerEntry]();
+        var cosmeticCssExceptions = [BlockerEntry]();
         
         var compilationResult = CompilationResult();
         
@@ -40,26 +52,26 @@ class Compiler {
                     compilationResult.urlBlocking.append(item);
                 }
             } else if (item.action.type == "css-display-none") {
-//                cssBlocking.push(item);
+                cssBlocking.append(item);
             } else if (item.action.type == "css") {
-//                extendedCssBlocking.push(item);
+                extendedCssBlocking.append(item);
             } else if (item.action.type == "script") {
-//                scriptRules.push(item);
+                scriptRules.append(item);
             } else if (item.action.type == "ignore-previous-rules" && rule.isScript) {
                 // #@%# rules
-//                scriptExceptionRules.push(item);
+                scriptExceptionRules.append(item);
             } else if (item.action.type == "scriptlet") {
-//                scriptlets.push(item);
+                scriptlets.append(item);
             } else if (item.action.type == "ignore-previous-rules" && rule.isScriptlet) {
                 // #@%#//scriptlet
-//                scriptletsExceptions.push(item);
+                scriptletsExceptions.append(item);
             } else if (item.action.type == "ignore-previous-rules" &&
                 (item.action.selector != nil && item.action.selector! != "")) {
                 // #@# rules
-//                cssExceptions.push(item);
+                cssExceptions.append(item);
             } else if (item.action.type == "ignore-previous-rules" &&
                 (item.action.css != nil && item.action.css! != "")) {
-//                cosmeticCssExceptions.push(item);
+                cosmeticCssExceptions.append(item);
             } else if (item.action.type == "ignore-previous-rules" && rule.isSingleOption(optionName: "generichide")) {
                 compilationResult.cssBlockingGenericHideExceptions.append(item);
             } else if (item.action.type == "ignore-previous-rules" && rule.isSingleOption(optionName: "elemhide")) {
@@ -80,40 +92,138 @@ class Compiler {
             }
         }
         
-        // Construct result object
-        
-        // TODO: Apply exceptions
         // Applying CSS exceptions
-//        cssBlocking = applyActionExceptions(cssBlocking, cssExceptions, 'selector');
-//        const cssCompact = compactCssRules(cssBlocking);
-//        if (!optimize) {
-//            contentBlocker.cssBlockingWide = cssCompact.cssBlockingWide;
-//        }
-//        contentBlocker.cssBlockingGenericDomainSensitive = cssCompact.cssBlockingGenericDomainSensitive;
-//        contentBlocker.cssBlockingDomainSensitive = cssCompact.cssBlockingDomainSensitive;
-//
-//        if (advancedBlocking) {
-//            // Applying CSS exceptions for extended css rules
-//            extendedCssBlocking = applyActionExceptions(extendedCssBlocking, cssExceptions.concat(cosmeticCssExceptions), 'selector');
-//            const extendedCssCompact = compactCssRules(extendedCssBlocking);
-//            if (!optimize) {
-//                contentBlocker.extendedCssBlockingWide = extendedCssCompact.cssBlockingWide;
-//            }
-//            contentBlocker.extendedCssBlockingGenericDomainSensitive = extendedCssCompact.cssBlockingGenericDomainSensitive;
-//            contentBlocker.extendedCssBlockingDomainSensitive = extendedCssCompact.cssBlockingDomainSensitive;
-//
-//            // Applying script exceptions
-//            scriptRules = applyActionExceptions(scriptRules, scriptExceptionRules, 'script');
-//            contentBlocker.script = scriptRules;
-//
-//            scriptlets = applyActionExceptions(scriptlets, scriptletsExceptions, 'scriptlet');
-//            contentBlocker.scriptlets = scriptlets;
-//        }
+        cssBlocking = Compiler.applyActionExceptions(blockingItems: &cssBlocking, exceptions: cssExceptions, actionValue: "selector");
+        let cssCompact = Compiler.compactCssRules(cssBlocking: cssBlocking);
+        if (!self.optimize) {
+            compilationResult.cssBlockingWide = cssCompact.cssBlockingWide;
+        }
+        compilationResult.cssBlockingGenericDomainSensitive = cssCompact.cssBlockingGenericDomainSensitive;
+        compilationResult.cssBlockingDomainSensitive = cssCompact.cssBlockingDomainSensitive;
+
+        if (self.advancedBlockedEnabled) {
+            // Applying CSS exceptions for extended css rules
+            extendedCssBlocking = Compiler.applyActionExceptions(
+                blockingItems: &extendedCssBlocking, exceptions: cssExceptions + cosmeticCssExceptions, actionValue: "selector"
+            );
+            let extendedCssCompact = Compiler.compactCssRules(cssBlocking: extendedCssBlocking);
+            if (!self.optimize) {
+                compilationResult.extendedCssBlockingWide = extendedCssCompact.cssBlockingWide;
+            }
+            compilationResult.extendedCssBlockingGenericDomainSensitive = extendedCssCompact.cssBlockingGenericDomainSensitive;
+            compilationResult.extendedCssBlockingDomainSensitive = extendedCssCompact.cssBlockingDomainSensitive;
+
+            // Applying script exceptions
+            scriptRules = Compiler.applyActionExceptions(blockingItems: &scriptRules, exceptions: scriptExceptionRules, actionValue: "script");
+            compilationResult.script = scriptRules;
+
+            scriptlets = Compiler.applyActionExceptions(blockingItems: &scriptlets, exceptions: scriptletsExceptions, actionValue: "scriptlet");
+            compilationResult.scriptlets = scriptlets;
+        }
         
         addLogMessage(compilationResult: compilationResult);
         
-        return CompilationResult();
+        return compilationResult;
     }
+    
+    /**
+     * Adds exception domain to the specified rule.
+     * First it checks if rule has if-domain restriction.
+     * If so - it may be that domain is redundant.
+     */
+    private static func pushExceptionDomain(domain: String, trigger: inout BlockerEntry.Trigger) -> Void {
+        let permittedDomains = trigger.ifDomain;
+        if (permittedDomains != nil && permittedDomains!.count > 0) {
+            
+            // First check that domain is not redundant
+            let applicable = permittedDomains?.firstIndex(of: domain) != nil;
+            if (!applicable) {
+                return;
+            }
+            
+            // TODO: Remove domain from trigger.ifDomain?
+        }
+
+        if (trigger.unlessDomain == nil) {
+            trigger.unlessDomain = [];
+        }
+        
+        trigger.unlessDomain?.append(domain);
+    };
+    
+    static func applyActionExceptions(blockingItems: inout [BlockerEntry], exceptions: [BlockerEntry], actionValue: String) -> [BlockerEntry] {
+        for exc in exceptions {
+            for index in 0..<blockingItems.count {
+                var item = blockingItems[index];
+                if (actionValue == "selector" && item.action.selector == exc.action.selector) ||
+                    (actionValue == "script" && item.action.script == exc.action.script) ||
+                    (actionValue == "scriptlet" && item.action.scriptlet == exc.action.scriptlet) {
+                    let exceptionDomains = exc.trigger.ifDomain;
+                    if (exceptionDomains != nil) {
+                        for d in exceptionDomains! {
+                            Compiler.pushExceptionDomain(domain: d, trigger: &item.trigger);
+                        }
+                        
+                        blockingItems[index].trigger = item.trigger;
+                    }
+                }
+            }
+        }
+        
+        var result = [BlockerEntry]();
+        
+        for r in blockingItems {
+            if (r.trigger.ifDomain == nil || r.trigger.ifDomain?.count == 0 ||
+                r.trigger.unlessDomain == nil || r.trigger.unlessDomain?.count == 0) {
+                result.append(r);
+            }
+        }
+        
+        return result;
+    }
+    
+    private static func createWideRule(wideSelectors: [String]) -> BlockerEntry {
+        return BlockerEntry(
+            trigger: BlockerEntry.Trigger(urlFilter: BlockerEntryFactory.URL_FILTER_CSS_RULES),
+            action: BlockerEntry.Action(type: "css-display-none", selector: wideSelectors.joined(separator: ", "))
+        );
+    };
+    
+    /**
+     * Compacts wide CSS rules
+     * @param cssBlocking unsorted css elemhide rules
+     */
+    private static func compactCssRules(cssBlocking: [BlockerEntry]) -> CompactCssRulesData {
+        var cssBlockingWide = [BlockerEntry]();
+        var cssBlockingDomainSensitive = [BlockerEntry]();
+        var cssBlockingGenericDomainSensitive = [BlockerEntry]();
+
+        var wideSelectors = [String]();
+        
+        for entry in cssBlocking {
+            if (entry.trigger.ifDomain != nil) {
+                cssBlockingDomainSensitive.append(entry);
+            } else if (entry.trigger.unlessDomain != nil) {
+                cssBlockingGenericDomainSensitive.append(entry);
+            } else if (entry.action.selector != nil){
+                wideSelectors.append(entry.action.selector!);
+                if (wideSelectors.count >= Compiler.MAX_SELECTORS_PER_WIDE_RULE) {
+                    cssBlockingWide.append(createWideRule(wideSelectors: wideSelectors));
+                    wideSelectors = [String]();
+                }
+            }
+        }
+        
+        if (wideSelectors.count > 0) {
+            cssBlockingWide.append(createWideRule(wideSelectors: wideSelectors));
+        }
+
+        return CompactCssRulesData(
+            cssBlockingWide: cssBlockingWide,
+            cssBlockingDomainSensitive: cssBlockingDomainSensitive,
+            cssBlockingGenericDomainSensitive: cssBlockingGenericDomainSensitive
+        );
+    };
     
     static func applyBadFilterExceptions(rules: [Rule]) -> [Rule] {
         // TODO: Apply badfilter exceptions
@@ -121,7 +231,6 @@ class Compiler {
     }
     
     private func addLogMessage(compilationResult: CompilationResult) -> Void {
-        //let message = 'Rules converted: ' + convertedCount + ' (' + contentBlocker.errors.length + ' errors)';
         var message = "";
         message += "\nBasic rules: \(String(describing: compilationResult.urlBlocking.count))";
         message += "\nBasic important rules: \(String(describing: compilationResult.important.count))";
@@ -141,5 +250,11 @@ class Compiler {
         message += "\nExceptions (other): \(String(describing: compilationResult.other.count))";
         
         NSLog(message);
+    }
+    
+    struct CompactCssRulesData {
+        var cssBlockingWide: [BlockerEntry]
+        var cssBlockingDomainSensitive: [BlockerEntry]
+        var cssBlockingGenericDomainSensitive: [BlockerEntry]
     }
 }

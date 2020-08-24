@@ -28,14 +28,39 @@ final class CompilerTests: XCTestCase {
         XCTAssertEqual(result.extendedCssBlockingDomainSensitive.count, 0);
     }
     
+    // TODO: Test different rules
+    // TODO: Test css compact
+    
     func testApplyBadfilterExceptions() {
         let filtered = Compiler.applyBadFilterExceptions(rules: []);
         // TODO: Test
         XCTAssertNotNil(filtered);
     }
+    
+    func testApplyActionExceptions() {
+        var blockingItems = [
+            BlockerEntry(
+                trigger: BlockerEntry.Trigger(urlFilter: ".*"),
+                action: BlockerEntry.Action(type: "selector", selector: "test_selector"))
+        ];
+        
+        let exceptions = [
+            BlockerEntry(
+                trigger: BlockerEntry.Trigger(ifDomain: ["whitelisted.com"]),
+                action: BlockerEntry.Action(type: "ignore-previous-rules", selector: "test_selector"))
+        ];
+        
+        let filtered = Compiler.applyActionExceptions(blockingItems: &blockingItems, exceptions: exceptions, actionValue: "selector");
+        
+        XCTAssertNotNil(filtered);
+        XCTAssertEqual(filtered.count, 1);
+        XCTAssertNotNil(filtered[0].trigger.unlessDomain);
+        XCTAssertEqual(filtered[0].trigger.unlessDomain, ["whitelisted.com"]);
+    }
 
     static var allTests = [
         ("testEmpty", testEmpty),
         ("testApplyBadfilterExceptions", testApplyBadfilterExceptions),
+        ("testApplyActionExceptions", testApplyActionExceptions),
     ]
 }

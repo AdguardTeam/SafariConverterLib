@@ -374,8 +374,6 @@ final class BlockerEntryFactoryTests: XCTestCase {
         XCTAssertNil(result);
     }
     
-    // TODO: Add whitelist proper test
-    
     private func createTestRule() -> Rule {
         let rule = CosmeticRule();
         
