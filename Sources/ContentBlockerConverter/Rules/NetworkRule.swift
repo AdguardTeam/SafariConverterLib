@@ -34,6 +34,14 @@ class NetworkRule: Rule {
     
     var urlRegExpSource: String? = nil;
     
+    override init() {
+        super.init();
+    }
+    
+    override init(ruleText: String) {
+        super.init(ruleText: ruleText);
+    }
+    
     func getUrlRegExpSource() -> String? {
         return urlRegExpSource;
     }

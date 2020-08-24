@@ -15,6 +15,14 @@ class Rule {
     var permittedDomains = [String]();
     var restrictedDomains = [String]();
     
+    init() {
+        
+    }
+    
+    init(ruleText: String) {
+        self.ruleText = ruleText;
+    }
+    
     func isSingleOption(optionName: String) -> Bool {
         return false;
     }

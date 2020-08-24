@@ -11,4 +11,12 @@ class CosmeticRule: Rule {
     var isExtendedCss = false;
     var isInjectCss = false;
     var cssSelector: String? = nil;
+    
+    override init() {
+        super.init();
+    }
+    
+    override init(ruleText: String) {
+        super.init(ruleText: ruleText);
+    }
 }
