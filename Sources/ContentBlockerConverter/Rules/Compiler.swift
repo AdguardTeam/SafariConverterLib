@@ -22,8 +22,6 @@ class Compiler {
      * Compiles array of AG rules to intermediate compilation result
      */
     func compileRules(rules: [Rule]) -> CompilationResult {
-        let modifiedRules = Compiler.applyBadFilterExceptions(rules: rules);
-        
         var cssBlocking = [BlockerEntry]();
         var cssExceptions = [BlockerEntry]();
         
@@ -36,7 +34,7 @@ class Compiler {
         
         var compilationResult = CompilationResult();
         
-        for rule in modifiedRules {
+        for rule in rules {
             let converted = self.blockerEntryFactory.createBlockerEntry(rule: rule);
             if (converted == nil) {
                 continue;
@@ -224,11 +222,6 @@ class Compiler {
             cssBlockingGenericDomainSensitive: cssBlockingGenericDomainSensitive
         );
     };
-    
-    static func applyBadFilterExceptions(rules: [Rule]) -> [Rule] {
-        // TODO: Apply badfilter exceptions
-        return rules;
-    }
     
     private func addLogMessage(compilationResult: CompilationResult) -> Void {
         var message = "";

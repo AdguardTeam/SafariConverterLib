@@ -31,12 +31,6 @@ final class CompilerTests: XCTestCase {
     // TODO: Test different rules
     // TODO: Test css compact
     
-    func testApplyBadfilterExceptions() {
-        let filtered = Compiler.applyBadFilterExceptions(rules: []);
-        // TODO: Test
-        XCTAssertNotNil(filtered);
-    }
-    
     func testApplyActionExceptions() {
         var blockingItems = [
             BlockerEntry(
@@ -60,7 +54,6 @@ final class CompilerTests: XCTestCase {
 
     static var allTests = [
         ("testEmpty", testEmpty),
-        ("testApplyBadfilterExceptions", testApplyBadfilterExceptions),
         ("testApplyActionExceptions", testApplyActionExceptions),
     ]
 }

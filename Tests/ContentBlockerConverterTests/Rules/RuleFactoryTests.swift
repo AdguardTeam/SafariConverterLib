@@ -18,11 +18,18 @@ final class RuleFactoryTests: XCTestCase {
         XCTAssertNotNil(rule);
     }
     
+    func testApplyBadfilterExceptions() {
+        let filtered = RuleFactory.applyBadFilterExceptions(rules: []);
+        // TODO: Test
+        XCTAssertNotNil(filtered);
+    }
+    
     //TODO: More tests
 
     static var allTests = [
         ("testInvalids", testInvalids),
         ("testNetworkRules", testNetworkRules),
+        ("testApplyBadfilterExceptions", testApplyBadfilterExceptions),
     ]
 }
 

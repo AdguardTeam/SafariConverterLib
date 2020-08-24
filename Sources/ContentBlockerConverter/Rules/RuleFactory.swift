@@ -19,7 +19,12 @@ class RuleFactory {
             }
         }
         
-        return result;
+        return applyBadFilterExceptions(rules: result);
+    }
+    
+    static func applyBadFilterExceptions(rules: [Rule]) -> [Rule] {
+        // TODO: Apply badfilter exceptions
+        return rules;
     }
     
     static func createRule(ruleText: String?) -> Rule? {
