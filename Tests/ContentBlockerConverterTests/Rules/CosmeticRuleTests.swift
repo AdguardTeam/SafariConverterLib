@@ -137,7 +137,7 @@ final class CosmeticRuleTests: XCTestCase {
         
         XCTAssertEqual(result.content, "//scriptlet(\"set-constant\", \"test\", \"true\")");
         XCTAssertEqual(result.scriptlet, "set-constant");
-        XCTAssertEqual(result.scriptletParam, "[\"set-constant\", \"test\", \"true\"]");
+        XCTAssertEqual(result.scriptletParam, "[\"test\",\"true\"]");
         
         XCTAssertEqual(result.isExtendedCss, false);
         XCTAssertEqual(result.isInjectCss, false);

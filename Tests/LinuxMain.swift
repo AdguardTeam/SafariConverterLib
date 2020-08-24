@@ -5,6 +5,7 @@ import ContentBlockerConverterTests
 var tests = [XCTestCaseEntry]()
 tests += RuleConverterTests.allTests()
 tests += NetworkRuleTests.allTests()
+tests += ScriptletParserTests.allTests()
 tests += CosmeticRuleTests.allTests()
 tests += RuleFactoryTests.allTests()
 tests += BlockerEntryFactoryTests.allTests()
