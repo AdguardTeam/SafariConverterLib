@@ -38,8 +38,8 @@ class NetworkRule: Rule {
         super.init();
     }
     
-    override init(ruleText: String) {
-        super.init(ruleText: ruleText);
+    override init(ruleText: String) throws {
+        try super.init(ruleText: ruleText);
     }
     
     func getUrlRegExpSource() -> String? {

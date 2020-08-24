@@ -28,53 +28,28 @@ class RuleFactory {
     }
     
     static func createRule(ruleText: String?) -> Rule? {
-        if (ruleText == nil || ruleText! == "" || ruleText!.hasPrefix("!") || ruleText!.hasPrefix(" ") || ruleText!.indexOf(target: " - ") > 0) {
-            return nil;
-        }
+        do {
+            if (ruleText == nil || ruleText! == "" || ruleText!.hasPrefix("!") || ruleText!.hasPrefix(" ") || ruleText!.indexOf(target: " - ") > 0) {
+                return nil;
+            }
+            
+            if (ruleText!.count < 3) {
+                return nil;
+            }
+
+            if (RuleFactory.isCosmetic(ruleText: ruleText!)) {
+                return try CosmeticRule(ruleText: ruleText!);
+            }
+
         
-        if (ruleText!.count < 3) {
+            return try NetworkRule(ruleText: ruleText!);
+        } catch {
             return nil;
         }
-
-        if (RuleFactory.isCosmetic(ruleText: ruleText!)) {
-            return CosmeticRule(ruleText: ruleText!);
-        }
-
-    
-        return NetworkRule(ruleText: ruleText!);
     };
     
     private static func isCosmetic(ruleText: String) -> Bool {
-        let marker = findCosmeticRuleMarker(ruleText: ruleText);
-        return marker != nil;
-    }
-    
-    private static func findCosmeticRuleMarker(ruleText: String) -> CosmeticRuleMarker? {
-        for marker in CosmeticRuleMarker.allCases {
-            if (ruleText.indexOf(target: marker.rawValue) > -1) {
-                return marker;
-            }
-        }
-        
-        return nil;
-    }
-    
-    enum CosmeticRuleMarker: String, CaseIterable {
-        case ElementHiding = "##"
-        case ElementHidingException = "#@#"
-        case ElementHidingExtCSS = "#?#"
-        case ElementHidingExtCSSException = "#@?#"
-
-        case Css = "#$#"
-        case CssException = "#@$#"
-        
-        case CssExtCSS = "#$?#"
-        case CssExtCSSException = "#@$?#"
-
-        case Js = "#%#"
-        case JsException = "#@%#"
-
-        case Html = "$$"
-        case HtmlException = "$@$"
+        let markerInfo = CosmeticRuleMarker.findCosmeticRuleMarker(ruleText: ruleText);
+        return markerInfo.index != -1;
     }
 }

@@ -78,10 +78,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
     func testConvertScriptRule() {
         let converter = BlockerEntryFactory(advancedBlockingEnabled: true);
 
-        let rule = CosmeticRule();
-        rule.isScript = true;
-        rule.script = "test script";
-        rule.permittedDomains = ["test_domain_one", "test_domain_two"];
+        let rule = try! CosmeticRule(ruleText: "example.org,test.com#%#test");
 
         let result = converter.createBlockerEntry(rule: rule);
         XCTAssertNotNil(result);
@@ -94,7 +91,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
         XCTAssertEqual(result!.action.type, "script");
         XCTAssertEqual(result!.action.selector, nil);
         XCTAssertEqual(result!.action.css, nil);
-        XCTAssertEqual(result!.action.script, "test script");
+        XCTAssertEqual(result!.action.script, "test");
         XCTAssertEqual(result!.action.scriptlet, nil);
         XCTAssertEqual(result!.action.scriptletParam, nil);
     }
@@ -102,11 +99,8 @@ final class BlockerEntryFactoryTests: XCTestCase {
     func testConvertScriptRuleWhitelist() {
         let converter = BlockerEntryFactory(advancedBlockingEnabled: true);
 
-        let rule = CosmeticRule();
-        rule.isScript = true;
-        rule.script = "test script";
+        let rule = try! CosmeticRule(ruleText: "example.org#@%#test");
         rule.permittedDomains = ["test_domain_one", "test_domain_two"];
-        rule.isWhiteList = true;
 
         let result = converter.createBlockerEntry(rule: rule);
         XCTAssertNotNil(result);
@@ -119,7 +113,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
         XCTAssertEqual(result!.action.type, "ignore-previous-rules");
         XCTAssertEqual(result!.action.selector, nil);
         XCTAssertEqual(result!.action.css, nil);
-        XCTAssertEqual(result!.action.script, "test script");
+        XCTAssertEqual(result!.action.script, "test");
         XCTAssertEqual(result!.action.scriptlet, nil);
         XCTAssertEqual(result!.action.scriptletParam, nil);
     }
@@ -127,17 +121,18 @@ final class BlockerEntryFactoryTests: XCTestCase {
     func testConvertScriptletRule() {
         let converter = BlockerEntryFactory(advancedBlockingEnabled: true);
 
-        let rule = CosmeticRule();
+        // TODO: Parse scriptlet
+        let rule = try! CosmeticRule(ruleText: "~example.org#%#test");
+        rule.isScript = false;
         rule.isScriptlet = true;
         rule.scriptlet = "test scriptlet";
         rule.scriptletParam = "test scriptlet param";
-        rule.restrictedDomains = ["test_domain_one", "test_domain_two"];
 
         let result = converter.createBlockerEntry(rule: rule);
         XCTAssertNotNil(result);
         XCTAssertEqual(result!.trigger.urlFilter, ".*");
         XCTAssertEqual(result!.trigger.ifDomain, nil);
-        XCTAssertEqual(result!.trigger.unlessDomain!.count, 2);
+        XCTAssertEqual(result!.trigger.unlessDomain!.count, 1);
         XCTAssertEqual(result!.trigger.shortcut, nil);
         XCTAssertEqual(result!.trigger.regex, nil);
 
@@ -152,7 +147,8 @@ final class BlockerEntryFactoryTests: XCTestCase {
     func testConvertScriptletRuleWhitelist() {
         let converter = BlockerEntryFactory(advancedBlockingEnabled: true);
 
-        let rule = CosmeticRule();
+        let rule = try! CosmeticRule(ruleText: "##test");
+        rule.isScript = false;
         rule.isScriptlet = true;
         rule.scriptlet = "test scriptlet";
         rule.scriptletParam = "test scriptlet param";
@@ -178,8 +174,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
     func testConvertCssRule() {
         let converter = BlockerEntryFactory(advancedBlockingEnabled: true);
 
-        let rule = CosmeticRule();
-        rule.cssSelector = "test_css_selector";
+        let rule = try! CosmeticRule(ruleText: "##.test_css_selector");
         rule.restrictedDomains = ["test_domain_one", "test_domain_two"];
 
         let result = converter.createBlockerEntry(rule: rule);
@@ -191,16 +186,15 @@ final class BlockerEntryFactoryTests: XCTestCase {
         XCTAssertEqual(result!.trigger.regex, nil);
 
         XCTAssertEqual(result!.action.type, "css-display-none");
-        XCTAssertEqual(result!.action.selector, "test_css_selector");
+        XCTAssertEqual(result!.action.selector, ".test_css_selector");
         XCTAssertEqual(result!.action.css, nil);
     }
     
     func testConvertCssRuleExtendedCss() {
         let converter = BlockerEntryFactory(advancedBlockingEnabled: true);
 
-        let rule = CosmeticRule();
+        let rule = try! CosmeticRule(ruleText: "##.test_css_selector");
         rule.isExtendedCss = true;
-        rule.cssSelector = "test_css_selector";
         rule.restrictedDomains = ["test_domain_one", "test_domain_two"];
 
         let result = converter.createBlockerEntry(rule: rule);
@@ -213,15 +207,14 @@ final class BlockerEntryFactoryTests: XCTestCase {
 
         XCTAssertEqual(result!.action.type, "css");
         XCTAssertEqual(result!.action.selector, nil);
-        XCTAssertEqual(result!.action.css, "test_css_selector");
+        XCTAssertEqual(result!.action.css, ".test_css_selector");
     }
     
     func testConvertInvalidCssRule() {
         let converter = BlockerEntryFactory(advancedBlockingEnabled: true);
 
-        let rule = CosmeticRule();
+        let rule = try! CosmeticRule(ruleText: "##url(test)");
         rule.isExtendedCss = true;
-        rule.cssSelector = "some url(test)";
         rule.restrictedDomains = ["test_domain_one", "test_domain_two"];
 
         let result = converter.createBlockerEntry(rule: rule);
@@ -375,11 +368,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
     }
     
     private func createTestRule() -> Rule {
-        let rule = CosmeticRule();
-        
-        rule.isScript = true;
-        rule.script = "test script";
-        
+        let rule = try! CosmeticRule(ruleText: "example.org#%#test");
         return rule;
     }
     

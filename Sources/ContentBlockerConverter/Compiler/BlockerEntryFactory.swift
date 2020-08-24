@@ -102,7 +102,7 @@ class BlockerEntryFactory {
     
     private func convertScriptRule(rule: CosmeticRule) throws -> BlockerEntry? {
         var trigger = BlockerEntry.Trigger(urlFilter: BlockerEntryFactory.URL_FILTER_SCRIPT_RULES);
-        var action = BlockerEntry.Action(type: "script", script: rule.script);
+        var action = BlockerEntry.Action(type: "script", script: rule.content);
         
         setWhiteList(rule: rule, action: &action);
         try addDomainOptions(rule: rule, trigger: &trigger);
@@ -126,9 +126,9 @@ class BlockerEntryFactory {
 
         if (rule.isExtendedCss || rule.isInjectCss) {
             action.type = "css";
-            action.css = rule.cssSelector;
+            action.css = rule.content;
         } else {
-            action.selector = rule.cssSelector;
+            action.selector = rule.content;
         }
 
         setWhiteList(rule: rule, action: &action);

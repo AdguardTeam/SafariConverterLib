@@ -28,10 +28,6 @@ final class RuleFactoryTests: XCTestCase {
         XCTAssertNotNil(rule);
         XCTAssertTrue(rule is CosmeticRule);
         
-        rule = RuleFactory.createRule(ruleText: "$$script");
-        XCTAssertNotNil(rule);
-        XCTAssertTrue(rule is CosmeticRule);
-        
         rule = RuleFactory.createRule(ruleText: "#%#//scriptlet(\"test\")");
         XCTAssertNotNil(rule);
         XCTAssertTrue(rule is CosmeticRule);
