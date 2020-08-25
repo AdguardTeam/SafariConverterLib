@@ -36,7 +36,7 @@ class NetworkRule: Rule {
         self.isWhiteList = ruleParts.whitelist;
         
         if (ruleParts.options != nil) {
-            loadOptions(options: ruleParts.options!);
+            try loadOptions(options: ruleParts.options!);
         }
 
 //        if (
@@ -59,6 +59,8 @@ class NetworkRule: Rule {
         
         if (self.urlRuleText.hasPrefix("/") && self.urlRuleText.hasSuffix("/")) {
             self.urlRegExpSource = self.urlRuleText.subString(startIndex: 1, length: self.urlRuleText.count - 2);
+        } else {
+            self.urlRegExpSource = SimpleRegex.createRegexText(str: self.urlRuleText);
         }
         
         // TODO: set isUrlBlock/isCssExceptionRule according to:
@@ -77,7 +79,7 @@ class NetworkRule: Rule {
 //        var isCssExceptionRule = false;
     }
     
-    private func loadOptions(options: String) -> Void {
+    private func loadOptions(options: String) throws -> Void {
         let optionParts = options.splitByDelimiterWithEscapeCharacter(delimeter: ",", escapeChar: "\\");
         
         for option in optionParts {
@@ -90,7 +92,7 @@ class NetworkRule: Rule {
                 optionValue = option.subString(startIndex: valueIndex + 1);
             }
             
-            loadOption(optionName: optionName, optionValue: optionValue);
+            try loadOption(optionName: optionName, optionValue: optionValue);
         }
 
         // Rules of these types can be applied to documents only
@@ -109,7 +111,7 @@ class NetworkRule: Rule {
 //        }
     }
 
-    private func loadOption(optionName: String, optionValue: String) -> Void {
+    private func loadOption(optionName: String, optionValue: String) throws -> Void {
         switch (optionName) {
             // General options
             case "third-party",
@@ -254,9 +256,9 @@ class NetworkRule: Rule {
                 setRequestType(contentType: ContentType.WEBRTC, enabled: false);
                 break;
 
-        default:
-            break;
-        }
+            default:
+                throw SyntaxError.invalidRule(message: "Unknown option: \(optionName)");
+            }
     }
     
     private func setRequestType(contentType: ContentType, enabled: Bool) -> Void {
@@ -324,10 +326,6 @@ class NetworkRule: Rule {
         }
         
         return -1;
-    }
-    
-    func getUrlRegExpSource() -> String? {
-        return urlRegExpSource;
     }
     
     func hasContentType(contentType: ContentType) -> Bool {

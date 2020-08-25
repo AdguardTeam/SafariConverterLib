@@ -26,7 +26,7 @@ final class NetworkRuleTests: XCTestCase {
         XCTAssertEqual(result.isMatchCase, false);
         XCTAssertEqual(result.isBlockPopups, false);
         XCTAssertEqual(result.isReplace, false);
-        XCTAssertEqual(result.urlRegExpSource, nil);
+        XCTAssertEqual(result.urlRegExpSource, "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org[/:&?]?");
         
         XCTAssertEqual(result.permittedContentType, []);
         XCTAssertEqual(result.restrictedContentType, []);

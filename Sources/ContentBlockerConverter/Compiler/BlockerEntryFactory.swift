@@ -148,7 +148,7 @@ class BlockerEntryFactory {
             return isWebSocket ? BlockerEntryFactory.URL_FILTER_WS_ANY_URL : BlockerEntryFactory.URL_FILTER_ANY_URL;
         }
 
-        let urlRegExpSource = rule.getUrlRegExpSource();
+        let urlRegExpSource = rule.urlRegExpSource;
         if (urlRegExpSource == nil) {
             // Rule with empty regexp
             return BlockerEntryFactory.URL_FILTER_ANY_URL;

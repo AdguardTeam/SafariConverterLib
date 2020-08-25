@@ -4,7 +4,7 @@ import Foundation
 class ContentBlockerConverter {
     
     // Main func
-    func convertArray(rules: [String], limit: Int, optimize: Bool, advancedBlocking: Bool) -> ConversionResult? {
+    func convertArray(rules: [String], limit: Int = 0, optimize: Bool = false, advancedBlocking: Bool = false) -> ConversionResult? {
         if rules.count == 0 {
             NSLog("AG: ContentBlockerConverter: No rules presented");
             return nil;

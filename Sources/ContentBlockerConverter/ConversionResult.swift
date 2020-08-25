@@ -38,6 +38,6 @@ struct ConversionResult {
         encoder.outputFormatting = .prettyPrinted
         
         let json = try encoder.encode(entries);
-        return String(data: json, encoding: .utf8)!;
+        return String(data: json, encoding: .utf8)!.replacingOccurrences(of: "\\/", with: "/");
     }
 }

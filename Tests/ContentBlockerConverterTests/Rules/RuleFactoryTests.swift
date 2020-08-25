@@ -18,7 +18,7 @@ final class RuleFactoryTests: XCTestCase {
         XCTAssertNotNil(rule);
         XCTAssertTrue(rule is NetworkRule);
         
-        rule = RuleFactory.createRule(ruleText: "@@||test$document");
+        rule = RuleFactory.createRule(ruleText: "@@||test$image,font");
         XCTAssertNotNil(rule);
         XCTAssertTrue(rule is NetworkRule);
     }
@@ -32,7 +32,7 @@ final class RuleFactoryTests: XCTestCase {
         XCTAssertNotNil(rule);
         XCTAssertTrue(rule is CosmeticRule);
         
-        rule = RuleFactory.createRule(ruleText: "example.org##banenr");
+        rule = RuleFactory.createRule(ruleText: "example.org##banner");
         XCTAssertNotNil(rule);
         XCTAssertTrue(rule is CosmeticRule);
     }
