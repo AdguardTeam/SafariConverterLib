@@ -5,20 +5,6 @@ import Foundation
  */
 class NetworkRule: Rule {
     private static let MASK_WHITE_LIST = "@@";
-    
-    var isCspRule = false;
-    var isWebSocket = false;
-    
-    // TODO: set isUrlBlock/isCssExceptionRule according to:
-    //        function isUrlBlockRule(r) {
-    //            return isSingleOption(r, adguard.rules.UrlFilterRule.options.URLBLOCK) ||
-    //                isSingleOption(r, adguard.rules.UrlFilterRule.options.GENERICBLOCK);
-    //        }
-    //
-    //        function isCssExceptionRule(r) {
-    //            return isSingleOption(r, adguard.rules.UrlFilterRule.options.GENERICHIDE) ||
-    //                isSingleOption(r, adguard.rules.UrlFilterRule.options.ELEMHIDE);
-    //        }
 
     var isUrlBlock = false;
     var isCssExceptionRule = false;
@@ -30,6 +16,8 @@ class NetworkRule: Rule {
     var isMatchCase = false;
     var isBlockPopups = false;
     var isReplace = false;
+    var isCspRule = false;
+    var isWebSocket = false;
     
     var permittedContentType: [ContentType] = [];
     var restrictedContentType: [ContentType] = [];
@@ -47,12 +35,236 @@ class NetworkRule: Rule {
         self.urlRuleText = ruleParts.pattern!;
         self.isWhiteList = ruleParts.whitelist;
         
-        // TODO: set
-//        var isImportant = false;
-//
-//        var isScript = false;
-//        var isScriptlet = false;
+        if (ruleParts.options != nil) {
+            loadOptions(options: ruleParts.options!);
+        }
+
+//        if (
+//            this.pattern === SimpleRegex.MASK_START_URL
+//            || this.pattern === SimpleRegex.MASK_ANY_CHARACTER
+//            || this.pattern === ''
+//            || this.pattern.length < 3
+//        ) {
+//            // Except cookie and removeparam rules, they have their own atmosphere
+//            if (!(this.advancedModifier instanceof CookieModifier)
+//                && !(this.advancedModifier instanceof RemoveParamModifier)) {
+//                if (!(this.hasPermittedDomains() || this.hasPermittedApps())) {
+//                    // Rule matches too much and does not have any domain restriction
+//                    // We should not allow this kind of rules
+//                    // eslint-disable-next-line max-len
+//                    throw new SyntaxError('The rule is too wide, add domain restriction or make the pattern more specific');
+//                }
+//            }
+//        }
+        
+        if (self.urlRuleText.hasPrefix("/") && self.urlRuleText.hasSuffix("/")) {
+            self.urlRegExpSource = self.urlRuleText.subString(startIndex: 1, length: self.urlRuleText.count - 2);
+        }
+        
+        // TODO: set isUrlBlock/isCssExceptionRule according to:
+        //        function isUrlBlockRule(r) {
+        //            return isSingleOption(r, adguard.rules.UrlFilterRule.options.URLBLOCK) ||
+        //                isSingleOption(r, adguard.rules.UrlFilterRule.options.GENERICBLOCK);
+        //        }
+        //
+        //        function isCssExceptionRule(r) {
+        //            return isSingleOption(r, adguard.rules.UrlFilterRule.options.GENERICHIDE) ||
+        //                isSingleOption(r, adguard.rules.UrlFilterRule.options.ELEMHIDE);
+        //        }
+        
 //        var isDocumentWhiteList = false;
+//        var isUrlBlock = false;
+//        var isCssExceptionRule = false;
+    }
+    
+    private func loadOptions(options: String) -> Void {
+        let optionParts = options.splitByDelimiterWithEscapeCharacter(delimeter: ",", escapeChar: "\\");
+        
+        for option in optionParts {
+            var optionName = option;
+            var optionValue = "";
+            
+            let valueIndex = option.indexOf(target: "=");
+            if (valueIndex > 0) {
+                optionName = option.subString(startIndex: 0, toIndex: valueIndex);
+                optionValue = option.subString(startIndex: valueIndex + 1);
+            }
+            
+            loadOption(optionName: optionName, optionValue: optionValue);
+        }
+
+        // Rules of these types can be applied to documents only
+        // $jsinject, $elemhide, $urlblock, $genericblock, $generichide and $content for whitelist rules.
+        // $popup - for url blocking
+//        if (
+//            this.isOptionEnabled(NetworkRuleOption.Jsinject)
+//            || this.isOptionEnabled(NetworkRuleOption.Elemhide)
+//            || this.isOptionEnabled(NetworkRuleOption.Content)
+//            || this.isOptionEnabled(NetworkRuleOption.Urlblock)
+//            || this.isOptionEnabled(NetworkRuleOption.Genericblock)
+//            || this.isOptionEnabled(NetworkRuleOption.Generichide)
+//            || this.isOptionEnabled(NetworkRuleOption.Popup)
+//        ) {
+//            self.permittedContentType = ContentType.DOCUMENT;
+//        }
+    }
+
+    private func loadOption(optionName: String, optionValue: String) -> Void {
+        switch (optionName) {
+            // General options
+            case "third-party",
+                 "~first-party":
+                self.isCheckThirdParty = true;
+                self.isThirdParty = true;
+                break;
+            case "~third-party",
+                 "first-party":
+                self.isCheckThirdParty = true;
+                self.isThirdParty = false;
+                break;
+            case "match-case":
+                self.isMatchCase = true;
+                break;
+            case "~match-case":
+                self.isMatchCase = false;
+                break;
+            case "important":
+                self.isImportant = true;
+                break;
+            case "popup":
+                self.isBlockPopups = true;
+                break;
+            
+            // Special modifiers
+            case "badfilter":
+                //this.setOptionEnabled(NetworkRuleOption.Badfilter, true);
+                break;
+            case "csp":
+                self.isCspRule = true;
+                break;
+            case "replace":
+                self.isReplace = true;
+                break;
+
+            // $domain modifier
+            case "domain":
+                try! self.setDomains(domains: optionValue, sep: "|");
+                break;
+            
+            // Document-level whitelist rules
+//            case 'elemhide':
+//                this.setOptionEnabled(NetworkRuleOption.Elemhide, true);
+//                break;
+//            case 'generichide':
+//                this.setOptionEnabled(NetworkRuleOption.Generichide, true);
+//                break;
+//            case 'genericblock':
+//                this.setOptionEnabled(NetworkRuleOption.Genericblock, true);
+//                break;
+//            case 'jsinject':
+//                this.setOptionEnabled(NetworkRuleOption.Jsinject, true);
+//                break;
+//            case 'urlblock':
+//                this.setOptionEnabled(NetworkRuleOption.Urlblock, true);
+//                break;
+//            case 'content':
+//                this.setOptionEnabled(NetworkRuleOption.Content, true);
+//                break;
+//
+//            // $document
+//            case 'document':
+//                this.setOptionEnabled(NetworkRuleOption.Elemhide, true, true);
+//                this.setOptionEnabled(NetworkRuleOption.Jsinject, true, true);
+//                this.setOptionEnabled(NetworkRuleOption.Urlblock, true, true);
+//                this.setOptionEnabled(NetworkRuleOption.Content, true, true);
+//                break;
+
+            // Content type options
+            case "script":
+                setRequestType(contentType: ContentType.SCRIPT, enabled: true);
+                break;
+            case "~script":
+                setRequestType(contentType: ContentType.SCRIPT, enabled: false);
+                break;
+            case "stylesheet":
+                setRequestType(contentType: ContentType.STYLESHEET, enabled: true);
+                break;
+            case "~stylesheet":
+                setRequestType(contentType: ContentType.STYLESHEET, enabled: false);
+                break;
+            case "subdocument":
+                setRequestType(contentType: ContentType.SUBDOCUMENT, enabled: true);
+                break;
+            case "~subdocument":
+                setRequestType(contentType: ContentType.SUBDOCUMENT, enabled: false);
+                break;
+            case "object":
+                setRequestType(contentType: ContentType.OBJECT, enabled: true);
+                break;
+            case "~object":
+                setRequestType(contentType: ContentType.OBJECT, enabled: false);
+                break;
+            case "image":
+                setRequestType(contentType: ContentType.IMAGE, enabled: true);
+                break;
+            case "~image":
+                setRequestType(contentType: ContentType.IMAGE, enabled: false);
+                break;
+            case "xmlhttprequest":
+                setRequestType(contentType: ContentType.XMLHTTPREQUEST, enabled: true);
+                break;
+            case "~xmlhttprequest":
+                setRequestType(contentType: ContentType.XMLHTTPREQUEST, enabled: false);
+                break;
+            case "media":
+                setRequestType(contentType: ContentType.MEDIA, enabled: true);
+                break;
+            case "~media":
+                setRequestType(contentType: ContentType.MEDIA, enabled: false);
+                break;
+            case "font":
+                setRequestType(contentType: ContentType.FONT, enabled: true);
+                break;
+            case "~font":
+                setRequestType(contentType: ContentType.FONT, enabled: false);
+                break;
+            case "websocket":
+                self.isWebSocket = true;
+                setRequestType(contentType: ContentType.WEBSOCKET, enabled: true);
+                break;
+            case "~websocket":
+                setRequestType(contentType: ContentType.WEBSOCKET, enabled: false);
+                break;
+            case "other":
+                setRequestType(contentType: ContentType.OTHER, enabled: true);
+                break;
+            case "~other":
+                setRequestType(contentType: ContentType.OTHER, enabled: false);
+                break;
+            case "ping":
+                setRequestType(contentType: ContentType.PING, enabled: true);
+                break;
+            case "~ping":
+                setRequestType(contentType: ContentType.PING, enabled: false);
+                break;
+            case "webrtc":
+                setRequestType(contentType: ContentType.WEBRTC, enabled: true);
+                break;
+            case "~webrtc":
+                setRequestType(contentType: ContentType.WEBRTC, enabled: false);
+                break;
+
+        default:
+            break;
+        }
+    }
+    
+    private func setRequestType(contentType: ContentType, enabled: Bool) -> Void {
+        if (enabled) {
+            self.permittedContentType.append(contentType)
+        } else {
+            self.restrictedContentType.append(contentType);
+        }
     }
     
     /**
@@ -84,32 +296,34 @@ class NetworkRule: Rule {
             && (ruleParts.pattern?.indexOf(target: "$replace=") == nil)) {
             return ruleParts;
         }
-
-//        let foundEscaped = false;
-//        for (let i = ruleText.length - 2; i >= startIndex; i -= 1) {
-//            const c = ruleText.charAt(i);
-//
-//            if (c === OPTIONS_DELIMITER) {
-//                if (i > startIndex && ruleText.charAt(i - 1) === escapeCharacter) {
-//                    foundEscaped = true;
-//                } else {
-//                    ruleParts.pattern = ruleText.substring(startIndex, i);
-//                    ruleParts.options = ruleText.substring(i + 1);
-//
-//                    if (foundEscaped) {
-//                        // Find and replace escaped options delimiter
-//                        ruleParts.options = ruleParts.options.replace(reEscapedOptionsDelimiter, OPTIONS_DELIMITER);
-//                        // Reset the regexp state
-//                        reEscapedOptionsDelimiter.lastIndex = 0;
-//                    }
-//
-//                    // Options delimiter was found, exiting loop
-//                    break;
-//                }
-//            }
-//        }
+        
+        let delimeterIndex = NetworkRule.findOptionsDelimeterIndex(ruleText: ruleText);
+        if (delimeterIndex >= 0) {
+            ruleParts.pattern = ruleText.subString(startIndex: startIndex, toIndex: delimeterIndex);
+            ruleParts.options = ruleText.subString(startIndex: delimeterIndex + 1);
+        }
 
         return ruleParts;
+    }
+    
+    private static func findOptionsDelimeterIndex(ruleText: String) -> Int {
+        for (index, char) in ruleText.enumerated().reversed() {
+            if (char == "$") {
+                // ignore \$
+                if (index > 0 && Array(ruleText)[index - 1] == "\\") {
+                    continue;
+                }
+                
+                // ignore $/
+                if (index + 1 < ruleText.count && Array(ruleText)[index + 1] == "/") {
+                    continue;
+                }
+                
+                return index;
+            }
+        }
+        
+        return -1;
     }
     
     func getUrlRegExpSource() -> String? {
@@ -213,5 +427,6 @@ class NetworkRule: Rule {
         case OBJECT
         case OBJECT_SUBREQUEST
         case WEBRTC
+        case PING
     }
 }

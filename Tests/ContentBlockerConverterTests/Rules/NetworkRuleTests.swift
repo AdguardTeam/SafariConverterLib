@@ -32,60 +32,52 @@ final class NetworkRuleTests: XCTestCase {
         XCTAssertEqual(result.restrictedContentType, []);
         
         result = try! NetworkRule(ruleText: "||example.org^$third-party");
-        XCTAssertEqual(result.isCspRule, false);
-        XCTAssertEqual(result.isWebSocket, false);
-        XCTAssertEqual(result.isUrlBlock, false);
-        XCTAssertEqual(result.isCssExceptionRule, false);
-        XCTAssertEqual(result.urlRuleText, "||example.org^$third-party");
-        XCTAssertEqual(result.isThirdParty, false);
-        XCTAssertEqual(result.isMatchCase, false);
-        XCTAssertEqual(result.isBlockPopups, false);
-        XCTAssertEqual(result.isReplace, false);
-        XCTAssertEqual(result.urlRegExpSource, nil);
-        
-        XCTAssertEqual(result.permittedContentType, []);
-        XCTAssertEqual(result.restrictedContentType, []);
+        XCTAssertEqual(result.urlRuleText, "||example.org^");
+        XCTAssertEqual(result.isCheckThirdParty, true);
+        XCTAssertEqual(result.isThirdParty, true);
         
         result = try! NetworkRule(ruleText: "@@||example.org^$third-party");
         XCTAssertEqual(result.isWhiteList, true);
         
-        result = try! NetworkRule(ruleText: "||example.org/this$is$path$third-party");
-        XCTAssertEqual(result.isCspRule, false);
-        XCTAssertEqual(result.isWebSocket, false);
-        XCTAssertEqual(result.isUrlBlock, false);
-        XCTAssertEqual(result.isCssExceptionRule, false);
-        XCTAssertEqual(result.urlRuleText, "||example.org/this$is$path$third-party");
-        XCTAssertEqual(result.isThirdParty, false);
-        XCTAssertEqual(result.isMatchCase, false);
-        XCTAssertEqual(result.isBlockPopups, false);
-        XCTAssertEqual(result.isReplace, false);
-        XCTAssertEqual(result.urlRegExpSource, nil);
+        result = try! NetworkRule(ruleText: "||example.org/this$is$path$image,font,media");
+        XCTAssertEqual(result.urlRuleText, "||example.org/this$is$path");
         
-        XCTAssertEqual(result.permittedContentType, []);
+        XCTAssertEqual(result.permittedContentType, [NetworkRule.ContentType.IMAGE, NetworkRule.ContentType.FONT, NetworkRule.ContentType.MEDIA]);
         XCTAssertEqual(result.restrictedContentType, []);
         
         result = try! NetworkRule(ruleText: "||example.org\\$smth");
-        XCTAssertEqual(result.isCspRule, false);
-        XCTAssertEqual(result.isWebSocket, false);
-        XCTAssertEqual(result.isUrlBlock, false);
-        XCTAssertEqual(result.isCssExceptionRule, false);
         XCTAssertEqual(result.urlRuleText, "||example.org\\$smth");
-        XCTAssertEqual(result.isThirdParty, false);
-        XCTAssertEqual(result.isMatchCase, false);
-        XCTAssertEqual(result.isBlockPopups, false);
-        XCTAssertEqual(result.isReplace, false);
-        XCTAssertEqual(result.urlRegExpSource, nil);
+    }
+    
+    func testDomains() {
+        let result = try! NetworkRule(ruleText: "||example.org^$domain=example.org|~sub.example.org");
         
-        XCTAssertEqual(result.permittedContentType, []);
-        XCTAssertEqual(result.restrictedContentType, []);
+        XCTAssertNotNil(result);
+        XCTAssertEqual(result.permittedDomains, ["example.org"]);
+        XCTAssertEqual(result.restrictedDomains, ["sub.example.org"]);
     }
     
     func testRegexRules() {
         var result = try! NetworkRule(ruleText: "/regex/");
+        XCTAssertEqual(result.urlRuleText, "/regex/");
+        XCTAssertEqual(result.urlRegExpSource, "regex");
+        
         result = try! NetworkRule(ruleText: "@@/regex/");
+        XCTAssertEqual(result.urlRuleText, "/regex/");
+        XCTAssertEqual(result.urlRegExpSource, "regex");
+        
         result = try! NetworkRule(ruleText: "@@/regex/$third-party");
+        XCTAssertEqual(result.urlRuleText, "/regex/");
+        XCTAssertEqual(result.urlRegExpSource, "regex");
+        
         result = try! NetworkRule(ruleText: "/regex/$replace=/test/test2/");
+        XCTAssertEqual(result.urlRuleText, "/regex/");
+        XCTAssertEqual(result.urlRegExpSource, "regex");
+        XCTAssertEqual(result.isReplace, true);
+        
         result = try! NetworkRule(ruleText: "/regex/$replace=/test\\$/test2/");
+        XCTAssertEqual(result.urlRuleText, "/regex/");
+        XCTAssertEqual(result.urlRegExpSource, "regex");
     }
     
     func testParseDomainInfo() {
@@ -132,6 +124,9 @@ final class NetworkRuleTests: XCTestCase {
     }
 
     static var allTests = [
+        ("testSimpleRules", testSimpleRules),
+        ("testDomains", testDomains),
+        ("testRegexRules", testRegexRules),
         ("testParseDomainInfo", testParseDomainInfo),
     ]
 }

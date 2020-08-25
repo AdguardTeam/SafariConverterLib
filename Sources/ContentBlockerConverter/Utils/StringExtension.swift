@@ -66,6 +66,31 @@ extension String {
         return self.replacingOccurrences(of: target, with: withString, options: NSString.CompareOptions.literal, range: nil)
     }
     
+    func splitByDelimiterWithEscapeCharacter(delimeter: String, escapeChar: String) -> [String] {
+        var delimeterIndexes = [Int]();
+        for (index, char) in self.enumerated() {
+            if (char == Character(delimeter)) {
+                // ignore escaped
+                if (index > 0 && Array(self)[index - 1] == Character(escapeChar)) {
+                    continue;
+                }
+                
+                delimeterIndexes.append(index);
+            }
+        }
+        
+        var result = [String]();
+        var previous = 0;
+        for ind in delimeterIndexes {
+            result.append(self.subString(startIndex: previous, toIndex: ind));
+            previous = ind + 1;
+        }
+        
+        result.append(self.subString(startIndex: previous));
+        
+        return result;
+    }
+    
     func isMatch(regex: String) -> Bool {
         guard let regex = try? NSRegularExpression(pattern: regex, options: [.caseInsensitive]) else { return false }
         let matchCount = regex.numberOfMatches(in: self, options: [], range: NSMakeRange(0, self.count))
