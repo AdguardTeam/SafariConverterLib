@@ -34,7 +34,7 @@ class NetworkRule: Rule {
     override init(ruleText: String) throws {
         try super.init(ruleText: ruleText);
         
-        let ruleParts = try! NetworkRule.parseRuleText(ruleText: ruleText);
+        let ruleParts = try! NetworkRuleParser.parseRuleText(ruleText: ruleText);
         self.urlRuleText = ruleParts.pattern!;
         self.isWhiteList = ruleParts.whitelist;
         
@@ -279,65 +279,6 @@ class NetworkRule: Rule {
         return self.enabledOptions.count == 1 && self.enabledOptions.firstIndex(of: option) != nil;
     }
     
-    /**
-     * parseRuleText splits the rule text into multiple parts.
-     * @param ruleText - original rule text
-     * @returns basic rule parts
-     *
-     * @throws error if the rule is empty (for instance, empty string or `@@`)
-     */
-    private static func parseRuleText(ruleText: String) throws -> BasicRuleParts {
-        var ruleParts = BasicRuleParts();
-
-        var startIndex = 0;
-        if (ruleText.hasPrefix(NetworkRule.MASK_WHITE_LIST)) {
-            ruleParts.whitelist = true;
-            startIndex = MASK_WHITE_LIST.count;
-        }
-
-        if (ruleText.count <= startIndex) {
-            throw SyntaxError.invalidRule(message: "Rule is too short");
-        }
-
-        // Setting pattern to rule text (for the case of empty options)
-        ruleParts.pattern = ruleText.subString(startIndex: startIndex);
-
-        // Avoid parsing options inside of a regex rule
-        if (ruleParts.pattern!.hasPrefix("/")
-            && ruleParts.pattern!.hasSuffix("/")
-            && (ruleParts.pattern?.indexOf(target: "$replace=") == nil)) {
-            return ruleParts;
-        }
-        
-        let delimeterIndex = NetworkRule.findOptionsDelimeterIndex(ruleText: ruleText);
-        if (delimeterIndex >= 0) {
-            ruleParts.pattern = ruleText.subString(startIndex: startIndex, toIndex: delimeterIndex);
-            ruleParts.options = ruleText.subString(startIndex: delimeterIndex + 1);
-        }
-
-        return ruleParts;
-    }
-    
-    private static func findOptionsDelimeterIndex(ruleText: String) -> Int {
-        for (index, char) in ruleText.enumerated().reversed() {
-            if (char == "$") {
-                // ignore \$
-                if (index > 0 && Array(ruleText)[index - 1] == "\\") {
-                    continue;
-                }
-                
-                // ignore $/
-                if (index + 1 < ruleText.count && Array(ruleText)[index + 1] == "/") {
-                    continue;
-                }
-                
-                return index;
-            }
-        }
-        
-        return -1;
-    }
-    
     func hasContentType(contentType: ContentType) -> Bool {
         if (permittedContentType == [ContentType.ALL] &&
             restrictedContentType.count == 0) {
@@ -408,12 +349,6 @@ class NetworkRule: Rule {
 
         return DomainInfo(domain: domain, path: path);
     };
-    
-    struct BasicRuleParts {
-        var pattern: String?;
-        var options: String?;
-        var whitelist = false;
-    }
     
     struct DomainInfo {
         var domain: String?;

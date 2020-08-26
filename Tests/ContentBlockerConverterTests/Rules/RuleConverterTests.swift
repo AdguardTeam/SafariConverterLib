@@ -94,6 +94,42 @@ final class RuleConverterTests: XCTestCase {
         XCTAssertEqual(res, [exp]);
     }
     
+    func testEmptyAndMp4Modifiers() {
+        var exp = "/(pagead2)/$domain=vsetv.com,redirect=nooptext,important";
+        var res = ruleConverter.convertRule(rule: "/(pagead2)/$domain=vsetv.com,empty,important");
+        XCTAssertEqual(res, [exp]);
+        
+        exp = "||fastmap33.com^$redirect=nooptext";
+        res = ruleConverter.convertRule(rule: "||fastmap33.com^$empty");
+        XCTAssertEqual(res, [exp]);
+        
+        exp = "||anyporn.com/xml^$media,redirect=noopmp4-1s";
+        res = ruleConverter.convertRule(rule: "||anyporn.com/xml^$media,mp4");
+        XCTAssertEqual(res, [exp]);
+        
+        exp = "||anyporn.com/xml^$media,redirect=noopmp4-1s";
+        res = ruleConverter.convertRule(rule: "||anyporn.com/xml^$media,redirect=noopmp4-1s");
+        XCTAssertEqual(res, [exp]);
+    }
+    
+    func testMp4AndMediaModifiers() {
+        var exp = "||video.example.org^$redirect=noopmp4-1s,media";
+        var res = ruleConverter.convertRule(rule: "||video.example.org^$mp4");
+        XCTAssertEqual(res, [exp]);
+        
+        exp = "||video.example.org^$media,redirect=noopmp4-1s";
+        res = ruleConverter.convertRule(rule: "||video.example.org^$media,mp4");
+        XCTAssertEqual(res, [exp]);
+        
+        exp = "||video.example.org^$media,redirect=noopmp4-1s,domain=example.org";
+        res = ruleConverter.convertRule(rule: "||video.example.org^$media,mp4,domain=example.org");
+        XCTAssertEqual(res, [exp]);
+        
+        exp = "||video.example.org^$redirect=noopmp4-1s,domain=example.org,media";
+        res = ruleConverter.convertRule(rule: "||video.example.org^$mp4,domain=example.org,media");
+        XCTAssertEqual(res, [exp]);
+    }
+    
     // TODO: More tests
     
     static var allTests = [
@@ -106,6 +142,8 @@ final class RuleConverterTests: XCTestCase {
         ("testScriptletAbpRule", testScriptletAbpRule),
         ("testScriptletAbpRuleMultiple", testScriptletAbpRuleMultiple),
         ("testConvertCssAGRules", testConvertCssAGRules),
+        ("testEmptyAndMp4Modifiers", testEmptyAndMp4Modifiers),
+        ("testMp4AndMediaModifiers", testMp4AndMediaModifiers),
         
     ]
 }

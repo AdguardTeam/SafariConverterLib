@@ -66,13 +66,11 @@ class RuleConverter {
             return [abpRedirectRule!];
         }
 
-//        // Convert options
-//        const ruleWithConvertedOptions = convertOptions(rule);
-//        if (ruleWithConvertedOptions) {
-//            return ruleWithConvertedOptions;
-//        }
-//
-//        return rule;
+        // Convert options
+        let ruleWithConvertedOptions = convertOptions(rule: rule);
+        if (ruleWithConvertedOptions != nil) {
+            return [ruleWithConvertedOptions!];
+        }
         
         return [rule];
     }
@@ -177,6 +175,113 @@ class RuleConverter {
             return nil;
         }
         return rule.replace(target: ABP_REDIRECT_KEYWORD, withString: AG_REDIRECT_KEYWORD);
+    }
+    
+    private func convertOptions(rule: String) -> String? {
+        let EMPTY_OPTION = "empty";
+        let MP4_OPTION = "mp4";
+        let MEDIA_OPTION = "media";
+        let CSP_OPTION = "csp";
+        let INLINE_SCRIPT_OPTION = "inline-script";
+        let INLINE_FONT_OPTION = "inline-font";
+//        const ALL_OPTION = 'all';
+//        const POPUP_OPTION = 'popup';
+//        const DOCUMENT_OPTION = 'document';
+
+        let conversionMap : [String:String] = [
+            EMPTY_OPTION : "redirect=nooptext",
+            MP4_OPTION : "redirect=noopmp4-1s",
+            INLINE_SCRIPT_OPTION : CSP_OPTION + "=script-src 'self' 'unsafe-eval' http: https: data: blob: mediastream: filesystem:",
+            INLINE_FONT_OPTION : CSP_OPTION + "=font-src 'self' 'unsafe-eval' http: https: data: blob: mediastream: filesystem:"
+        ]
+
+        var pattern: String = "";
+        var options: String? = nil;
+        do {
+            let parseResult = try NetworkRuleParser.parseRuleText(ruleText: rule);
+            options = parseResult.options;
+            pattern = parseResult.pattern ?? "";
+            if (options == nil) {
+                return nil;
+            }
+        } catch {
+            return rule;
+        }
+        
+        let optionParts = options!.splitByDelimiterWithEscapeCharacter(delimeter: ",", escapeChar: "\\");
+        
+        var optionsConverted = false;
+        
+        var updatedOptionsParts = [String]();
+        for part in optionParts {
+            var convertedOptionsPart = conversionMap[part];
+            
+            if (convertedOptionsPart != nil) {
+                // if option is $mp4, than it should go with $media option together
+                // https://github.com/AdguardTeam/AdguardBrowserExtension/issues/1452
+                if (part == MP4_OPTION) {
+                    // check if media is not already among options
+                    if (optionParts.firstIndex(of: MEDIA_OPTION) == nil) {
+                        convertedOptionsPart = convertedOptionsPart! + ",media";
+                    }
+                }
+
+                optionsConverted = true;
+                updatedOptionsParts.append(convertedOptionsPart!);
+                continue;
+            }
+
+            updatedOptionsParts.append(part);
+        }
+
+//        // if has more than one csp modifiers, we merge them into one;
+//        const cspParts = updatedOptionsParts.filter(optionsPart => stringUtils.startWith(optionsPart, CSP_OPTION));
+//
+//        if (cspParts.length > 1) {
+//            const allButCsp = updatedOptionsParts
+//                .filter(optionsPart => !stringUtils.startWith(optionsPart, CSP_OPTION));
+//
+//            const cspValues = cspParts.map((cspPart) => {
+//                // eslint-disable-next-line no-unused-vars
+//                const [_, value] = cspPart.split(NAME_VALUE_SPLITTER);
+//                return value;
+//            });
+//
+//            const updatedCspOption = `${CSP_OPTION}${NAME_VALUE_SPLITTER}${cspValues.join('; ')}`;
+//            updatedOptionsParts = allButCsp.concat(updatedCspOption);
+//        }
+//
+//        // options without all modifier
+//        const hasAllOption = updatedOptionsParts.indexOf(ALL_OPTION) > -1;
+//
+//        if (hasAllOption) {
+//            const allOptionReplacers = [
+//                DOCUMENT_OPTION,
+//                POPUP_OPTION,
+//                INLINE_SCRIPT_OPTION,
+//                INLINE_FONT_OPTION,
+//            ];
+//            return allOptionReplacers.map((replacer) => {
+//                // remove replacer and all option from the list
+//                const optionsButAllAndReplacer = updatedOptionsParts
+//                    .filter(option => !(option === replacer || option === ALL_OPTION));
+//
+//                // try get converted values, used for INLINE_SCRIPT_OPTION, INLINE_FONT_OPTION
+//                const convertedReplacer = conversionMap[replacer] || replacer;
+//
+//                // add replacer to the list of options
+//                const updatedOptionsString = [convertedReplacer, ...optionsButAllAndReplacer].join(',');
+//
+//                // create a new rule
+//                return `${domainPart}\$${updatedOptionsString}`;
+//            });
+//        }
+//
+        if (optionsConverted) {
+            return pattern + "$" + updatedOptionsParts.joined(separator: ",");
+        }
+
+        return nil;
     }
 
     // Helpers
