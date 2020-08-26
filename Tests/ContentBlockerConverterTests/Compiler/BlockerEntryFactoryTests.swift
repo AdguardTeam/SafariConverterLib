@@ -246,7 +246,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
         
         rule.permittedContentType = [NetworkRule.ContentType.SUBDOCUMENT]
         rule.isCheckThirdParty = true;
-        rule.isThirdParty = true;
+        rule.isThirdParty = false;
         let result = converter.createBlockerEntry(rule: rule);
         XCTAssertNil(result);
     }

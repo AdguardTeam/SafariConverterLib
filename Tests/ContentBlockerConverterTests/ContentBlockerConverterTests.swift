@@ -8,6 +8,7 @@ final class ContentBlockerConverterTests: XCTestCase {
     let START_URL_UNESCAPED = "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?";
     let URL_FILTER_WS_ANY_URL_UNESCAPED = "^wss?:\\/\\/";
     let URL_FILTER_REGEXP_SEPARATOR = "[/:&?]?";
+    let URL_FILTER_CSS_RULES = ".*";
     
     let converter = ContentBlockerConverter();
     
@@ -257,7 +258,72 @@ final class ContentBlockerConverterTests: XCTestCase {
         let result = converter.convertArray(rules: ["||test.com^$subdocument,~third-party"]);
         XCTAssertEqual(result?.convertedCount, 0);
     }
+    
+    func testConvertSubdocumentThirdParty() {
+        let result = converter.convertArray(rules: ["||test.com^$subdocument,third-party"]);
+        XCTAssertEqual(result?.convertedCount, 1);
         
+        let decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        let entry = decoded[0];
+        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com[/:&?]?");
+        XCTAssertEqual(entry.trigger.ifDomain, nil);
+        XCTAssertEqual(entry.trigger.unlessDomain, nil);
+        XCTAssertEqual(entry.trigger.loadType, ["third-party"]);
+        XCTAssertEqual(entry.trigger.resourceType, ["document"]);
+        XCTAssertEqual(entry.action.type, "block");
+    }
+    
+    func testConvertEmptyRegex() {
+        let result = converter.convertArray(rules: ["@@$image,domain=moonwalk.cc"]);
+        XCTAssertEqual(result?.convertedCount, 1);
+        
+        let decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        let entry = decoded[0];
+        XCTAssertEqual(entry.trigger.urlFilter, URL_FILTER_ANY_URL);
+        XCTAssertEqual(entry.trigger.ifDomain, ["*moonwalk.cc"]);
+        XCTAssertEqual(entry.trigger.unlessDomain, nil);
+        XCTAssertEqual(entry.trigger.resourceType, ["image"]);
+        XCTAssertEqual(entry.action.type, "ignore-previous-rules");
+    }
+    
+    func testConvertInvertedWhitelistRule() {
+        let result = converter.convertArray(rules: ["@@||*$domain=~whitelisted.domain.com|~whitelisted.domain2.com"]);
+        XCTAssertEqual(result?.convertedCount, 1);
+        
+        let decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        let entry = decoded[0];
+        XCTAssertEqual(entry.trigger.urlFilter, URL_FILTER_ANY_URL);
+        XCTAssertEqual(entry.trigger.ifDomain, nil);
+        XCTAssertEqual(entry.trigger.unlessDomain, ["*whitelisted.domain.com", "*whitelisted.domain2.com"]);
+        XCTAssertEqual(entry.action.type, "ignore-previous-rules");
+    }
+    
+    func testConvertGenerichide() {
+        let result = converter.convertArray(rules: ["@@||hulu.com/page$generichide"]);
+        XCTAssertEqual(result?.convertedCount, 1);
+        
+        let decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        let entry = decoded[0];
+        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "hulu\\.com\\/page");
+        XCTAssertEqual(entry.action.type, "ignore-previous-rules");
+    }
+    
+    func testConvertGenericDomainSensitive() {
+        let result = converter.convertArray(rules: ["~google.com##banner"]);
+        XCTAssertEqual(result?.convertedCount, 1);
+        
+        let decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        let entry = decoded[0];
+        XCTAssertEqual(entry.trigger.urlFilter, URL_FILTER_CSS_RULES);
+        XCTAssertEqual(entry.action.type, "css-display-none");
+        XCTAssertEqual(entry.trigger.unlessDomain, ["*google.com"]);
+    }
+                
     static var allTests = [
         ("testEmpty", testEmpty),
         ("testConvertComment", testConvertComment),
@@ -267,5 +333,10 @@ final class ContentBlockerConverterTests: XCTestCase {
         ("testConvertWebsocketRules", testConvertWebsocketRules),
         ("testConvertScriptRestrictRules", testConvertScriptRestrictRules),
         ("testConvertSubdocumentFirstParty", testConvertSubdocumentFirstParty),
+        ("testConvertSubdocumentThirdParty", testConvertSubdocumentThirdParty),
+        ("testConvertEmptyRegex", testConvertEmptyRegex),
+        ("testConvertInvertedWhitelistRule", testConvertInvertedWhitelistRule),
+        ("testConvertGenerichide", testConvertGenerichide),
+        ("testConvertGenericDomainSensitive", testConvertGenericDomainSensitive),
     ]
 }

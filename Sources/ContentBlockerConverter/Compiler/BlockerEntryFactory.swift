@@ -350,16 +350,16 @@ class BlockerEntryFactory {
     private func validateUrlBlockingRule(rule: NetworkRule, entry: BlockerEntry) throws -> Void {
         if (rule.hasContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT)) {
             if (entry.action.type == "block" &&
-                entry.trigger.resourceType?.firstIndex(of: "document") ?? -1 >= 0 &&
+                entry.trigger.resourceType?.firstIndex(of: "document") != nil &&
                 entry.trigger.ifDomain == nil &&
-                entry.trigger.loadType?.firstIndex(of: "third-party") ?? -1 >= 0) {
+                entry.trigger.loadType?.firstIndex(of: "third-party") == nil) {
 
                 // Due to https://github.com/AdguardTeam/AdguardBrowserExtension/issues/145
                 throw ConversionError.unsupportedContentType(message: "Subdocument blocking rules are allowed only along with third-party or if-domain modifiers");
             }
         }
 
-        if (entry.trigger.resourceType?.firstIndex(of: "popup") ?? -1 >= 0) {
+        if (entry.trigger.resourceType?.firstIndex(of: "popup") != nil) {
             throw ConversionError.unsupportedRule(message: "$popup rules are not supported");
         }
     }

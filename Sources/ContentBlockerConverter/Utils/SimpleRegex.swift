@@ -79,7 +79,7 @@ class SimpleRegex {
         
         var result = str;
         
-        let specials = [".", "\\*", "\\?", "\\^", "\\$", "\\{", "\\}", "\\(", "\\)", "\\|", "\\[", "\\]", "\\/", "\\\\"];
+        let specials = [".", "\\*", "\\?", "\\^", "\\$", "\\{", "\\}", "\\(", "\\)", "\\|", "\\[", "\\]", "/", "\\\\"];
         for special in specials {
             result = result.replacingOccurrences(of: special, with: "\\" + special);
         }
