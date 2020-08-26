@@ -130,6 +130,22 @@ final class RuleConverterTests: XCTestCase {
         XCTAssertEqual(res, [exp]);
     }
     
+    func testConvertUboScriptTags() {
+        var exp = "example.com##^script:some-another-rule(test)";
+        var res = ruleConverter.convertRule(rule: "example.com##^script:some-another-rule(test)");
+        XCTAssertEqual(res, [exp]);
+        
+        exp = "example.com$$script[tag-content=\"12313\"]";
+        res = ruleConverter.convertRule(rule: "example.com##^script:has-text(12313)");
+        XCTAssertEqual(res, [exp]);
+        
+        res = ruleConverter.convertRule(rule: #"example.com##^script:has-text(===):has-text(/[wW]{16000}/)"#);
+        XCTAssertEqual(res, [
+            "example.com$$script[tag-content=\"===\"]",
+            "example.com##^script:has-text(/[wW]{16000}/)"
+        ]);
+    }
+    
     // TODO: More tests
     
     static var allTests = [
@@ -144,6 +160,7 @@ final class RuleConverterTests: XCTestCase {
         ("testConvertCssAGRules", testConvertCssAGRules),
         ("testEmptyAndMp4Modifiers", testEmptyAndMp4Modifiers),
         ("testMp4AndMediaModifiers", testMp4AndMediaModifiers),
+        ("testConvertUboScriptTags", testConvertUboScriptTags),
         
     ]
 }

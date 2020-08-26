@@ -48,13 +48,13 @@ class RuleConverter {
         if (isAbpSnippetRule(rule: rule)) {
             return convertAbpSnippetRule(rule: rule);
         }
-//
+        
+        let uboScriptRules = convertUboScriptTagRule(ruleText: rule);
+        if (uboScriptRules != nil) {
+            return uboScriptRules!;
+        }
+
         // TODO: Convert other types
-//        const uboScriptRule = convertUboScriptTagRule(rule);
-//        if (uboScriptRule) {
-//            return uboScriptRule;
-//        }
-//
 //        const uboCssStyleRule = convertUboCssStyleRule(rule);
 //        if (uboCssStyleRule) {
 //            return uboCssStyleRule;
@@ -160,6 +160,44 @@ class RuleConverter {
         }
         
         return result;
+    }
+    
+    /**
+     * Converts UBO Script rule
+     * @param {string} ruleText rule text
+     * @returns {string} converted rule
+     */
+    private func convertUboScriptTagRule(ruleText: String) -> [String]? {
+        if (!ruleText.contains(UBO_SCRIPT_TAG_MASK)) {
+            return nil;
+        }
+
+        // We convert only one case ##^script:has-text at now
+        let uboHasTextRule = ":has-text";
+        let adgScriptTag = "$$script";
+        let uboScriptTag = "##^script";
+
+        var match = ruleText.components(separatedBy: uboHasTextRule);
+        if (match.count == 1) {
+            return nil;
+        }
+
+        let domains = match[0].replace(target: uboScriptTag, withString: "");
+        match.removeFirst();
+        
+        var rules = [String]();
+        for m in match {
+            let attr = String(m.dropFirst().dropLast());
+            let isRegExp = attr.hasPrefix("/") && attr.hasSuffix("/");
+            
+            if (isRegExp) {
+                rules.append(domains + uboScriptTag + uboHasTextRule + "(" + attr + ")");
+            } else {
+                rules.append(domains + adgScriptTag + "[tag-content=\"" + attr + "\"]");
+            }
+        }
+        
+        return rules;
     }
     
     /**
