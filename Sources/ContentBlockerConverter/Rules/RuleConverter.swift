@@ -12,6 +12,16 @@ class RuleConverter {
     private let UBO_SCRIPTLET_EXCEPTION_MASK_1 = "#@#+js";
     private let UBO_SCRIPTLET_EXCEPTION_MASK_2 = "#@#script:inject";
     private let UBO_SCRIPT_TAG_MASK = "##^script";
+    /**
+     * AdBlock Plus snippet rule mask
+     */
+    private let ABP_SCRIPTLET_MASK = "#$#";
+    private let ABP_SCRIPTLET_EXCEPTION_MASK = "#@$#";
+    
+    /**
+     * AdGuard CSS rule mask
+     */
+    private let ADG_CSS_MASK_REG = "#@?\\$#.+?\\s*\\{.*\\}\\s*$";
     
     /**
      * AdGuard scriptlet mask
@@ -35,11 +45,11 @@ class RuleConverter {
             return [convertUboScriptletRule(rule: rule)];
         }
         
-        // TODO: Convert other types
-//        if (isAbpSnippetRule(rule)) {
-//            return convertAbpSnippetRule(rule);
-//        }
+        if (isAbpSnippetRule(rule: rule)) {
+            return convertAbpSnippetRule(rule: rule);
+        }
 //
+        // TODO: Convert other types
 //        const uboScriptRule = convertUboScriptTagRule(rule);
 //        if (uboScriptRule) {
 //            return uboScriptRule;
@@ -49,13 +59,13 @@ class RuleConverter {
 //        if (uboCssStyleRule) {
 //            return uboCssStyleRule;
 //        }
-//
-//        // Convert abp redirect rule
-//        const abpRedirectRule = convertAbpRedirectRule(rule);
-//        if (abpRedirectRule) {
-//            return abpRedirectRule;
-//        }
-//
+
+        // Convert abp redirect rule
+        let abpRedirectRule = convertAbpRedirectRule(rule: rule);
+        if (abpRedirectRule != nil) {
+            return [abpRedirectRule!];
+        }
+
 //        // Convert options
 //        const ruleWithConvertedOptions = convertOptions(rule);
 //        if (ruleWithConvertedOptions) {
@@ -103,8 +113,81 @@ class RuleConverter {
 
         return replacePlaceholders(str: template, domains: domains!, args: argsString);
     }
+    
+    private func isAbpSnippetRule(rule: String) -> Bool {
+        return (
+            rule.contains(ABP_SCRIPTLET_MASK) ||
+            rule.contains(ABP_SCRIPTLET_EXCEPTION_MASK)) &&
+            !rule.isMatch(regex: ADG_CSS_MASK_REG);
+    }
+    
+    /**
+     * Convert string of ABP scriptlet rule to AdGuard scriptlet rule
+     */
+    private func convertAbpSnippetRule(rule: String) -> [String] {
+        let mask = rule.contains(ABP_SCRIPTLET_MASK)
+            ? ABP_SCRIPTLET_MASK
+            : ABP_SCRIPTLET_EXCEPTION_MASK;
+        
+        let template = mask == ABP_SCRIPTLET_MASK
+            ? ADGUARD_SCRIPTLET_MASK
+            : ADGUARD_SCRIPTLET_EXCEPTION_MASK;
+        
+        let domains = rule.subString(from: 0, toSubstring: mask);
+        let maskIndex = rule.indexOf(target: mask);
+        let args = rule.subString(startIndex: maskIndex + mask.count);
+        
+        let splitted = args.components(separatedBy: "; ");
+        
+        var result = [String]();
+        
+        for s in splitted {
+            
+            var sentences = [String]();
+            let sen = getSentences(str: s);
+            for part in sen {
+                if (part != "") {
+                    sentences.append(part);
+                }
+            }
+            
+            var wrapped = [String]();
+            for (index, sentence) in sentences.enumerated() {
+                let w = index == 0 ? "abp-" + sentence : sentence;
+                wrapped.append(wrapInDoubleQuotes(str: w));
+            }
+            
+            let converted = replacePlaceholders(str: template, domains: domains!, args: wrapped.joined(separator: ", "))
+            result.append(converted);
+        }
+        
+        return result;
+    }
+    
+    /**
+     * Converts abp rule into ag rule
+     * e.g.
+     * from:    "||example.org^$rewrite=abp-resource:blank-mp3"
+     * to:      "||example.org^$redirect:blank-mp3"
+     */
+    private func convertAbpRedirectRule(rule: String) -> String? {
+        let ABP_REDIRECT_KEYWORD = "rewrite=abp-resource:";
+        let AG_REDIRECT_KEYWORD = "redirect=";
+        if (!rule.contains(ABP_REDIRECT_KEYWORD)) {
+            return nil;
+        }
+        return rule.replace(target: ABP_REDIRECT_KEYWORD, withString: AG_REDIRECT_KEYWORD);
+    }
 
     // Helpers
+    
+    /**
+    * Return array of strings separated by space which not in quotes
+    */
+    private func getSentences(str: String) -> [String] {
+        let reg = #"'.*?'|".*?"|\S+"#;
+        return str.matches(regex: reg);
+    }
 
     private func getStringInBraces(str: String) -> String {
         let firstIndex = str.indexOf(target: "(");
@@ -115,7 +198,7 @@ class RuleConverter {
     private func wrapInDoubleQuotes(str: String) -> String {
         var modified = str;
         if str.hasPrefix("\'") && str.hasSuffix("\'") {
-            modified = str.subString(startIndex: 1, length: str.count - 1);
+            modified = str.subString(startIndex: 1, length: str.count - 2);
             modified = modified.replace(target: "\"", withString: "\\\"");
         } else if str.hasPrefix("\"") && str.hasSuffix("\"") {
             modified = str.subString(startIndex: 1, length: str.count - 1);

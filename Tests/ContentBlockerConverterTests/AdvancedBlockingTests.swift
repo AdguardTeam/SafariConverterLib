@@ -271,6 +271,7 @@ final class AdvancedBlockingTests: XCTestCase {
         
         XCTAssertEqual(result?.convertedCount, 0);
         XCTAssertEqual(result?.errorsCount, 0);
+        // TODO: This is strange
         XCTAssertEqual(result?.advancedBlockingConvertedCount, 0);
     }
                 
