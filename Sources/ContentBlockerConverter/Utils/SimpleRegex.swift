@@ -54,7 +54,7 @@ class SimpleRegex {
         if (regex.hasPrefix(maskStartUrl)) {
             regex = regexStartUrl + regex.subString(startIndex: maskStartUrl.count);
         } else if (regex.hasPrefix(maskPipe)) {
-            regex = regexStartUrl + regex.subString(startIndex: maskPipe.count);
+            regex = regexStartString + regex.subString(startIndex: maskPipe.count);
         }
         if (regex.hasSuffix(maskPipe)) {
             regex = regex.subString(startIndex: 0, toIndex: regex.count - 1) + regexEndString;

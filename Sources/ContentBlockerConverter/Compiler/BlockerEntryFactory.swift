@@ -307,10 +307,10 @@ class BlockerEntryFactory {
                 for tld in BlockerEntryFactory.TOP_LEVEL_DOMAINS_LIST {
                     var modified = String(domain.prefix(domain.count - 2));
                     modified = modified + "." + tld;
-                    result.append(modified);
+                    result.append(modified.lowercased());
                 }
             } else {
-                result.append(domain);
+                result.append(domain.lowercased());
             }
         }
         
