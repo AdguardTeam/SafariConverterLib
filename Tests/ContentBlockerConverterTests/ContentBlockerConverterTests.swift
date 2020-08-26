@@ -5,7 +5,20 @@ final class ContentBlockerConverterTests: XCTestCase {
     let URL_FILTER_ANY_URL = "^[htpsw]+:\\/\\/";
     let URL_FILTER_REGEXP_START_URL = "^[htpsw]+:\\\\/\\\\/([a-z0-9-]+\\\\.)?";
     
+    let START_URL_UNESCAPED = "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?";
+    let URL_FILTER_WS_ANY_URL_UNESCAPED = "^wss?:\\/\\/";
+    let URL_FILTER_REGEXP_SEPARATOR = "[/:&?]?";
+    
     let converter = ContentBlockerConverter();
+    
+    private func parseJsonString(json: String) throws -> [BlockerEntry] {
+        let data = json.data(using: String.Encoding.utf8, allowLossyConversion: false)!
+        
+        let decoder = JSONDecoder();
+        let parsedData = try decoder.decode([BlockerEntry].self, from: data);
+        
+        return parsedData;
+    }
     
     func testEmpty() {
         let result = converter.convertArray(rules: [""]);
@@ -189,11 +202,73 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result?.overLimit, false);
     }
     
+    func testConvertWebsocketRules() {
+        var result = converter.convertArray(rules: ["||test.com^$websocket"]);
+        XCTAssertEqual(result?.convertedCount, 1);
+        
+        var decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        var entry = decoded[0];
+        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com[/:&?]?");
+        XCTAssertEqual(entry.trigger.ifDomain, nil);
+        XCTAssertEqual(entry.trigger.unlessDomain, nil);
+        XCTAssertEqual(entry.trigger.loadType, nil);
+        XCTAssertEqual(entry.trigger.resourceType, ["raw"]);
+        
+        //TODO: FIx empty url
+//        result = converter.convertArray(rules: ["$websocket,domain=123movies.is"]);
+//        XCTAssertEqual(result?.convertedCount, 1);
+//
+//        decoded = try! parseJsonString(json: result!.converted);
+//        XCTAssertEqual(decoded.count, 1);
+//        entry = decoded[0];
+//        XCTAssertEqual(entry.trigger.urlFilter, URL_FILTER_WS_ANY_URL_UNESCAPED);
+//        XCTAssertEqual(entry.trigger.ifDomain, ["*123movies.is"]);
+//        XCTAssertEqual(entry.trigger.resourceType, ["raw"]);
+        
+        result = converter.convertArray(rules: [".rocks^$third-party,websocket"]);
+        XCTAssertEqual(result?.convertedCount, 1);
+
+        decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        entry = decoded[0];
+        XCTAssertEqual(entry.trigger.urlFilter, URL_FILTER_WS_ANY_URL_UNESCAPED + ".*\\.rocks" + URL_FILTER_REGEXP_SEPARATOR);
+        XCTAssertEqual(entry.trigger.ifDomain, nil);
+        XCTAssertEqual(entry.trigger.unlessDomain, nil);
+        XCTAssertEqual(entry.trigger.loadType, ["third-party"]);
+        XCTAssertEqual(entry.trigger.resourceType, ["raw"]);
+    }
+    
+    func testConvertScriptRestrictRules() {
+        let result = converter.convertArray(rules: ["||test.com^$~script,third-party"]);
+        XCTAssertEqual(result?.convertedCount, 1);
+        
+        let decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        let entry = decoded[0];
+        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com[/:&?]?");
+        XCTAssertEqual(entry.trigger.ifDomain, nil);
+        XCTAssertEqual(entry.trigger.unlessDomain, nil);
+        XCTAssertEqual(entry.trigger.loadType, ["third-party"]);
+        XCTAssertEqual(entry.trigger.resourceType, ["image", "style-sheet", "media", "raw", "font", "document"]);
+        // TODO: Fix
+        //        assert.ok(convertedRule.trigger["resource-type"]);
+        //        assert.equal(-1, convertedRule.trigger["resource-type"].indexOf("script"));
+    }
+    
+    func testConvertSubdocumentFirstParty() {
+        let result = converter.convertArray(rules: ["||test.com^$subdocument,~third-party"]);
+        XCTAssertEqual(result?.convertedCount, 0);
+    }
+        
     static var allTests = [
         ("testEmpty", testEmpty),
         ("testConvertComment", testConvertComment),
         ("testConvertNetworkRule", testConvertNetworkRule),
         ("testPopupRules", testPopupRules),
         ("testConvertFirstPartyRule", testConvertFirstPartyRule),
+        ("testConvertWebsocketRules", testConvertWebsocketRules),
+        ("testConvertScriptRestrictRules", testConvertScriptRestrictRules),
+        ("testConvertSubdocumentFirstParty", testConvertSubdocumentFirstParty),
     ]
 }
