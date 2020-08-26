@@ -70,12 +70,12 @@ class Compiler {
             } else if (item.action.type == "ignore-previous-rules" &&
                 (item.action.css != nil && item.action.css! != "")) {
                 cosmeticCssExceptions.append(item);
-            } else if (item.action.type == "ignore-previous-rules" && rule.isSingleOption(optionName: "generichide")) {
+            } else if (item.action.type == "ignore-previous-rules" && (rule as! NetworkRule).isSingleOption(option: .Generichide)) {
                 compilationResult.cssBlockingGenericHideExceptions.append(item);
-            } else if (item.action.type == "ignore-previous-rules" && rule.isSingleOption(optionName: "elemhide")) {
+            } else if (item.action.type == "ignore-previous-rules" && (rule as! NetworkRule).isSingleOption(option: .Elemhide)) {
                 // elemhide rules
                 compilationResult.cssElemhide.append(item);
-            } else if (item.action.type == "ignore-previous-rules" && rule.isSingleOption(optionName: "jsinject")) {
+            } else if (item.action.type == "ignore-previous-rules" && (rule as! NetworkRule).isSingleOption(option: .Jsinject)) {
                 // jsinject rules
                 compilationResult.scriptJsInjectExceptions.append(item);
             } else {

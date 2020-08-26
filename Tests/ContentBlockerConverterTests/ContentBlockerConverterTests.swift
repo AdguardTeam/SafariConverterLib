@@ -62,20 +62,21 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result?.totalConvertedCount, 3);
         XCTAssertEqual(result?.convertedCount, 3);
         XCTAssertEqual(result?.errorsCount, 0);
-        XCTAssertEqual(result?.converted, "[\n\n]");
         
-//        assert.equal(converted[0].trigger["resource-type"], 'document');
-//        assert.equal(converted[0].action["type"], 'block');
-//        assert.equal(Object.keys(converted[0]).length, 2);
-//        assert.equal(converted[0].trigger["url-filter"], URL_START + "example1\\.com");
-//        assert.equal(converted[1].trigger["resource-type"], 'document');
-//        assert.equal(converted[1].action["type"], 'block');
-//        assert.equal(Object.keys(converted[1]).length, 2);
-//        assert.equal(converted[1].trigger["url-filter"], URL_START + "example2\\.com");
-//        assert.equal(converted[2].trigger["resource-type"], 'document');
-//        assert.equal(converted[2].action["type"], 'block');
-//        assert.equal(Object.keys(converted[2]).length, 2);
-//        assert.equal(converted[2].trigger["url-filter"], URL_START + "example5\\.com");
+        let decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 3);
+
+        XCTAssertEqual(decoded[0].trigger.urlFilter, START_URL_UNESCAPED + "example1\\.com");
+        XCTAssertEqual(decoded[0].trigger.resourceType, ["document"]);
+        XCTAssertEqual(decoded[0].action.type, "block");
+        
+        XCTAssertEqual(decoded[1].trigger.urlFilter, START_URL_UNESCAPED + "example2\\.com");
+        XCTAssertEqual(decoded[1].trigger.resourceType, ["document"]);
+        XCTAssertEqual(decoded[1].action.type, "block");
+        
+        XCTAssertEqual(decoded[2].trigger.urlFilter, START_URL_UNESCAPED + "example5\\.com");
+        XCTAssertEqual(decoded[2].trigger.resourceType, ["document"]);
+        XCTAssertEqual(decoded[2].action.type, "block");
         
         // conversion of $document rule
         ruleText = ["||example.com$document"];
@@ -100,9 +101,6 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result?.errorsCount, 0);
         XCTAssertEqual(result?.converted, expected);
         
-//        print("\(result!.converted)");
-//        print("\(expected)");
-        
         // conversion of $document and $popup rule
         ruleText = ["||test.com$document,popup"];
         result = converter.convertArray(rules: ruleText);
@@ -110,7 +108,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         [
           {
             "trigger" : {
-              "url-filter" : "\(URL_FILTER_REGEXP_START_URL)test\\.com",
+              "url-filter" : "\(URL_FILTER_REGEXP_START_URL)test\\\\.com",
               "resource-type" : [
                 "document"
               ]
@@ -133,7 +131,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         [
           {
             "trigger" : {
-              "url-filter" : "\(URL_FILTER_REGEXP_START_URL)example\\.com[/:&?]?",
+              "url-filter" : "\(URL_FILTER_REGEXP_START_URL)example\\\\.com[/:&?]?",
               "resource-type" : [
                 "document"
               ]
@@ -156,12 +154,12 @@ final class ContentBlockerConverterTests: XCTestCase {
         [
           {
             "trigger" : {
-              "url-filter" : "\(URL_FILTER_REGEXP_START_URL)getsecuredfiles\\.com[/:&?]?",
-              "resource-type" : [
-                "document"
-              ],
+              "url-filter" : "\(URL_FILTER_REGEXP_START_URL)getsecuredfiles\\\\.com[/:&?]?",
               "load-type" : [
                 "third-party"
+              ],
+              "resource-type" : [
+                "document"
               ]
             },
             "action" : {
@@ -215,16 +213,15 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(entry.trigger.loadType, nil);
         XCTAssertEqual(entry.trigger.resourceType, ["raw"]);
         
-        //TODO: FIx empty url
-//        result = converter.convertArray(rules: ["$websocket,domain=123movies.is"]);
-//        XCTAssertEqual(result?.convertedCount, 1);
-//
-//        decoded = try! parseJsonString(json: result!.converted);
-//        XCTAssertEqual(decoded.count, 1);
-//        entry = decoded[0];
-//        XCTAssertEqual(entry.trigger.urlFilter, URL_FILTER_WS_ANY_URL_UNESCAPED);
-//        XCTAssertEqual(entry.trigger.ifDomain, ["*123movies.is"]);
-//        XCTAssertEqual(entry.trigger.resourceType, ["raw"]);
+        result = converter.convertArray(rules: ["$websocket,domain=123movies.is"]);
+        XCTAssertEqual(result?.convertedCount, 1);
+
+        decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        entry = decoded[0];
+        XCTAssertEqual(entry.trigger.urlFilter, URL_FILTER_WS_ANY_URL_UNESCAPED);
+        XCTAssertEqual(entry.trigger.ifDomain, ["*123movies.is"]);
+        XCTAssertEqual(entry.trigger.resourceType, ["raw"]);
         
         result = converter.convertArray(rules: [".rocks^$third-party,websocket"]);
         XCTAssertEqual(result?.convertedCount, 1);

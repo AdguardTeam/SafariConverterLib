@@ -24,10 +24,6 @@ class Rule {
         self.ruleText = ruleText;
     }
     
-    func isSingleOption(optionName: String) -> Bool {
-        return false;
-    }
-    
     func setDomains(domains: String, sep: String) throws -> Void {
         if (domains == "") {
             throw SyntaxError.invalidRule(message: "Modifier $domain cannot be empty");

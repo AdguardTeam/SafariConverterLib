@@ -22,6 +22,9 @@ class NetworkRule: Rule {
     var permittedContentType: [ContentType] = [];
     var restrictedContentType: [ContentType] = [];
     
+    var enabledOptions: [NetworkRuleOption] = [];
+    var disabledOptions: [NetworkRuleOption] = [];
+    
     var urlRegExpSource: String? = nil;
     
     override init() {
@@ -39,6 +42,7 @@ class NetworkRule: Rule {
             try loadOptions(options: ruleParts.options!);
         }
 
+        // TODO: Handle all urls rules
 //        if (
 //            this.pattern === SimpleRegex.MASK_START_URL
 //            || this.pattern === SimpleRegex.MASK_ANY_CHARACTER
@@ -60,23 +64,14 @@ class NetworkRule: Rule {
         if (self.urlRuleText.hasPrefix("/") && self.urlRuleText.hasSuffix("/")) {
             self.urlRegExpSource = self.urlRuleText.subString(startIndex: 1, length: self.urlRuleText.count - 2);
         } else {
-            self.urlRegExpSource = SimpleRegex.createRegexText(str: self.urlRuleText);
+            if (self.urlRuleText != "") {
+                self.urlRegExpSource = SimpleRegex.createRegexText(str: self.urlRuleText);
+            }
         }
         
-        // TODO: set isUrlBlock/isCssExceptionRule according to:
-        //        function isUrlBlockRule(r) {
-        //            return isSingleOption(r, adguard.rules.UrlFilterRule.options.URLBLOCK) ||
-        //                isSingleOption(r, adguard.rules.UrlFilterRule.options.GENERICBLOCK);
-        //        }
-        //
-        //        function isCssExceptionRule(r) {
-        //            return isSingleOption(r, adguard.rules.UrlFilterRule.options.GENERICHIDE) ||
-        //                isSingleOption(r, adguard.rules.UrlFilterRule.options.ELEMHIDE);
-        //        }
-        
-//        var isDocumentWhiteList = false;
-//        var isUrlBlock = false;
-//        var isCssExceptionRule = false;
+        self.isDocumentWhiteList = isOptionEnabled(option: .Document);
+        self.isUrlBlock = isSingleOption(option: .Urlblock) || isSingleOption(option: .Genericblock);
+        self.isCssExceptionRule = isSingleOption(option: .Elemhide) || isSingleOption(option: .Generichide);
     }
     
     private func loadOptions(options: String) throws -> Void {
@@ -98,17 +93,18 @@ class NetworkRule: Rule {
         // Rules of these types can be applied to documents only
         // $jsinject, $elemhide, $urlblock, $genericblock, $generichide and $content for whitelist rules.
         // $popup - for url blocking
-//        if (
-//            this.isOptionEnabled(NetworkRuleOption.Jsinject)
-//            || this.isOptionEnabled(NetworkRuleOption.Elemhide)
-//            || this.isOptionEnabled(NetworkRuleOption.Content)
-//            || this.isOptionEnabled(NetworkRuleOption.Urlblock)
-//            || this.isOptionEnabled(NetworkRuleOption.Genericblock)
-//            || this.isOptionEnabled(NetworkRuleOption.Generichide)
-//            || this.isOptionEnabled(NetworkRuleOption.Popup)
-//        ) {
-//            self.permittedContentType = ContentType.DOCUMENT;
-//        }
+        if (
+            isOptionEnabled(option: NetworkRuleOption.Document)
+            || isOptionEnabled(option: NetworkRuleOption.Jsinject)
+            || isOptionEnabled(option: NetworkRuleOption.Elemhide)
+            || isOptionEnabled(option: NetworkRuleOption.Content)
+            || isOptionEnabled(option: NetworkRuleOption.Urlblock)
+            || isOptionEnabled(option: NetworkRuleOption.Genericblock)
+            || isOptionEnabled(option: NetworkRuleOption.Generichide)
+            || isBlockPopups
+        ) {
+            self.permittedContentType = [ContentType.DOCUMENT];
+        }
     }
 
     private func loadOption(optionName: String, optionValue: String) throws -> Void {
@@ -154,32 +150,29 @@ class NetworkRule: Rule {
                 break;
             
             // Document-level whitelist rules
-//            case 'elemhide':
-//                this.setOptionEnabled(NetworkRuleOption.Elemhide, true);
-//                break;
-//            case 'generichide':
-//                this.setOptionEnabled(NetworkRuleOption.Generichide, true);
-//                break;
-//            case 'genericblock':
-//                this.setOptionEnabled(NetworkRuleOption.Genericblock, true);
-//                break;
-//            case 'jsinject':
-//                this.setOptionEnabled(NetworkRuleOption.Jsinject, true);
-//                break;
-//            case 'urlblock':
-//                this.setOptionEnabled(NetworkRuleOption.Urlblock, true);
-//                break;
-//            case 'content':
-//                this.setOptionEnabled(NetworkRuleOption.Content, true);
-//                break;
-//
-//            // $document
-//            case 'document':
-//                this.setOptionEnabled(NetworkRuleOption.Elemhide, true, true);
-//                this.setOptionEnabled(NetworkRuleOption.Jsinject, true, true);
-//                this.setOptionEnabled(NetworkRuleOption.Urlblock, true, true);
-//                this.setOptionEnabled(NetworkRuleOption.Content, true, true);
-//                break;
+            case "elemhide":
+                try setOptionEnabled(option: NetworkRuleOption.Elemhide, value: true);
+                break;
+            case "generichide":
+                try setOptionEnabled(option: NetworkRuleOption.Generichide, value: true);
+                break;
+            case "genericblock":
+                try setOptionEnabled(option: NetworkRuleOption.Genericblock, value: true);
+                break;
+            case "jsinject":
+                try setOptionEnabled(option: NetworkRuleOption.Jsinject, value: true);
+                break;
+            case "urlblock":
+                try setOptionEnabled(option: NetworkRuleOption.Urlblock, value: true);
+                break;
+            case "content":
+                try setOptionEnabled(option: NetworkRuleOption.Content, value: true);
+                break;
+
+            // $document
+            case "document":
+                try setOptionEnabled(option: NetworkRuleOption.Document, value: true);
+                break;
 
             // Content type options
             case "script":
@@ -267,6 +260,23 @@ class NetworkRule: Rule {
         } else {
             self.restrictedContentType.append(contentType);
         }
+    }
+    
+    private func setOptionEnabled(option: NetworkRuleOption, value: Bool) throws -> Void {
+        // TODO: Respect options restrictions
+        if (value) {
+            self.enabledOptions.append(option);
+        } else {
+            self.disabledOptions.append(option);
+        }
+    }
+    
+    private func isOptionEnabled(option: NetworkRuleOption) -> Bool {
+        return self.enabledOptions.firstIndex(of: option) != nil;
+    }
+    
+    func isSingleOption(option: NetworkRuleOption) -> Bool {
+        return self.enabledOptions.count == 1 && self.enabledOptions.firstIndex(of: option) != nil;
     }
     
     /**
@@ -426,5 +436,15 @@ class NetworkRule: Rule {
         case OBJECT_SUBREQUEST
         case WEBRTC
         case PING
+    }
+    
+    enum NetworkRuleOption {
+        case Elemhide
+        case Generichide
+        case Genericblock
+        case Jsinject
+        case Urlblock
+        case Content
+        case Document
     }
 }
