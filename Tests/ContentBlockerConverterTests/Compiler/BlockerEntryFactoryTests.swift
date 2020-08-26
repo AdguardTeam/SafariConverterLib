@@ -136,7 +136,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
         XCTAssertEqual(result!.action.css, nil);
         XCTAssertEqual(result!.action.script, nil);
         XCTAssertEqual(result!.action.scriptlet, "test-name");
-        XCTAssertEqual(result!.action.scriptletParam, "[]");
+        XCTAssertEqual(result!.action.scriptletParam, "{\"name\":\"test-name\",\"args\":[]}");
     }
     
     func testConvertScriptletRuleWhitelist() {

@@ -40,7 +40,7 @@ class ScriptletParser {
         let name = unquotedParams[0];
         unquotedParams.remove(at: 0);
         
-        let json = try JSONEncoder().encode(unquotedParams);
+        let json = try JSONEncoder().encode(ScriptletParams(name: name, args: unquotedParams));
         return (name, String(data: json, encoding: .utf8)!);
     }
     
@@ -56,4 +56,10 @@ class ScriptletParser {
         
         return result;
     }
+    
+    struct ScriptletParams: Encodable {
+        let name: String
+        let args: [String]?
+    }
+
 }
