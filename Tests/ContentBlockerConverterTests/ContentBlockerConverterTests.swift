@@ -9,6 +9,7 @@ final class ContentBlockerConverterTests: XCTestCase {
     let URL_FILTER_WS_ANY_URL_UNESCAPED = "^wss?:\\/\\/";
     let URL_FILTER_REGEXP_SEPARATOR = "[/:&?]?";
     let URL_FILTER_CSS_RULES = ".*";
+    let URL_FILTER_URL_RULES_EXCEPTIONS = ".*";
     
     let converter = ContentBlockerConverter();
     
@@ -323,6 +324,105 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(entry.action.type, "css-display-none");
         XCTAssertEqual(entry.trigger.unlessDomain, ["*google.com"]);
     }
+    
+    func testConvertGenericDomainSensitiveSortingOrder() {
+        let result = converter.convertArray(rules: ["~example.org##generic", "##wide1", "##specific", "@@||example.org^$generichide"]);
+        XCTAssertEqual(result?.convertedCount, 3);
+        
+        let decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 3);
+        
+        XCTAssertEqual(decoded[0].trigger.urlFilter, URL_FILTER_CSS_RULES);
+        XCTAssertEqual(decoded[0].action.type, "css-display-none");
+        XCTAssertEqual(decoded[0].action.selector, "wide1, specific");
+        
+        XCTAssertEqual(decoded[1].trigger.urlFilter, URL_FILTER_CSS_RULES);
+        XCTAssertEqual(decoded[1].action.type, "css-display-none");
+        XCTAssertEqual(decoded[1].action.selector, "generic");
+        XCTAssertEqual(decoded[1].trigger.unlessDomain, ["*example.org"]);
+        
+        XCTAssertEqual(decoded[2].trigger.urlFilter, URL_FILTER_URL_RULES_EXCEPTIONS);
+        XCTAssertEqual(decoded[2].action.type, "ignore-previous-rules");
+        XCTAssertEqual(decoded[2].trigger.ifDomain, ["*example.org"]);
+    }
+    
+    func testConvertGenericDomainSensitiveSortingOrderGenerichide() {
+        let result = converter.convertArray(rules: ["###generic", "@@||example.org^$generichide"]);
+        XCTAssertEqual(result?.convertedCount, 2);
+        
+        let decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 2);
+        
+        XCTAssertEqual(decoded[0].trigger.urlFilter, URL_FILTER_CSS_RULES);
+        XCTAssertEqual(decoded[0].action.type, "css-display-none");
+        XCTAssertEqual(decoded[0].action.selector, "#generic");
+        
+        XCTAssertEqual(decoded[1].trigger.urlFilter, URL_FILTER_URL_RULES_EXCEPTIONS);
+        XCTAssertEqual(decoded[1].action.type, "ignore-previous-rules");
+        XCTAssertEqual(decoded[1].trigger.ifDomain, ["*example.org"]);
+    }
+    
+    func testConvertGenericDomainSensitiveSortingOrderElemhide() {
+        let result = converter.convertArray(rules: ["example.org###generic", "@@||example.org^$elemhide"]);
+        XCTAssertEqual(result?.convertedCount, 2);
+        
+        let decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 2);
+        
+        XCTAssertEqual(decoded[0].trigger.urlFilter, URL_FILTER_CSS_RULES);
+        XCTAssertEqual(decoded[1].trigger.ifDomain, ["*example.org"]);
+        XCTAssertEqual(decoded[0].action.type, "css-display-none");
+        XCTAssertEqual(decoded[0].action.selector, "#generic");
+        
+        XCTAssertEqual(decoded[1].trigger.urlFilter, URL_FILTER_URL_RULES_EXCEPTIONS);
+        XCTAssertEqual(decoded[1].trigger.ifDomain, ["*example.org"]);
+        XCTAssertEqual(decoded[1].action.type, "ignore-previous-rules");
+    }
+    
+    func testCyrillicRules() {
+        let result = converter.convertArray(rules: ["меил.рф", "||меил.рф"]);
+        XCTAssertEqual(result?.convertedCount, 2);
+        
+        let decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 2);
+        
+//        XCTAssertEqual(decoded[0].trigger.urlFilter, "xn--e1agjb\\.xn--p1ai");
+//        XCTAssertEqual(decoded[1].trigger.urlFilter, START_URL_UNESCAPED + "xn--e1agjb\\.xn--p1ai");
+    }
+    
+    func testRegexRules() {
+        var ruleText = "/^https?://(?!static\\.)([^.]+\\.)+?fastpic\\.ru[:/]/$script,domain=fastpic.ru";
+        var result = converter.convertArray(rules: [ruleText]);
+        XCTAssertEqual(result?.convertedCount, 0);
+        XCTAssertEqual(result?.errorsCount, 1);
+        
+        ruleText = "^https?://(?!static)([^.]+)+?fastpicru[:/]$script,domain=fastpic.ru";
+        result = converter.convertArray(rules: [ruleText]);
+        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result?.errorsCount, 0);
+        
+        ruleText = "@@/:\\/\\/.*[.]wp[.]pl\\/[a-z0-9_]{30,50}[.][a-z]{2,5}[/:&?]?/";
+        result = converter.convertArray(rules: [ruleText]);
+        XCTAssertEqual(result?.convertedCount, 0);
+        XCTAssertEqual(result?.errorsCount, 1);
+        
+        ruleText = "@@/://.*[.]wp[.]pl\\/[a-z0-9_]+[.][a-z]+\\b/";
+        result = converter.convertArray(rules: [ruleText]);
+        XCTAssertEqual(result?.convertedCount, 0);
+        XCTAssertEqual(result?.errorsCount, 1);
+    }
+    
+    func testCssPseudoClasses() {
+        let result = converter.convertArray(rules: [
+                "w3schools.com###main > table.w3-table-all.notranslate:first-child > tbody > tr:nth-child(17) > td.notranslate:nth-child(2)",
+                "w3schools.com###:root div.ads",
+                "w3schools.com###body div[attr='test']:first-child  div",
+                "w3schools.com##.todaystripe::after"
+            ]
+        );
+        XCTAssertEqual(result?.convertedCount, 4);
+        XCTAssertEqual(result?.errorsCount, 0);
+    }
                 
     static var allTests = [
         ("testEmpty", testEmpty),
@@ -338,5 +438,11 @@ final class ContentBlockerConverterTests: XCTestCase {
         ("testConvertInvertedWhitelistRule", testConvertInvertedWhitelistRule),
         ("testConvertGenerichide", testConvertGenerichide),
         ("testConvertGenericDomainSensitive", testConvertGenericDomainSensitive),
+        ("testConvertGenericDomainSensitiveSortingOrder", testConvertGenericDomainSensitiveSortingOrder),
+        ("testConvertGenericDomainSensitiveSortingOrderGenerichide", testConvertGenericDomainSensitiveSortingOrderGenerichide),
+        ("testConvertGenericDomainSensitiveSortingOrderElemhide", testConvertGenericDomainSensitiveSortingOrderElemhide),
+        ("testCyrillicRules", testCyrillicRules),
+        ("testRegexRules", testRegexRules),
+        ("testCssPseudoClasses", testCssPseudoClasses),
     ]
 }
