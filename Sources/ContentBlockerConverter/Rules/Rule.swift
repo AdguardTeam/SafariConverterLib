@@ -42,9 +42,9 @@ class Rule {
             }
 
             if (restricted) {
-                self.restrictedDomains.append(domain);
+                self.restrictedDomains.append(domain.idnaEncoded!);
             } else {
-                self.permittedDomains.append(domain);
+                self.permittedDomains.append(domain.idnaEncoded!);
             }
         }
     }

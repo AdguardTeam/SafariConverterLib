@@ -386,8 +386,8 @@ final class ContentBlockerConverterTests: XCTestCase {
         let decoded = try! parseJsonString(json: result!.converted);
         XCTAssertEqual(decoded.count, 2);
         
-//        XCTAssertEqual(decoded[0].trigger.urlFilter, "xn--e1agjb\\.xn--p1ai");
-//        XCTAssertEqual(decoded[1].trigger.urlFilter, START_URL_UNESCAPED + "xn--e1agjb\\.xn--p1ai");
+        XCTAssertEqual(decoded[0].trigger.urlFilter, "xn--e1agjb\\.xn--p1ai");
+        XCTAssertEqual(decoded[1].trigger.urlFilter, START_URL_UNESCAPED + "xn--e1agjb\\.xn--p1ai");
     }
     
     func testRegexRules() {

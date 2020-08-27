@@ -41,6 +41,8 @@ class NetworkRuleParser {
             ruleParts.pattern = ruleText.subString(startIndex: startIndex, toIndex: delimeterIndex);
             ruleParts.options = ruleText.subString(startIndex: delimeterIndex + 1);
         }
+        
+        ruleParts.pattern = NetworkRuleParser.getAsciiDomainRule(pattern: ruleParts.pattern);
 
         return ruleParts;
     }
@@ -63,6 +65,46 @@ class NetworkRuleParser {
         }
         
         return -1;
+    }
+    
+    /**
+    * Searches for domain name in rule text and transforms it to punycode if needed.
+    */
+    private static func getAsciiDomainRule(pattern: String?) -> String? {
+        if (pattern == nil) {
+            return pattern;
+        }
+        
+        if pattern!.isMatch(regex: #"^[\x00-\x7F]+$"#) {
+            return pattern;
+        }
+        
+        let domain = NetworkRuleParser.parseRuleDomain(pattern: pattern!);
+        return pattern!.replacingOccurrences(of: domain, with: domain.idnaEncoded!);
+    }
+    
+    private static func parseRuleDomain(pattern: String) -> String {
+        let starts = ["http://www.", "https://www.", "http://", "https://", "||", "//"];
+        let contains = ["/", "^"];
+        
+        var startIndex = 0;
+        for start in starts {
+            if (pattern.hasPrefix(start)) {
+                startIndex = start.count;
+                break;
+            }
+        }
+
+        var endIndex = -1;
+        for end in contains {
+            let index = pattern.indexOf(target: end, startIndex: startIndex)
+            if (index > -1) {
+                endIndex = index;
+                break;
+            }
+        }
+
+        return endIndex == -1 ? pattern.subString(startIndex: startIndex) : pattern.subString(startIndex: startIndex, toIndex: endIndex);
     }
     
     struct BasicRuleParts {
