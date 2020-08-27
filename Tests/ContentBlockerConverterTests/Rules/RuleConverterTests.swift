@@ -146,8 +146,75 @@ final class RuleConverterTests: XCTestCase {
         ]);
     }
     
-    // TODO: More tests
+    func testInlineScriptModifier() {
+        var exp = "||vcrypt.net^$csp=script-src 'self' 'unsafe-eval' http: https: data: blob: mediastream: filesystem:";
+        var res = ruleConverter.convertRule(rule: "||vcrypt.net^$inline-script");
+        XCTAssertEqual(res, [exp]);
+        
+        exp = "||vcrypt.net^$frame,domain=example.org,csp=script-src 'self' 'unsafe-eval' http: https: data: blob: mediastream: filesystem:";
+        res = ruleConverter.convertRule(rule: "||vcrypt.net^$frame,inline-script,domain=example.org");
+        XCTAssertEqual(res, [exp]);
+    }
     
+    func testInlineFontModifier() {
+        var exp = "||vcrypt.net^$csp=font-src 'self' 'unsafe-eval' http: https: data: blob: mediastream: filesystem:";
+        var res = ruleConverter.convertRule(rule: "||vcrypt.net^$inline-font");
+        XCTAssertEqual(res, [exp]);
+        
+        exp = "||vcrypt.net^$domain=example.org,csp=font-src 'self' 'unsafe-eval' http: https: data: blob: mediastream: filesystem:";
+        res = ruleConverter.convertRule(rule: "||vcrypt.net^$inline-font,domain=example.org");
+        XCTAssertEqual(res, [exp]);
+    }
+    
+    func testInlineFontAndInlineScriptModifier() {
+        var exp = "||vcrypt.net^$csp=font-src 'self' 'unsafe-eval' http: https: data: blob: mediastream: filesystem:; script-src 'self' 'unsafe-eval' http: https: data: blob: mediastream: filesystem:";
+        var res = ruleConverter.convertRule(rule: "||vcrypt.net^$inline-font,inline-script");
+        XCTAssertEqual(res, [exp]);
+        
+        exp = "||vcrypt.net^$domain=example.org,csp=font-src 'self' 'unsafe-eval' http: https: data: blob: mediastream: filesystem:; script-src 'self' 'unsafe-eval' http: https: data: blob: mediastream: filesystem:";
+        res = ruleConverter.convertRule(rule: "||vcrypt.net^$domain=example.org,inline-font,inline-script");
+        XCTAssertEqual(res, [exp]);
+    }
+    
+    func testAllModifierSimple() {
+        // test simple rule;
+        let rule = "||example.org^$all";
+        let res = ruleConverter.convertRule(rule: rule);
+        let exp1 = "||example.org^$document";
+        let exp2 = "||example.org^$popup";
+        let exp3 = "||example.org^$csp=script-src 'self' 'unsafe-eval' http: https: data: blob: mediastream: filesystem:";
+        let exp4 = "||example.org^$csp=font-src 'self' 'unsafe-eval' http: https: data: blob: mediastream: filesystem:";
+
+        XCTAssertEqual(res.count, 4);
+        XCTAssertEqual(res[0], exp1);
+        XCTAssertEqual(res[1], exp2);
+        XCTAssertEqual(res[2], exp3);
+        XCTAssertEqual(res[3], exp4);
+    }
+    
+    func testAllModifierComplicated() {
+        let rule = "||example.org^$all,important";
+        let res = ruleConverter.convertRule(rule: rule);
+        let exp1 = "||example.org^$document,important";
+        let exp2 = "||example.org^$popup,important";
+        let exp3 = "||example.org^$csp=script-src 'self' 'unsafe-eval' http: https: data: blob: mediastream: filesystem:,important";
+        let exp4 = "||example.org^$csp=font-src 'self' 'unsafe-eval' http: https: data: blob: mediastream: filesystem:,important";
+
+        XCTAssertEqual(res.count, 4);
+        XCTAssertEqual(res[0], exp1);
+        XCTAssertEqual(res[1], exp2);
+        XCTAssertEqual(res[2], exp3);
+        XCTAssertEqual(res[3], exp4);
+    }
+    
+    func testBadFilterModifier() {
+        let rule = "||example.org/favicon.ico$domain=example.org,empty,important,badfilter";
+        let exp = #"||example.org/favicon.ico$domain=example.org,redirect=nooptext,important,badfilter"#;
+        
+        let res = ruleConverter.convertRule(rule: rule);
+        XCTAssertEqual(res, [exp]);
+    }
+        
     static var allTests = [
         ("testEmpty", testEmpty),
         ("testComment", testComment),
@@ -161,6 +228,11 @@ final class RuleConverterTests: XCTestCase {
         ("testEmptyAndMp4Modifiers", testEmptyAndMp4Modifiers),
         ("testMp4AndMediaModifiers", testMp4AndMediaModifiers),
         ("testConvertUboScriptTags", testConvertUboScriptTags),
+        ("testInlineScriptModifier", testInlineScriptModifier),
+        ("testInlineFontModifier", testInlineFontModifier),
+        ("testInlineFontAndInlineScriptModifier", testInlineFontAndInlineScriptModifier),
+        ("testAllModifierSimple", testAllModifierSimple),
+        ("testAllModifierComplicated", testAllModifierComplicated),
         
     ]
 }

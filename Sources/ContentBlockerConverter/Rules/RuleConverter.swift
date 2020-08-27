@@ -54,7 +54,7 @@ class RuleConverter {
             return uboScriptRules!;
         }
 
-        // TODO: Convert other types
+        // TODO: Convert ubo css style rules
 //        const uboCssStyleRule = convertUboCssStyleRule(rule);
 //        if (uboCssStyleRule) {
 //            return uboCssStyleRule;
@@ -69,7 +69,7 @@ class RuleConverter {
         // Convert options
         let ruleWithConvertedOptions = convertOptions(rule: rule);
         if (ruleWithConvertedOptions != nil) {
-            return [ruleWithConvertedOptions!];
+            return ruleWithConvertedOptions!;
         }
         
         return [rule];
@@ -215,16 +215,16 @@ class RuleConverter {
         return rule.replace(target: ABP_REDIRECT_KEYWORD, withString: AG_REDIRECT_KEYWORD);
     }
     
-    private func convertOptions(rule: String) -> String? {
+    private func convertOptions(rule: String) -> [String]? {
         let EMPTY_OPTION = "empty";
         let MP4_OPTION = "mp4";
         let MEDIA_OPTION = "media";
         let CSP_OPTION = "csp";
         let INLINE_SCRIPT_OPTION = "inline-script";
         let INLINE_FONT_OPTION = "inline-font";
-//        const ALL_OPTION = 'all';
-//        const POPUP_OPTION = 'popup';
-//        const DOCUMENT_OPTION = 'document';
+        let ALL_OPTION = "all";
+        let POPUP_OPTION = "popup";
+        let DOCUMENT_OPTION = "document";
 
         let conversionMap : [String:String] = [
             EMPTY_OPTION : "redirect=nooptext",
@@ -243,7 +243,7 @@ class RuleConverter {
                 return nil;
             }
         } catch {
-            return rule;
+            return [rule];
         }
         
         let optionParts = options!.splitByDelimiterWithEscapeCharacter(delimeter: ",", escapeChar: "\\");
@@ -251,7 +251,9 @@ class RuleConverter {
         var optionsConverted = false;
         
         var updatedOptionsParts = [String]();
+        var cspOptions = [String]();
         for part in optionParts {
+            var cursor = part;
             var convertedOptionsPart = conversionMap[part];
             
             if (convertedOptionsPart != nil) {
@@ -265,58 +267,58 @@ class RuleConverter {
                 }
 
                 optionsConverted = true;
-                updatedOptionsParts.append(convertedOptionsPart!);
+                cursor = convertedOptionsPart!;
+            }
+            
+            if (cursor.hasPrefix(CSP_OPTION)) {
+                cspOptions.append(cursor.subString(startIndex: CSP_OPTION.count + 1));
                 continue;
             }
 
-            updatedOptionsParts.append(part);
+            updatedOptionsParts.append(cursor);
         }
 
-//        // if has more than one csp modifiers, we merge them into one;
-//        const cspParts = updatedOptionsParts.filter(optionsPart => stringUtils.startWith(optionsPart, CSP_OPTION));
-//
-//        if (cspParts.length > 1) {
-//            const allButCsp = updatedOptionsParts
-//                .filter(optionsPart => !stringUtils.startWith(optionsPart, CSP_OPTION));
-//
-//            const cspValues = cspParts.map((cspPart) => {
-//                // eslint-disable-next-line no-unused-vars
-//                const [_, value] = cspPart.split(NAME_VALUE_SPLITTER);
-//                return value;
-//            });
-//
-//            const updatedCspOption = `${CSP_OPTION}${NAME_VALUE_SPLITTER}${cspValues.join('; ')}`;
-//            updatedOptionsParts = allButCsp.concat(updatedCspOption);
-//        }
-//
-//        // options without all modifier
-//        const hasAllOption = updatedOptionsParts.indexOf(ALL_OPTION) > -1;
-//
-//        if (hasAllOption) {
-//            const allOptionReplacers = [
-//                DOCUMENT_OPTION,
-//                POPUP_OPTION,
-//                INLINE_SCRIPT_OPTION,
-//                INLINE_FONT_OPTION,
-//            ];
-//            return allOptionReplacers.map((replacer) => {
-//                // remove replacer and all option from the list
-//                const optionsButAllAndReplacer = updatedOptionsParts
-//                    .filter(option => !(option === replacer || option === ALL_OPTION));
-//
-//                // try get converted values, used for INLINE_SCRIPT_OPTION, INLINE_FONT_OPTION
-//                const convertedReplacer = conversionMap[replacer] || replacer;
-//
-//                // add replacer to the list of options
-//                const updatedOptionsString = [convertedReplacer, ...optionsButAllAndReplacer].join(',');
-//
-//                // create a new rule
-//                return `${domainPart}\$${updatedOptionsString}`;
-//            });
-//        }
-//
+        if (cspOptions.count > 0) {
+            // if has more than one csp modifiers, we merge them into one
+            updatedOptionsParts.append(CSP_OPTION + "=" + cspOptions.joined(separator: "; "));
+        }
+
+        // options with all modifier
+        let hasAllOption = updatedOptionsParts.firstIndex(of: ALL_OPTION) != nil;
+        if (hasAllOption) {
+            let allOptionReplacers = [
+                DOCUMENT_OPTION,
+                POPUP_OPTION,
+                INLINE_SCRIPT_OPTION,
+                INLINE_FONT_OPTION,
+            ];
+            
+            var rules = [String]();
+            for replacer in allOptionReplacers {
+                // remove replacer and all option from the list
+                var optionsButAllAndReplacer = [String]();
+                for o in updatedOptionsParts {
+                    if (o != replacer && o != ALL_OPTION) {
+                        optionsButAllAndReplacer.append(o);
+                    }
+                }
+
+                // try get converted values, used for INLINE_SCRIPT_OPTION, INLINE_FONT_OPTION
+                let convertedReplacer = conversionMap[replacer] ?? replacer;
+
+                // add replacer to the list of options
+                optionsButAllAndReplacer.append(convertedReplacer)
+                let updatedOptionsString = optionsButAllAndReplacer.reversed().joined(separator: ",");
+                
+                // create a new rule
+                rules.append(pattern + "$" + updatedOptionsString);
+            }
+            
+            return rules;
+        }
+
         if (optionsConverted) {
-            return pattern + "$" + updatedOptionsParts.joined(separator: ",");
+            return [pattern + "$" + updatedOptionsParts.joined(separator: ",")];
         }
 
         return nil;
