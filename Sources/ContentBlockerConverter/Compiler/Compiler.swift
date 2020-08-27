@@ -53,16 +53,16 @@ class Compiler {
                 cssBlocking.append(item);
             } else if (item.action.type == "css") {
                 extendedCssBlocking.append(item);
+            } else if (item.action.type == "ignore-previous-rules" && rule.isScriptlet) {
+                // #@%#//scriptlet
+                scriptletsExceptions.append(item);
+            } else if (item.action.type == "scriptlet") {
+                scriptlets.append(item);
             } else if (item.action.type == "script") {
                 scriptRules.append(item);
             } else if (item.action.type == "ignore-previous-rules" && rule.isScript) {
                 // #@%# rules
                 scriptExceptionRules.append(item);
-            } else if (item.action.type == "scriptlet") {
-                scriptlets.append(item);
-            } else if (item.action.type == "ignore-previous-rules" && rule.isScriptlet) {
-                // #@%#//scriptlet
-                scriptletsExceptions.append(item);
             } else if (item.action.type == "ignore-previous-rules" &&
                 (item.action.selector != nil && item.action.selector! != "")) {
                 // #@# rules
