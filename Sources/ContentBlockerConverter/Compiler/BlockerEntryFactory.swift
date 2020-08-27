@@ -343,7 +343,7 @@ class BlockerEntryFactory {
         }
 
         // Safari doesn't support metacharacters in regular expressions
-        if (regExp.isMatch(regex: "[^\\\\]\\\\[bBdDfnrsStvwW]")) {
+        if (regExp.isMatch(regex: #"[^\\]\\[bBdDfnrsStvwW]"#)) {
             throw ConversionError.unsupportedRegExp(message: "Safari doesn't support metacharacters in regular expressions");
         }
     };

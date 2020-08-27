@@ -391,22 +391,22 @@ final class ContentBlockerConverterTests: XCTestCase {
     }
     
     func testRegexRules() {
-        var ruleText = "/^https?://(?!static\\.)([^.]+\\.)+?fastpic\\.ru[:/]/$script,domain=fastpic.ru";
+        var ruleText = #"/^https?://(?!static\.)([^.]+\.)+?fastpic\.ru[:/]/$script,domain=fastpic.ru"#;
         var result = converter.convertArray(rules: [ruleText]);
         XCTAssertEqual(result?.convertedCount, 0);
         XCTAssertEqual(result?.errorsCount, 1);
         
         ruleText = "^https?://(?!static)([^.]+)+?fastpicru[:/]$script,domain=fastpic.ru";
         result = converter.convertArray(rules: [ruleText]);
-        XCTAssertEqual(result?.convertedCount, 1);
-        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result?.convertedCount, 0);
+        XCTAssertEqual(result?.errorsCount, 1);
         
-        ruleText = "@@/:\\/\\/.*[.]wp[.]pl\\/[a-z0-9_]{30,50}[.][a-z]{2,5}[/:&?]?/";
+        ruleText = #"@@/:\/\/.*[.]wp[.]pl\/[a-z0-9_]{30,50}[.][a-z]{2,5}[/:&?]?/"#;
         result = converter.convertArray(rules: [ruleText]);
         XCTAssertEqual(result?.convertedCount, 0);
         XCTAssertEqual(result?.errorsCount, 1);
         
-        ruleText = "@@/://.*[.]wp[.]pl\\/[a-z0-9_]+[.][a-z]+\\b/";
+        ruleText = #"@@/:\/\/.*[.]wp[.]pl\/[a-z0-9_]+[.][a-z]+\b/"#;
         result = converter.convertArray(rules: [ruleText]);
         XCTAssertEqual(result?.convertedCount, 0);
         XCTAssertEqual(result?.errorsCount, 1);
