@@ -500,12 +500,12 @@ final class ContentBlockerConverterTests: XCTestCase {
             "||test.org^",
             "||example.org^$badfilter,image"
         ]);
-        XCTAssertEqual(result?.convertedCount, 3);
+        XCTAssertEqual(result?.convertedCount, 1);
         
         let decoded = try! parseJsonString(json: result!.converted);
         XCTAssertEqual(decoded.count, 1);
         
-        XCTAssertEqual(decoded[1].trigger.urlFilter, START_URL_UNESCAPED + "test\\.org[/:&?]?");
+        XCTAssertEqual(decoded[0].trigger.urlFilter, START_URL_UNESCAPED + "test\\.org[/:&?]?");
     }
     
     func testTldWildcardRules() {

@@ -27,6 +27,8 @@ class NetworkRule: Rule {
     
     var urlRegExpSource: String? = nil;
     
+    var badfilter: String? = nil;
+    
     override init() {
         super.init();
     }
@@ -135,7 +137,7 @@ class NetworkRule: Rule {
             
             // Special modifiers
             case "badfilter":
-                //this.setOptionEnabled(NetworkRuleOption.Badfilter, true);
+                self.badfilter = parseBadfilter();
                 break;
             case "csp":
                 self.isCspRule = true;
@@ -299,6 +301,13 @@ class NetworkRule: Rule {
     
     func isContentType(contentType: ContentType) -> Bool {
         return permittedContentType.count == 1 && permittedContentType[0] == contentType;
+    }
+    
+    private func parseBadfilter() -> String {
+        return self.ruleText
+            .replacingOccurrences(of: "$badfilter,", with: "$")
+            .replacingOccurrences(of: ",badfilter", with: "")
+            .replacingOccurrences(of: "$badfilter", with: "");
     }
     
     func parseRuleDomain() -> DomainInfo? {

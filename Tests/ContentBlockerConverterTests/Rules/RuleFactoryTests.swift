@@ -38,9 +38,19 @@ final class RuleFactoryTests: XCTestCase {
     }
     
     func testApplyBadfilterExceptions() {
-        let filtered = RuleFactory.applyBadFilterExceptions(rules: []);
-        // TODO: Test
+        let rules = [
+            RuleFactory.createRule(ruleText: "||example.org^$image"),
+            RuleFactory.createRule(ruleText: "||test.org^")
+        ];
+        
+        let badfilters = [
+            "||example.org^$image"
+        ]
+        
+        let filtered = RuleFactory.applyBadFilterExceptions(rules: rules as! [Rule], badfilterRules: badfilters);
         XCTAssertNotNil(filtered);
+        XCTAssertEqual(filtered.count, 1);
+        XCTAssertEqual(filtered[0].ruleText, "||test.org^");
     }
 
     static var allTests = [
