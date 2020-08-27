@@ -19,7 +19,7 @@ class NetworkRule: Rule {
     var isCspRule = false;
     var isWebSocket = false;
     
-    var permittedContentType: [ContentType] = [];
+    var permittedContentType: [ContentType] = [ContentType.ALL];
     var restrictedContentType: [ContentType] = [];
     
     var enabledOptions: [NetworkRuleOption] = [];
@@ -258,6 +258,10 @@ class NetworkRule: Rule {
     
     private func setRequestType(contentType: ContentType, enabled: Bool) -> Void {
         if (enabled) {
+            if (self.permittedContentType.firstIndex(of: ContentType.ALL) != nil) {
+                self.permittedContentType = [];
+            }
+            
             self.permittedContentType.append(contentType)
         } else {
             self.restrictedContentType.append(contentType);

@@ -28,7 +28,7 @@ final class NetworkRuleTests: XCTestCase {
         XCTAssertEqual(result.isReplace, false);
         XCTAssertEqual(result.urlRegExpSource, "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org[/:&?]?");
         
-        XCTAssertEqual(result.permittedContentType, []);
+        XCTAssertEqual(result.permittedContentType, [NetworkRule.ContentType.ALL]);
         XCTAssertEqual(result.restrictedContentType, []);
         
         result = try! NetworkRule(ruleText: "||example.org^$third-party");
