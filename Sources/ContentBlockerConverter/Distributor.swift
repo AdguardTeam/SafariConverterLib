@@ -48,9 +48,9 @@ class Distributor {
             advBlockingEntries = applyDomainWildcards(entries: advBlockingEntries);
         }
         
-        // TODO: Collect errors
+        let errorsCount = ErrorsCounter.instance.getCount();
         
-        return try ConversionResult(entries: entries, advBlockingEntries: advBlockingEntries, limit: self.limit, errorsCount: 0);
+        return try ConversionResult(entries: entries, advBlockingEntries: advBlockingEntries, limit: self.limit, errorsCount: errorsCount);
 
     }
     

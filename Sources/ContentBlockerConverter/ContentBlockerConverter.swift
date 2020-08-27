@@ -10,6 +10,8 @@ class ContentBlockerConverter {
             return nil;
         }
         
+        ErrorsCounter.instance.drop();
+        
         do {
             let parsedRules = RuleFactory.createRules(lines: rules);
             let compilationResult = Compiler(optimize: optimize, advancedBlocking: advancedBlocking).compileRules(rules: parsedRules);

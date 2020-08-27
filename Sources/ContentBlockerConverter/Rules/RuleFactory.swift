@@ -13,8 +13,6 @@ class RuleFactory {
                 let rule = createRule(ruleText: convertedLine);
                 if (rule != nil) {
                     result.append(rule!);
-                } else {
-                    // NSLog("AG: ContentBlockerConverter: Unexpected error");
                 }
             }
         }
@@ -44,6 +42,7 @@ class RuleFactory {
         
             return try NetworkRule(ruleText: ruleText!);
         } catch {
+            ErrorsCounter.instance.add();
             return nil;
         }
     };
