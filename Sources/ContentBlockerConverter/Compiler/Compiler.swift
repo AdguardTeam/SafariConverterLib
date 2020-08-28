@@ -243,7 +243,7 @@ class Compiler {
         message += "\nExceptions (jsinject): \(String(describing: compilationResult.scriptJsInjectExceptions.count))";
         message += "\nExceptions (other): \(String(describing: compilationResult.other.count))";
         
-        NSLog(message);
+        NSLog("AG: ContentBlockerConverter: " + message);
     }
     
     struct CompactCssRulesData {

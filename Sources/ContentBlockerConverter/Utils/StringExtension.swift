@@ -3,7 +3,7 @@ import Foundation
 extension String {
     
     func indexOf(target: String) -> Int {
-        var range = self.range(of: target)
+        let range = self.range(of: target)
         if let range = range {
             return distance(from: self.startIndex, to: range.lowerBound)
         } else {

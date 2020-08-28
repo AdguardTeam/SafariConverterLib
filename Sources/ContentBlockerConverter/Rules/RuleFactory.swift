@@ -58,9 +58,8 @@ class RuleFactory {
         
             return try NetworkRule(ruleText: ruleText!);
         } catch {
+            NSLog("AG: ContentBlockerConverter: Unexpected error: \(error) while creating rule from: \(String(describing: ruleText))");
             ErrorsCounter.instance.add();
-            NSLog("\(ruleText)");
-            NSLog("\(error)");
             return nil;
         }
     };
