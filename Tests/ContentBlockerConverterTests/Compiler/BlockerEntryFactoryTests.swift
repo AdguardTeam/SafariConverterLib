@@ -197,6 +197,22 @@ final class BlockerEntryFactoryTests: XCTestCase {
         XCTAssertEqual(result!.action.css, nil);
     }
     
+    func testConvertCssExceptionRule() {
+        let converter = BlockerEntryFactory(advancedBlockingEnabled: true);
+
+        let rule = try! CosmeticRule(ruleText: "example.com#@##social");
+
+        let result = converter.createBlockerEntry(rule: rule);
+        XCTAssertNotNil(result);
+        XCTAssertEqual(result!.trigger.urlFilter, ".*");
+        XCTAssertEqual(result!.trigger.ifDomain, ["example.com"]);
+        XCTAssertEqual(result!.trigger.unlessDomain, nil);
+
+        XCTAssertEqual(result!.action.type, "ignore-previous-rules");
+        XCTAssertEqual(result!.action.selector, "#social");
+        XCTAssertEqual(result!.action.css, nil);
+    }
+    
     func testConvertCssRuleExtendedCss() {
         let converter = BlockerEntryFactory(advancedBlockingEnabled: true);
 

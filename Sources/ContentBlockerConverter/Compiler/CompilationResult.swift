@@ -4,6 +4,8 @@ import Foundation
  * Compilation result is an intermediate result object, before building final conversion result
  */
 struct CompilationResult {
+    var rulesCount = 0;
+    
     // Elemhide rules (##) - wide generic rules
     var cssBlockingWide: [BlockerEntry] = [];
     // Elemhide rules (##) - generic domain sensitive

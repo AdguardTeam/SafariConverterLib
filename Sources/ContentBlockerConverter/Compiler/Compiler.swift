@@ -33,6 +33,7 @@ class Compiler {
         var cosmeticCssExceptions = [BlockerEntry]();
         
         var compilationResult = CompilationResult();
+        compilationResult.rulesCount = rules.count;
         
         for rule in rules {
             let converted = self.blockerEntryFactory.createBlockerEntry(rule: rule);
@@ -191,7 +192,7 @@ class Compiler {
      * Compacts wide CSS rules
      * @param cssBlocking unsorted css elemhide rules
      */
-    private static func compactCssRules(cssBlocking: [BlockerEntry]) -> CompactCssRulesData {
+    static func compactCssRules(cssBlocking: [BlockerEntry]) -> CompactCssRulesData {
         var cssBlockingWide = [BlockerEntry]();
         var cssBlockingDomainSensitive = [BlockerEntry]();
         var cssBlockingGenericDomainSensitive = [BlockerEntry]();
@@ -224,7 +225,7 @@ class Compiler {
     };
     
     private func addLogMessage(compilationResult: CompilationResult) -> Void {
-        var message = "";
+        var message = "Rules converted:  \(compilationResult.rulesCount) (\(ErrorsCounter.instance.getCount()) errors)";
         message += "\nBasic rules: \(String(describing: compilationResult.urlBlocking.count))";
         message += "\nBasic important rules: \(String(describing: compilationResult.important.count))";
         message += "\nElemhide rules (wide): \(String(describing: compilationResult.cssBlockingWide.count))";

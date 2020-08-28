@@ -30,10 +30,17 @@ final class CosmeticRuleTests: XCTestCase {
     
     func testElemhidingRulesWhitelist() {
         
-        let result = try! CosmeticRule(ruleText: "example.org#@#.banner");
+        var result = try! CosmeticRule(ruleText: "example.org#@#.banner");
         
         XCTAssertNotNil(result);
         XCTAssertEqual(result.isWhiteList, true);
+        XCTAssertEqual(result.content, ".banner");
+        
+        result = try! CosmeticRule(ruleText: "example.org#@##banner");
+        
+        XCTAssertNotNil(result);
+        XCTAssertEqual(result.isWhiteList, true);
+        XCTAssertEqual(result.content, "#banner");
     }
     
     func testCssRules() {

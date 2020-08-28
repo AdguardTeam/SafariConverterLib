@@ -27,9 +27,37 @@ final class CompilerTests: XCTestCase {
         XCTAssertEqual(result.extendedCssBlockingGenericDomainSensitive.count, 0);
         XCTAssertEqual(result.extendedCssBlockingDomainSensitive.count, 0);
     }
-    
-    // TODO: Test different rules
-    // TODO: Test css compact
+
+    func testCompactCss() {
+        let entries = [
+            BlockerEntry(
+                trigger: BlockerEntry.Trigger(ifDomain: ["popsugar.com"], urlFilter: ".*"),
+                action: BlockerEntry.Action(type: "css-display-none", selector: "#calendar-widget")),
+            BlockerEntry(
+                trigger: BlockerEntry.Trigger(ifDomain: ["lenta1.ru"], urlFilter: ".*"),
+                action: BlockerEntry.Action(type: "css-display-none", selector: "#social")),
+            BlockerEntry(
+                trigger: BlockerEntry.Trigger(ifDomain: ["lenta2.ru"], urlFilter: ".*"),
+                action: BlockerEntry.Action(type: "css-display-none", selector: "#social")),
+            BlockerEntry(
+                trigger: BlockerEntry.Trigger(urlFilter: ".*"),
+                action: BlockerEntry.Action(type: "css-display-none", selector: "#social")),
+            BlockerEntry(
+                trigger: BlockerEntry.Trigger(ifDomain: ["yandex.ru"], urlFilter: ".*"),
+                action: BlockerEntry.Action(type: "css-display-none", selector: "#pub")),
+            BlockerEntry(
+                trigger: BlockerEntry.Trigger(ifDomain: ["yandex2.ru"], urlFilter: ".*"),
+                action: BlockerEntry.Action(type: "css-display-none", selector: "#pub")),
+            BlockerEntry(
+                trigger: BlockerEntry.Trigger(urlFilter: ".*"),
+                action: BlockerEntry.Action(type: "css-display-none", selector: "#banner")),
+            
+        ];
+        
+        let result = Compiler.compactCssRules(cssBlocking: entries);
+        XCTAssertNotNil(result);
+        
+    }
     
     func testApplyActionExceptions() {
         var blockingItems = [
@@ -54,6 +82,7 @@ final class CompilerTests: XCTestCase {
 
     static var allTests = [
         ("testEmpty", testEmpty),
+        ("testCompactCss", testCompactCss),
         ("testApplyActionExceptions", testApplyActionExceptions),
     ]
 }
