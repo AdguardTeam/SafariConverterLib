@@ -56,7 +56,9 @@ final class CompilerTests: XCTestCase {
         
         let result = Compiler.compactCssRules(cssBlocking: entries);
         XCTAssertNotNil(result);
-        
+        XCTAssertEqual(result.cssBlockingWide.count, 1);
+        XCTAssertEqual(result.cssBlockingDomainSensitive.count, 5);
+        XCTAssertEqual(result.cssBlockingGenericDomainSensitive.count, 0);
     }
     
     func testApplyActionExceptions() {
