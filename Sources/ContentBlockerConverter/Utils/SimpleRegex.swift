@@ -36,14 +36,14 @@ class SimpleRegex {
 
         if (regex.hasPrefix(maskStartUrl)) {
             regex = regex.subString(startIndex: 0, toIndex: maskStartUrl.count) +
-                replaceAll(str: regex.subString(startIndex: maskStartUrl.count, toIndex: regex.count - 1), find: "\\|", replace: "\\\\|") +
+                replaceAll(str: regex.subString(startIndex: maskStartUrl.count, toIndex: regex.count - 1), find: "|", replace: "\\|") +
                 regex.subString(startIndex: regex.count - 1);
         } else if (regex.hasPrefix(maskPipe)) {
             regex = regex.subString(startIndex: 0, toIndex: maskPipe.count) +
-                replaceAll(str: regex.subString(startIndex: maskPipe.count, toIndex: regex.count - 1), find: "\\|", replace: "\\\\|") +
+                replaceAll(str: regex.subString(startIndex: maskPipe.count, toIndex: regex.count - 1), find: "|", replace: "\\|") +
                 regex.subString(startIndex: regex.count - 1);
         } else {
-            regex = replaceAll(str: regex.subString(startIndex: 0, toIndex: regex.count - 1), find: "\\|", replace: "\\\\|") +
+            regex = replaceAll(str: regex.subString(startIndex: 0, toIndex: regex.count - 1), find: "|", replace: "\\|") +
                 regex.subString(startIndex: regex.count - 1);
         }
 
@@ -79,7 +79,7 @@ class SimpleRegex {
         
         var result = str;
         
-        let specials = [".", "\\*", "\\?", "\\^", "\\$", "\\{", "\\}", "\\(", "\\)", "\\|", "\\[", "\\]", "/", "\\\\"];
+        let specials = [".", "\\*", "\\?", "\\^", "\\$", "\\{", "\\}", "\\(", "\\)", "\\[", "\\]", "/"];
         for special in specials {
             result = result.replacingOccurrences(of: special, with: "\\" + special);
         }

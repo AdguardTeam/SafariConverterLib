@@ -50,6 +50,18 @@ final class BlockerEntryFactoryTests: XCTestCase {
         XCTAssertEqual(result!.action.scriptletParam, nil);
     }
     
+    func testConvertNetworkRulePath() {
+        let converter = BlockerEntryFactory(advancedBlockingEnabled: false);
+
+        let rule = NetworkRule();
+        rule.urlRuleText = "/addyn|*|adtech";
+        rule.urlRegExpSource = #"\/addyn\|*\|adtech"#;
+
+        let result = converter.createBlockerEntry(rule: rule);
+        XCTAssertNotNil(result);
+        XCTAssertEqual(result!.trigger.urlFilter, #"\/addyn\|*\|adtech"#);
+    }
+    
     func testConvertNetworkRuleWhitelist() {
         let converter = BlockerEntryFactory(advancedBlockingEnabled: false);
 
@@ -376,6 +388,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
     static var allTests = [
         ("testConvertNetworkRule", testConvertNetworkRule),
         ("testConvertNetworkRuleRegExp", testConvertNetworkRuleRegExp),
+        ("testConvertNetworkRulePath", testConvertNetworkRulePath),
         ("testConvertNetworkRuleWhitelist", testConvertNetworkRuleWhitelist),
         ("testConvertScriptRule", testConvertScriptRule),
         ("testConvertScriptRuleWhitelist", testConvertScriptRuleWhitelist),

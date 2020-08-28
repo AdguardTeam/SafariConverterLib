@@ -69,8 +69,9 @@ class BlockerEntryFactory {
                 return try convertCssRule(rule: rule as! CosmeticRule);
             }
         } catch {
-            NSLog("Unexpected error: \(error).");
             ErrorsCounter.instance.add();
+            NSLog("Unexpected error: \(error).");
+            NSLog("\(rule.ruleText)");
         }
         
         return nil;

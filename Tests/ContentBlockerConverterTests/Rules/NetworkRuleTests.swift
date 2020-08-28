@@ -80,6 +80,12 @@ final class NetworkRuleTests: XCTestCase {
         XCTAssertEqual(result.urlRegExpSource, "regex");
     }
     
+    func testUrlSlashRules() {
+        let result = try! NetworkRule(ruleText: "/addyn|*|adtech");
+        XCTAssertEqual(result.urlRuleText, "/addyn|*|adtech");
+        XCTAssertEqual(result.urlRegExpSource, #"\/addyn\|.*\|adtech"#);
+    }
+    
     func testParseDomainInfo() {
         
         let rule = NetworkRule();
@@ -127,6 +133,7 @@ final class NetworkRuleTests: XCTestCase {
         ("testSimpleRules", testSimpleRules),
         ("testDomains", testDomains),
         ("testRegexRules", testRegexRules),
+        ("testUrlSlashRules", testUrlSlashRules),
         ("testParseDomainInfo", testParseDomainInfo),
     ]
 }

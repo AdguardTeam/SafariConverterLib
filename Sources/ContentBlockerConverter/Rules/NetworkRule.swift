@@ -238,6 +238,12 @@ class NetworkRule: Rule {
             case "~other":
                 setRequestType(contentType: ContentType.OTHER, enabled: false);
                 break;
+            case "object-subrequest":
+                setRequestType(contentType: ContentType.OBJECT_SUBREQUEST, enabled: true);
+                break;
+            case "~object-subrequest":
+                setRequestType(contentType: ContentType.OBJECT_SUBREQUEST, enabled: false);
+                break;
             case "ping":
                 setRequestType(contentType: ContentType.PING, enabled: true);
                 break;

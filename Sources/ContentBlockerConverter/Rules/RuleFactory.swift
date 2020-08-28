@@ -59,6 +59,8 @@ class RuleFactory {
             return try NetworkRule(ruleText: ruleText!);
         } catch {
             ErrorsCounter.instance.add();
+            NSLog("\(ruleText)");
+            NSLog("\(error)");
             return nil;
         }
     };
