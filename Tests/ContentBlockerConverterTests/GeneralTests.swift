@@ -5,6 +5,23 @@ import XCTest
 
 final class GeneralTests: XCTestCase {
     
+    private func parseJsonString(json: String) throws -> [BlockerEntry] {
+        let data = json.data(using: String.Encoding.utf8, allowLossyConversion: false)!
+        
+        let decoder = JSONDecoder();
+        let parsedData = try decoder.decode([BlockerEntry].self, from: data);
+        
+        return parsedData;
+    }
+    
+    private func encodeJson(item: BlockerEntry) -> String {
+        let encoder = JSONEncoder();
+        encoder.outputFormatting = .prettyPrinted
+        
+        let json = try! encoder.encode(item);
+        return String(data: json, encoding: .utf8)!.replacingOccurrences(of: "\\/", with: "/");
+    }
+    
     let rules = [
         "||pics.rbc.ru/js/swf",
         "||tardangro.com^$third-party",
@@ -37,15 +54,272 @@ final class GeneralTests: XCTestCase {
         "##.banner"
     ];
     
+    let safariCorrectRulesJson = """
+    [
+        {
+            "trigger" : {
+                "url-filter" : ".*"
+            },
+            "action" : {
+                "type" : "css-display-none",
+                "selector" : ".banner"
+            }
+        },
+        {
+            "trigger" : {
+                "url-filter" : ".*",
+                "unless-domain" : [
+                    "*lenta1.ru",
+                    "*lenta2.ru"
+                ]
+            },
+            "action" : {
+                "type" : "css-display-none",
+                "selector" : "#social"
+            }
+        },
+        {
+            "trigger" : {
+                "url-filter" : ".*",
+                "if-domain" : [
+                    "*popsugar.com"
+                ]
+            },
+            "action" : {
+                "type" : "css-display-none",
+                "selector" : "#calendar_widget"
+            }
+        },
+        {
+            "trigger" : {
+                "url-filter" : ".*",
+                "if-domain" : [
+                    "*test-elemhide.com"
+                ]
+            },
+            "action" : {
+                "type" : "ignore-previous-rules"
+            }
+        },
+        {
+            "trigger" : {
+                "url-filter" : "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?pics\\.rbc\\.ru\\/js\\/swf"
+            },
+            "action" : {
+                "type" : "block"
+            }
+        },
+        {
+            "trigger" : {
+                "url-filter" : "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?tardangro\\.com[/:&?]?",
+                "load-type" : [
+                    "third-party"
+                ]
+            },
+            "action" : {
+                "type" : "block"
+            }
+        },
+        {
+            "trigger" : {
+                "url-filter" : "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?videoplaza\\.com[/:&?]?",
+                "load-type" : [
+                    "third-party"
+                ],
+                "resource-type" : [
+                    "image",
+                    "style-sheet",
+                    "script",
+                    "media",
+                    "raw",
+                    "font",
+                    "document"
+                ]
+            },
+            "action" : {
+                "type" : "block"
+            }
+        },
+        {
+            "trigger" : {
+                "url-filter" : "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?b\\.babylon\\.com[/:&?]?"
+            },
+            "action" : {
+                "type" : "block"
+            }
+        },
+        {
+            "trigger" : {
+                "url-filter" : "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?getsecuredfiles\\.com[/:&?]?",
+                "load-type" : [
+                    "third-party"
+                ],
+                "resource-type" : [
+                    "document"
+                ]
+            },
+            "action" : {
+                "type" : "block"
+            }
+        },
+        {
+            "trigger" : {
+                "url-filter" : "\\/addyn\\|.*\\|adtech;"
+            },
+            "action" : {
+                "type" : "block"
+            }
+        },
+        {
+            "trigger" : {
+                "url-filter" : "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?emjcd\\.com[/:&?]?",
+                "resource-type" : [
+                    "image"
+                ],
+                "if-domain" : [
+                    "*catalogfavoritesvip.com",
+                    "*freeshipping.com"
+                ]
+            },
+            "action" : {
+                "type" : "ignore-previous-rules"
+            }
+        },
+        {
+            "trigger" : {
+                "url-filter" : "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?intellitxt\\.com\\/ast\\/js\\/nbcuni\\/",
+                "resource-type" : [
+                    "script"
+                ]
+            },
+            "action" : {
+                "type" : "ignore-previous-rules"
+            }
+        },
+        {
+            "trigger" : {
+                "url-filter" : ".*",
+                "if-domain" : [
+                    "*www.any.gs"
+                ]
+            },
+            "action" : {
+                "type" : "ignore-previous-rules"
+            }
+        },
+        {
+            "trigger" : {
+                "url-filter" : ".*",
+                "if-domain" : [
+                    "*test-urlblock.com"
+                ]
+            },
+            "action" : {
+                "type" : "ignore-previous-rules"
+            }
+        },
+        {
+            "trigger" : {
+                "url-filter" : "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?hulu\\.com\\/embed"
+            },
+            "action" : {
+                "type" : "ignore-previous-rules"
+            }
+        },
+        {
+            "trigger" : {
+                "url-filter" : ".*",
+                "if-domain" : [
+                    "*hulu.com"
+                ]
+            },
+            "action" : {
+                "type" : "ignore-previous-rules"
+            }
+        },
+        {
+            "trigger" : {
+                "url-filter" : ".*",
+                "if-domain" : [
+                    "*hulu.com"
+                ]
+            },
+            "action" : {
+                "type" : "ignore-previous-rules"
+            }
+        },
+        {
+            "trigger" : {
+                "url-filter" : ".*",
+                "if-domain" : [
+                    "*hulu.com"
+                ]
+            },
+            "action" : {
+                "type" : "ignore-previous-rules"
+            }
+        },
+        {
+            "trigger" : {
+                "url-filter" : ".*",
+                "if-domain" : [
+                    "*wfarm.yandex.net"
+                ]
+            },
+            "action" : {
+                "type" : "ignore-previous-rules"
+            }
+        },
+        {
+            "trigger" : {
+                "url-filter" : "\\.instantservice\\.com"
+            },
+            "action" : {
+                "type" : "ignore-previous-rules"
+            }
+        },
+        {
+            "trigger" : {
+                "url-filter" : ".*",
+                "if-domain" : [
+                    "*test-document.com"
+                ]
+            },
+            "action" : {
+                "type" : "ignore-previous-rules"
+            }
+        },
+        {
+            "trigger" : {
+                "url-filter" : "\\/testelemhidenodomain"
+            },
+            "action" : {
+                "type" : "ignore-previous-rules"
+            }
+        }
+    ]
+
+    """;
+    
     func testGeneral() {
-        let result = ContentBlockerConverter().convertArray(rules: rules);
+        let conversionResult = ContentBlockerConverter().convertArray(rules: rules);
         
-        XCTAssertEqual(result?.totalConvertedCount, 22);
-        XCTAssertEqual(result?.convertedCount, 22);
-        XCTAssertEqual(result?.errorsCount, 3);
-        XCTAssertEqual(result?.overLimit, false);
+        XCTAssertEqual(conversionResult?.totalConvertedCount, 22);
+        XCTAssertEqual(conversionResult?.convertedCount, 22);
+        XCTAssertEqual(conversionResult?.errorsCount, 3);
+        XCTAssertEqual(conversionResult?.overLimit, false);
         
-        // XCTAssertEqual(result?.converted, "[\n\n]");
+        print(conversionResult!.converted);
+        
+        let decoded = try! parseJsonString(json: conversionResult!.converted);
+        let correct = try! parseJsonString(json: safariCorrectRulesJson.replacingOccurrences(of: "\\", with: "\\\\"));
+        
+        XCTAssertEqual(decoded.count, correct.count);
+        
+        for (index, entry) in correct.enumerated() {
+            let correspondingDecoded = decoded[index];
+            XCTAssertEqual(encodeJson(item: correspondingDecoded), encodeJson(item: entry));
+        }
     }
     
 }
