@@ -1,10 +1,13 @@
 import Foundation
 
+/**
+ * Scriptlets helper
+ */
 class ScriptletParser {
     private static let SCRIPTLET_MASK = "//scriptlet(";
     
     /**
-     * Parse and validate scriptlet rule
+     * Parses and validates scriptlet rule
      */
     static func parse(data: String) throws -> (name: String, json: String) {
         if (data == "" || !data.hasPrefix(ScriptletParser.SCRIPTLET_MASK)) {

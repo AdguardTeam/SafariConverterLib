@@ -1,14 +1,42 @@
 import Foundation
 
+/**
+ * Conversion result wrapper class
+ */
 struct ConversionResult {
-    
+    /**
+     * Total entries count in result
+     */
     let totalConvertedCount: Int;
+    
+    /**
+     * Entries count in result after reducing to limit if provided
+     */
     let convertedCount: Int;
+    
+    /**
+     * Count of errors handled
+     */
     let errorsCount: Int;
+    
+    /**
+     * Is provided limit exceeded
+     */
     let overLimit: Bool;
+    
+    /**
+     * Json string of content blocker rules
+     */
     let converted: String;
     
+    /**
+     * Count of entries in advanced blocking part
+     */
     var advancedBlockingConvertedCount = 0;
+    
+    /**
+     * Json string of advanced content blocker rules
+     */
     var advancedBlocking: String? = nil;
     
     init(entries: [BlockerEntry], advBlockingEntries: [BlockerEntry] = [], limit: Int, errorsCount: Int) throws {

@@ -1,10 +1,15 @@
 import Foundation
 
+/**
+ * Rule factory creates rules from source texts
+ */
 class RuleFactory {
     
     private static let converter = RuleConverter();
     
-    // Parses rules from lines
+    /**
+     * Creates rules from lines
+     */
     static func createRules(lines: [String]) -> [Rule] {
         var result = [Rule]();
         var badfilterRules = [String]();
@@ -30,6 +35,9 @@ class RuleFactory {
         return applyBadFilterExceptions(rules: result, badfilterRules: badfilterRules);
     }
     
+    /**
+     * Filters rules with badfilter exceptions
+     */
     static func applyBadFilterExceptions(rules: [Rule], badfilterRules: [String]) -> [Rule] {
         var result = [Rule]();
         for rule in rules {
@@ -41,6 +49,9 @@ class RuleFactory {
         return result;
     }
     
+    /**
+     * Creates rule object from source text
+     */
     static func createRule(ruleText: String?) -> Rule? {
         do {
             if (ruleText == nil || ruleText! == "" || ruleText!.hasPrefix("!") || ruleText!.hasPrefix(" ") || ruleText!.indexOf(target: " - ") > 0) {

@@ -1,7 +1,8 @@
 import Foundation
 
 /**
- * Distributor
+ * Distributor class
+ * Creates a distribution ready result object
  */
 class Distributor {
     
@@ -14,7 +15,7 @@ class Distributor {
     }
     
     /**
-     * Creates final conversion result
+     * Creates final conversion result from compilation result object
      */
     func createConversionResult(data: CompilationResult) throws -> ConversionResult {
         var entries = [BlockerEntry]();
@@ -57,7 +58,6 @@ class Distributor {
     /**
      * Updates if-domain and unless-domain fields.
      * Adds wildcard to every rule
-     * NOTE: could be done while adding domains to trigger
      */
     func applyDomainWildcards(entries: [BlockerEntry]) -> [BlockerEntry] {
         var result = [BlockerEntry]();

@@ -1,5 +1,8 @@
 import Foundation
 
+/**
+ * Regex helper
+ */
 class SimpleRegex {
     /**
      * Improved regular expression instead of UrlFilterRule.REGEXP_START_URL (||)

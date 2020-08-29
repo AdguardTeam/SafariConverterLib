@@ -1,7 +1,8 @@
 import Foundation
 
 /**
- * Rule converter
+ * Rule converter class.
+ * Converts third-party and some unsupported constructions to AG rules
  */
 class RuleConverter {
     private let COMMENT = "!";

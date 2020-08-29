@@ -1,17 +1,13 @@
 import Foundation
 
 /**
- *  Parser
+ * Network rules parser
  */
 class NetworkRuleParser {
     private static let MASK_WHITE_LIST = "@@";
     
     /**
-     * parseRuleText splits the rule text into multiple parts.
-     * @param ruleText - original rule text
-     * @returns basic rule parts
-     *
-     * @throws error if the rule is empty (for instance, empty string or `@@`)
+     * Splits the rule text into multiple parts
      */
     static func parseRuleText(ruleText: String) throws -> BasicRuleParts {
         var ruleParts = BasicRuleParts();

@@ -1,9 +1,13 @@
 import Foundation
 
 /**
- * Compilation result is an intermediate result object, before building final conversion result
+ * Compilation result is an intermediate result object, before building final conversion result.
+ * Contains blocker entries objects sorted in groups by source rule type and purpose.
  */
 struct CompilationResult {
+    /**
+     * Total count of rules in input array
+     */
     var rulesCount = 0;
     
     // Elemhide rules (##) - wide generic rules

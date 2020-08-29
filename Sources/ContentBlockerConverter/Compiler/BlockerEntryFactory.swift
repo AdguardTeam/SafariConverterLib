@@ -51,7 +51,7 @@ class BlockerEntryFactory {
     }
     
     /**
-     * Converts rule object to blocker entry
+     * Converts rule object to blocker entry object
      */
     func createBlockerEntry(rule: Rule) -> BlockerEntry? {
         do {

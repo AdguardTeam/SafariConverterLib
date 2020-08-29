@@ -76,6 +76,84 @@ class NetworkRule: Rule {
         self.isCssExceptionRule = isSingleOption(option: .Elemhide) || isSingleOption(option: .Generichide);
     }
     
+    func isSingleOption(option: NetworkRuleOption) -> Bool {
+        return self.enabledOptions.count == 1 && self.enabledOptions.firstIndex(of: option) != nil;
+    }
+    
+    func hasContentType(contentType: ContentType) -> Bool {
+        if (permittedContentType == [ContentType.ALL] &&
+            restrictedContentType.count == 0) {
+            // Rule does not contain any constraint
+            return true;
+        }
+
+        // Checking that either all content types are permitted or request content type is in the permitted list
+        let matchesPermitted = permittedContentType == [ContentType.ALL] ||
+            permittedContentType.firstIndex(of: contentType) ?? -1 >= 0;
+
+        // Checking that either no content types are restricted or request content type is not in the restricted list
+        let notMatchesRestricted = restrictedContentType.count == 0 ||
+            restrictedContentType.firstIndex(of: contentType) == nil;
+
+        return matchesPermitted && notMatchesRestricted;
+    }
+    
+    func isContentType(contentType: ContentType) -> Bool {
+        return permittedContentType.count == 1 && permittedContentType[0] == contentType;
+    }
+    
+    /**
+     * Parses domain and path
+     */
+    func parseRuleDomain() -> DomainInfo? {
+        let startsWith = ["http://www.", "https://www.", "http://", "https://", "||", "//"];
+        let contains = ["/", "^"];
+        
+        var startIndex = 0;
+
+        for start in startsWith {
+            if (self.urlRuleText.hasPrefix(start)) {
+                startIndex = start.count;
+                break;
+            }
+        }
+
+        // Exclusive for domain
+        let exceptRule = "domain=";
+        let domainIndex = self.urlRuleText.indexOf(target: exceptRule);
+        if (domainIndex > -1 && self.urlRuleText.indexOf(target: "$") > -1) {
+            startIndex = domainIndex + exceptRule.count;
+        }
+
+        if (startIndex == -1) {
+            return nil;
+        }
+
+        var symbolIndex = -1;
+        for containsPrefix in contains {
+            let index = self.urlRuleText.indexOf(target: containsPrefix, startIndex: startIndex);
+            if (index >= 0) {
+                symbolIndex = index;
+                break;
+            }
+        }
+        
+        var pathEndIndex = self.urlRuleText.indexOf(target: "$");
+        if (pathEndIndex == -1) {
+            pathEndIndex = urlRuleText.count;
+        }
+
+        let domain = symbolIndex == -1 ? self.urlRuleText.subString(startIndex: startIndex) : self.urlRuleText.subString(startIndex: startIndex, toIndex: symbolIndex);
+        let path = symbolIndex == -1 ? nil : self.urlRuleText.subString(startIndex: symbolIndex, toIndex: pathEndIndex);
+
+        if (!domain.isMatch(regex: "^[a-zA-Z0-9][a-zA-Z0-9-.]*[a-zA-Z0-9]\\.[a-zA-Z-]{2,}$")) {
+            // Not a valid domain name, ignore it
+            return nil;
+        }
+
+        return DomainInfo(domain: domain, path: path);
+    };
+    
     private func loadOptions(options: String) throws -> Void {
         let optionParts = options.splitByDelimiterWithEscapeCharacter(delimeter: ",", escapeChar: "\\");
         
@@ -287,87 +365,12 @@ class NetworkRule: Rule {
         return self.enabledOptions.firstIndex(of: option) != nil;
     }
     
-    func isSingleOption(option: NetworkRuleOption) -> Bool {
-        return self.enabledOptions.count == 1 && self.enabledOptions.firstIndex(of: option) != nil;
-    }
-    
-    func hasContentType(contentType: ContentType) -> Bool {
-        if (permittedContentType == [ContentType.ALL] &&
-            restrictedContentType.count == 0) {
-            // Rule does not contain any constraint
-            return true;
-        }
-
-        // Checking that either all content types are permitted or request content type is in the permitted list
-        let matchesPermitted = permittedContentType == [ContentType.ALL] ||
-            permittedContentType.firstIndex(of: contentType) ?? -1 >= 0;
-
-        // Checking that either no content types are restricted or request content type is not in the restricted list
-        let notMatchesRestricted = restrictedContentType.count == 0 ||
-            restrictedContentType.firstIndex(of: contentType) == nil;
-
-        return matchesPermitted && notMatchesRestricted;
-    }
-    
-    func isContentType(contentType: ContentType) -> Bool {
-        return permittedContentType.count == 1 && permittedContentType[0] == contentType;
-    }
-    
     private func parseBadfilter() -> String {
         return self.ruleText
             .replacingOccurrences(of: "$badfilter,", with: "$")
             .replacingOccurrences(of: ",badfilter", with: "")
             .replacingOccurrences(of: "$badfilter", with: "");
     }
-    
-    func parseRuleDomain() -> DomainInfo? {
-        let startsWith = ["http://www.", "https://www.", "http://", "https://", "||", "//"];
-        let contains = ["/", "^"];
-        
-        var startIndex = 0;
-
-        for start in startsWith {
-            if (self.urlRuleText.hasPrefix(start)) {
-                startIndex = start.count;
-                break;
-            }
-        }
-
-        // Exclusive for domain
-        let exceptRule = "domain=";
-        let domainIndex = self.urlRuleText.indexOf(target: exceptRule);
-        if (domainIndex > -1 && self.urlRuleText.indexOf(target: "$") > -1) {
-            startIndex = domainIndex + exceptRule.count;
-        }
-
-        if (startIndex == -1) {
-            return nil;
-        }
-
-        var symbolIndex = -1;
-        for containsPrefix in contains {
-            let index = self.urlRuleText.indexOf(target: containsPrefix, startIndex: startIndex);
-            if (index >= 0) {
-                symbolIndex = index;
-                break;
-            }
-        }
-        
-        var pathEndIndex = self.urlRuleText.indexOf(target: "$");
-        if (pathEndIndex == -1) {
-            pathEndIndex = urlRuleText.count;
-        }
-
-        let domain = symbolIndex == -1 ? self.urlRuleText.subString(startIndex: startIndex) : self.urlRuleText.subString(startIndex: startIndex, toIndex: symbolIndex);
-        let path = symbolIndex == -1 ? nil : self.urlRuleText.subString(startIndex: symbolIndex, toIndex: pathEndIndex);
-
-        if (!domain.isMatch(regex: "^[a-zA-Z0-9][a-zA-Z0-9-.]*[a-zA-Z0-9]\\.[a-zA-Z-]{2,}$")) {
-            // Not a valid domain name, ignore it
-            return nil;
-        }
-
-        return DomainInfo(domain: domain, path: path);
-    };
     
     struct DomainInfo {
         var domain: String?;

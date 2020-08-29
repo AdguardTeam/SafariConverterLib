@@ -1,7 +1,7 @@
 import Foundation
 
 /**
- * AG Rule class
+ * AG Rule super class
  */
 class Rule {
     var ruleText = "";
@@ -24,6 +24,9 @@ class Rule {
         self.ruleText = ruleText;
     }
     
+    /**
+     * Parses source string and sets up permitted and restricted domains fields
+     */
     func setDomains(domains: String, sep: String) throws -> Void {
         if (domains == "") {
             throw SyntaxError.invalidRule(message: "Modifier $domain cannot be empty");

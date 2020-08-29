@@ -1,6 +1,8 @@
 import Foundation
 
-
+/**
+ * Cosmetic rules marker enumeration
+ */
 enum CosmeticRuleMarker: String, CaseIterable {
     case ElementHiding = "##"
     case ElementHidingException = "#@#"
@@ -9,7 +11,7 @@ enum CosmeticRuleMarker: String, CaseIterable {
 
     case Css = "#$#"
     case CssException = "#@$#"
-    
+
     case CssExtCSS = "#$?#"
     case CssExtCSSException = "#@$?#"
 
@@ -18,14 +20,17 @@ enum CosmeticRuleMarker: String, CaseIterable {
 
     case Html = "$$"
     case HtmlException = "$@$"
-    
-    static func sortedCases() -> [CosmeticRuleMarker] {
+
+    private static func sortedCases() -> [CosmeticRuleMarker] {
         let allCases = CosmeticRuleMarker.allCases;
         return allCases.sorted { (left, right) -> Bool in
             return right.rawValue.count < left.rawValue.count;
         };
     }
     
+    /**
+     * Parses marker from string source
+     */
     static func findCosmeticRuleMarker(ruleText: String) -> ( index: Int, marker: CosmeticRuleMarker? ) {
         let sortedCases = CosmeticRuleMarker.sortedCases();
         for marker in sortedCases {
@@ -34,7 +39,7 @@ enum CosmeticRuleMarker: String, CaseIterable {
                 return (index, marker);
             }
         }
-        
+
         return (-1, nil);
     }
 }

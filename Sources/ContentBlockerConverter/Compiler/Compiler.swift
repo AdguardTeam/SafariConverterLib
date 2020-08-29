@@ -120,8 +120,6 @@ class Compiler {
             compilationResult.scriptlets = scriptlets;
         }
         
-        addLogMessage(compilationResult: compilationResult);
-        
         return compilationResult;
     }
     
@@ -223,28 +221,6 @@ class Compiler {
             cssBlockingGenericDomainSensitive: cssBlockingGenericDomainSensitive
         );
     };
-    
-    private func addLogMessage(compilationResult: CompilationResult) -> Void {
-        var message = "Rules converted:  \(compilationResult.rulesCount) (\(ErrorsCounter.instance.getCount()) errors)";
-        message += "\nBasic rules: \(String(describing: compilationResult.urlBlocking.count))";
-        message += "\nBasic important rules: \(String(describing: compilationResult.important.count))";
-        message += "\nElemhide rules (wide): \(String(describing: compilationResult.cssBlockingWide.count))";
-        message += "\nElemhide rules (generic domain sensitive): \(String(describing: compilationResult.cssBlockingGenericDomainSensitive.count))";
-        message += "\nExceptions Elemhide (wide): \(String(describing: compilationResult.cssBlockingGenericHideExceptions.count))";
-        message += "\nElemhide rules (domain-sensitive): \(String(describing: compilationResult.cssBlockingDomainSensitive.count))";
-        message += "\nScript rules: \(String(describing: compilationResult.script.count))";
-        message += "\nScriptlets rules: \(String(describing: compilationResult.scriptlets.count))";
-        message += "\nExtended Css Elemhide rules (wide): \(String(describing: compilationResult.extendedCssBlockingWide.count))";
-        message += "\nExtended Css Elemhide rules (generic domain sensitive): \(String(describing: compilationResult.extendedCssBlockingGenericDomainSensitive.count))";
-        message += "\nExtended Css Elemhide rules (domain-sensitive): \(String(describing: compilationResult.extendedCssBlockingDomainSensitive.count))";
-        message += "\nExceptions (elemhide): \(String(describing: compilationResult.cssElemhide.count))";
-        message += "\nExceptions (important): \(String(describing: compilationResult.importantExceptions.count))";
-        message += "\nExceptions (document): \(String(describing: compilationResult.documentExceptions.count))";
-        message += "\nExceptions (jsinject): \(String(describing: compilationResult.scriptJsInjectExceptions.count))";
-        message += "\nExceptions (other): \(String(describing: compilationResult.other.count))";
-        
-        NSLog("AG: ContentBlockerConverter: " + message);
-    }
     
     struct CompactCssRulesData {
         var cssBlockingWide: [BlockerEntry]

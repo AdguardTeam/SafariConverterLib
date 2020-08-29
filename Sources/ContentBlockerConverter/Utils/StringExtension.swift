@@ -1,5 +1,8 @@
 import Foundation
 
+/**
+ * Useful string extensions
+ */
 extension String {
     
     func indexOf(target: String) -> Int {
