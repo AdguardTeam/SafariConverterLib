@@ -45,48 +45,30 @@ class Compiler {
             
             if (item.action.type == "block") {
                 // Url blocking rules
-                if (rule.isImportant) {
-                    compilationResult.important.append(item);
-                } else {
-                    compilationResult.urlBlocking.append(item);
-                }
+                compilationResult.addBlockTypedEntry(entry: item, source: rule);
             } else if (item.action.type == "css-display-none") {
                 cssBlocking.append(item);
             } else if (item.action.type == "css") {
                 extendedCssBlocking.append(item);
-            } else if (item.action.type == "ignore-previous-rules" && rule.isScriptlet) {
-                // #@%#//scriptlet
-                scriptletsExceptions.append(item);
             } else if (item.action.type == "scriptlet") {
                 scriptlets.append(item);
             } else if (item.action.type == "script") {
                 scriptRules.append(item);
-            } else if (item.action.type == "ignore-previous-rules" && rule.isScript) {
-                // #@%# rules
-                scriptExceptionRules.append(item);
-            } else if (item.action.type == "ignore-previous-rules" &&
-                (item.action.selector != nil && item.action.selector! != "")) {
-                // #@# rules
-                cssExceptions.append(item);
-            } else if (item.action.type == "ignore-previous-rules" &&
-                (item.action.css != nil && item.action.css! != "")) {
-                cosmeticCssExceptions.append(item);
-            } else if (item.action.type == "ignore-previous-rules" && (rule as! NetworkRule).isSingleOption(option: .Generichide)) {
-                compilationResult.cssBlockingGenericHideExceptions.append(item);
-            } else if (item.action.type == "ignore-previous-rules" && (rule as! NetworkRule).isSingleOption(option: .Elemhide)) {
-                // elemhide rules
-                compilationResult.cssElemhide.append(item);
-            } else if (item.action.type == "ignore-previous-rules" && (rule as! NetworkRule).isSingleOption(option: .Jsinject)) {
-                // jsinject rules
-                compilationResult.scriptJsInjectExceptions.append(item);
-            } else {
-                // other exceptions
-                if (rule.isImportant) {
-                    compilationResult.importantExceptions.append(item);
-                } else if (rule.isDocumentWhiteList) {
-                    compilationResult.documentExceptions.append(item);
+            } else if (item.action.type == "ignore-previous-rules") {
+                // Exceptions
+                if (rule.isScriptlet) {
+                    // #@%#//scriptlet
+                    scriptletsExceptions.append(item);
+                } else if (rule.isScript) {
+                    // #@%# rules
+                    scriptExceptionRules.append(item);
+                } else if (item.action.selector != nil && item.action.selector! != "") {
+                    // #@# rules
+                    cssExceptions.append(item);
+                } else if (item.action.css != nil && item.action.css! != "") {
+                    cosmeticCssExceptions.append(item);
                 } else {
-                    compilationResult.other.append(item);
+                    compilationResult.addIgnorePreviousTypedEntry(entry: item, source: rule);
                 }
             }
         }

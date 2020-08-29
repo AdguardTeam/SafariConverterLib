@@ -45,4 +45,43 @@ struct CompilationResult {
     var extendedCssBlockingGenericDomainSensitive: [BlockerEntry] = [];
     // Elemhide rules (##) with domain restrictions
     var extendedCssBlockingDomainSensitive: [BlockerEntry] = [];
+    
+    /**
+     * Adds type: block entry
+     */
+    mutating func addBlockTypedEntry(entry: BlockerEntry, source: Rule) -> Void {
+        if (source.isImportant) {
+            important.append(entry);
+        } else {
+            urlBlocking.append(entry);
+        }
+    }
+    
+    /**
+    * Adds type: ignore-previous-rules entry
+    */
+    mutating func addIgnorePreviousTypedEntry(entry: BlockerEntry, source: Rule) -> Void {
+        if (source is NetworkRule) {
+            let networkRule = source as! NetworkRule;
+            if (networkRule.isSingleOption(option: .Generichide)) {
+                cssBlockingGenericHideExceptions.append(entry);
+                return;
+            } else if (networkRule.isSingleOption(option: .Elemhide)) {
+                cssElemhide.append(entry);
+                return;
+            } else if (networkRule.isSingleOption(option: .Jsinject)) {
+                scriptJsInjectExceptions.append(entry);
+                return;
+            }
+        }
+        
+        // other exceptions
+        if (source.isImportant) {
+            importantExceptions.append(entry);
+        } else if (source.isDocumentWhiteList) {
+            documentExceptions.append(entry);
+        } else {
+            other.append(entry);
+        }
+    }
 }
