@@ -250,9 +250,6 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(entry.trigger.unlessDomain, nil);
         XCTAssertEqual(entry.trigger.loadType, ["third-party"]);
         XCTAssertEqual(entry.trigger.resourceType, ["image", "style-sheet", "media", "raw", "font", "document"]);
-        // TODO: Fix
-        //        assert.ok(convertedRule.trigger["resource-type"]);
-        //        assert.equal(-1, convertedRule.trigger["resource-type"].indexOf("script"));
     }
     
     func testConvertSubdocumentFirstParty() {
