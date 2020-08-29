@@ -44,24 +44,17 @@ class NetworkRule: Rule {
             try loadOptions(options: ruleParts.options!);
         }
 
-        // TODO: Handle all urls rules
-//        if (
-//            this.pattern === SimpleRegex.MASK_START_URL
-//            || this.pattern === SimpleRegex.MASK_ANY_CHARACTER
-//            || this.pattern === ''
-//            || this.pattern.length < 3
-//        ) {
-//            // Except cookie and removeparam rules, they have their own atmosphere
-//            if (!(this.advancedModifier instanceof CookieModifier)
-//                && !(this.advancedModifier instanceof RemoveParamModifier)) {
-//                if (!(this.hasPermittedDomains() || this.hasPermittedApps())) {
-//                    // Rule matches too much and does not have any domain restriction
-//                    // We should not allow this kind of rules
-//                    // eslint-disable-next-line max-len
-//                    throw new SyntaxError('The rule is too wide, add domain restriction or make the pattern more specific');
-//                }
-//            }
-//        }
+        if (self.urlRuleText == "||"
+            || self.urlRuleText == "*"
+            || self.urlRuleText == ""
+            || self.urlRuleText.count < 3
+        ) {
+            if (self.permittedDomains.count < 1) {
+                // Rule matches too much and does not have any domain restriction
+                // We should not allow this kind of rules
+                throw SyntaxError.invalidRule(message: "The rule is too wide, add domain restriction or make the pattern more specific");
+            }
+        }
         
         if (self.urlRuleText.hasPrefix("/") && self.urlRuleText.hasSuffix("/")) {
             self.urlRegExpSource = self.urlRuleText.subString(startIndex: 1, length: self.urlRuleText.count - 2);
