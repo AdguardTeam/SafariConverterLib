@@ -18,22 +18,21 @@ class ScriptletParser {
         
         var params = [String]();
         var cropped = stripped;
-        var separatorIndex: String.Index? = cropped.startIndex;
+        var separatorIndex: Int = 0;
         
         repeat {
-            cropped = String(cropped.suffix(from: separatorIndex!));
+            cropped = cropped.subString(startIndex: separatorIndex);
             if (cropped.hasPrefix(", ")) {
                 cropped = cropped.subString(startIndex: 2);
             }
             
-            // TODO: check is not escaped
-            separatorIndex = cropped.firstIndex(of: ",");
-            if (separatorIndex == nil) {
-                separatorIndex = cropped.endIndex;
+            separatorIndex = cropped.indexOf(target: ", ");
+            if (separatorIndex == -1) {
+                separatorIndex = cropped.count;
             }
         
-            params.append(String(cropped.prefix(upTo: separatorIndex!)));
-        } while (separatorIndex != cropped.endIndex);
+            params.append(cropped.subString(startIndex: 0, toIndex: separatorIndex));
+        } while (separatorIndex != cropped.count);
         
         var unquotedParams = ScriptletParser.unquoteStrings(items: params);
         if (unquotedParams.count < 1) {

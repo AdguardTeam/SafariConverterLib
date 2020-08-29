@@ -28,6 +28,11 @@ final class ScriptletParserTests: XCTestCase {
         XCTAssertNotNil(result);
         XCTAssertEqual(result?.name, "remove-class");
         XCTAssertEqual(result?.json, "{\"name\":\"remove-class\",\"args\":[\"branding\",\"div[class^=\\\"inner\\\"]\"]}");
+        
+        result = try? ScriptletParser.parse(data: "//scriptlet('remove-class', 'test,comma')");
+        XCTAssertNotNil(result);
+        XCTAssertEqual(result?.name, "remove-class");
+        XCTAssertEqual(result?.json, "{\"name\":\"remove-class\",\"args\":[\"test,comma\"]}");
     }
 
     static var allTests = [
