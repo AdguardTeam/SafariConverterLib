@@ -398,8 +398,8 @@ final class ContentBlockerConverterTests: XCTestCase {
         
         ruleText = "^https?://(?!static)([^.]+)+?fastpicru[:/]$script,domain=fastpic.ru";
         result = converter.convertArray(rules: [ruleText]);
-        XCTAssertEqual(result?.convertedCount, 0);
-        XCTAssertEqual(result?.errorsCount, 1);
+        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result?.errorsCount, 0);
         
         ruleText = #"@@/:\/\/.*[.]wp[.]pl\/[a-z0-9_]{30,50}[.][a-z]{2,5}[/:&?]?/"#;
         result = converter.convertArray(rules: [ruleText]);

@@ -68,21 +68,14 @@ class SimpleRegex {
     
     /**
      * Escapes regular expression string
+     * https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/regexp
+     * should be escaped . * + ? ^ $ { } ( ) | [ ] / \
+     * except of * | ^
      */
     private static func escapeRegExp(str: String) -> String {
-        // https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/regexp
-        // should be escaped . * + ? ^ $ { } ( ) | [ ] / \
-        // except of * | ^
-        
-//        let pattern = "[\\.\\+\\?\\$\\{\\}\\(\\)\\[\\]\\\\\\/]"
-//
-//        let regex = try! NSRegularExpression(pattern: pattern, options: NSRegularExpression.Options.caseInsensitive)
-//        let range = NSMakeRange(0, str.count)
-//        let modString = regex.stringByReplacingMatches(in: str, options: [], range: range, withTemplate: "\\$&")
-        
         var result = str;
         
-        let specials = [".", "\\*", "\\?", "\\^", "\\$", "\\{", "\\}", "\\(", "\\)", "\\[", "\\]", "/"];
+        let specials = [".", "?", "$", "{", "}", "(", ")", "[", "]", "/"];
         for special in specials {
             result = result.replacingOccurrences(of: special, with: "\\" + special);
         }
@@ -90,9 +83,6 @@ class SimpleRegex {
         return result;
     }
     
-    /**
-    * Replaces all occurencies of a string "find" with "replace" str;
-    */
     private static func replaceAll(str: String, find: String, replace: String) -> String {
         return str.replacingOccurrences(of: find, with: replace);
     }
