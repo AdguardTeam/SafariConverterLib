@@ -214,6 +214,16 @@ final class RuleConverterTests: XCTestCase {
         let res = ruleConverter.convertRule(rule: rule);
         XCTAssertEqual(res, [exp]);
     }
+    
+    func testUboCssStyleRule() {
+        var exp = "example.com#$#h1 { background-color: blue !important }";
+        var res = ruleConverter.convertRule(rule: "example.com##h1:style(background-color: blue !important)");
+        XCTAssertEqual(res, [exp]);
+        
+        exp = "example.com#@$#h1 { background-color: blue !important }";
+        res = ruleConverter.convertRule(rule: "example.com#@#h1:style(background-color: blue !important)");
+        XCTAssertEqual(res, [exp]);
+    }
         
     static var allTests = [
         ("testEmpty", testEmpty),
@@ -233,6 +243,6 @@ final class RuleConverterTests: XCTestCase {
         ("testInlineFontAndInlineScriptModifier", testInlineFontAndInlineScriptModifier),
         ("testAllModifierSimple", testAllModifierSimple),
         ("testAllModifierComplicated", testAllModifierComplicated),
-        
+        ("testUboCssStyleRule", testUboCssStyleRule),
     ]
 }

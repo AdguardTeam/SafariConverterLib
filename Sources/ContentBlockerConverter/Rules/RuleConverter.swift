@@ -13,6 +13,7 @@ class RuleConverter {
     private let UBO_SCRIPTLET_EXCEPTION_MASK_1 = "#@#+js";
     private let UBO_SCRIPTLET_EXCEPTION_MASK_2 = "#@#script:inject";
     private let UBO_SCRIPT_TAG_MASK = "##^script";
+    private let UBO_CSS_STYLE_MASK = ":style(";
     /**
      * AdBlock Plus snippet rule mask
      */
@@ -55,11 +56,10 @@ class RuleConverter {
             return uboScriptRules!;
         }
 
-        // TODO: Convert ubo css style rules
-//        const uboCssStyleRule = convertUboCssStyleRule(rule);
-//        if (uboCssStyleRule) {
-//            return uboCssStyleRule;
-//        }
+        let uboCssStyleRule = convertUboCssStyleRule(ruleText: rule);
+        if (uboCssStyleRule != nil) {
+            return [uboCssStyleRule!];
+        }
 
         // Convert abp redirect rule
         let abpRedirectRule = convertAbpRedirectRule(rule: rule);
@@ -199,6 +199,42 @@ class RuleConverter {
         }
         
         return rules;
+    }
+    
+    /**
+    * Converts CSS injection
+    * example.com##h1:style(background-color: blue !important)
+    * into
+    * example.com#$#h1 { background-color: blue !important }
+    * <p>
+    * OR (for exceptions):
+    * example.com#@#h1:style(background-color: blue !important)
+    * into
+    * example.com#@$#h1 { background-color: blue !important }
+    */
+    private func convertUboCssStyleRule(ruleText: String) -> String? {
+        if (!ruleText.contains(UBO_CSS_STYLE_MASK)) {
+            return nil;
+        }
+        
+        let uboToInjectCssMarkersDictionary : [String:String] = [
+            "##" : "#$#",
+            "#@#" : "#@$#",
+            "#?#" : "#$?#",
+            "#@?#" : "#@$?#",
+        ];
+        
+        var replacedMarkerRule : String? = nil;
+        for marker in uboToInjectCssMarkersDictionary.keys {
+            if (ruleText.contains(marker)) {
+                replacedMarkerRule = ruleText.replacingOccurrences(of: marker, with: uboToInjectCssMarkersDictionary[marker]!)
+                
+                let result = replacedMarkerRule!.replacingOccurrences(of: UBO_CSS_STYLE_MASK, with: " { ");
+                return String(result.dropLast()) + " }";
+            }
+        }
+        
+        return nil;
     }
     
     /**
