@@ -78,6 +78,14 @@ final class NetworkRuleTests: XCTestCase {
         result = try! NetworkRule(ruleText: "/regex/$replace=/test\\$/test2/");
         XCTAssertEqual(result.urlRuleText, "/regex/");
         XCTAssertEqual(result.urlRegExpSource, "regex");
+        
+        result = try! NetworkRule(ruleText: "/example{/");
+        XCTAssertEqual(result.urlRuleText, "/example{/");
+        XCTAssertEqual(result.urlRegExpSource, "example{");
+        
+        result = try! NetworkRule(ruleText: #"/^http:\/\/example\.org\/$/"#);
+        XCTAssertEqual(result.urlRuleText, #"/^http:\/\/example\.org\/$/"#);
+        XCTAssertEqual(result.urlRegExpSource, #"^http:\/\/example\.org\/$"#);
     }
     
     func testUrlSlashRules() {
