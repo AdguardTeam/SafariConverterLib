@@ -76,6 +76,9 @@ class BlockerEntryFactory {
         return nil;
     }
     
+    /**
+     * Creates blocker entry object from source Network rule.
+     */
     private func convertNetworkRule(rule: NetworkRule) throws -> BlockerEntry? {
         if (rule.isCspRule) {
             throw ConversionError.unsupportedRule(message: "CSP rules are not supported");
@@ -101,6 +104,10 @@ class BlockerEntryFactory {
         return result;
     };
     
+    /**
+     * Creates blocker entry object from source Cosmetic script rule.
+     * The result entry could be used in advanced blocking json only.
+     */
     private func convertScriptRule(rule: CosmeticRule) throws -> BlockerEntry? {
         var trigger = BlockerEntry.Trigger(urlFilter: BlockerEntryFactory.URL_FILTER_SCRIPT_RULES);
         var action = BlockerEntry.Action(type: "script", script: rule.content);
@@ -111,6 +118,11 @@ class BlockerEntryFactory {
         return BlockerEntry(trigger: trigger, action: action);
     }
     
+    /**
+    * Creates blocker entry object from source Cosmetic scriptlet rule.
+    * Scriptetlets are functions those will be inserted to page content scripts and could be accessed by name with parameters.
+    * The result entry could be used in advanced blocking json only.
+    */
     private func convertScriptletRule(rule: CosmeticRule) throws -> BlockerEntry? {
         var trigger = BlockerEntry.Trigger(urlFilter: BlockerEntryFactory.URL_FILTER_SCRIPTLET_RULES);
         var action = BlockerEntry.Action(type: "scriptlet", scriptlet: rule.scriptlet, scriptletParam: rule.scriptletParam);
@@ -121,6 +133,10 @@ class BlockerEntryFactory {
         return BlockerEntry(trigger: trigger, action: action);
     }
     
+    /**
+    * Creates blocker entry object from source Cosmetic script rule.
+    * In case the rule selector contatins extended css or rule is an inject-style rule, then the result entry could be used in advanced blocking json only.
+    */
     private func convertCssRule(rule: CosmeticRule) throws -> BlockerEntry? {
         var trigger = BlockerEntry.Trigger(urlFilter: BlockerEntryFactory.URL_FILTER_CSS_RULES);
         var action = BlockerEntry.Action(type:"css-display-none");
