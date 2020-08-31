@@ -336,6 +336,15 @@ class BlockerEntryFactory {
     
     /**
      * Safari doesn't support some regular expressions
+     * Supporeted expressions:
+     * .* - Matches all strings with a dot appearing zero or more times. Use this syntax to match every URL.
+     * . - Matches any character.
+     * \. - Explicitly matches the dot character.
+     * [a-b] - Matches a range of alphabetic characters.
+     * (abc) - Matches groups of the specified characters.
+     * + - Matches the preceding term one or more times.
+     * * - Matches the preceding character zero or more times.
+     * ? - Matches the preceding character zero or one time.
      */
     private func validateRegExp(regExp: String) throws -> Void {
         // Safari doesn't support {digit} in regular expressions
