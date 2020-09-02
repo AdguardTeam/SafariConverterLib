@@ -407,6 +407,11 @@ final class ContentBlockerConverterTests: XCTestCase {
         result = converter.convertArray(rules: [ruleText]);
         XCTAssertEqual(result?.convertedCount, 0);
         XCTAssertEqual(result?.errorsCount, 1);
+        
+        ruleText = #"/example{/"#;
+        result = converter.convertArray(rules: [ruleText]);
+        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result?.errorsCount, 0);
     }
     
     func testCssPseudoClasses() {
