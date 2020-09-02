@@ -14,11 +14,17 @@ class ContentBlockerConverter {
             return nil;
         }
         
-        ErrorsCounter.instance.drop();
-        
         do {
-            let parsedRules = RuleFactory.createRules(lines: rules);
-            let compilationResult = Compiler(optimize: optimize, advancedBlocking: advancedBlocking).compileRules(rules: parsedRules);
+            let errorsCounter = ErrorsCounter();
+            
+            let parsedRules = RuleFactory(errorsCounter: errorsCounter).createRules(lines: rules);
+            var compilationResult = Compiler(
+                optimize: optimize,
+                advancedBlocking: advancedBlocking,
+                errorsCounter: errorsCounter
+            ).compileRules(rules: parsedRules);
+            
+            compilationResult.errorsCount = errorsCounter.getCount();
             
             addLogMessage(compilationResult: compilationResult);
             
@@ -31,7 +37,7 @@ class ContentBlockerConverter {
     }
     
     private func addLogMessage(compilationResult: CompilationResult) -> Void {
-        var message = "Rules converted:  \(compilationResult.rulesCount) (\(ErrorsCounter.instance.getCount()) errors)";
+        var message = "Rules converted:  \(compilationResult.rulesCount) (\(compilationResult.errorsCount) errors)";
         message += "\nBasic rules: \(String(describing: compilationResult.urlBlocking.count))";
         message += "\nBasic important rules: \(String(describing: compilationResult.important.count))";
         message += "\nElemhide rules (wide): \(String(describing: compilationResult.cssBlockingWide.count))";

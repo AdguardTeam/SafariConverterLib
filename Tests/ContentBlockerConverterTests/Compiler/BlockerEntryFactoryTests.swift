@@ -5,7 +5,7 @@ import XCTest
 
 final class BlockerEntryFactoryTests: XCTestCase {
     func testConvertNetworkRule() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: false);
+        let converter = BlockerEntryFactory(advancedBlockingEnabled: false, errorsCounter: ErrorsCounter());
 
         let rule = NetworkRule();
         rule.ruleText = "||example.com/path$domain=test.com";
@@ -28,7 +28,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
     }
     
     func testConvertNetworkRuleRegExp() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: false);
+        let converter = BlockerEntryFactory(advancedBlockingEnabled: false, errorsCounter: ErrorsCounter());
 
         let rule = NetworkRule();
         rule.urlRuleText = "/regex/$script";
@@ -51,7 +51,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
     }
     
     func testConvertNetworkRulePath() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: false);
+        let converter = BlockerEntryFactory(advancedBlockingEnabled: false, errorsCounter: ErrorsCounter());
 
         let rule = NetworkRule();
         rule.urlRuleText = "/addyn|*|adtech";
@@ -63,7 +63,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
     }
     
     func testConvertNetworkRuleWhitelist() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: false);
+        let converter = BlockerEntryFactory(advancedBlockingEnabled: false, errorsCounter: ErrorsCounter());
 
         let rule = NetworkRule();
         rule.isWhiteList = true;
@@ -88,7 +88,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
     }
     
     func testConvertScriptRule() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: true);
+        let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter());
 
         let rule = try! CosmeticRule(ruleText: "example.org,test.com#%#test");
 
@@ -109,7 +109,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
     }
     
     func testConvertScriptRuleWhitelist() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: true);
+        let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter());
 
         let rule = try! CosmeticRule(ruleText: "example.org#@%#test");
         rule.permittedDomains = ["test_domain_one", "test_domain_two"];
@@ -131,7 +131,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
     }
     
     func testConvertScriptletRule() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: true);
+        let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter());
 
         let rule = try! CosmeticRule(ruleText: "~example.org#%#//scriptlet(\"test-name\")");
 
@@ -152,7 +152,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
     }
     
     func testConvertScriptletRuleWhitelist() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: true);
+        let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter());
 
         let rule = try! CosmeticRule(ruleText: "##test");
         rule.isScript = false;
@@ -179,7 +179,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
     }
     
     func testConvertCssRule() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: true);
+        let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter());
 
         let rule = try! CosmeticRule(ruleText: "##.test_css_selector");
         rule.restrictedDomains = ["test_domain_one", "test_domain_two"];
@@ -198,7 +198,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
     }
     
     func testConvertCssExceptionRule() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: true);
+        let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter());
 
         let rule = try! CosmeticRule(ruleText: "example.com#@##social");
 
@@ -214,7 +214,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
     }
     
     func testConvertCssRuleExtendedCss() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: true);
+        let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter());
 
         let rule = try! CosmeticRule(ruleText: "##.test_css_selector");
         rule.isExtendedCss = true;
@@ -234,7 +234,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
     }
     
     func testConvertInvalidCssRule() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: true);
+        let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter());
 
         let rule = try! CosmeticRule(ruleText: "##url(test)");
         rule.isExtendedCss = true;
@@ -245,7 +245,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
     }
     
     func testConvertInvalidRegexNetworkRule() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: false);
+        let converter = BlockerEntryFactory(advancedBlockingEnabled: false, errorsCounter: ErrorsCounter());
 
         let rule = NetworkRule();
         rule.urlRuleText = "/regex/$script";
@@ -268,7 +268,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
     }
     
     func testConvertInvalidNetworkRule() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: true);
+        let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter());
 
         let rule = createTestNetworkRule();
         
@@ -280,7 +280,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
     }
     
     func testTldDomains() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: true);
+        let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter());
         let rule = createTestRule();
         
         rule.permittedDomains = [".*"];
@@ -291,7 +291,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
     }
     
     func testDomainsRestrictions() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: true);
+        let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter());
         let rule = createTestRule();
         
         rule.permittedDomains = ["permitted"];
@@ -302,7 +302,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
     }
     
     func testThirdParty() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: false);
+        let converter = BlockerEntryFactory(advancedBlockingEnabled: false, errorsCounter: ErrorsCounter());
         let rule = createTestNetworkRule();
         
         rule.isCheckThirdParty = false;
@@ -325,7 +325,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
     }
     
     func testMatchCase() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: false);
+        let converter = BlockerEntryFactory(advancedBlockingEnabled: false, errorsCounter: ErrorsCounter());
         let rule = createTestNetworkRule();
 
         var result = converter.createBlockerEntry(rule: rule);
@@ -341,7 +341,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
     }
 
     func testResourceTypes() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: false);
+        let converter = BlockerEntryFactory(advancedBlockingEnabled: false, errorsCounter: ErrorsCounter());
         let rule = createTestNetworkRule();
 
         var result = converter.createBlockerEntry(rule: rule);
@@ -369,7 +369,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
     }
     
     func testInvalidResourceTypes() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: false);
+        let converter = BlockerEntryFactory(advancedBlockingEnabled: false, errorsCounter: ErrorsCounter());
         let rule = createTestNetworkRule();
 
         rule.permittedContentType = [NetworkRule.ContentType.OBJECT];

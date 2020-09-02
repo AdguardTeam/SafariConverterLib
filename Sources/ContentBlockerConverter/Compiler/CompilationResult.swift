@@ -9,6 +9,10 @@ struct CompilationResult {
      * Total count of rules in input array
      */
     var rulesCount = 0;
+    /**
+     * Errors count
+     */
+    var errorsCount = 0;
     
     // Elemhide rules (##) - wide generic rules
     var cssBlockingWide: [BlockerEntry] = [];

@@ -45,9 +45,11 @@ class BlockerEntryFactory {
     ];
     
     let advancedBlockingEnabled: Bool;
+    let errorsCounter: ErrorsCounter;
     
-    init(advancedBlockingEnabled: Bool) {
+    init(advancedBlockingEnabled: Bool, errorsCounter: ErrorsCounter) {
         self.advancedBlockingEnabled = advancedBlockingEnabled;
+        self.errorsCounter = errorsCounter;
     }
     
     /**
@@ -69,7 +71,7 @@ class BlockerEntryFactory {
                 return try convertCssRule(rule: rule as! CosmeticRule);
             }
         } catch {
-            ErrorsCounter.instance.add();
+            self.errorsCounter.add();
             NSLog("AG: ContentBlockerConverter: Unexpected error: \(error) while converting \(rule.ruleText)");
         }
         

@@ -12,10 +12,10 @@ class Compiler {
     
     private let blockerEntryFactory: BlockerEntryFactory;
     
-    init(optimize: Bool, advancedBlocking: Bool) {
+    init(optimize: Bool, advancedBlocking: Bool, errorsCounter: ErrorsCounter) {
         self.optimize = optimize;
         self.advancedBlockedEnabled = advancedBlocking;
-        self.blockerEntryFactory = BlockerEntryFactory(advancedBlockingEnabled: advancedBlocking);
+        self.blockerEntryFactory = BlockerEntryFactory(advancedBlockingEnabled: advancedBlocking, errorsCounter: errorsCounter);
     }
     
     /**

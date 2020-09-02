@@ -6,41 +6,41 @@ import XCTest
 final class RuleFactoryTests: XCTestCase {
     func testInvalids() {
         
-        XCTAssertNil(RuleFactory.createRule(ruleText: nil));
-        XCTAssertNil(RuleFactory.createRule(ruleText: ""));
-        XCTAssertNil(RuleFactory.createRule(ruleText: " test"));
-        XCTAssertNil(RuleFactory.createRule(ruleText: "! test"));
-        XCTAssertNil(RuleFactory.createRule(ruleText: "test - test"));
+        XCTAssertNil(try! RuleFactory.createRule(ruleText: nil));
+        XCTAssertNil(try! RuleFactory.createRule(ruleText: ""));
+        XCTAssertNil(try! RuleFactory.createRule(ruleText: " test"));
+        XCTAssertNil(try! RuleFactory.createRule(ruleText: "! test"));
+        XCTAssertNil(try! RuleFactory.createRule(ruleText: "test - test"));
     }
     
     func testNetworkRules() {
-        var rule = RuleFactory.createRule(ruleText: "test");
+        var rule = try! RuleFactory.createRule(ruleText: "test");
         XCTAssertNotNil(rule);
         XCTAssertTrue(rule is NetworkRule);
         
-        rule = RuleFactory.createRule(ruleText: "@@||test$image,font");
+        rule = try! RuleFactory.createRule(ruleText: "@@||test$image,font");
         XCTAssertNotNil(rule);
         XCTAssertTrue(rule is NetworkRule);
     }
     
     func testCosmeticRules() {
-        var rule = RuleFactory.createRule(ruleText: "##.banner");
+        var rule = try! RuleFactory.createRule(ruleText: "##.banner");
         XCTAssertNotNil(rule);
         XCTAssertTrue(rule is CosmeticRule);
         
-        rule = RuleFactory.createRule(ruleText: "#%#//scriptlet(\"test\")");
+        rule = try! RuleFactory.createRule(ruleText: "#%#//scriptlet(\"test\")");
         XCTAssertNotNil(rule);
         XCTAssertTrue(rule is CosmeticRule);
         
-        rule = RuleFactory.createRule(ruleText: "example.org##banner");
+        rule = try! RuleFactory.createRule(ruleText: "example.org##banner");
         XCTAssertNotNil(rule);
         XCTAssertTrue(rule is CosmeticRule);
     }
     
     func testApplyBadfilterExceptions() {
         let rules = [
-            RuleFactory.createRule(ruleText: "||example.org^$image"),
-            RuleFactory.createRule(ruleText: "||test.org^")
+            try! RuleFactory.createRule(ruleText: "||example.org^$image"),
+            try! RuleFactory.createRule(ruleText: "||test.org^")
         ];
         
         let badfilters = [
