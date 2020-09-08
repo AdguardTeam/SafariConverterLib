@@ -3,12 +3,12 @@ import Foundation
 /**
  * Entry point
  */
-class ContentBlockerConverter {
+public class ContentBlockerConverter {
     
     /**
      * Converts filter rules in AdGuard format to the format supported by Safari.
      */
-    func convertArray(rules: [String], limit: Int = 0, optimize: Bool = false, advancedBlocking: Bool = false) -> ConversionResult? {
+    public func convertArray(rules: [String], limit: Int = 0, optimize: Bool = false, advancedBlocking: Bool = false) -> ConversionResult? {
         if rules.count == 0 {
             NSLog("AG: ContentBlockerConverter: No rules presented");
             return nil;
