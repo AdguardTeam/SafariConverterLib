@@ -5,6 +5,10 @@ import Foundation
  */
 public class ContentBlockerConverter {
     
+    public init() {
+        
+    }
+
     /**
      * Converts filter rules in AdGuard format to the format supported by Safari.
      */
