@@ -7,37 +7,37 @@ public struct ConversionResult {
     /**
      * Total entries count in result
      */
-    let totalConvertedCount: Int;
+    public let totalConvertedCount: Int;
     
     /**
      * Entries count in result after reducing to limit if provided
      */
-    let convertedCount: Int;
+    public let convertedCount: Int;
     
     /**
      * Count of errors handled
      */
-    let errorsCount: Int;
+    public let errorsCount: Int;
     
     /**
      * Is provided limit exceeded
      */
-    let overLimit: Bool;
+    public let overLimit: Bool;
     
     /**
      * Json string of content blocker rules
      */
-    let converted: String;
+    public let converted: String;
     
     /**
      * Count of entries in advanced blocking part
      */
-    var advancedBlockingConvertedCount = 0;
+    public var advancedBlockingConvertedCount = 0;
     
     /**
      * Json string of advanced content blocker rules
      */
-    var advancedBlocking: String? = nil;
+    public var advancedBlocking: String? = nil;
     
     init(entries: [BlockerEntry], advBlockingEntries: [BlockerEntry] = [], limit: Int, errorsCount: Int) throws {
         self.totalConvertedCount = entries.count;
