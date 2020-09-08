@@ -3,7 +3,7 @@ import Foundation
 /**
  * Conversion result wrapper class
  */
-struct ConversionResult {
+public struct ConversionResult {
     /**
      * Total entries count in result
      */
