@@ -11,6 +11,9 @@ let package = Package(
             name: "ContentBlockerConverter",
             type: .static,
             targets: ["ContentBlockerConverter"]),
+        .executable(
+            name: "ConverterTool",
+            targets: ["CommandLineWrapper"])
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
