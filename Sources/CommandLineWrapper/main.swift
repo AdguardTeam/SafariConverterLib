@@ -21,18 +21,18 @@ do {
     let data = arguments[1].data(using: String.Encoding.utf8, allowLossyConversion: false)!;
     let decoder = JSONDecoder();
     let rules = try decoder.decode([String].self, from: data);
-    print("Rules to convert: \(rules.count)");
+    print("AG: Rules to convert: \(rules.count)");
     
     let limit = Int(arguments[2][String.Index(encodedOffset: 7)...]) ?? 0;
-    print("Limit: \(limit)");
+    print("AG: Limit: \(limit)");
     
     let optimize = arguments[3] == "-optimize";
-    print("Optimize: \(optimize)");
+    print("AG: Optimize: \(optimize)");
     
     let advancedBlocking = arguments[4] == "-advancedBlocking";
-    print("AdvancedBlocking: \(advancedBlocking)");
+    print("AG: AdvancedBlocking: \(advancedBlocking)");
     
-    let result: ConversionResult? = try ContentBlockerConverter().convertArray(
+    let result: ConversionResult? = ContentBlockerConverter().convertArray(
         rules: rules, limit: limit, optimize: optimize, advancedBlocking: advancedBlocking
     );
 
