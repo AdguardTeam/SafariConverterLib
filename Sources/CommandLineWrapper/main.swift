@@ -23,8 +23,16 @@ func writeToStdOut(str: String) {
     }
 }
 
+func encodeJson(_ result: ConversionResult) throws -> String {
+    let encoder = JSONEncoder();
+    encoder.outputFormatting = .prettyPrinted
+    
+    let json = try encoder.encode(result);
+    return String(data: json, encoding: .utf8)!.replacingOccurrences(of: "\\/", with: "/");
+}
+
 do {
-    print("AG: Conversion started");
+    Logger.log("AG: Conversion started");
     
     let arguments: [String] = CommandLine.arguments;
     if (arguments.count < 5) {
@@ -35,27 +43,34 @@ do {
     let data = arguments[1].data(using: String.Encoding.utf8, allowLossyConversion: false)!;
     let decoder = JSONDecoder();
     let rules = try decoder.decode([String].self, from: data);
-    print("AG: Rules to convert: \(rules.count)");
+    Logger.log("AG: Rules to convert: \(rules.count)");
     
     let limit = Int(arguments[2][String.Index(encodedOffset: 7)...]) ?? 0;
-    print("AG: Limit: \(limit)");
+    Logger.log("AG: Limit: \(limit)");
     
     let optimize = arguments[3] == "-optimize";
-    print("AG: Optimize: \(optimize)");
+    Logger.log("AG: Optimize: \(optimize)");
     
     let advancedBlocking = arguments[4] == "-advancedBlocking";
-    print("AG: AdvancedBlocking: \(advancedBlocking)");
+    Logger.log("AG: AdvancedBlocking: \(advancedBlocking)");
     
     let result: ConversionResult? = ContentBlockerConverter().convertArray(
         rules: rules, limit: limit, optimize: optimize, advancedBlocking: advancedBlocking
     );
 
-    print("AG: Conversion done");
+    Logger.log("AG: Conversion done");
     
-    writeToStdOut(str: "\(result!.converted)");
+    if (result == nil) {
+        writeToStdError(str: "AG: ContentBlockerConverter: Empty result.");
+        exit(EXIT_FAILURE);
+    }
     
+    let encoded = try encodeJson(result!);
+    
+    writeToStdOut(str: "\(encoded)");
     exit(EXIT_SUCCESS);
 } catch {
-    print("AG: ContentBlockerConverter: Unexpected error: \(error)");
+    writeToStdError(str: "AG: ContentBlockerConverter: Unexpected error: \(error)");
+    exit(EXIT_FAILURE);
 }
 
