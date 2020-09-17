@@ -39,8 +39,10 @@ The result contains following properties:
 ### How to use converter from command line:
 
 ```
-    ./ConverterTool '["test_rule_one", "test_rule_two"]' -limit=0 -optimize -advancedBlocking
+    ./ConverterTool -limit=0 -optimize=true -advancedBlocking=false
 ```
+
+The tool then reads stdin line by line for rule until an empty line.
 
 ### Supported AdGuard rules types:
 

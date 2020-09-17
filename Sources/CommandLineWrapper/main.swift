@@ -4,7 +4,7 @@ import ContentBlockerConverter
 /**
  * Command line wrapper
  * Usage:
- * ./CommandLineWrapper '["test_rule_one", "test_rule_two"]' -limit=0 -optimize -advancedBlocking=false
+ * ./CommandLineWrapper -limit=0 -optimize=true -advancedBlocking=false
  */
 
 func writeToStdError(str: String) {
@@ -35,24 +35,32 @@ do {
     Logger.log("AG: Conversion started");
     
     let arguments: [String] = CommandLine.arguments;
-    if (arguments.count < 5) {
-        writeToStdError(str: "AG: Invalid arguments: Usage: ./CommandLineWrapper '[\"test_rule\"]' -limit=0 -optimize -advancedBlocking)");
+    if (arguments.count < 4) {
+        writeToStdError(str: "AG: Invalid arguments: Usage: ./CommandLineWrapper -limit=0 -optimize=false -advancedBlocking)");
         exit(EXIT_FAILURE);
     }
     
-    let data = arguments[1].data(using: String.Encoding.utf8, allowLossyConversion: false)!;
-    let decoder = JSONDecoder();
-    let rules = try decoder.decode([String].self, from: data);
-    Logger.log("AG: Rules to convert: \(rules.count)");
-    
-    let limit = Int(arguments[2][String.Index(encodedOffset: 7)...]) ?? 0;
+    let limit = Int(arguments[1][String.Index(encodedOffset: 7)...]) ?? 0;
     Logger.log("AG: Limit: \(limit)");
     
-    let optimize = arguments[3] == "-optimize";
+    let optimize = arguments[2] == "-optimize=true";
     Logger.log("AG: Optimize: \(optimize)");
     
-    let advancedBlocking = arguments[4] == "-advancedBlocking";
+    let advancedBlocking = arguments[3] == "-advancedBlocking=true";
     Logger.log("AG: AdvancedBlocking: \(advancedBlocking)");
+    
+    var rules = [String]();
+    var line: String? = nil;
+    while (true) {
+        line = readLine(strippingNewline: true);
+        if (line == nil || line == "") {
+            break;
+        }
+        
+        rules.append(line!);
+    }
+    
+    Logger.log("AG: Rules to convert: \(rules.count)");
     
     let result: ConversionResult? = ContentBlockerConverter().convertArray(
         rules: rules, limit: limit, optimize: optimize, advancedBlocking: advancedBlocking
