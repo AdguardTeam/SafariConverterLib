@@ -3,7 +3,7 @@ import Foundation
 /**
  * Conversion result wrapper class
  */
-public struct ConversionResult {
+public struct ConversionResult: Encodable {
     /**
      * Total entries count in result
      */
@@ -49,7 +49,7 @@ public struct ConversionResult {
         if self.overLimit {
             limitedEntries = Array(entries.prefix(limit));
             
-            NSLog("AG: ContentBlockerConverter: The limit is reached. Overlimit rules will be ignored.");
+            Logger.log("AG: ContentBlockerConverter: The limit is reached. Overlimit rules will be ignored.");
         }
         
         self.convertedCount = limitedEntries.count;

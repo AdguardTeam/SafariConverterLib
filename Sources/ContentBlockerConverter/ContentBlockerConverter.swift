@@ -14,7 +14,7 @@ public class ContentBlockerConverter {
      */
     public func convertArray(rules: [String], limit: Int = 0, optimize: Bool = false, advancedBlocking: Bool = false) -> ConversionResult? {
         if rules.count == 0 {
-            NSLog("AG: ContentBlockerConverter: No rules presented");
+            Logger.log("AG: ContentBlockerConverter: No rules presented");
             return nil;
         }
         
@@ -34,7 +34,7 @@ public class ContentBlockerConverter {
             
             return try Distributor(limit: limit, advancedBlocking: advancedBlocking).createConversionResult(data: compilationResult);
         } catch {
-            NSLog("AG: ContentBlockerConverter: Unexpected error: \(error)");
+            Logger.log("AG: ContentBlockerConverter: Unexpected error: \(error)");
         }
         
         return nil;
@@ -59,6 +59,6 @@ public class ContentBlockerConverter {
         message += "\nExceptions (jsinject): \(String(describing: compilationResult.scriptJsInjectExceptions.count))";
         message += "\nExceptions (other): \(String(describing: compilationResult.other.count))";
         
-        NSLog("AG: ContentBlockerConverter: " + message);
+        Logger.log("AG: ContentBlockerConverter: " + message);
     }
 }
