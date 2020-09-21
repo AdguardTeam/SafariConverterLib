@@ -13,10 +13,13 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Build
-        run: swift build -v -c release
+        run: swift build -v
 
       - name: Test
-        run: swift test -v -c release
+        run: swift test -v
+
+      - name: Build Release Binary
+        run: swift build -v -c release
 
       - name: Create Release
         id: create_release
@@ -26,17 +29,19 @@ jobs:
         with:
           tag_name: ${{ github.ref }}
           release_name: ${{ github.ref }}
+          body: |
+            - Updated converter binary
           draft: false
           prerelease: false
 
       - name: Upload Release Asset
-          id: upload_release_asset
-          uses: actions/upload-release-asset@v1
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          with:
-            upload_url: ${{ steps.create_release.outputs.upload_url }}
-            asset_path: ./build/release/ConverterTool
-            asset_name: ConverterTool
-            asset_content_type: application/macbinary
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./.build/release/ConverterTool
+          asset_name: ConverterTool
+          asset_content_type: application/macbinary
 
