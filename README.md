@@ -44,6 +44,10 @@ The result contains following properties:
 
 The tool then reads stdin line by line for rule until an empty line.
 
+### How to release on Github
+
+Push a new tag in `v*.*.*` format, then provided github action is intended to build and publish new release with an asset binary.
+
 ### Supported AdGuard rules types:
 
 #### Basic content blocker format:
