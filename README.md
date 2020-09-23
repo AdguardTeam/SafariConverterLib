@@ -39,7 +39,10 @@ The result contains following properties:
 ### How to use converter from command line:
 
 ```
-    ./ConverterTool -limit=0 -optimize=true -advancedBlocking=false
+    ./ConverterTool -limit=0 -optimize=true -advancedBlocking=false <<STDIN -o other --options
+    test_rule_one
+    test_rule_two
+    STDIN
 ```
 
 The tool then reads stdin line by line for rule until an empty line.
