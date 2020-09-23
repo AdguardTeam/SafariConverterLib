@@ -42,7 +42,7 @@ final class ConversionResultTests: XCTestCase {
     
     func testEmpty() {
         
-        let result = try! ConversionResult(entries: [], limit: 0, errorsCount: 0);
+        let result = try! ConversionResult(entries: [], limit: 0, errorsCount: 0, message: "");
         
         XCTAssertEqual(result.totalConvertedCount, 0);
         XCTAssertEqual(result.convertedCount, 0);
@@ -57,12 +57,13 @@ final class ConversionResultTests: XCTestCase {
             BlockerEntry(trigger: testTrigger, action: testAction)
         ];
         
-        let result = try! ConversionResult(entries: entries, limit: 0, errorsCount: 0);
+        let result = try! ConversionResult(entries: entries, limit: 0, errorsCount: 0, message: "test");
         
         XCTAssertEqual(result.totalConvertedCount, 1);
         XCTAssertEqual(result.convertedCount, 1);
         XCTAssertEqual(result.errorsCount, 0);
         XCTAssertEqual(result.overLimit, false);
+        XCTAssertEqual(result.message, "test");
         XCTAssertEqual(result.converted, correctEntryJSON);
     }
     
@@ -73,12 +74,13 @@ final class ConversionResultTests: XCTestCase {
             BlockerEntry(trigger: testTrigger, action: testAction)
         ];
         
-        let result = try! ConversionResult(entries: entries, limit: 1, errorsCount: 0);
+        let result = try! ConversionResult(entries: entries, limit: 1, errorsCount: 0, message: "test");
         
         XCTAssertEqual(result.totalConvertedCount, 2);
         XCTAssertEqual(result.convertedCount, 1);
         XCTAssertEqual(result.errorsCount, 1);
         XCTAssertEqual(result.overLimit, true);
+        XCTAssertEqual(result.message, "test");
         XCTAssertEqual(result.converted, correctEntryJSON);
     }
     
@@ -88,12 +90,13 @@ final class ConversionResultTests: XCTestCase {
             BlockerEntry(trigger: testTrigger, action: testAction)
         ];
         
-        let result = try! ConversionResult(entries: entries, advBlockingEntries: entries, limit: 1, errorsCount: 0);
+        let result = try! ConversionResult(entries: entries, advBlockingEntries: entries, limit: 1, errorsCount: 0, message: "test");
         
         XCTAssertEqual(result.totalConvertedCount, 1);
         XCTAssertEqual(result.convertedCount, 1);
         XCTAssertEqual(result.errorsCount, 0);
         XCTAssertEqual(result.overLimit, false);
+        XCTAssertEqual(result.message, "test");
         XCTAssertEqual(result.converted, correctEntryJSON);
         XCTAssertEqual(result.advancedBlockingConvertedCount, 1);
         XCTAssertEqual(result.advancedBlocking, correctEntryJSON);

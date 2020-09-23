@@ -30,7 +30,9 @@ public class ContentBlockerConverter {
             
             compilationResult.errorsCount = errorsCounter.getCount();
             
-            addLogMessage(compilationResult: compilationResult);
+            let message = createLogMessage(compilationResult: compilationResult);
+            Logger.log("AG: ContentBlockerConverter: " + message);
+            compilationResult.message = message;
             
             return try Distributor(limit: limit, advancedBlocking: advancedBlocking).createConversionResult(data: compilationResult);
         } catch {
@@ -40,7 +42,7 @@ public class ContentBlockerConverter {
         return nil;
     }
     
-    private func addLogMessage(compilationResult: CompilationResult) -> Void {
+    private func createLogMessage(compilationResult: CompilationResult) -> String {
         var message = "Rules converted:  \(compilationResult.rulesCount) (\(compilationResult.errorsCount) errors)";
         message += "\nBasic rules: \(String(describing: compilationResult.urlBlocking.count))";
         message += "\nBasic important rules: \(String(describing: compilationResult.important.count))";
@@ -59,6 +61,6 @@ public class ContentBlockerConverter {
         message += "\nExceptions (jsinject): \(String(describing: compilationResult.scriptJsInjectExceptions.count))";
         message += "\nExceptions (other): \(String(describing: compilationResult.other.count))";
         
-        Logger.log("AG: ContentBlockerConverter: " + message);
+        return message;
     }
 }

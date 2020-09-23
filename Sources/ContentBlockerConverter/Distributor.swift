@@ -51,8 +51,13 @@ class Distributor {
         
         let errorsCount = data.errorsCount;
         
-        return try ConversionResult(entries: entries, advBlockingEntries: advBlockingEntries, limit: self.limit, errorsCount: errorsCount);
-
+        return try ConversionResult(
+            entries: entries,
+            advBlockingEntries: advBlockingEntries,
+            limit: self.limit,
+            errorsCount: errorsCount,
+            message: data.message
+        );
     }
     
     /**
