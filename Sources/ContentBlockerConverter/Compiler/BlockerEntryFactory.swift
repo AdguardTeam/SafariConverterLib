@@ -72,7 +72,7 @@ class BlockerEntryFactory {
             }
         } catch {
             self.errorsCounter.add();
-            NSLog("AG: ContentBlockerConverter: Unexpected error: \(error) while converting \(rule.ruleText)");
+            Logger.log("AG: ContentBlockerConverter: Unexpected error: \(error) while converting \(rule.ruleText)");
         }
         
         return nil;
