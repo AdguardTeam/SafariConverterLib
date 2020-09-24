@@ -14,6 +14,11 @@ struct CompilationResult {
      */
     var errorsCount = 0;
     
+    /**
+     * Log message
+     */
+    var message = "";
+    
     // Elemhide rules (##) - wide generic rules
     var cssBlockingWide: [BlockerEntry] = [];
     // Elemhide rules (##) - generic domain sensitive
