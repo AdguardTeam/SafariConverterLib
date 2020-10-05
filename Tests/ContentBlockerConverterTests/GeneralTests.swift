@@ -328,6 +328,9 @@ final class GeneralTests: XCTestCase {
         let resourceURL = thisDirectory.appendingPathComponent("Resources/test-rules.txt");
         
         let content = try! String(contentsOf: resourceURL, encoding: String.Encoding.utf8);
+        NSLog("content:");
+        NSLog(content);
+        
         if (content == "") {
             return;
         }
