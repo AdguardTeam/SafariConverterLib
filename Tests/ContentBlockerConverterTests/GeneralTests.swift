@@ -330,15 +330,15 @@ final class GeneralTests: XCTestCase {
         let content = try! String(contentsOf: resourceURL, encoding: String.Encoding.utf8);
         let rules = content.components(separatedBy: "\r\n");
         
-        // Average time ??
-        self.measure {
+        // Average time 32 sec
+        // self.measure {
             let conversionResult = ContentBlockerConverter().convertArray(rules: rules);
             
             XCTAssertEqual(conversionResult?.totalConvertedCount, 24672);
             XCTAssertEqual(conversionResult?.convertedCount, 24672);
             XCTAssertEqual(conversionResult?.errorsCount, 143);
             XCTAssertEqual(conversionResult?.overLimit, false);
-        }
+        // }
         
     }
     
