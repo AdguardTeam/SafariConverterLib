@@ -36,27 +36,28 @@ class NetworkRule: Rule {
     override init(ruleText: String) throws {
         try super.init(ruleText: ruleText);
         
-        var ruleParts = try! NetworkRuleParser.parseRuleText(ruleText: ruleText);
-        ruleParts.pattern = NetworkRuleParser.getAsciiDomainRule(pattern: ruleParts.pattern);
-        
-        self.urlRuleText = ruleParts.pattern!;
+        let ruleParts = try! NetworkRuleParser.parseRuleText(ruleText: ruleText);
         self.isWhiteList = ruleParts.whitelist;
         
         if (ruleParts.options != nil) {
             try loadOptions(options: ruleParts.options!);
         }
 
-        if (self.urlRuleText == "||"
-            || self.urlRuleText == "*"
-            || self.urlRuleText == ""
-            || self.urlRuleText.count < 3
-        ) {
-            if (self.permittedDomains.count < 1) {
-                // Rule matches too much and does not have any domain restriction
-                // We should not allow this kind of rules
-                throw SyntaxError.invalidRule(message: "The rule is too wide, add domain restriction or make the pattern more specific");
+        if (ruleParts.pattern != nil) {
+            if (ruleParts.pattern! == "||"
+                || ruleParts.pattern! == "*"
+                || ruleParts.pattern! == ""
+                || ruleParts.pattern!.count < 3
+            ) {
+                if (self.permittedDomains.count < 1) {
+                    // Rule matches too much and does not have any domain restriction
+                    // We should not allow this kind of rules
+                    throw SyntaxError.invalidRule(message: "The rule is too wide, add domain restriction or make the pattern more specific");
+                }
             }
         }
+        
+        self.urlRuleText = NetworkRuleParser.getAsciiDomainRule(pattern: ruleParts.pattern)!;
         
         if (self.urlRuleText.hasPrefix("/") && self.urlRuleText.hasSuffix("/")) {
             self.urlRegExpSource = self.urlRuleText.subString(startIndex: 1, length: self.urlRuleText.count - 2);
