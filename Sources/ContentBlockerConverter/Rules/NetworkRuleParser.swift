@@ -73,7 +73,7 @@ class NetworkRuleParser {
             return pattern;
         }
 
-        if pattern!.isMatch(regex: #"^[\x00-\x7F]+$"#) {
+        if (pattern!.isUnicode()) {
             return pattern;
         }
 

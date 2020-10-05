@@ -107,4 +107,14 @@ extension String {
             return String(self[Range(match.range, in: self)!])
         }
     }
+    
+    func isUnicode() -> Bool {
+        for scalar in self.unicodeScalars {
+            if (!scalar.isASCII) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
 }

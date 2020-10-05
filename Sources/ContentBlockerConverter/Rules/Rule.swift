@@ -44,10 +44,15 @@ class Rule {
                 throw SyntaxError.invalidRule(message: "Empty domain specified");
             }
 
+            var encoded = domain;
+            if (!domain.isUnicode()) {
+                encoded = domain.idnaEncoded!;
+            }
+            
             if (restricted) {
-                self.restrictedDomains.append(domain.idnaEncoded!);
+                self.restrictedDomains.append(domain);
             } else {
-                self.permittedDomains.append(domain.idnaEncoded!);
+                self.permittedDomains.append(encoded);
             }
         }
     }

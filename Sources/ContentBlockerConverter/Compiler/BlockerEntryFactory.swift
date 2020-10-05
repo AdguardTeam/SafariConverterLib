@@ -360,7 +360,7 @@ class BlockerEntryFactory {
         }
 
         // Safari doesn't support non-ASCII characters in regular expressions
-        if (regExp.isMatch(regex: "[^\\x00-\\x7F]")) {
+        if (!regExp.isUnicode()) {
             throw ConversionError.unsupportedRegExp(message: "Safari doesn't support non-ASCII characters in regular expressions");
         }
 
