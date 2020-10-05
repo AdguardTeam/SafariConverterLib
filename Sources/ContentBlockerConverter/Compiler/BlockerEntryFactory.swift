@@ -350,13 +350,17 @@ class BlockerEntryFactory {
      */
     private func validateRegExp(regExp: String) throws -> Void {
         // Safari doesn't support {digit} in regular expressions
-        if (regExp.isMatch(regex: "\\{[0-9,]+\\}")) {
-            throw ConversionError.unsupportedRegExp(message: "Safari doesn't support '{digit}' in regular expressions");
+        if (regExp.contains("{")) {
+            if (regExp.isMatch(regex: "\\{[0-9,]+\\}")) {
+                throw ConversionError.unsupportedRegExp(message: "Safari doesn't support '{digit}' in regular expressions");
+            }
         }
 
         // Safari doesn't support | in regular expressions
-        if (regExp.isMatch(regex: "[^\\\\]+\\|+\\S*")) {
-            throw ConversionError.unsupportedRegExp(message: "Safari doesn't support '|' in regular expressions");
+        if (regExp.contains("|")) {
+            if (regExp.isMatch(regex: #"[^\\]+\|+\S*"#)) {
+                throw ConversionError.unsupportedRegExp(message: "Safari doesn't support '|' in regular expressions");
+            }
         }
 
         // Safari doesn't support non-ASCII characters in regular expressions
@@ -365,14 +369,14 @@ class BlockerEntryFactory {
         }
 
         // Safari doesn't support negative lookahead (?!...) in regular expressions
-        if (regExp.indexOf(target: "(?!") > -1) {
+        if (regExp.contains("(?!")) {
             if (regExp.isMatch(regex: "\\(\\?!.*\\)")) {
                 throw ConversionError.unsupportedRegExp(message: "Safari doesn't support negative lookahead in regular expressions");
             }
         }
 
         // Safari doesn't support metacharacters in regular expressions
-        if (regExp.indexOf(target: "\\") > -1) {
+        if (regExp.contains("\\")) {
             if (regExp.isMatch(regex: #"[^\\]\\[bdfnrstvw]"#)) {
                 throw ConversionError.unsupportedRegExp(message: "Safari doesn't support metacharacters in regular expressions");
             }
