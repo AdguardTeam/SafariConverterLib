@@ -307,7 +307,7 @@ class RuleConverter {
                 cursor = convertedOptionsPart!;
             }
             
-            if (cursor.hasPrefix(CSP_OPTION)) {
+            if (cursor.hasPrefix(CSP_OPTION + "=")) {
                 cspOptions.append(cursor.subString(startIndex: CSP_OPTION.count + 1));
                 continue;
             }
