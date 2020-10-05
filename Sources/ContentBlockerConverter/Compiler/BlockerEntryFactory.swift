@@ -86,8 +86,7 @@ class BlockerEntryFactory {
             throw ConversionError.unsupportedRule(message: "CSP rules are not supported");
         }
 
-        let urlFilter = createUrlFilterString(rule: rule);
-        try validateRegExp(regExp: urlFilter);
+        let urlFilter = try createUrlFilterString(rule: rule);
 
         var trigger = BlockerEntry.Trigger(urlFilter: urlFilter);
         var action = BlockerEntry.Action(type: "block");
@@ -159,7 +158,7 @@ class BlockerEntryFactory {
         return result;
     }
     
-    private func createUrlFilterString(rule: NetworkRule) -> String {
+    private func createUrlFilterString(rule: NetworkRule) throws -> String {
         let isWebSocket = rule.isWebSocket;
 
         // Use a single standard regex for rules that are supposed to match every URL
@@ -179,6 +178,7 @@ class BlockerEntryFactory {
             return BlockerEntryFactory.URL_FILTER_WS_ANY_URL + ".*" + urlRegExpSource!;
         }
 
+        try validateRegExp(regExp: urlRegExpSource!);
         return urlRegExpSource!;
     };
     
@@ -365,13 +365,17 @@ class BlockerEntryFactory {
         }
 
         // Safari doesn't support negative lookahead (?!...) in regular expressions
-        if (regExp.isMatch(regex: "\\(\\?!.*\\)")) {
-            throw ConversionError.unsupportedRegExp(message: "Safari doesn't support negative lookahead in regular expressions");
+        if (regExp.indexOf(target: "(?!") > -1) {
+            if (regExp.isMatch(regex: "\\(\\?!.*\\)")) {
+                throw ConversionError.unsupportedRegExp(message: "Safari doesn't support negative lookahead in regular expressions");
+            }
         }
 
         // Safari doesn't support metacharacters in regular expressions
-        if (regExp.isMatch(regex: #"[^\\]\\[bBdDfnrsStvwW]"#)) {
-            throw ConversionError.unsupportedRegExp(message: "Safari doesn't support metacharacters in regular expressions");
+        if (regExp.indexOf(target: "\\") > -1) {
+            if (regExp.isMatch(regex: #"[^\\]\\[bBdDfnrsStvwW]"#)) {
+                throw ConversionError.unsupportedRegExp(message: "Safari doesn't support metacharacters in regular expressions");
+            }
         }
     };
     

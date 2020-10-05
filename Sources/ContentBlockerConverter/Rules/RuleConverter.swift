@@ -275,10 +275,11 @@ class RuleConverter {
         do {
             let parseResult = try NetworkRuleParser.parseRuleText(ruleText: rule);
             options = parseResult.options;
-            pattern = parseResult.pattern ?? "";
             if (options == nil) {
                 return nil;
             }
+            
+            pattern = NetworkRuleParser.getAsciiDomainRule(pattern: parseResult.pattern) ?? "";
         } catch {
             return [rule];
         }

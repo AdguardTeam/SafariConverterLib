@@ -5,7 +5,7 @@ import Foundation
  */
 class NetworkRuleParser {
     private static let MASK_WHITE_LIST = "@@";
-    
+
     /**
      * Splits the rule text into multiple parts
      */
@@ -28,61 +28,63 @@ class NetworkRuleParser {
         // Avoid parsing options inside of a regex rule
         if (ruleParts.pattern!.hasPrefix("/")
             && ruleParts.pattern!.hasSuffix("/")
-            && (ruleParts.pattern?.indexOf(target: "$replace=") == nil)) {
+            && (ruleParts.pattern?.indexOf(target: "$replace=") == -1)) {
             return ruleParts;
         }
-        
+
         let delimeterIndex = NetworkRuleParser.findOptionsDelimeterIndex(ruleText: ruleText);
         if (delimeterIndex >= 0) {
             ruleParts.pattern = ruleText.subString(startIndex: startIndex, toIndex: delimeterIndex);
             ruleParts.options = ruleText.subString(startIndex: delimeterIndex + 1);
         }
-        
-        ruleParts.pattern = NetworkRuleParser.getAsciiDomainRule(pattern: ruleParts.pattern);
 
         return ruleParts;
     }
-    
+
     private static func findOptionsDelimeterIndex(ruleText: String) -> Int {
+        if (ruleText.indexOf(target: "$") == -1) {
+            return -1;
+        }
+
         for (index, char) in ruleText.enumerated().reversed() {
             if (char == "$") {
                 // ignore \$
                 if (index > 0 && Array(ruleText)[index - 1] == "\\") {
                     continue;
                 }
-                
+
                 // ignore $/
                 if (index + 1 < ruleText.count && Array(ruleText)[index + 1] == "/") {
                     continue;
                 }
-                
+
                 return index;
             }
         }
-        
+
         return -1;
     }
-    
+
     /**
     * Searches for domain name in rule text and transforms it to punycode if needed.
     */
-    private static func getAsciiDomainRule(pattern: String?) -> String? {
+    static func getAsciiDomainRule(pattern: String?) -> String? {
         if (pattern == nil) {
             return pattern;
         }
-        
+
         if pattern!.isMatch(regex: #"^[\x00-\x7F]+$"#) {
             return pattern;
         }
-        
+
         let domain = NetworkRuleParser.parseRuleDomain(pattern: pattern!);
         return pattern!.replacingOccurrences(of: domain, with: domain.idnaEncoded!);
     }
-    
+
     private static func parseRuleDomain(pattern: String) -> String {
         let starts = ["http://www.", "https://www.", "http://", "https://", "||", "//"];
         let contains = ["/", "^"];
-        
+
         var startIndex = 0;
         for start in starts {
             if (pattern.hasPrefix(start)) {
@@ -102,7 +104,7 @@ class NetworkRuleParser {
 
         return endIndex == -1 ? pattern.subString(startIndex: startIndex) : pattern.subString(startIndex: startIndex, toIndex: endIndex);
     }
-    
+
     struct BasicRuleParts {
         var pattern: String?;
         var options: String?;

@@ -36,7 +36,9 @@ class NetworkRule: Rule {
     override init(ruleText: String) throws {
         try super.init(ruleText: ruleText);
         
-        let ruleParts = try! NetworkRuleParser.parseRuleText(ruleText: ruleText);
+        var ruleParts = try! NetworkRuleParser.parseRuleText(ruleText: ruleText);
+        ruleParts.pattern = NetworkRuleParser.getAsciiDomainRule(pattern: ruleParts.pattern);
+        
         self.urlRuleText = ruleParts.pattern!;
         self.isWhiteList = ruleParts.whitelist;
         
