@@ -328,18 +328,15 @@ final class GeneralTests: XCTestCase {
         let resourceURL = thisDirectory.appendingPathComponent("Resources/test-rules.txt");
         
         let content = try! String(contentsOf: resourceURL, encoding: String.Encoding.utf8);
-        NSLog("content:");
-        NSLog(content);
-        
-        if (content == "") {
-            return;
-        }
-        
         let rules = content.components(separatedBy: "\r\n");
+        
+        NSLog(String(rules.count));
         
         // Average time 5.0 sec
         // self.measure {
             let conversionResult = ContentBlockerConverter().convertArray(rules: rules);
+        
+            NSLog(conversionResult!.message);
             
             XCTAssertEqual(conversionResult?.totalConvertedCount, 24672);
             XCTAssertEqual(conversionResult?.convertedCount, 24672);
