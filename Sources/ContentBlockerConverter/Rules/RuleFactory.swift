@@ -21,7 +21,7 @@ class RuleFactory {
         var badfilterRules = [String]();
         
         for line in lines {
-            let convertedLines = RuleFactory.converter.convertRule(rule: line);
+            let convertedLines = RuleFactory.converter.convertRule(rule: line.trimmingCharacters(in: .whitespacesAndNewlines));
             for convertedLine in convertedLines {
                 let rule = safeCreateRule(ruleText: convertedLine);
                 if (rule != nil) {
