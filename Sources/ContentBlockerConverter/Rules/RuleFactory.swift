@@ -18,7 +18,7 @@ class RuleFactory {
      */
     func createRules(lines: [String]) -> [Rule] {
         var result = [Rule]();
-        var badfilterRules = [String]();
+        var badfilterRules = [NetworkRule]();
         
         for line in lines {
             let convertedLines = RuleFactory.converter.convertRule(rule: line.trimmingCharacters(in: .whitespacesAndNewlines));
@@ -28,7 +28,7 @@ class RuleFactory {
                     if (rule is NetworkRule) {
                         let networkRule = rule as! NetworkRule;
                         if (networkRule.badfilter != nil) {
-                            badfilterRules.append(networkRule.badfilter!);
+                            badfilterRules.append(networkRule);
                             continue;
                         }
                     }
@@ -44,10 +44,15 @@ class RuleFactory {
     /**
      * Filters rules with badfilter exceptions
      */
-    static func applyBadFilterExceptions(rules: [Rule], badfilterRules: [String]) -> [Rule] {
+    static func applyBadFilterExceptions(rules: [Rule], badfilterRules: [NetworkRule]) -> [Rule] {
+        var badfilters = [String]();
+        for badFilter in badfilterRules {
+            badfilters.append(badFilter.badfilter!);
+        }
+        
         var result = [Rule]();
         for rule in rules {
-            if (badfilterRules.firstIndex(of: rule.ruleText) == nil) {
+            if (badfilters.firstIndex(of: rule.ruleText) == nil) {
                 result.append(rule);
             }
         }
