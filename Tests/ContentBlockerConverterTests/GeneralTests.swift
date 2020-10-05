@@ -325,7 +325,9 @@ final class GeneralTests: XCTestCase {
     func testPerformance() {
         let thisSourceFile = URL(fileURLWithPath: #file);
         let thisDirectory = thisSourceFile.deletingLastPathComponent();
-        let resourceURL = thisDirectory.appendingPathComponent("test-rules.txt");
+        let resourceURL = thisDirectory.appendingPathComponent("Resources/test-rules.txt");
+        
+        NSLog(resourceURL.absoluteString);
         
         let content = try! String(contentsOf: resourceURL, encoding: String.Encoding.utf8);
         let rules = content.components(separatedBy: "\r\n");
