@@ -32,6 +32,10 @@ enum CosmeticRuleMarker: String, CaseIterable {
      * Parses marker from string source
      */
     static func findCosmeticRuleMarker(ruleText: String) -> ( index: Int, marker: CosmeticRuleMarker? ) {
+        if (!ruleText.contains("#") && !ruleText.contains("$")) {
+            return (-1, nil);
+        }
+        
         let sortedCases = CosmeticRuleMarker.sortedCases();
         for marker in sortedCases {
             let index = ruleText.indexOf(target: marker.rawValue);
