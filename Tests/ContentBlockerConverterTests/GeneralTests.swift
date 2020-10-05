@@ -327,9 +327,11 @@ final class GeneralTests: XCTestCase {
         let thisDirectory = thisSourceFile.deletingLastPathComponent();
         let resourceURL = thisDirectory.appendingPathComponent("Resources/test-rules.txt");
         
-        NSLog(resourceURL.absoluteString);
-        
         let content = try! String(contentsOf: resourceURL, encoding: String.Encoding.utf8);
+        if (content == "") {
+            return;
+        }
+        
         let rules = content.components(separatedBy: "\r\n");
         
         // Average time 5.0 sec
