@@ -26,18 +26,17 @@ extension String {
     }
     
     func lastIndexOf(target: String) -> Int {
-        var index = -1
-        var stepIndex = self.indexOf(target: target)
-        while stepIndex > -1
-        {
-            index = stepIndex
-            if stepIndex + target.count < self.count {
-                stepIndex = indexOf(target: target, startIndex: stepIndex + target.count)
-            } else {
-                stepIndex = -1
-            }
+        let range = self.range(of: target, options: .backwards)
+        if let range = range {
+            return distance(from: self.startIndex, to: range.lowerBound)
+        } else {
+            return -1
         }
-        return index
+    }
+    
+    func lastIndexOf(target: String, maxLength: Int) -> Int {
+        let cut = String(self.prefix(maxLength));
+        return cut.lastIndexOf(target: target);
     }
     
     func subString(startIndex: Int) -> String {
