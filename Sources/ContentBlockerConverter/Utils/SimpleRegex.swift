@@ -67,6 +67,24 @@ class SimpleRegex {
     }
     
     /**
+     * Check if target string matches regex
+     */
+    static func isMatch(regex: NSRegularExpression, target: String) -> Bool {
+        let matchCount = regex.numberOfMatches(in: target, options: [], range: NSMakeRange(0, target.count))
+        return matchCount > 0;
+    }
+    
+    /**
+     * Returns target string matches
+     */
+    static func matches(regex: NSRegularExpression, target: String) -> [String] {
+        let matches  = regex.matches(in: target, options: [], range: NSMakeRange(0, target.count))
+        return matches.map { match in
+            return String(target[Range(match.range, in: target)!])
+        }
+    }
+    
+    /**
      * Escapes regular expression string
      * https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/regexp
      * should be escaped . * + ? ^ $ { } ( ) | [ ] / \

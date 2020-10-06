@@ -7,7 +7,10 @@ import Foundation
 class RuleConverter {
     private let COMMENT = "!";
     
-    private let UBO_SCRIPTLET_MASK_REG = "##script\\:inject|#@?#\\s*\\+js";
+    private static let UBO_SCRIPTLET_MASK_REG = "##script\\:inject|#@?#\\s*\\+js";
+    private static let UBO_SCRIPTLET_MASK_REGEXP = try! NSRegularExpression(pattern: UBO_SCRIPTLET_MASK_REG, options: [.caseInsensitive]);
+    private static let SENTENCES_REGEXP = try! NSRegularExpression(pattern: #"'.*?'|".*?"|\S+"#, options: [.caseInsensitive]);
+    
     private let UBO_SCRIPTLET_MASK_1 = "##+js";
     private let UBO_SCRIPTLET_MASK_2 = "##script:inject";
     private let UBO_SCRIPTLET_EXCEPTION_MASK_1 = "#@#+js";
@@ -23,7 +26,8 @@ class RuleConverter {
     /**
      * AdGuard CSS rule mask
      */
-    private let ADG_CSS_MASK_REG = "#@?\\$#.+?\\s*\\{.*\\}\\s*$";
+    private static let ADG_CSS_MASK_REG = "#@?\\$#.+?\\s*\\{.*\\}\\s*$";
+    private static let ADG_CSS_MASK_REGEXP = try! NSRegularExpression(pattern: ADG_CSS_MASK_REG, options: [.caseInsensitive]);
     
     /**
      * AdGuard scriptlet mask
@@ -81,11 +85,16 @@ class RuleConverter {
     }
     
     private func isUboScriptletRule(rule: String) -> Bool {
-        return (rule.contains(UBO_SCRIPTLET_MASK_1) || rule.contains(UBO_SCRIPTLET_MASK_2) || rule.contains(UBO_SCRIPTLET_EXCEPTION_MASK_1) || rule.contains(UBO_SCRIPTLET_EXCEPTION_MASK_2)) && rule.isMatch(regex: UBO_SCRIPTLET_MASK_REG);
+        return (
+            rule.contains(UBO_SCRIPTLET_MASK_1)
+                || rule.contains(UBO_SCRIPTLET_MASK_2)
+                || rule.contains(UBO_SCRIPTLET_EXCEPTION_MASK_1)
+                || rule.contains(UBO_SCRIPTLET_EXCEPTION_MASK_2)
+            ) && SimpleRegex.isMatch(regex: RuleConverter.UBO_SCRIPTLET_MASK_REGEXP, target: rule);
     }
     
     private func convertUboScriptletRule(rule: String) -> String {
-        let mask = rule.matches(regex: UBO_SCRIPTLET_MASK_REG)[0];
+        let mask = SimpleRegex.matches(regex: RuleConverter.UBO_SCRIPTLET_MASK_REGEXP, target: rule)[0];
         let domains = rule.subString(from: 0, toSubstring: mask);
 
         let template: String;
@@ -117,7 +126,7 @@ class RuleConverter {
         return (
             rule.contains(ABP_SCRIPTLET_MASK) ||
             rule.contains(ABP_SCRIPTLET_EXCEPTION_MASK)) &&
-            !rule.isMatch(regex: ADG_CSS_MASK_REG);
+            !SimpleRegex.isMatch(regex: RuleConverter.ADG_CSS_MASK_REGEXP, target: rule);
     }
     
     /**
@@ -368,8 +377,7 @@ class RuleConverter {
     * Return array of strings separated by space which not in quotes
     */
     private func getSentences(str: String) -> [String] {
-        let reg = #"'.*?'|".*?"|\S+"#;
-        return str.matches(regex: reg);
+        return SimpleRegex.matches(regex: RuleConverter.SENTENCES_REGEXP, target: str);
     }
 
     private func getStringInBraces(str: String) -> String {

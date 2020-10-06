@@ -5,6 +5,7 @@ import Foundation
  */
 class NetworkRule: Rule {
     private static let MASK_WHITE_LIST = "@@";
+    private static let DOMAIN_VALIDATION_REGEXP = try! NSRegularExpression(pattern: "^[a-zA-Z0-9][a-zA-Z0-9-.]*[a-zA-Z0-9]\\.[a-zA-Z-]{2,}$", options: [.caseInsensitive]);
 
     var isUrlBlock = false;
     var isCssExceptionRule = false;
@@ -142,7 +143,7 @@ class NetworkRule: Rule {
         let domain = symbolIndex == -1 ? self.urlRuleText.subString(startIndex: startIndex) : self.urlRuleText.subString(startIndex: startIndex, toIndex: symbolIndex);
         let path = symbolIndex == -1 ? nil : self.urlRuleText.subString(startIndex: symbolIndex, toIndex: pathEndIndex);
 
-        if (!domain.isMatch(regex: "^[a-zA-Z0-9][a-zA-Z0-9-.]*[a-zA-Z0-9]\\.[a-zA-Z-]{2,}$")) {
+        if (!SimpleRegex.isMatch(regex: NetworkRule.DOMAIN_VALIDATION_REGEXP, target: domain)) {
             // Not a valid domain name, ignore it
             return nil;
         }

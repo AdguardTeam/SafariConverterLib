@@ -44,6 +44,14 @@ class BlockerEntryFactory {
         "com.vn", "hk", "org.au", "tk", "lv", "live", "to", "mobi", "gov.cn", "sh"
     ];
     
+    /**
+     * Precompiled validate regexps
+     */
+    private static let VALIDATE_REGEXP_DIGITS    = try! NSRegularExpression(pattern: "\\{[0-9,]+\\}", options: [.caseInsensitive]);
+    private static let VALIDATE_REGEXP_OR        = try! NSRegularExpression(pattern: #"[^\\]+\|+\S*"#, options: [.caseInsensitive]);
+    private static let VALIDATE_REGEXP_LOOKAHEAD = try! NSRegularExpression(pattern: "\\(\\?!.*\\)", options: [.caseInsensitive]);
+    private static let VALIDATE_REGEXP_METACHARS = try! NSRegularExpression(pattern: #"[^\\]\\[bdfnrstvw]"#, options: [.caseInsensitive]);
+    
     let advancedBlockingEnabled: Bool;
     let errorsCounter: ErrorsCounter;
     
@@ -178,7 +186,7 @@ class BlockerEntryFactory {
             return BlockerEntryFactory.URL_FILTER_WS_ANY_URL + ".*" + urlRegExpSource!;
         }
 
-        try validateRegExp(regExp: urlRegExpSource!);
+        try validateRegExp(urlRegExp: urlRegExpSource!);
         return urlRegExpSource!;
     };
     
@@ -335,7 +343,7 @@ class BlockerEntryFactory {
         
         return result;
     };
-    
+        
     /**
      * Safari doesn't support some regular expressions
      * Supporeted expressions:
@@ -348,36 +356,36 @@ class BlockerEntryFactory {
      * * - Matches the preceding character zero or more times.
      * ? - Matches the preceding character zero or one time.
      */
-    private func validateRegExp(regExp: String) throws -> Void {
+    private func validateRegExp(urlRegExp: String) throws -> Void {
         // Safari doesn't support {digit} in regular expressions
-        if (regExp.contains("{")) {
-            if (regExp.isMatch(regex: "\\{[0-9,]+\\}")) {
+        if (urlRegExp.contains("{")) {
+            if (SimpleRegex.isMatch(regex: BlockerEntryFactory.VALIDATE_REGEXP_DIGITS, target: urlRegExp)) {
                 throw ConversionError.unsupportedRegExp(message: "Safari doesn't support '{digit}' in regular expressions");
             }
         }
 
         // Safari doesn't support | in regular expressions
-        if (regExp.contains("|")) {
-            if (regExp.isMatch(regex: #"[^\\]+\|+\S*"#)) {
+        if (urlRegExp.contains("|")) {
+            if (SimpleRegex.isMatch(regex: BlockerEntryFactory.VALIDATE_REGEXP_OR, target: urlRegExp)) {
                 throw ConversionError.unsupportedRegExp(message: "Safari doesn't support '|' in regular expressions");
             }
         }
 
         // Safari doesn't support non-ASCII characters in regular expressions
-        if (!regExp.isUnicode()) {
+        if (!urlRegExp.isUnicode()) {
             throw ConversionError.unsupportedRegExp(message: "Safari doesn't support non-ASCII characters in regular expressions");
         }
 
         // Safari doesn't support negative lookahead (?!...) in regular expressions
-        if (regExp.contains("(?!")) {
-            if (regExp.isMatch(regex: "\\(\\?!.*\\)")) {
+        if (urlRegExp.contains("(?!")) {
+            if (SimpleRegex.isMatch(regex: BlockerEntryFactory.VALIDATE_REGEXP_LOOKAHEAD, target: urlRegExp)) {
                 throw ConversionError.unsupportedRegExp(message: "Safari doesn't support negative lookahead in regular expressions");
             }
         }
 
         // Safari doesn't support metacharacters in regular expressions
-        if (regExp.contains("\\")) {
-            if (regExp.isMatch(regex: #"[^\\]\\[bdfnrstvw]"#)) {
+        if (urlRegExp.contains("\\")) {
+            if (SimpleRegex.isMatch(regex: BlockerEntryFactory.VALIDATE_REGEXP_METACHARS, target: urlRegExp)) {
                 throw ConversionError.unsupportedRegExp(message: "Safari doesn't support metacharacters in regular expressions");
             }
         }
