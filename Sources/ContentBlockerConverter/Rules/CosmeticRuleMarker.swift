@@ -20,12 +20,18 @@ enum CosmeticRuleMarker: String, CaseIterable {
 
     case Html = "$$"
     case HtmlException = "$@$"
+    
+    private static var sorted: [CosmeticRuleMarker]? = nil;
 
     private static func sortedCases() -> [CosmeticRuleMarker] {
-        let allCases = CosmeticRuleMarker.allCases;
-        return allCases.sorted { (left, right) -> Bool in
-            return right.rawValue.count < left.rawValue.count;
-        };
+        if (self.sorted == nil) {
+            let allCases = CosmeticRuleMarker.allCases;
+            self.sorted = allCases.sorted { (left, right) -> Bool in
+                return right.rawValue.count < left.rawValue.count;
+            };
+        }
+        
+        return self.sorted!;
     }
     
     /**
