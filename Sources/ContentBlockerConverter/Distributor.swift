@@ -1,5 +1,10 @@
 import Foundation
 
+    /**
+     * Maximum domains amount for css blocking rule
+     */
+    private let MAX_DOMAINS_FOR_CSS_BLOCKING_RULE = 250;
+
 /**
  * Distributor class
  * Creates a distribution ready result object
@@ -69,10 +74,23 @@ class Distributor {
         for var entry in entries {
             entry.trigger.setIfDomain(domains: addWildcard(domains: entry.trigger.ifDomain));
             entry.trigger.setUnlessDomain(domains: addWildcard(domains: entry.trigger.unlessDomain));
-            
-            result.append(entry);
+
+            // ToDo: refactor ()move to separate function)
+            let domainsNum = entry.trigger.ifDomain?.count ?? 0;
+            if entry.trigger.ifDomain != nil && domainsNum > MAX_DOMAINS_FOR_CSS_BLOCKING_RULE {
+                let newEntriesNum = domainsNum / MAX_DOMAINS_FOR_CSS_BLOCKING_RULE;
+                for n in 1...newEntriesNum {
+                    let domainsChunk = entry.trigger.ifDomain?.prefix(n * MAX_DOMAINS_FOR_CSS_BLOCKING_RULE).suffix(MAX_DOMAINS_FOR_CSS_BLOCKING_RULE);
+
+                    var newEntry = entry;
+                    newEntry.trigger.setIfDomain(domains: Array(domainsChunk!));
+                    result.append(newEntry);
+                }
+            } else {
+                result.append(entry);
+            }
         }
-        
+
         return result;
     };
     
@@ -89,7 +107,7 @@ class Distributor {
                 result.append(domain);
             }
         }
-        
+
         return result;
     };
 }
