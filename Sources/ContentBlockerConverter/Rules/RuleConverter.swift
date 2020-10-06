@@ -24,6 +24,8 @@ class RuleConverter {
      * AdGuard CSS rule mask
      */
     private let ADG_CSS_MASK_REG = "#@?\\$#.+?\\s*\\{.*\\}\\s*$";
+    private let ADG_CSS_BLOCKING_RULE_MASK = "##";
+    private let ADG_CSS_BLOCKING_RULE_EXCEPTION_MASK = "#@#";
     
     /**
      * AdGuard scriptlet mask
@@ -34,6 +36,11 @@ class RuleConverter {
      * AdGuard scriptlet exception mask
      */
     private let ADGUARD_SCRIPTLET_EXCEPTION_MASK = "${domains}#@%#//scriptlet(${args})";
+
+    /**
+     * Maximum domains amount for css blocking rule
+     */
+    private let MAX_DOMAINS_FOR_CSS_BLOCKING_RULE = 250;
     
     /**
      * Converts text to AG supported rule format
@@ -71,6 +78,10 @@ class RuleConverter {
         let ruleWithConvertedOptions = convertOptions(rule: rule);
         if (ruleWithConvertedOptions != nil) {
             return ruleWithConvertedOptions!;
+        }
+
+        if (isCssBlockingRule(rule: rule)) {
+            return handleMaxDomains(rule: rule);
         }
         
         return [rule];
@@ -162,7 +173,61 @@ class RuleConverter {
         
         return result;
     }
-    
+
+    private func isCssBlockingRule(rule: String) -> Bool {
+        return (
+            !rule.contains(UBO_SCRIPTLET_MASK_1) ||
+            !rule.contains(UBO_SCRIPTLET_MASK_2) ||
+            !rule.contains(UBO_SCRIPTLET_EXCEPTION_MASK_1) ||
+            !rule.contains(UBO_SCRIPTLET_EXCEPTION_MASK_2) ||
+            !rule.contains(UBO_SCRIPT_TAG_MASK) &&
+            (rule.contains(ADG_CSS_BLOCKING_RULE_MASK) ||
+             rule.contains(ADG_CSS_BLOCKING_RULE_EXCEPTION_MASK))
+        );
+    }
+
+    /**
+     * Check domains amount in rule and if it's over limit divides into separate rules
+     */
+    private func checkAndDivideRule(rule: String, mask: String) -> [String] {
+        let splitted = rule.components(separatedBy: mask);
+            let domains = splitted[0].components(separatedBy: ",");
+            let selectors = splitted[1];
+
+            if (domains.count > MAX_DOMAINS_FOR_CSS_BLOCKING_RULE) {
+                let rulesNum = domains.count / MAX_DOMAINS_FOR_CSS_BLOCKING_RULE;
+                var resultRules = [String]();
+
+                for n in 1...rulesNum {
+                    let limitedDomains = domains.prefix(MAX_DOMAINS_FOR_CSS_BLOCKING_RULE * n).suffix(MAX_DOMAINS_FOR_CSS_BLOCKING_RULE).joined(separator: ",");
+                    let limitedRule = limitedDomains + mask + selectors;
+                    resultRules.append(limitedRule);
+                }
+
+                if (domains.count % MAX_DOMAINS_FOR_CSS_BLOCKING_RULE > 0) {
+                    let lastRuleDomainsNum = domains.count % MAX_DOMAINS_FOR_CSS_BLOCKING_RULE;
+                    let lastRuleDomains = domains.suffix(lastRuleDomainsNum).joined(separator: ",");
+                    let limitedRule = lastRuleDomains + mask + selectors;
+                    resultRules.append(limitedRule);
+                }
+                return resultRules;
+            }
+            return [rule];
+    }
+
+    /**
+     * Handle domains amount for css blocking rules and exceptions
+     */
+    func handleMaxDomains(rule: String) -> [String] {
+        if (rule.contains(ADG_CSS_BLOCKING_RULE_EXCEPTION_MASK)) {
+            return checkAndDivideRule(rule: rule, mask: ADG_CSS_BLOCKING_RULE_EXCEPTION_MASK);
+        }
+        if (rule.contains(ADG_CSS_BLOCKING_RULE_MASK)) {
+            return checkAndDivideRule(rule: rule, mask: ADG_CSS_BLOCKING_RULE_MASK);
+        }
+        return [rule];
+    }
+
     /**
      * Converts UBO Script rule
      * @param {string} ruleText rule text
