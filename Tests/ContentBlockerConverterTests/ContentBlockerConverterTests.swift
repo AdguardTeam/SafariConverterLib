@@ -565,8 +565,8 @@ final class ContentBlockerConverterTests: XCTestCase {
         // ToDo: test conversion result of css blocking exception rule
         // XCTAssertEqual(result2?.totalConvertedCount, 2);
         // XCTAssertEqual(result2?.convertedCount, 2);
-        // XCTAssertEqual(result2?.errorsCount, 0);
-        // XCTAssertEqual(result2?.overLimit, false);
+        XCTAssertEqual(result2?.errorsCount, 0);
+        XCTAssertEqual(result2?.overLimit, false);
         }
                 
     static var allTests = [

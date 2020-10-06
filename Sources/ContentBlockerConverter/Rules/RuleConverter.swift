@@ -176,13 +176,13 @@ class RuleConverter {
 
     private func isCssBlockingRule(rule: String) -> Bool {
         return (
-            !rule.contains(UBO_SCRIPTLET_MASK_1) ||
-            !rule.contains(UBO_SCRIPTLET_MASK_2) ||
-            !rule.contains(UBO_SCRIPTLET_EXCEPTION_MASK_1) ||
-            !rule.contains(UBO_SCRIPTLET_EXCEPTION_MASK_2) ||
-            !rule.contains(UBO_SCRIPT_TAG_MASK) &&
             (rule.contains(ADG_CSS_BLOCKING_RULE_MASK) ||
-             rule.contains(ADG_CSS_BLOCKING_RULE_EXCEPTION_MASK))
+            rule.contains(ADG_CSS_BLOCKING_RULE_EXCEPTION_MASK)) &&
+            !rule.contains(UBO_SCRIPTLET_MASK_1) &&
+            !rule.contains(UBO_SCRIPTLET_MASK_2) &&
+            !rule.contains(UBO_SCRIPTLET_EXCEPTION_MASK_1) &&
+            !rule.contains(UBO_SCRIPTLET_EXCEPTION_MASK_2) &&
+            !rule.contains(UBO_SCRIPT_TAG_MASK)
         );
     }
 
