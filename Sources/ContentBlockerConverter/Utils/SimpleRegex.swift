@@ -84,8 +84,6 @@ class SimpleRegex {
         }
     }
     
-    private static let SPECIAL_CHARS: Array<Character> = [".", "?", "$", "{", "}", "(", ")", "[", "]", "/"];
-    
     /**
      * Escapes regular expression string
      * https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/regexp
@@ -93,24 +91,14 @@ class SimpleRegex {
      * except of * | ^
      */
     private static func escapeRegExp(str: String) -> String {
-        var result = "";
+        var result = str;
         
-        for char in str {
-            if (SimpleRegex.SPECIAL_CHARS.contains(char)) {
-                result.append("\\");
-            }
-            
-            result.append(char);
+        let specials = [".", "?", "$", "{", "}", "(", ")", "[", "]", "/"];
+        for special in specials {
+            result = result.replacingOccurrences(of: special, with: "\\" + special);
         }
         
         return result;
-        
-//        var result = str;
-//        for special in specials {
-//            result = result.replacingOccurrences(of: special, with: "\\" + special);
-//        }
-//
-//        return result;
     }
     
     private static func replaceAll(str: String, find: String, replace: String) -> String {
