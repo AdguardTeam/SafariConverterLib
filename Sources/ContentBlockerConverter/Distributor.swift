@@ -86,11 +86,17 @@ class Distributor {
                     newEntry.trigger.setIfDomain(domains: Array(domainsChunk!));
                     result.append(newEntry);
                 }
+                if (entry.trigger.ifDomain != nil && domainsNum % MAX_DOMAINS_FOR_CSS_BLOCKING_RULE > 0) {
+                    let lastEntryDomainsNum = domainsNum % MAX_DOMAINS_FOR_CSS_BLOCKING_RULE;
+                    let lastEntryDomains = entry.trigger.ifDomain?.suffix(lastEntryDomainsNum);
+                    var lastEntry = entry;
+                    lastEntry.trigger.setIfDomain(domains: Array(lastEntryDomains!));
+                    result.append(lastEntry);
+                }
             } else {
                 result.append(entry);
             }
         }
-
         return result;
     };
     
