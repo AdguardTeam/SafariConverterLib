@@ -26,6 +26,11 @@ class SimpleRegex {
     private static let regexEndString = "$";
     
     /**
+     * Special characters to escape
+     */
+    private static let SPECIAL_CHARS = [".", "?", "$", "{", "}", "(", ")", "[", "]", "/"];
+    
+    /**
     * Creates regex
     */
     public static func createRegexText(str: String) -> String? {
@@ -93,8 +98,7 @@ class SimpleRegex {
     private static func escapeRegExp(str: String) -> String {
         var result = str;
         
-        let specials = [".", "?", "$", "{", "}", "(", ")", "[", "]", "/"];
-        for special in specials {
+        for special in SimpleRegex.SPECIAL_CHARS {
             result = result.replacingOccurrences(of: special, with: "\\" + special);
         }
         
