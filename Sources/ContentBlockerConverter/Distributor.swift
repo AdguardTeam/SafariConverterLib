@@ -21,15 +21,15 @@ extension Array {
  * Creates a distribution ready result object
  */
 class Distributor {
-    
+
     private let limit: Int;
     private let advancedBlockedEnabled: Bool;
-    
+
     init(limit: Int, advancedBlocking: Bool) {
         self.limit = limit;
         self.advancedBlockedEnabled = advancedBlocking;
     }
-    
+
     /**
      * Creates final conversion result from compilation result object
      */
@@ -64,9 +64,9 @@ class Distributor {
 
             advBlockingEntries = updateDomains(entries: advBlockingEntries);
         }
-        
+
         let errorsCount = data.errorsCount;
-        
+
         return try ConversionResult(
             entries: entries,
             advBlockingEntries: advBlockingEntries,
@@ -75,7 +75,7 @@ class Distributor {
             message: data.message
         );
     }
-    
+
     /**
      * Updates if-domain and unless-domain fields.
      * Adds wildcard to every rule and divide rules contains over limit domains
@@ -102,7 +102,7 @@ class Distributor {
         }
         return result;
     };
-    
+
     private func addWildcard(domains: [String]?) -> [String]? {
         if domains == nil || domains?.count == 0 {
             return domains;
