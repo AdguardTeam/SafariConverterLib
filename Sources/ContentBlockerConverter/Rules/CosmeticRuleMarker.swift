@@ -42,14 +42,75 @@ enum CosmeticRuleMarker: String, CaseIterable {
             return (-1, nil);
         }
         
-        let sortedCases = CosmeticRuleMarker.sortedCases();
-        for marker in sortedCases {
-            let index = ruleText.indexOf(target: marker.rawValue);
-            if (index > -1) {
-                return (index, marker);
+        let arr = Array(ruleText)
+        let maxIndex = arr.count-1
+        for i in 0...maxIndex {
+            let char = arr[i]
+            switch char {
+                case "#":
+                    if i + 4 <= maxIndex {
+                        if arr[i + 1] == "@" && arr[i + 2] == "$" && arr[i + 3] == "?" && arr[i + 4] == "#"{
+                            return (i, CssExtCSSException);
+                        }
+                    }
+                    
+                    if i + 3 <= maxIndex {
+                        if arr[i + 1] == "@" && arr[i + 2] == "?" && arr[i + 3] == "#"{
+                            return (i, ElementHidingExtCSSException);
+                        }
+                        
+                        if arr[i + 1] == "@" && arr[i + 2] == "$" && arr[i + 3] == "#"{
+                            return (i, CssException);
+                        }
+                        
+                        if arr[i + 1] == "@" && arr[i + 2] == "%" && arr[i + 3] == "#"{
+                            return (i, JsException);
+                        }
+                        
+                        if arr[i + 1] == "$" && arr[i + 2] == "?" && arr[i + 3] == "#"{
+                            return (i, CssExtCSS);
+                        }
+                    }
+                    
+                    if i + 2 <= maxIndex {
+                        if arr[i + 1] == "@" && arr[i + 2] == "#" {
+                            return (i, ElementHidingException);
+                        }
+                        
+                        if arr[i + 1] == "?" && arr[i + 2] == "#" {
+                            return (i, ElementHidingExtCSS);
+                        }
+                        
+                        if arr[i + 1] == "%" && arr[i + 2] == "#" {
+                            return (i, Js);
+                        }
+                        
+                        if arr[i + 1] == "$" && arr[i + 2] == "#" {
+                            return (i, Css);
+                        }
+                    }
+                    
+                    if i + 1 <= maxIndex {
+                        if arr[i + 1] == "#" {
+                            return (i, ElementHiding);
+                        }
+                    }
+                case "$":
+                    if i + 2 <= maxIndex {
+                        if arr[i + 1] == "@" && arr[i + 2] == "$" {
+                            return (i, HtmlException);
+                        }
+                    }
+                    
+                    if i + 1 <= maxIndex {
+                        if arr[i + 1] == "$" {
+                            return (i, Html);
+                        }
+                    }
+                default: break
             }
         }
-
+        
         return (-1, nil);
     }
 }
