@@ -1,9 +1,20 @@
 import Foundation
 
-    /**
-     * Maximum domains amount for css blocking rule
-     */
-    private let MAX_DOMAINS_FOR_CSS_BLOCKING_RULE = 250;
+/**
+ * Maximum domains amount for css blocking rule
+ */
+private let MAX_DOMAINS_FOR_RULE = 250;
+
+/**
+ * Extension to divide array by chunk size
+ */
+extension Array {
+    func chunked(into size: Int) -> [[Element]] {
+        return stride(from: 0, to: count, by: size).map {
+            Array(self[$0 ..< Swift.min($0 + size, count)])
+        }
+    }
+}
 
 /**
  * Distributor class
@@ -35,7 +46,7 @@ class Distributor {
         entries.append(contentsOf: data.importantExceptions);
         entries.append(contentsOf: data.documentExceptions);
 
-        entries = applyDomainWildcards(entries: entries);
+        entries = updateDomains(entries: entries);
 
         var advBlockingEntries = [BlockerEntry]();
         if (self.advancedBlockedEnabled) {
@@ -51,7 +62,7 @@ class Distributor {
             advBlockingEntries.append(contentsOf: data.importantExceptions);
             advBlockingEntries.append(contentsOf: data.documentExceptions);
 
-            advBlockingEntries = applyDomainWildcards(entries: advBlockingEntries);
+            advBlockingEntries = updateDomains(entries: advBlockingEntries);
         }
         
         let errorsCount = data.errorsCount;
@@ -67,31 +78,23 @@ class Distributor {
     
     /**
      * Updates if-domain and unless-domain fields.
-     * Adds wildcard to every rule
+     * Adds wildcard to every rule and divide rules contains over limit domains
      */
-    func applyDomainWildcards(entries: [BlockerEntry]) -> [BlockerEntry] {
+    func updateDomains(entries: [BlockerEntry]) -> [BlockerEntry] {
         var result = [BlockerEntry]();
         for var entry in entries {
             entry.trigger.setIfDomain(domains: addWildcard(domains: entry.trigger.ifDomain));
             entry.trigger.setUnlessDomain(domains: addWildcard(domains: entry.trigger.unlessDomain));
 
-            // ToDo: refactor ()move to separate function)
+            // ToDo: refactor (move to separate function)
             let domainsNum = entry.trigger.ifDomain?.count ?? 0;
-            if entry.trigger.ifDomain != nil && domainsNum > MAX_DOMAINS_FOR_CSS_BLOCKING_RULE {
-                let newEntriesNum = domainsNum / MAX_DOMAINS_FOR_CSS_BLOCKING_RULE;
-                for n in 1...newEntriesNum {
-                    let domainsChunk = entry.trigger.ifDomain?.prefix(n * MAX_DOMAINS_FOR_CSS_BLOCKING_RULE).suffix(MAX_DOMAINS_FOR_CSS_BLOCKING_RULE);
+            if domainsNum > MAX_DOMAINS_FOR_RULE {
+                let chunkedDomains = [[String]]?(entry.trigger.ifDomain!.chunked(into: MAX_DOMAINS_FOR_RULE));
 
+                for chunk in chunkedDomains! {
                     var newEntry = entry;
-                    newEntry.trigger.setIfDomain(domains: Array(domainsChunk!));
+                    newEntry.trigger.setIfDomain(domains: Array(chunk));
                     result.append(newEntry);
-                }
-                if entry.trigger.ifDomain != nil && domainsNum % MAX_DOMAINS_FOR_CSS_BLOCKING_RULE > 0 {
-                    let lastEntryDomainsNum = domainsNum % MAX_DOMAINS_FOR_CSS_BLOCKING_RULE;
-                    let lastEntryDomains = entry.trigger.ifDomain?.suffix(lastEntryDomainsNum);
-                    var lastEntry = entry;
-                    lastEntry.trigger.setIfDomain(domains: Array(lastEntryDomains!));
-                    result.append(lastEntry);
                 }
             } else {
                 result.append(entry);

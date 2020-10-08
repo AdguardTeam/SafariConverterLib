@@ -42,7 +42,7 @@ final class DistributorTests: XCTestCase {
             BlockerEntry(trigger: testTrigger, action: testAction)
         ];
         
-        entries = builder.applyDomainWildcards(entries: entries);
+        entries = builder.updateDomains(entries: entries);
         
         XCTAssertEqual(entries[0].trigger.ifDomain![0], "*test_if_domain");
         XCTAssertEqual(entries[0].trigger.ifDomain![1], "*wildcarded_if_domain");
@@ -68,7 +68,7 @@ final class DistributorTests: XCTestCase {
 
         let decoded = try! parseJsonString(json: convertedRule!.converted);
         let entries: [BlockerEntry]  = [BlockerEntry(trigger: decoded[0].trigger, action: decoded[0].action)];
-        let result = builder.applyDomainWildcards(entries: entries);
+        let result = builder.updateDomains(entries: entries);
         XCTAssertNotNil(result);
         XCTAssertEqual(result.count, 1); // ToDO: Must be 2
         XCTAssertEqual(result[0].trigger.ifDomain!.count, 250);
