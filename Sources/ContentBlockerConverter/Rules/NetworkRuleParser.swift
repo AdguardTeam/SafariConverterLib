@@ -42,30 +42,37 @@ class NetworkRuleParser {
     }
 
     private static func findOptionsDelimeterIndex(ruleText: String) -> Int {
+        if (!ruleText.contains("$")) {
+            return -1;
+        }
+        
         var index = -1;
         var maxLength = ruleText.count;
         
+        let arr = Array(ruleText);
+        let maxIndex = maxLength - 1;
+
         repeat {
             index = ruleText.lastIndexOf(target: "$", maxLength: maxLength);
             if (index == -1) {
                 return index;
             }
-            
+
             maxLength = index;
-            
+
             // ignore \$
-            if (index > 0 && Array(ruleText)[index - 1] == "\\") {
+            if (index > 0 && arr[index - 1] == "\\") {
                 continue;
             }
-            
+
             // ignore $/
-            if (index + 1 < ruleText.count && Array(ruleText)[index + 1] == "/") {
+            if (index < maxIndex && arr[index + 1] == "/") {
                 continue;
             }
-            
+
             return index;
         } while (index > -1)
-        
+
         return index;
     }
 
