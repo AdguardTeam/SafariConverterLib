@@ -6,17 +6,6 @@ import Foundation
 private let MAX_DOMAINS_FOR_RULE = 250;
 
 /**
- * Extension to divide array by chunk size
- */
-extension Array {
-    func chunked(into size: Int) -> [[Element]] {
-        return stride(from: 0, to: count, by: size).map {
-            Array(self[$0 ..< Swift.min($0 + size, count)])
-        }
-    }
-}
-
-/**
  * Distributor class
  * Creates a distribution ready result object
  */
