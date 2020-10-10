@@ -61,9 +61,9 @@ final class DistributorTests: XCTestCase {
 
     let converter = ContentBlockerConverter();
 
-    func testHandleMaxDomainsForCssBlockingRules() {
+    func testHandleIfDomainsLimit() {
         let builder = Distributor(limit: 0, advancedBlocking: true);
-        
+
         var testTrigger = BlockerEntry.Trigger(
             ifDomain: [],
             urlFilter: "test_url_filter",
@@ -71,7 +71,7 @@ final class DistributorTests: XCTestCase {
             shortcut: "test_shorcut",
             regex: nil
         );
-        
+
         let testAction = BlockerEntry.Action(
             type: "test_type",
             selector: nil,
@@ -80,14 +80,14 @@ final class DistributorTests: XCTestCase {
             scriptlet: nil,
             scriptletParam: nil
         );
-        
+
         var domains = [String]();
         for var index in (1...551) {
             domains.append("test-domain-" + String(index));
         }
-        
+
         testTrigger.setIfDomain(domains: domains);
-        
+
         let entries = [
             BlockerEntry(trigger: testTrigger, action: testAction)
         ];
@@ -100,11 +100,51 @@ final class DistributorTests: XCTestCase {
         XCTAssertEqual(result[2].trigger.ifDomain!.count, 51);
     }
 
+    func testHandleUnlessDomainsLimit() {
+        let builder = Distributor(limit: 0, advancedBlocking: true);
+
+        var testTrigger = BlockerEntry.Trigger(
+            ifDomain: ["test_if_domain"],
+            urlFilter: "test_url_filter",
+            unlessDomain: [],
+            shortcut: "test_shorcut",
+            regex: nil
+        );
+
+        let testAction = BlockerEntry.Action(
+            type: "test_type",
+            selector: nil,
+            css: "test_css",
+            script: nil,
+            scriptlet: nil,
+            scriptletParam: nil
+        );
+
+        var domains = [String]();
+        for var index in (1...551) {
+            domains.append("test-unless-domain-" + String(index));
+        }
+
+        testTrigger.setUnlessDomain(domains: domains);
+
+        let entries = [
+            BlockerEntry(trigger: testTrigger, action: testAction)
+        ];
+
+        let result = builder.updateDomains(entries: entries);
+        XCTAssertNotNil(result);
+        XCTAssertEqual(result.count, 3);
+        XCTAssertEqual(result[0].trigger.unlessDomain!.count, 250);
+        XCTAssertEqual(result[1].trigger.unlessDomain!.count, 250);
+        XCTAssertEqual(result[2].trigger.unlessDomain!.count, 51);
+    }
+
 
     static var allTests = [
         ("testEmpty", testEmpty),
         ("testApplyWildcards", testApplyWildcards),
-        ("testHandleMaxDomainsForCssBlockingRules", testHandleMaxDomainsForCssBlockingRules),
+        ("testHandleIfDomainsLimit", testHandleIfDomainsLimit),
+        ("testHandleUnlessDomainsLimit", testHandleUnlessDomainsLimit),
     ]
 }
 
