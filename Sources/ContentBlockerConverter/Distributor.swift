@@ -66,7 +66,7 @@ class Distributor {
     }
 
     /**
-     * Checks the if-domain amount and divide entry if it's over limit
+     * Checks the if-domain and unless-domain amount and divide entry if it's over limit
      */
     private func handleDomainLimit(entry: BlockerEntry) -> [BlockerEntry] {
         var result = [BlockerEntry]();
