@@ -47,7 +47,7 @@ final class RuleFactoryTests: XCTestCase {
             try! RuleFactory.createRule(ruleText: "||example.org^$image,badfilter") as! NetworkRule
         ]
         
-        let filtered = RuleFactory.applyBadFilterExceptions(rules: rules as! [Rule], badfilterRules: badfilters);
+        let filtered = RuleFactory.applyBadFilterExceptions(rules: rules as! [NetworkRule], badfilterRules: badfilters);
         XCTAssertNotNil(filtered);
         XCTAssertEqual(filtered.count, 1);
         XCTAssertEqual(filtered[0].ruleText, "||test.org^");
@@ -55,26 +55,25 @@ final class RuleFactoryTests: XCTestCase {
     
     func testApplyBadfilterDomainExceptions() {
         let rules = [
-            try! RuleFactory.createRule(ruleText: "*$domain=google.com,third-party,important"),
             try! RuleFactory.createRule(ruleText: "*$domain=test1.com,third-party,important"),
-            try! RuleFactory.createRule(ruleText: "*$domain=test2.com|google.com,third-party,important"),
-            try! RuleFactory.createRule(ruleText: "*$domain=test3.com|google.com|lenta.ru,third-party,important"),
-            try! RuleFactory.createRule(ruleText: "*$domain=test4.com|google.com|example.org|lenta.ru,third-party,important"),
-            try! RuleFactory.createRule(ruleText: "*$domain=google.com,important"),
+            try! RuleFactory.createRule(ruleText: "*$domain=test2.com,important"),
+            try! RuleFactory.createRule(ruleText: "*$domain=bad1.com,third-party,important"),
+            try! RuleFactory.createRule(ruleText: "*$domain=bad2.com|google.com,third-party,important"),
+            try! RuleFactory.createRule(ruleText: "*$domain=bad1.com|bad2.com|lenta.ru,third-party,important"),
+            try! RuleFactory.createRule(ruleText: "*$domain=bad1.com|bad2.com|lenta.ru,third-party,important"),
+            try! RuleFactory.createRule(ruleText: "*$domain=bad2.com|bad1.com,third-party,important"),
+
         ];
         
         let badfilters = [
-            try! RuleFactory.createRule(ruleText: "*$domain=bad.com|google.com|example.org|lenta.ru,third-party,important,badfilter") as! NetworkRule
+            try! RuleFactory.createRule(ruleText: "*$domain=bad1.com|bad2.com,third-party,important,badfilter") as! NetworkRule
         ]
         
-        let filtered = RuleFactory.applyBadFilterExceptions(rules: rules as! [Rule], badfilterRules: badfilters);
+        let filtered = RuleFactory.applyBadFilterExceptions(rules: rules as! [NetworkRule], badfilterRules: badfilters);
         XCTAssertNotNil(filtered);
-        XCTAssertEqual(filtered.count, 5);
-        XCTAssertEqual(filtered[0].ruleText, "*$domain=test1.com,empty,important");
-        XCTAssertEqual(filtered[1].ruleText, "*$domain=test2.com,empty,important");
-        XCTAssertEqual(filtered[2].ruleText, "*$domain=test3.com,empty,important");
-        XCTAssertEqual(filtered[3].ruleText, "*$domain=test4.com,empty,important");
-        XCTAssertEqual(filtered[4].ruleText, "*$domain=google.com,important");
+        XCTAssertEqual(filtered.count, 2);
+        XCTAssertEqual(filtered[0].ruleText, "*$domain=test1.com,third-party,important");
+        XCTAssertEqual(filtered[1].ruleText, "*$domain=test2.com,important");
     }
 
     static var allTests = [

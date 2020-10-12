@@ -18,6 +18,8 @@ class RuleFactory {
      */
     func createRules(lines: [String]) -> [Rule] {
         var result = [Rule]();
+        
+        var networkRules = [NetworkRule]();
         var badfilterRules = [NetworkRule]();
         
         for line in lines {
@@ -29,22 +31,24 @@ class RuleFactory {
                         let networkRule = rule as! NetworkRule;
                         if (networkRule.badfilter != nil) {
                             badfilterRules.append(networkRule);
-                            continue;
+                        } else {
+                            networkRules.append(networkRule);
                         }
+                    } else {
+                        result.append(rule!);
                     }
-                    
-                    result.append(rule!);
                 }
             }
         }
         
-        return RuleFactory.applyBadFilterExceptions(rules: result, badfilterRules: badfilterRules);
+        result += RuleFactory.applyBadFilterExceptions(rules: networkRules, badfilterRules: badfilterRules);
+        return result;
     }
     
     /**
      * Filters rules with badfilter exceptions
      */
-    static func applyBadFilterExceptions(rules: [Rule], badfilterRules: [NetworkRule]) -> [Rule] {
+    static func applyBadFilterExceptions(rules: [NetworkRule], badfilterRules: [NetworkRule]) -> [Rule] {
         var badfilters = [String]();
         for badFilter in badfilterRules {
             badfilters.append(badFilter.badfilter!);
@@ -52,12 +56,24 @@ class RuleFactory {
         
         var result = [Rule]();
         for rule in rules {
-            if (badfilters.firstIndex(of: rule.ruleText) == nil) {
-                result.append(rule);
+            if (RuleFactory.isRuleNegatedByBadFilters(rule: rule, badfilterRules: badfilterRules)) {
+                continue;
             }
+            
+            result.append(rule);
         }
         
         return result;
+    }
+    
+    static func isRuleNegatedByBadFilters(rule: NetworkRule, badfilterRules: [NetworkRule]) -> Bool {
+        for badfilter in badfilterRules {
+            if (badfilter.negatesBadfilter(specifiedRule: rule)) {
+                return true;
+            }
+        }
+        
+        return false;
     }
     
     func safeCreateRule(ruleText: String?) -> Rule? {
