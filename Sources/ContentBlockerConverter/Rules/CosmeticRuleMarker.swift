@@ -25,10 +25,6 @@ enum CosmeticRuleMarker: String, CaseIterable {
      * Parses marker from string source
      */
     static func findCosmeticRuleMarker(ruleText: String) -> ( index: Int, marker: CosmeticRuleMarker? ) {
-        if (!ruleText.contains("#") && !ruleText.contains("$")) {
-            return (-1, nil);
-        }
-
         let arr = Array(ruleText)
         let maxIndex = arr.count-1
         for i in 0...maxIndex {
