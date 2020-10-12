@@ -66,5 +66,6 @@ Push a new tag in `v*.*.*` format, then provided github action is intended to bu
 - Scriptlet rules (#%#//scriptlet)
 - Scriptlet rules exceptions
 
-### Third-party libraries
-- Punycode library (https://github.com/gumob/PunycodeSwift/tree/master/Source)
+### Third-party dependencies
+- Punycode (https://github.com/gumob/PunycodeSwift.git)
+- PMJSON (https://github.com/postmates/PMJSON.git)

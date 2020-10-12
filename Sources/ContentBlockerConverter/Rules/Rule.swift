@@ -1,4 +1,5 @@
 import Foundation
+import Punycode
 
 /**
  * AG Rule super class
