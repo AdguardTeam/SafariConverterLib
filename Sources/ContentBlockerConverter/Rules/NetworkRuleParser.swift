@@ -46,34 +46,31 @@ class NetworkRuleParser {
             return -1;
         }
         
-        var index = -1;
-        var maxLength = ruleText.count;
-        
         let arr = Array(ruleText);
-        let maxIndex = maxLength - 1;
+        let maxIndex = ruleText.count - 1;
+        
+        for i in 0...maxIndex {
+            let index = maxIndex - i;
+            let char = arr[index]
+            switch char {
+                case "$":
+                    // ignore \$
+                    if (index > 0 && arr[index - 1] == "\\") {
+                        continue;
+                    }
 
-        repeat {
-            index = ruleText.lastIndexOf(target: "$", maxLength: maxLength);
-            if (index == -1) {
-                return index;
+                    // ignore $/
+                    if (index < maxIndex && arr[index + 1] == "/") {
+                        continue;
+                    }
+                
+                    return index;
+                default:
+                    break;
             }
-
-            maxLength = index;
-
-            // ignore \$
-            if (index > 0 && arr[index - 1] == "\\") {
-                continue;
-            }
-
-            // ignore $/
-            if (index < maxIndex && arr[index + 1] == "/") {
-                continue;
-            }
-
-            return index;
-        } while (index > -1)
-
-        return index;
+        }
+        
+        return -1;
     }
 
     /**

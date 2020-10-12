@@ -330,7 +330,6 @@ final class GeneralTests: XCTestCase {
         let content = try! String(contentsOf: resourceURL, encoding: String.Encoding.utf8);
         let rules = content.components(separatedBy: "\n");
         
-        // Average time 4.7 sec
         self.measure {
             let conversionResult = ContentBlockerConverter().convertArray(rules: rules);
             NSLog(conversionResult!.message);
