@@ -26,18 +26,17 @@ extension String {
     }
     
     func lastIndexOf(target: String) -> Int {
-        var index = -1
-        var stepIndex = self.indexOf(target: target)
-        while stepIndex > -1
-        {
-            index = stepIndex
-            if stepIndex + target.count < self.count {
-                stepIndex = indexOf(target: target, startIndex: stepIndex + target.count)
-            } else {
-                stepIndex = -1
-            }
+        let range = self.range(of: target, options: .backwards)
+        if let range = range {
+            return distance(from: self.startIndex, to: range.lowerBound)
+        } else {
+            return -1
         }
-        return index
+    }
+    
+    func lastIndexOf(target: String, maxLength: Int) -> Int {
+        let cut = String(self.prefix(maxLength));
+        return cut.lastIndexOf(target: target);
     }
     
     func subString(startIndex: Int) -> String {
@@ -92,20 +91,6 @@ extension String {
         result.append(self.subString(startIndex: previous));
         
         return result;
-    }
-    
-    func isMatch(regex: String) -> Bool {
-        guard let regex = try? NSRegularExpression(pattern: regex, options: [.caseInsensitive]) else { return false }
-        let matchCount = regex.numberOfMatches(in: self, options: [], range: NSMakeRange(0, self.count))
-        return matchCount > 0
-    }
-    
-    func matches(regex: String) -> [String] {
-        guard let regex = try? NSRegularExpression(pattern: regex, options: [.caseInsensitive]) else { return [] }
-        let matches  = regex.matches(in: self, options: [], range: NSMakeRange(0, self.count))
-        return matches.map { match in
-            return String(self[Range(match.range, in: self)!])
-        }
     }
     
     func isUnicode() -> Bool {

@@ -1,4 +1,5 @@
 import Foundation
+import Punycode
 
 /**
  * Network rules parser
@@ -42,26 +43,34 @@ class NetworkRuleParser {
     }
 
     private static func findOptionsDelimeterIndex(ruleText: String) -> Int {
-        if (ruleText.indexOf(target: "$") == -1) {
+        if (!ruleText.contains("$")) {
             return -1;
         }
+        
+        let arr = Array(ruleText);
+        let maxIndex = ruleText.count - 1;
+        
+        for i in 0...maxIndex {
+            let index = maxIndex - i;
+            let char = arr[index]
+            switch char {
+                case "$":
+                    // ignore \$
+                    if (index > 0 && arr[index - 1] == "\\") {
+                        continue;
+                    }
 
-        for (index, char) in ruleText.enumerated().reversed() {
-            if (char == "$") {
-                // ignore \$
-                if (index > 0 && Array(ruleText)[index - 1] == "\\") {
-                    continue;
-                }
-
-                // ignore $/
-                if (index + 1 < ruleText.count && Array(ruleText)[index + 1] == "/") {
-                    continue;
-                }
-
-                return index;
+                    // ignore $/
+                    if (index < maxIndex && arr[index + 1] == "/") {
+                        continue;
+                    }
+                
+                    return index;
+                default:
+                    break;
             }
         }
-
+        
         return -1;
     }
 

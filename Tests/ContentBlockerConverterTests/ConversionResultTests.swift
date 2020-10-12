@@ -6,7 +6,7 @@ final class ConversionResultTests: XCTestCase {
         ifDomain: ["test_if_domain"],
         urlFilter: "test_url_filter",
         unlessDomain: ["test_unless_domain"],
-        shortcut: "test_shorcut",
+        shortcut: "test_shortcut",
         regex: nil
     );
     
@@ -19,26 +19,17 @@ final class ConversionResultTests: XCTestCase {
         scriptletParam: nil
     );
     
-    let correctEntryJSON = """
-    [
-      {
-        "trigger" : {
-          "unless-domain" : [
-            "test_unless_domain"
-          ],
-          "url-filter" : "test_url_filter",
-          "if-domain" : [
-            "test_if_domain"
-          ],
-          "url-shortcut" : "test_shorcut"
-        },
-        "action" : {
-          "type" : "test_type",
-          "css" : "test_css"
-        }
-      }
-    ]
-    """;
+    func assertEntry(actual: String?) -> Void {
+        XCTAssertNotNil(actual);
+        
+        XCTAssertTrue(actual!.contains("\"url-filter\": \"test_url_filter\""));
+        XCTAssertTrue(actual!.contains("test_unless_domain"));
+        XCTAssertTrue(actual!.contains("test_if_domain"));
+        XCTAssertTrue(actual!.contains("\"url-shortcut\": \"test_shortcut\""));
+        
+        XCTAssertTrue(actual!.contains("\"type\": \"test_type\""));
+        XCTAssertTrue(actual!.contains("\"css\": \"test_css\""));
+    }
     
     func testEmpty() {
         
@@ -48,7 +39,7 @@ final class ConversionResultTests: XCTestCase {
         XCTAssertEqual(result.convertedCount, 0);
         XCTAssertEqual(result.errorsCount, 0);
         XCTAssertEqual(result.overLimit, false);
-        XCTAssertEqual(result.converted, "[\n\n]");
+        XCTAssertEqual(result.converted, "[]");
     }
     
     func testSimple() {
@@ -64,7 +55,8 @@ final class ConversionResultTests: XCTestCase {
         XCTAssertEqual(result.errorsCount, 0);
         XCTAssertEqual(result.overLimit, false);
         XCTAssertEqual(result.message, "test");
-        XCTAssertEqual(result.converted, correctEntryJSON);
+        
+        assertEntry(actual: result.converted);
     }
     
     func testOverlimit() {
@@ -81,7 +73,7 @@ final class ConversionResultTests: XCTestCase {
         XCTAssertEqual(result.errorsCount, 1);
         XCTAssertEqual(result.overLimit, true);
         XCTAssertEqual(result.message, "test");
-        XCTAssertEqual(result.converted, correctEntryJSON);
+        assertEntry(actual: result.converted);
     }
     
     func testAdvancedBlocking() {
@@ -97,9 +89,10 @@ final class ConversionResultTests: XCTestCase {
         XCTAssertEqual(result.errorsCount, 0);
         XCTAssertEqual(result.overLimit, false);
         XCTAssertEqual(result.message, "test");
-        XCTAssertEqual(result.converted, correctEntryJSON);
+        assertEntry(actual: result.converted);
+        
         XCTAssertEqual(result.advancedBlockingConvertedCount, 1);
-        XCTAssertEqual(result.advancedBlocking, correctEntryJSON);
+        assertEntry(actual: result.advancedBlocking);
     
     }
 

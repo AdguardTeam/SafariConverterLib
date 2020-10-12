@@ -29,7 +29,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result?.convertedCount, 0);
         XCTAssertEqual(result?.errorsCount, 0);
         XCTAssertEqual(result?.overLimit, false);
-        XCTAssertEqual(result?.converted, "[\n\n]");
+        XCTAssertEqual(result?.converted, "[]");
     }
     
     func testConvertComment() {
@@ -39,7 +39,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result?.convertedCount, 0);
         XCTAssertEqual(result?.errorsCount, 0);
         XCTAssertEqual(result?.overLimit, false);
-        XCTAssertEqual(result?.converted, "[\n\n]");
+        XCTAssertEqual(result?.converted, "[]");
     }
     
     func testConvertNetworkRule() {
@@ -49,7 +49,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result?.convertedCount, 0);
         // XCTAssertEqual(result?.errorsCount, 1);
         XCTAssertEqual(result?.overLimit, false);
-        XCTAssertEqual(result?.converted, "[\n\n]");
+        XCTAssertEqual(result?.converted, "[]");
     }
     
     func testPopupRules() {
@@ -65,7 +65,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result?.convertedCount, 3);
         XCTAssertEqual(result?.errorsCount, 0);
         
-        let decoded = try! parseJsonString(json: result!.converted);
+        var decoded = try! parseJsonString(json: result!.converted);
         XCTAssertEqual(decoded.count, 3);
 
         XCTAssertEqual(decoded[0].trigger.urlFilter, START_URL_UNESCAPED + "example1\\.com");
@@ -83,123 +83,72 @@ final class ContentBlockerConverterTests: XCTestCase {
         // conversion of $document rule
         ruleText = ["||example.com$document"];
         result = converter.convertArray(rules: ruleText);
-        var expected = """
-        [
-          {
-            "trigger" : {
-              "url-filter" : "\(URL_FILTER_REGEXP_START_URL)example\\\\.com",
-              "resource-type" : [
-                "document"
-              ]
-            },
-            "action" : {
-              "type" : "block"
-            }
-          }
-        ]
-        """
+        
         XCTAssertEqual(result?.totalConvertedCount, 1);
         XCTAssertEqual(result?.convertedCount, 1);
         XCTAssertEqual(result?.errorsCount, 0);
-        XCTAssertEqual(result?.converted, expected);
+        
+        decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded[0].trigger.urlFilter, "\(START_URL_UNESCAPED)example\\.com");
+        XCTAssertEqual(decoded[0].trigger.resourceType, ["document"]);
+        XCTAssertEqual(decoded[0].action.type, "block");
+        
         
         // conversion of $document and $popup rule
         ruleText = ["||test.com$document,popup"];
         result = converter.convertArray(rules: ruleText);
-        expected = """
-        [
-          {
-            "trigger" : {
-              "url-filter" : "\(URL_FILTER_REGEXP_START_URL)test\\\\.com",
-              "resource-type" : [
-                "document"
-              ]
-            },
-            "action" : {
-              "type" : "block"
-            }
-          }
-        ]
-        """
+
         XCTAssertEqual(result?.totalConvertedCount, 1);
         XCTAssertEqual(result?.convertedCount, 1);
         XCTAssertEqual(result?.errorsCount, 0);
-        XCTAssertEqual(result?.converted, expected);
+        
+        decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded[0].trigger.urlFilter, "\(START_URL_UNESCAPED)test\\.com");
+        XCTAssertEqual(decoded[0].trigger.resourceType, ["document"]);
+        XCTAssertEqual(decoded[0].action.type, "block");
+        
         
         // conversion of $popup rule
         ruleText = ["||example.com^$popup"];
         result = converter.convertArray(rules: ruleText);
-        expected = """
-        [
-          {
-            "trigger" : {
-              "url-filter" : "\(URL_FILTER_REGEXP_START_URL)example\\\\.com[/:&?]?",
-              "resource-type" : [
-                "document"
-              ]
-            },
-            "action" : {
-              "type" : "block"
-            }
-          }
-        ]
-        """
+        
         XCTAssertEqual(result?.totalConvertedCount, 1);
         XCTAssertEqual(result?.convertedCount, 1);
         XCTAssertEqual(result?.errorsCount, 0);
-        XCTAssertEqual(result?.converted, expected);
+        
+        decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded[0].trigger.urlFilter, "\(START_URL_UNESCAPED)example\\.com[/:&?]?");
+        XCTAssertEqual(decoded[0].trigger.resourceType, ["document"]);
+        XCTAssertEqual(decoded[0].action.type, "block");
 
+        
         // conversion of $popup and third-party rule
         ruleText = ["||getsecuredfiles.com^$popup,third-party"];
         result = converter.convertArray(rules: ruleText);
-        expected = """
-        [
-          {
-            "trigger" : {
-              "url-filter" : "\(URL_FILTER_REGEXP_START_URL)getsecuredfiles\\\\.com[/:&?]?",
-              "load-type" : [
-                "third-party"
-              ],
-              "resource-type" : [
-                "document"
-              ]
-            },
-            "action" : {
-              "type" : "block"
-            }
-          }
-        ]
-        """
+        
         XCTAssertEqual(result?.totalConvertedCount, 1);
         XCTAssertEqual(result?.convertedCount, 1);
         XCTAssertEqual(result?.errorsCount, 0);
-        XCTAssertEqual(result?.converted, expected);
+        
+        decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded[0].trigger.urlFilter, "\(START_URL_UNESCAPED)getsecuredfiles\\.com[/:&?]?");
+        XCTAssertEqual(decoded[0].trigger.resourceType, ["document"]);
+        XCTAssertEqual(decoded[0].trigger.loadType, ["third-party"]);
+        XCTAssertEqual(decoded[0].action.type, "block");
     }
     
     func testConvertFirstPartyRule() {
         let result = converter.convertArray(rules: ["@@||adriver.ru^$~third-party"]);
         
-        let expected = """
-        [
-          {
-            "trigger" : {
-              "url-filter" : "\(URL_FILTER_REGEXP_START_URL)adriver\\\\.ru[/:&?]?",
-              "load-type" : [
-                "first-party"
-              ]
-            },
-            "action" : {
-              "type" : "ignore-previous-rules"
-            }
-          }
-        ]
-        """
-        // print("\(result?.converted)")
-        XCTAssertEqual(result?.converted, expected);
         XCTAssertEqual(result?.totalConvertedCount, 1);
         XCTAssertEqual(result?.convertedCount, 1);
         XCTAssertEqual(result?.errorsCount, 0);
         XCTAssertEqual(result?.overLimit, false);
+        
+        let decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded[0].trigger.urlFilter, "\(START_URL_UNESCAPED)adriver\\.ru[/:&?]?");
+        XCTAssertEqual(decoded[0].trigger.loadType, ["first-party"]);
+        XCTAssertEqual(decoded[0].action.type, "ignore-previous-rules");
     }
     
     func testConvertWebsocketRules() {

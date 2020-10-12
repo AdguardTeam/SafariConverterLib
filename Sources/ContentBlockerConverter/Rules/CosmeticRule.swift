@@ -73,13 +73,24 @@ class CosmeticRule: Rule {
         self.isExtendedCss = CosmeticRule.isExtCssMarker(marker: markerInfo.marker!);
         if (!self.isExtendedCss) {
             // additional check if rule is extended css rule by pseudo class indicators
-            for indicator in CosmeticRule.EXT_CSS_PSEUDO_INDICATORS {
-                if (self.content.indexOf(target: indicator) >= 0) {
-                    self.isExtendedCss = true;
-                    break;
-                }
+            if (CosmeticRule.searchCssPseudoIndicators(content: self.content)) {
+                self.isExtendedCss = true;
             }
         }
+    }
+    
+    private static func searchCssPseudoIndicators(content: String) -> Bool {
+        if (!content.contains("[") && !content.contains(":")) {
+            return false;
+        }
+
+        for indicator in CosmeticRule.EXT_CSS_PSEUDO_INDICATORS {
+            if (content.contains(indicator)) {
+                return true;
+            }
+        }
+
+        return false;
     }
     
     private static func parseWhitelist(marker: CosmeticRuleMarker) -> Bool {
