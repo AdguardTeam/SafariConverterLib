@@ -85,6 +85,10 @@ class RuleConverter {
     }
     
     private func isUboScriptletRule(rule: String) -> Bool {
+        if (!rule.contains("#")) {
+            return false;
+        }
+        
         return (
             rule.contains(UBO_SCRIPTLET_MASK_1)
                 || rule.contains(UBO_SCRIPTLET_MASK_2)
