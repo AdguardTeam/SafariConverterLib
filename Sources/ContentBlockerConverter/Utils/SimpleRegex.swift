@@ -35,35 +35,40 @@ class SimpleRegex {
             return regexAnySymbol;
         }
 
-        var regex = SimpleRegex.escapeRegExp(str: str);
+        var regex = SimpleRegex.escapeRegExp(str: str) as NSString;
 
+        var replaced: String;
         if (regex.hasPrefix(maskStartUrl)) {
-            regex = regex.subString(startIndex: 0, toIndex: maskStartUrl.count) +
-                replaceAll(str: regex.subString(startIndex: maskStartUrl.count, toIndex: regex.count - 1), find: "|", replace: "\\|") +
-                regex.subString(startIndex: regex.count - 1);
+            let substring = (regex.substring(to: regex.length - 1) as NSString).substring(from: maskStartUrl.count);
+            replaced = regex.substring(to: maskStartUrl.count) +
+                replaceAll(str: substring, find: "|", replace: "\\|") +
+                regex.substring(from: regex.length - 1);
         } else if (regex.hasPrefix(maskPipe)) {
-            regex = regex.subString(startIndex: 0, toIndex: maskPipe.count) +
-                replaceAll(str: regex.subString(startIndex: maskPipe.count, toIndex: regex.count - 1), find: "|", replace: "\\|") +
-                regex.subString(startIndex: regex.count - 1);
+            let substring = (regex.substring(to: regex.length - 1) as NSString).substring(from: maskPipe.count);
+            replaced = regex.substring(to: maskPipe.count) +
+                replaceAll(str: substring, find: "|", replace: "\\|") +
+                regex.substring(from: regex.length - 1);
         } else {
-            regex = replaceAll(str: regex.subString(startIndex: 0, toIndex: regex.count - 1), find: "|", replace: "\\|") +
-                regex.subString(startIndex: regex.count - 1);
+            let substring = regex.substring(to: regex.length - 1);
+            replaced = replaceAll(str: substring, find: "|", replace: "\\|") +
+                regex.substring(from: regex.length - 1);
         }
 
         // Replacing special url masks
-        regex = replaceAll(str: regex, find: maskAnySymbol, replace: regexAnySymbol);
-        regex = replaceAll(str: regex, find: maskSeparator, replace: regexSeparator);
+        regex = replaceAll(str: replaced, find: maskAnySymbol, replace: regexAnySymbol) as NSString;
+        regex = replaceAll(str: regex as String, find: maskSeparator, replace: regexSeparator) as NSString;
 
         if (regex.hasPrefix(maskStartUrl)) {
-            regex = regexStartUrl + regex.subString(startIndex: maskStartUrl.count);
+            regex = regexStartUrl + regex.substring(from: maskStartUrl.count) as NSString;
         } else if (regex.hasPrefix(maskPipe)) {
-            regex = regexStartString + regex.subString(startIndex: maskPipe.count);
+            regex = regexStartString + regex.substring(from: maskPipe.count) as NSString;
         }
+        
         if (regex.hasSuffix(maskPipe)) {
-            regex = regex.subString(startIndex: 0, toIndex: regex.count - 1) + regexEndString;
+            regex = regex.substring(to: regex.length - 1) + regexEndString as NSString;
         }
 
-        return regex;
+        return regex as String;
     }
     
     /**
@@ -84,6 +89,19 @@ class SimpleRegex {
         }
     }
     
+    private static let CHARS_TO_ESCAPE = [
+        ".".utf16.first!,
+        "?".utf16.first!,
+        "$".utf16.first!,
+        "{".utf16.first!,
+        "}".utf16.first!,
+        "(".utf16.first!,
+        ")".utf16.first!,
+        "[".utf16.first!,
+        "]".utf16.first!,
+        "/".utf16.first!
+    ]
+    
     /**
      * Escapes regular expression string
      * https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/regexp
@@ -91,22 +109,24 @@ class SimpleRegex {
      * except of * | ^
      */
     private static func escapeRegExp(str: String) -> String {
+        let nsstring = str as NSString;
+        let maxIndex = nsstring.length - 1;
+        
         var result = "";
         
-        for char in str {
-            switch char {
-                case ".", "?", "$", "{", "}", "(", ")", "[", "]", "/":
-                    result.append("\\");
-                    result.append(char);
-                default:
-                    result.append(char);
-                }
+        for index in 0...maxIndex {
+            let char = nsstring.character(at: index)
+            if (CHARS_TO_ESCAPE.contains(char)) {
+                result.append("\\");
+            }
+            
+            result.append(Character(UnicodeScalar(char)!));
         }
-
+        
         return result;
     }
     
     private static func replaceAll(str: String, find: String, replace: String) -> String {
-        return str.replacingOccurrences(of: find, with: replace);
+        return (str as NSString).replacingOccurrences(of: find, with: replace);
     }
 }
