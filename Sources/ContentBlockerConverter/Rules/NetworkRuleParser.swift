@@ -34,6 +34,10 @@ class NetworkRuleParser {
         }
 
         let delimeterIndex = NetworkRuleParser.findOptionsDelimeterIndex(ruleText: ruleText);
+        if (delimeterIndex == ruleText.length - 1) {
+            throw SyntaxError.invalidRule(message: "Invalid options");
+        }
+        
         if (delimeterIndex >= 0) {
             ruleParts.pattern = (ruleText.substring(to: delimeterIndex) as NSString).substring(from: startIndex);
             ruleParts.options = ruleText.substring(from: delimeterIndex + 1);
@@ -48,11 +52,6 @@ class NetworkRuleParser {
         let bslash:unichar = "/".utf16.first!
         
         let maxIndex = ruleText.length - 1
-        
-        if (!ruleText.contains("$")) {
-            return -1
-        }
-        
         for i in 0...maxIndex {
             let index = maxIndex - i;
             let char = ruleText.character(at: index)

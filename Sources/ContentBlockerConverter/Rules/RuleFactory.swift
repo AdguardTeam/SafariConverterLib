@@ -23,9 +23,10 @@ class RuleFactory {
         var badfilterRules = [NetworkRule]();
         
         for line in lines {
-            let convertedLines = RuleFactory.converter.convertRule(rule: line.trimmingCharacters(in: .whitespacesAndNewlines));
+            let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines) as NSString;
+            let convertedLines = RuleFactory.converter.convertRule(rule: trimmed);
             for convertedLine in convertedLines {
-                let rule = safeCreateRule(ruleText: convertedLine as NSString);
+                let rule = safeCreateRule(ruleText: convertedLine);
                 if (rule != nil) {
                     if (rule is NetworkRule) {
                         let networkRule = rule as! NetworkRule;

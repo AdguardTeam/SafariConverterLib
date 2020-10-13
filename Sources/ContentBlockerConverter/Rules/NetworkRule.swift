@@ -6,6 +6,9 @@ import Foundation
 class NetworkRule: Rule {
     private static let MASK_WHITE_LIST = "@@";
     private static let DOMAIN_VALIDATION_REGEXP = try! NSRegularExpression(pattern: "^[a-zA-Z0-9][a-zA-Z0-9-.]*[a-zA-Z0-9]\\.[a-zA-Z-]{2,}$", options: [.caseInsensitive]);
+    
+    private static let delimeterChar = ",".utf16.first!;
+    private static let escapeChar = "\\".utf16.first!;
 
     var isUrlBlock = false;
     var isCssExceptionRule = false;
@@ -37,10 +40,10 @@ class NetworkRule: Rule {
     override init(ruleText: NSString) throws {
         try super.init(ruleText: ruleText);
         
-        let ruleParts = try! NetworkRuleParser.parseRuleText(ruleText: ruleText);
+        let ruleParts = try NetworkRuleParser.parseRuleText(ruleText: ruleText);
         self.isWhiteList = ruleParts.whitelist;
         
-        if (ruleParts.options != nil) {
+        if (ruleParts.options != nil && ruleParts.options != "") {
             try loadOptions(options: ruleParts.options!);
         }
 
@@ -209,7 +212,7 @@ class NetworkRule: Rule {
     }
     
     private func loadOptions(options: String) throws -> Void {
-        let optionParts = options.splitByDelimiterWithEscapeCharacter(delimeter: ",", escapeChar: "\\");
+        let optionParts = options.splitByDelimiterWithEscapeCharacter(delimeter: NetworkRule.delimeterChar, escapeChar: NetworkRule.escapeChar);
         
         for option in optionParts {
             var optionName = option;

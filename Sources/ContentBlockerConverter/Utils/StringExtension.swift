@@ -68,27 +68,33 @@ extension String {
         return self.replacingOccurrences(of: target, with: withString, options: NSString.CompareOptions.literal, range: nil)
     }
     
-    func splitByDelimiterWithEscapeCharacter(delimeter: String, escapeChar: String) -> [String] {
+    func splitByDelimiterWithEscapeCharacter(delimeter: unichar, escapeChar: unichar) -> [String] {
+        let nsstring = self as NSString;
+        
         var delimeterIndexes = [Int]();
-        for (index, char) in self.enumerated() {
-            if (char == Character(delimeter)) {
-                // ignore escaped
-                if (index > 0 && Array(self)[index - 1] == Character(escapeChar)) {
-                    continue;
-                }
-                
-                delimeterIndexes.append(index);
+        for index in 0...nsstring.length - 1 {
+            let char = nsstring.character(at: index)
+            switch char {
+                case delimeter:
+                    // ignore escaped
+                    if (index > 0 && nsstring.character(at: index - 1) == escapeChar) {
+                        continue;
+                    }
+                    
+                    delimeterIndexes.append(index);
+                default:
+                    break;
             }
         }
-        
+                    
         var result = [String]();
         var previous = 0;
         for ind in delimeterIndexes {
-            result.append(self.subString(startIndex: previous, toIndex: ind));
+            result.append(nsstring.substring(to: ind).subString(startIndex: previous));
             previous = ind + 1;
         }
         
-        result.append(self.subString(startIndex: previous));
+        result.append(nsstring.substring(from: previous));
         
         return result;
     }
