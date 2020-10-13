@@ -50,17 +50,6 @@ final class DistributorTests: XCTestCase {
         XCTAssertEqual(entries[0].trigger.unlessDomain![0], "*test_unless_domain");
     }
 
-    private func parseJsonString(json: String) throws -> [BlockerEntry] {
-        let data = json.data(using: String.Encoding.utf8, allowLossyConversion: false)!
-
-        let decoder = JSONDecoder();
-        let parsedData = try decoder.decode([BlockerEntry].self, from: data);
-
-        return parsedData;
-    }
-
-    let converter = ContentBlockerConverter();
-
     func testHandleIfDomainsLimit() {
         let builder = Distributor(limit: 0, advancedBlocking: true);
 
