@@ -151,6 +151,63 @@ class NetworkRule: Rule {
         return DomainInfo(domain: domain, path: path);
     };
     
+    /**
+    * Returns true if this rule negates the specified rule
+    * Only makes sense when this rule has a `badfilter` modifier
+    */
+    func negatesBadfilter(specifiedRule: NetworkRule) -> Bool {
+        if (self.isWhiteList != specifiedRule.isWhiteList) {
+            return false;
+        }
+
+        if (self.urlRuleText != specifiedRule.urlRuleText) {
+            return false;
+        }
+
+        if (self.permittedContentType != specifiedRule.permittedContentType) {
+            return false;
+        }
+
+        if (self.restrictedContentType != specifiedRule.restrictedContentType) {
+            return false;
+        }
+
+        if (self.enabledOptions != specifiedRule.enabledOptions) {
+            return false;
+        }
+
+        if (self.disabledOptions != specifiedRule.disabledOptions) {
+            return false;
+        }
+
+        if (self.restrictedDomains != specifiedRule.restrictedDomains) {
+            return false;
+        }
+        
+        if (!NetworkRule.stringArraysHaveIntersection(left: self.permittedDomains, right: specifiedRule.permittedDomains)) {
+            return false;
+        }
+        
+        return true;
+    }
+    
+    /**
+     * TODO: Move to Array extension
+     */
+    static func stringArraysHaveIntersection(left: [String], right: [String]) -> Bool {
+        if (left.count == 0 || right.count == 0) {
+            return true;
+        }
+
+        for elem in left {
+            if (right.contains(elem)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+    
     private func loadOptions(options: String) throws -> Void {
         let optionParts = options.splitByDelimiterWithEscapeCharacter(delimeter: ",", escapeChar: "\\");
         
