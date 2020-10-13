@@ -34,7 +34,7 @@ class NetworkRule: Rule {
         super.init();
     }
     
-    override init(ruleText: String) throws {
+    override init(ruleText: NSString) throws {
         try super.init(ruleText: ruleText);
         
         let ruleParts = try! NetworkRuleParser.parseRuleText(ruleText: ruleText);

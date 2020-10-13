@@ -10,7 +10,7 @@ class NetworkRuleParser {
     /**
      * Splits the rule text into multiple parts
      */
-    static func parseRuleText(ruleText: String) throws -> BasicRuleParts {
+    static func parseRuleText(ruleText: NSString) throws -> BasicRuleParts {
         var ruleParts = BasicRuleParts();
 
         var startIndex = 0;
@@ -19,12 +19,12 @@ class NetworkRuleParser {
             startIndex = MASK_WHITE_LIST.count;
         }
 
-        if (ruleText.count <= startIndex) {
+        if (ruleText.length <= startIndex) {
             throw SyntaxError.invalidRule(message: "Rule is too short");
         }
 
         // Setting pattern to rule text (for the case of empty options)
-        ruleParts.pattern = ruleText.subString(startIndex: startIndex);
+        ruleParts.pattern = ruleText.substring(from: startIndex);
 
         // Avoid parsing options inside of a regex rule
         if (ruleParts.pattern!.hasPrefix("/")
@@ -35,37 +35,36 @@ class NetworkRuleParser {
 
         let delimeterIndex = NetworkRuleParser.findOptionsDelimeterIndex(ruleText: ruleText);
         if (delimeterIndex >= 0) {
-            ruleParts.pattern = ruleText.subString(startIndex: startIndex, toIndex: delimeterIndex);
-            ruleParts.options = ruleText.subString(startIndex: delimeterIndex + 1);
+            ruleParts.pattern = (ruleText.substring(to: delimeterIndex) as NSString).substring(from: startIndex);
+            ruleParts.options = ruleText.substring(from: delimeterIndex + 1);
         }
 
         return ruleParts;
     }
 
-    private static func findOptionsDelimeterIndex(ruleText: String) -> Int {
+    private static func findOptionsDelimeterIndex(ruleText: NSString) -> Int {
         let delim:unichar = "$".utf16.first!
         let slash:unichar = "\\".utf16.first!
         let bslash:unichar = "/".utf16.first!
         
-        let nsstring = ruleText as NSString
-        let maxIndex = nsstring.length - 1
+        let maxIndex = ruleText.length - 1
         
-        if (!nsstring.contains("$")) {
+        if (!ruleText.contains("$")) {
             return -1
         }
         
         for i in 0...maxIndex {
             let index = maxIndex - i;
-            let char = nsstring.character(at: index)
+            let char = ruleText.character(at: index)
             switch char {
                 case delim:
                     // ignore \$
-                    if (index > 0 && nsstring.character(at: index-1) == slash) {
+                    if (index > 0 && ruleText.character(at: index-1) == slash) {
                         continue;
                     }
 
                     // ignore $/
-                    if (index < maxIndex && nsstring.character(at: index+1)  == bslash) {
+                    if (index < maxIndex && ruleText.character(at: index+1)  == bslash) {
                         continue;
                     }
                 

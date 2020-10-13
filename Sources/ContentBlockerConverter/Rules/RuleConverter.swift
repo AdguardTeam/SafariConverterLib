@@ -286,7 +286,7 @@ class RuleConverter {
         var pattern: String = "";
         var options: String? = nil;
         do {
-            let parseResult = try NetworkRuleParser.parseRuleText(ruleText: rule);
+            let parseResult = try NetworkRuleParser.parseRuleText(ruleText: rule as NSString);
             options = parseResult.options;
             if (options == nil) {
                 return nil;

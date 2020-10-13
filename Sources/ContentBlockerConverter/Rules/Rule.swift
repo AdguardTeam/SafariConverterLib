@@ -5,7 +5,7 @@ import Punycode
  * AG Rule super class
  */
 class Rule {
-    var ruleText = "";
+    var ruleText: NSString = "";
     
     var isWhiteList = false;
     var isImportant = false;
@@ -21,7 +21,7 @@ class Rule {
         
     }
     
-    init(ruleText: String) throws {
+    init(ruleText: NSString) throws {
         self.ruleText = ruleText;
     }
     

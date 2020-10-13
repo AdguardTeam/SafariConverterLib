@@ -20,73 +20,85 @@ enum CosmeticRuleMarker: String, CaseIterable {
 
     case Html = "$$"
     case HtmlException = "$@$"
-
+    
     /**
      * Parses marker from string source
      */
-    static func findCosmeticRuleMarker(ruleText: String) -> ( index: Int, marker: CosmeticRuleMarker? ) {
-        let arr = Array(ruleText)
-        let maxIndex = arr.count-1
+    static func findCosmeticRuleMarker(ruleText: NSString) -> ( index: Int, marker: CosmeticRuleMarker? ) {
+        let hash: unichar = "#".utf16.first!;
+        let atChar: unichar = "@".utf16.first!;
+        let dollar: unichar = "$".utf16.first!;
+        let percent: unichar = "%".utf16.first!;
+        let question: unichar = "?".utf16.first!;
+        
+        let maxIndex = ruleText.length-1
         for i in 0...maxIndex {
-            let char = arr[i]
+            let char = ruleText.character(at: i);
             switch char {
-                case "#":
+                case hash:
                     if i + 4 <= maxIndex {
-                        if arr[i + 1] == "@" && arr[i + 2] == "$" && arr[i + 3] == "?" && arr[i + 4] == "#"{
+                        if ruleText.character(at: i + 1) == atChar
+                            && ruleText.character(at: i + 2) == dollar
+                            && ruleText.character(at: i + 3) == question
+                            && ruleText.character(at: i + 4) == hash {
                             return (i, CssExtCSSException);
                         }
                     }
 
                     if i + 3 <= maxIndex {
-                        if arr[i + 1] == "@" && arr[i + 2] == "?" && arr[i + 3] == "#"{
+                        if ruleText.character(at: i + 1) == atChar
+                            && ruleText.character(at: i + 2) == question && ruleText.character(at: i + 3) == hash {
                             return (i, ElementHidingExtCSSException);
                         }
 
-                        if arr[i + 1] == "@" && arr[i + 2] == "$" && arr[i + 3] == "#"{
+                        if ruleText.character(at: i + 1) == atChar
+                            && ruleText.character(at: i + 2) == dollar && ruleText.character(at: i + 3) == hash {
                             return (i, CssException);
                         }
 
-                        if arr[i + 1] == "@" && arr[i + 2] == "%" && arr[i + 3] == "#"{
+                        if ruleText.character(at: i + 1) == atChar
+                            && ruleText.character(at: i + 2) == percent && ruleText.character(at: i + 3) == hash {
                             return (i, JsException);
                         }
 
-                        if arr[i + 1] == "$" && arr[i + 2] == "?" && arr[i + 3] == "#"{
+                        if ruleText.character(at: i + 1) == dollar
+                            && ruleText.character(at: i + 2) == question && ruleText.character(at: i + 3) == hash {
                             return (i, CssExtCSS);
                         }
                     }
 
                     if i + 2 <= maxIndex {
-                        if arr[i + 1] == "@" && arr[i + 2] == "#" {
+                        if ruleText.character(at: i + 1) == atChar && ruleText.character(at: i + 2) == hash {
                             return (i, ElementHidingException);
                         }
 
-                        if arr[i + 1] == "?" && arr[i + 2] == "#" {
+                        if ruleText.character(at: i + 1) == question && ruleText.character(at: i + 2) == hash {
                             return (i, ElementHidingExtCSS);
                         }
 
-                        if arr[i + 1] == "%" && arr[i + 2] == "#" {
+                        if ruleText.character(at: i + 1) == percent && ruleText.character(at: i + 2) == hash {
                             return (i, Js);
                         }
 
-                        if arr[i + 1] == "$" && arr[i + 2] == "#" {
+                        if ruleText.character(at: i + 1) == dollar && ruleText.character(at: i + 2) == hash {
                             return (i, Css);
                         }
                     }
 
                     if i + 1 <= maxIndex {
-                        if arr[i + 1] == "#" {
+                        if ruleText.character(at: i + 1) == hash {
                             return (i, ElementHiding);
                         }
                     }
-                case "$":
+                case dollar:
                     if i + 2 <= maxIndex {
-                        if arr[i + 1] == "@" && arr[i + 2] == "$" {
+                        if ruleText.character(at: i + 1) == atChar && ruleText.character(at: i + 2) == dollar {
                             return (i, HtmlException);
                         }
                     }
 
                     if i + 1 <= maxIndex {
-                        if arr[i + 1] == "$" {
+                        if ruleText.character(at: i + 1) == dollar {
                             return (i, Html);
                         }
                     }

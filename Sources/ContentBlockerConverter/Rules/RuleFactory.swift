@@ -25,7 +25,7 @@ class RuleFactory {
         for line in lines {
             let convertedLines = RuleFactory.converter.convertRule(rule: line.trimmingCharacters(in: .whitespacesAndNewlines));
             for convertedLine in convertedLines {
-                let rule = safeCreateRule(ruleText: convertedLine);
+                let rule = safeCreateRule(ruleText: convertedLine as NSString);
                 if (rule != nil) {
                     if (rule is NetworkRule) {
                         let networkRule = rule as! NetworkRule;
@@ -76,7 +76,7 @@ class RuleFactory {
         return false;
     }
     
-    func safeCreateRule(ruleText: String?) -> Rule? {
+    func safeCreateRule(ruleText: NSString?) -> Rule? {
         do {
             return try RuleFactory.createRule(ruleText: ruleText);
         } catch {
@@ -88,13 +88,13 @@ class RuleFactory {
     /**
      * Creates rule object from source text
      */
-    static func createRule(ruleText: String?) throws -> Rule? {
+    static func createRule(ruleText: NSString?) throws -> Rule? {
         do {
-            if (ruleText == nil || ruleText! == "" || ruleText!.hasPrefix("!") || ruleText!.hasPrefix(" ") || ruleText!.indexOf(target: " - ") > 0) {
+            if (ruleText == nil || ruleText! == "" || ruleText!.hasPrefix("!") || ruleText!.hasPrefix(" ") || ruleText!.contains(" - ")) {
                 return nil;
             }
             
-            if (ruleText!.count < 3) {
+            if (ruleText!.length < 3) {
                 return nil;
             }
             
@@ -109,7 +109,7 @@ class RuleFactory {
         }
     };
     
-    private static func isCosmetic(ruleText: String) -> Bool {
+    private static func isCosmetic(ruleText: NSString) -> Bool {
         let markerInfo = CosmeticRuleMarker.findCosmeticRuleMarker(ruleText: ruleText);
         return markerInfo.index != -1;
     }

@@ -22,7 +22,7 @@ class CosmeticRule: Rule {
     var isExtendedCss = false;
     var isInjectCss = false;
     
-    override init(ruleText: String) throws {
+    override init(ruleText: NSString) throws {
         try super.init(ruleText: ruleText);
         
         let markerInfo = CosmeticRuleMarker.findCosmeticRuleMarker(ruleText: ruleText);
@@ -30,7 +30,7 @@ class CosmeticRule: Rule {
             throw SyntaxError.invalidRule(message: "Not a cosmetic rule");
         }
 
-        self.content = ruleText.subString(startIndex: markerInfo.index + markerInfo.marker!.rawValue.count);
+        self.content = ruleText.substring(from: markerInfo.index + markerInfo.marker!.rawValue.count);
         if (self.content == "") {
             throw SyntaxError.invalidRule(message: "Rule content is empty");
         }
@@ -65,7 +65,7 @@ class CosmeticRule: Rule {
         if (markerInfo.index > 0) {
             // This means that the marker is preceded by the list of domains
             // Now it's a good time to parse them.
-            let domains = ruleText.subString(startIndex: 0, toIndex: markerInfo.index);
+            let domains = ruleText.substring(to: markerInfo.index);
             try super.setDomains(domains: domains, sep: ",");
         }
 
