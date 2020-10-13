@@ -43,25 +43,29 @@ class NetworkRuleParser {
     }
 
     private static func findOptionsDelimeterIndex(ruleText: String) -> Int {
-        if (!ruleText.contains("$")) {
-            return -1;
-        }
+        let delim:unichar = "$".utf16.first!
+        let slash:unichar = "\\".utf16.first!
+        let bslash:unichar = "/".utf16.first!
         
-        let arr = Array(ruleText);
-        let maxIndex = ruleText.count - 1;
+        let nsstring = ruleText as NSString
+        let maxIndex = nsstring.length - 1
+        
+        if (!nsstring.contains("$")) {
+            return -1
+        }
         
         for i in 0...maxIndex {
             let index = maxIndex - i;
-            let char = arr[index]
+            let char = nsstring.character(at: index)
             switch char {
-                case "$":
+                case delim:
                     // ignore \$
-                    if (index > 0 && arr[index - 1] == "\\") {
+                    if (index > 0 && nsstring.character(at: index-1) == slash) {
                         continue;
                     }
 
                     // ignore $/
-                    if (index < maxIndex && arr[index + 1] == "/") {
+                    if (index < maxIndex && nsstring.character(at: index+1)  == bslash) {
                         continue;
                     }
                 
