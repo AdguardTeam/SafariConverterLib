@@ -68,7 +68,8 @@ class RuleConverter {
                 }
             }
 
-            if markerInfo.marker == CosmeticRuleMarker.ElementHiding {
+            if markerInfo.marker == CosmeticRuleMarker.ElementHiding ||
+                markerInfo.marker == CosmeticRuleMarker.ElementHidingException {
                 let uboCssStyleRule = convertUboCssStyleRule(ruleText: rule);
                 if (uboCssStyleRule != nil) {
                     return [uboCssStyleRule!];
