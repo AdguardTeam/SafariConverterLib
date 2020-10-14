@@ -3,6 +3,7 @@ import Foundation
 /**
  * Blocker entries JSON encoder
  * TODO: Escape sensitive strings
+ * TODO: Remove PMJSON dep
  */
 class BlockerEntryEncoder {
     
@@ -11,16 +12,16 @@ class BlockerEntryEncoder {
      */
     func encode(entries: [BlockerEntry]) -> String {
         var result = "[";
-        if (entries.count > 0) {
-            for entry in entries {
-                result += self.encodeEntry(entry: entry);
-                result += ",";
+        
+        for index in 0..<entries.count {
+            if (index > 0) {
+                result.append(",");
             }
             
-            result = (result as NSString).substring(to: (result as NSString).length - 2);
+            result.append(self.encodeEntry(entry: entries[index]));
         }
         
-        result += "]";
+        result.append("]");
         
         return result;
     }
@@ -29,35 +30,52 @@ class BlockerEntryEncoder {
         let action = encodeAction(action: entry.action);
         let trigger = encodeTrigger(trigger: entry.trigger);
         
-        return "{\"trigger\":\(trigger),\"action\":\(action)}";
+        var result = "{\"trigger\":";
+        result.append(trigger);
+        result.append(",\"action\":");
+        result.append(action);
+        result.append("}");
+        return result;
     }
     
     private func encodeAction(action: BlockerEntry.Action) -> String {
         var result = "{";
-        
-        result += "\"type\":\"\(action.type)\"";
-        
+
+        result.append("\"type\":\"");
+        result.append(action.type);
+        result.append("\"");
+
         if action.selector != nil {
-            result += ",\"selector\":\"\(action.selector!)\"";
+            result.append(",\"selector\":\"");
+            result.append(action.selector!);
+            result.append("\"");
         }
-        
+
         if action.css != nil {
-            result += ",\"css\":\"\(action.css!)\"";
+            result.append(",\"css\":\"");
+            result.append(action.css!);
+            result.append("\"");
         }
-        
+
         if action.script != nil {
-            result += ",\"script\":\"\(action.script!)\"";
+            result.append(",\"script\":\"");
+            result.append(action.script!);
+            result.append("\"");
         }
-        
+
         if action.scriptlet != nil {
-            result += ",\"scriptlet\":\"\(action.scriptlet!)\"";
+            result.append(",\"scriptlet\":\"");
+            result.append(action.scriptlet!);
+            result.append("\"");
         }
-        
+
         if action.scriptletParam != nil {
-            result += ",\"scriptletParam\":\"\(action.scriptletParam!)\"";
+            result.append(",\"scriptletParam\":\"");
+            result.append(action.scriptletParam!);
+            result.append("\"");
         }
-        
-        result += "}";
+
+        result.append("}");
         
         return result;
     }
@@ -65,65 +83,67 @@ class BlockerEntryEncoder {
     private func encodeTrigger(trigger: BlockerEntry.Trigger) -> String {
         var result = "{";
         
-        if trigger.urlFilter != nil {
-            result += "\"url-filter\":\"\(trigger.urlFilter!)\",";
-        }
+        result.append("\"url-filter\":\"");
+        result.append(trigger.urlFilter!);
+        result.append("\"");
         
         if trigger.shortcut != nil {
-            result += "\"url-shortcut\":\"\(trigger.shortcut!)\",";
+            result.append("\"url-shortcut\":\"");
+            result.append(trigger.shortcut!);
+            result.append("\"");
         }
         
         if (trigger.caseSensitive != nil) {
-            result += "\"url-filter-is-case-sensitive\":\"\(trigger.caseSensitive! ? "true" : "false")\",";
+            result.append(",\"url-filter-is-case-sensitive\":");
+            result.append(trigger.caseSensitive! ? "\"true\"" : "\"false\"");
         }
         
         if (trigger.regex != nil) {
-            result += "\"regex\":\"\(trigger.regex!)\",";
+            result.append(",\"regex\":\"");
+            result.append(trigger.regex!.pattern);
+            result.append("\"");
         }
         
         if (trigger.loadType != nil) {
-            result += "\"load-type\":[";
-            for item in trigger.loadType! {
-                result += "\"\(item)\",";
-            }
-            
-            result = (result as NSString).substring(to: (result as NSString).length - 2);
-            result += "],"
+            result.append(",\"load-type\":");
+            result.append(self.encodeStringArray(arr: trigger.loadType!));
+            result.append("\"");
         }
         
         if (trigger.resourceType != nil) {
-            result += "\"resource-type\":[";
-            for item in trigger.resourceType! {
-                result += "\"\(item)\",";
-            }
-            
-            result = (result as NSString).substring(to: (result as NSString).length - 2);
-            result += "],"
+            result.append("\"resource-type\":");
+            result.append(self.encodeStringArray(arr: trigger.resourceType!));
         }
         
         if (trigger.ifDomain != nil) {
-            result += "\"if-domain\":[";
-            for item in trigger.ifDomain! {
-                result += "\"\(item)\",";
-            }
-            
-            result = (result as NSString).substring(to: (result as NSString).length - 2);
-            result += "],"
+            result.append(",\"if-domain\":");
+            result.append(self.encodeStringArray(arr: trigger.ifDomain!));
         }
         
         if (trigger.unlessDomain != nil) {
-            result += "\"unless-domain\":[";
-            for item in trigger.unlessDomain! {
-                result += "\"\(item)\",";
-            }
-            
-            result = (result as NSString).substring(to: (result as NSString).length - 2);
-            result += "],"
+            result.append(",\"unless-domain\":");
+            result.append(self.encodeStringArray(arr: trigger.unlessDomain!));
         }
         
-        result = (result as NSString).substring(to: (result as NSString).length - 2);
+        result.append("}");
         
-        result += "}";
+        return result;
+    }
+    
+    private func encodeStringArray(arr: [String]) -> String {
+        var result = "[";
+        
+        for index in 0..<arr.count {
+            if (index > 0) {
+                result.append(",");
+            }
+            
+            result.append("\"");
+            result.append(arr[index]);
+            result.append("\"");
+        }
+        
+        result.append("]");
         
         return result;
     }
