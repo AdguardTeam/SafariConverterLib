@@ -162,7 +162,7 @@ class RuleConverter {
         
         return result;
     }
-    
+
     /**
      * Converts UBO Script rule
      * @param {string} ruleText rule text
