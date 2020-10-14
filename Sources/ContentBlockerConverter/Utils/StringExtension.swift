@@ -99,7 +99,7 @@ extension String {
         return result;
     }
     
-    func isUnicode() -> Bool {
+    func isASCII() -> Bool {
         for scalar in self.unicodeScalars {
             if (!scalar.isASCII) {
                 return false;

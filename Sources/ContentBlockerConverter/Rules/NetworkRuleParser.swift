@@ -84,7 +84,7 @@ class NetworkRuleParser {
             return pattern;
         }
 
-        if (pattern!.isUnicode()) {
+        if (pattern!.isASCII()) {
             return pattern;
         }
 

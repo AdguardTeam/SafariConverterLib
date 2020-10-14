@@ -63,7 +63,7 @@ class NetworkRule: Rule {
         
         self.urlRuleText = NetworkRuleParser.getAsciiDomainRule(pattern: ruleParts.pattern)!;
         
-        if (self.urlRuleText.hasPrefix("/") && self.urlRuleText.hasSuffix("/")) {
+        if (self.isRegexRule()) {
             self.urlRegExpSource = self.urlRuleText.subString(startIndex: 1, length: self.urlRuleText.count - 2);
         } else {
             if (self.urlRuleText != "") {
@@ -76,6 +76,10 @@ class NetworkRule: Rule {
         self.isCssExceptionRule = isSingleOption(option: .Elemhide) || isSingleOption(option: .Generichide);
     }
     
+    func isRegexRule() -> Bool {
+        return self.urlRuleText.hasPrefix("/") && self.urlRuleText.hasSuffix("/")
+    }
+
     func isSingleOption(option: NetworkRuleOption) -> Bool {
         return self.enabledOptions.count == 1 && self.enabledOptions.firstIndex(of: option) != nil;
     }

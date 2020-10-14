@@ -46,7 +46,7 @@ class Rule {
             }
 
             var encoded = domain;
-            if (!domain.isUnicode()) {
+            if (!domain.isASCII()) {
                 encoded = domain.idnaEncoded!;
             }
             

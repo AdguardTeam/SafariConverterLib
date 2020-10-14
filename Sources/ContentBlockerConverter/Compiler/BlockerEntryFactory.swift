@@ -186,7 +186,16 @@ class BlockerEntryFactory {
             return BlockerEntryFactory.URL_FILTER_WS_ANY_URL + ".*" + urlRegExpSource!;
         }
 
-        try validateRegExp(urlRegExp: urlRegExpSource!);
+        // Safari doesn't support non-ASCII characters in regular expressions
+        if (!urlRegExpSource!.isASCII()) {
+            throw ConversionError.unsupportedRegExp(message: "Safari doesn't support non-ASCII characters in regular expressions");
+        }
+
+        // Regex that we generate for basic non-regex rules are okay
+        // But if this is a regex rule, we can't be sure
+        if rule.isRegexRule() {
+            try validateRegExp(urlRegExp: urlRegExpSource!);
+        }
         return urlRegExpSource!;
     };
     
@@ -369,11 +378,6 @@ class BlockerEntryFactory {
             if (SimpleRegex.isMatch(regex: BlockerEntryFactory.VALIDATE_REGEXP_OR, target: urlRegExp)) {
                 throw ConversionError.unsupportedRegExp(message: "Safari doesn't support '|' in regular expressions");
             }
-        }
-
-        // Safari doesn't support non-ASCII characters in regular expressions
-        if (!urlRegExp.isUnicode()) {
-            throw ConversionError.unsupportedRegExp(message: "Safari doesn't support non-ASCII characters in regular expressions");
         }
 
         // Safari doesn't support negative lookahead (?!...) in regular expressions
