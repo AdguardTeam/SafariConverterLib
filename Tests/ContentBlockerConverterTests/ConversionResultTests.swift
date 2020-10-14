@@ -22,13 +22,13 @@ final class ConversionResultTests: XCTestCase {
     func assertEntry(actual: String?) -> Void {
         XCTAssertNotNil(actual);
         
-        XCTAssertTrue(actual!.contains("\"url-filter\": \"test_url_filter\""));
+        XCTAssertTrue(actual!.contains("\"url-filter\":\"test_url_filter\""));
         XCTAssertTrue(actual!.contains("test_unless_domain"));
         XCTAssertTrue(actual!.contains("test_if_domain"));
-        XCTAssertTrue(actual!.contains("\"url-shortcut\": \"test_shortcut\""));
+        XCTAssertTrue(actual!.contains("\"url-shortcut\":\"test_shortcut\""));
         
-        XCTAssertTrue(actual!.contains("\"type\": \"test_type\""));
-        XCTAssertTrue(actual!.contains("\"css\": \"test_css\""));
+        XCTAssertTrue(actual!.contains("\"type\":\"test_type\""));
+        XCTAssertTrue(actual!.contains("\"css\":\"test_css\""));
     }
     
     func testEmpty() {
