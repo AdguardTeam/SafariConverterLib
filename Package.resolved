@@ -2,15 +2,6 @@
   "object": {
     "pins": [
       {
-        "package": "PMJSON",
-        "repositoryURL": "https://github.com/postmates/PMJSON.git",
-        "state": {
-          "branch": null,
-          "revision": "84b1e0df65fda0b41c58592ca9e2b4e33d7ea5f3",
-          "version": "4.0.0"
-        }
-      },
-      {
         "package": "Punycode",
         "repositoryURL": "https://github.com/gumob/PunycodeSwift.git",
         "state": {

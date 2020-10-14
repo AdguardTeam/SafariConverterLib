@@ -68,4 +68,3 @@ Push a new tag in `v*.*.*` format, then provided github action is intended to bu
 
 ### Third-party dependencies
 - Punycode (https://github.com/gumob/PunycodeSwift.git)
-- PMJSON (https://github.com/postmates/PMJSON.git)

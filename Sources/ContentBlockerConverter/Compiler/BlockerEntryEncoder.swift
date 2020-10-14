@@ -2,8 +2,6 @@ import Foundation
 
 /**
  * Blocker entries JSON encoder
- * TODO: Escape sensitive strings
- * TODO: Remove PMJSON dep
  */
 class BlockerEntryEncoder {
     
