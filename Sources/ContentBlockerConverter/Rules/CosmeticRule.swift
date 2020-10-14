@@ -8,10 +8,21 @@ class CosmeticRule: Rule {
      * Pseudo class indicators. They are used to detect if rule is extended or not even if rule does not
      * have extended css marker
      */
-    private static let EXT_CSS_PSEUDO_INDICATORS = ["[-ext-has=", "[-ext-contains=", "[-ext-has-text=",
-        "[-ext-matches-css=", "[-ext-matches-css-before=", "[-ext-matches-css-after=", ":has(", ":has-text(",
-        ":contains(", ":matches-css(", ":matches-css-before(", ":matches-css-after(", ":-abp-has(", ":-abp-contains(",
-        ":if(", ":if-not(", ":properties(", ":-abp-properties(", ":xpath(", ":nth-ancestor(", ":upward(", ":remove("];
+    private static let EXT_CSS_PSEUDO_INDICATORS = [
+        ":has(",
+        ":has-text(",
+        ":contains(",
+        ":matches-css",
+        ":-abp-",
+        ":if(", ":if-not(",
+        ":properties(",
+        ":xpath(",
+        ":nth-ancestor(",
+        ":upward(",
+        ":remove("
+    ];
+    
+    private static let EXT_CSS_EXT_INDICATOR = "[-ext-";
     
     var content: String = "";
     
@@ -87,7 +98,11 @@ class CosmeticRule: Rule {
             return false;
         }
         
-        if (!nsstring.contains("[") && !nsstring.contains(":")) {
+        if (nsstring.contains(CosmeticRule.EXT_CSS_EXT_INDICATOR)) {
+            return true;
+        }
+        
+        if (!nsstring.contains(":")) {
             return false;
         }
 
