@@ -80,12 +80,19 @@ class CosmeticRule: Rule {
     }
     
     private static func searchCssPseudoIndicators(content: String) -> Bool {
-        if (!content.contains("[") && !content.contains(":")) {
+        let nsstring = content as NSString;
+        
+        // Not enought for even minimal length pseudo
+        if (nsstring.length < 6) {
+            return false;
+        }
+        
+        if (!nsstring.contains("[") && !nsstring.contains(":")) {
             return false;
         }
 
         for indicator in CosmeticRule.EXT_CSS_PSEUDO_INDICATORS {
-            if (content.contains(indicator)) {
+            if (nsstring.contains(indicator)) {
                 return true;
             }
         }
