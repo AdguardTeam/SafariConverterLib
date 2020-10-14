@@ -37,32 +37,7 @@ class SimpleRegex {
 
         var regex = SimpleRegex.escapeRegExp(str: str) as NSString;
 
-        var replaced: String;
-        if (regex.hasPrefix(maskStartUrl)) {
-            let substring = (regex.substring(to: regex.length - 1) as NSString).substring(from: maskStartUrl.count);
-            replaced = regex.substring(to: maskStartUrl.count) +
-                replaceAll(str: substring, find: "|", replace: "\\|") +
-                regex.substring(from: regex.length - 1);
-        } else if (regex.hasPrefix(maskPipe)) {
-            let substring = (regex.substring(to: regex.length - 1) as NSString).substring(from: maskPipe.count);
-            replaced = regex.substring(to: maskPipe.count) +
-                replaceAll(str: substring, find: "|", replace: "\\|") +
-                regex.substring(from: regex.length - 1);
-        } else {
-            let substring = regex.substring(to: regex.length - 1);
-            replaced = replaceAll(str: substring, find: "|", replace: "\\|") +
-                regex.substring(from: regex.length - 1);
-        }
-
-        // Replacing special url masks
-        regex = replaceAll(str: replaced, find: maskAnySymbol, replace: regexAnySymbol) as NSString;
-        regex = replaceAll(str: regex as String, find: maskSeparator, replace: regexSeparator) as NSString;
-
-        if (regex.hasPrefix(maskStartUrl)) {
-            regex = regexStartUrl + regex.substring(from: maskStartUrl.count) as NSString;
-        } else if (regex.hasPrefix(maskPipe)) {
-            regex = regexStartString + regex.substring(from: maskPipe.count) as NSString;
-        }
+        regex = replaceAroundMask(regex: regex) as NSString;
         
         if (regex.hasSuffix(maskPipe)) {
             regex = regex.substring(to: regex.length - 1) + regexEndString as NSString;
@@ -87,6 +62,46 @@ class SimpleRegex {
         return matches.map { match in
             return String(target[Range(match.range, in: target)!])
         }
+    }
+    
+    private static func replaceAroundMask(regex: NSString) -> String {
+        let croppedEnd = regex.substring(to: regex.length - 1) as NSString;
+        
+        var mask: String? = nil;
+        var newMask: String? = nil;
+        if (regex.hasPrefix(maskStartUrl)) {
+            mask = maskStartUrl;
+            newMask = regexStartUrl;
+        } else if (regex.hasPrefix(maskPipe)) {
+            mask = maskPipe;
+            newMask = regexStartString;
+        }
+    
+        var replaceBody = croppedEnd as String;
+        if (mask != nil) {
+            replaceBody = croppedEnd.substring(from: mask!.count);
+        }
+        
+        var replaced = replaceAll(str: replaceBody, find: "|", replace: "\\|");
+        
+        replaced = replaced + regex.substring(from: regex.length - 1);
+        replaced = replaceSpecialUrlMasks(regex: replaced as NSString);
+        
+        if (newMask != nil) {
+            replaced = newMask! + replaced;
+        }
+        
+        return replaced;
+    }
+    
+    private static func replaceSpecialUrlMasks(regex: NSString) -> String {
+        // Replacing special url masks
+        var replaced = regex as String;
+        if (regex.contains(maskAnySymbol)) {
+            replaced = replaceAll(str: regex as String, find: maskAnySymbol, replace: regexAnySymbol);
+        }
+        
+        return replaceAll(str: replaced, find: maskSeparator, replace: regexSeparator);
     }
     
     private static let CHARS_TO_ESCAPE = [
