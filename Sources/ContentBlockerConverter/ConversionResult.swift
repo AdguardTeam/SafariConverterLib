@@ -70,8 +70,11 @@ public struct ConversionResult: Encodable {
     }
     
     private static func createJSONString(entries: [BlockerEntry]) throws -> String {
-        let encoder = JSON.Encoder();
-        let json = try encoder.encodeAsString(entries);
-        return json;
+//        let encoder = JSON.Encoder();
+//        let json = try encoder.encodeAsString(entries);
+//        return json;
+        
+        let encoder = BlockerEntryEncoder();
+        return encoder.encode(entries: entries);
     }
 }
