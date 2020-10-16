@@ -146,9 +146,9 @@ class BlockerEntryEncoder {
     }
     
     /**
-     * TODO: Optimize
+     * Escapes specials in string value
      */
-    private func escapeString(value: String) -> String {
+    func escapeString(value: String) -> String {
         var result = "";
         
         let scalars = value.unicodeScalars
@@ -159,20 +159,20 @@ class BlockerEntryEncoder {
             let s: String
             let c = scalars[idx]
             switch c {
-            case "\\": s = "\\\\"
-            case "\"": s = "\\\""
-            case "\n": s = "\\n"
-            case "\r": s = "\\r"
-            case "\t": s = "\\t"
-            case "\u{8}": s = "\\b"
-            case "\u{C}": s = "\\f"
-            case "\0"..<"\u{10}":
-                s = "\\u000\(String(c.value, radix: 16, uppercase: true))"
-            case "\u{10}"..<" ":
-                s = "\\u00\(String(c.value, radix: 16, uppercase: true))"
-            default:
-                idx = scalars.index(after: idx)
-                continue
+                case "\\": s = "\\\\"
+                case "\"": s = "\\\""
+                case "\n": s = "\\n"
+                case "\r": s = "\\r"
+                case "\t": s = "\\t"
+                case "\u{8}": s = "\\b"
+                case "\u{C}": s = "\\f"
+                case "\0"..<"\u{10}":
+                    s = "\\u000\(String(c.value, radix: 16, uppercase: true))"
+                case "\u{10}"..<" ":
+                    s = "\\u00\(String(c.value, radix: 16, uppercase: true))"
+                default:
+                    idx = scalars.index(after: idx)
+                    continue
             }
             
             if idx != start {
