@@ -248,7 +248,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
         let converter = BlockerEntryFactory(advancedBlockingEnabled: false, errorsCounter: ErrorsCounter());
 
         let rule = NetworkRule();
-        rule.urlRuleText = "/regex/$script";
+        rule.urlRuleText = "/regex/";
         
         rule.urlRegExpSource = "regex{0,9}";
         var result = converter.createBlockerEntry(rule: rule);

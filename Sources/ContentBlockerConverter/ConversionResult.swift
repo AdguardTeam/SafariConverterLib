@@ -1,5 +1,4 @@
 import Foundation
-
 /**
  * Conversion result wrapper class
  */
@@ -69,10 +68,7 @@ public struct ConversionResult: Encodable {
     }
     
     private static func createJSONString(entries: [BlockerEntry]) throws -> String {
-        let encoder = JSONEncoder();
-        encoder.outputFormatting = .prettyPrinted
-        
-        let json = try encoder.encode(entries);
-        return String(data: json, encoding: .utf8)!.replacingOccurrences(of: "\\/", with: "/");
+        let encoder = BlockerEntryEncoder();
+        return encoder.encode(entries: entries);
     }
 }

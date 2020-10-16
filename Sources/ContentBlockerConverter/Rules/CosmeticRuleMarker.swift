@@ -20,23 +20,89 @@ enum CosmeticRuleMarker: String, CaseIterable {
 
     case Html = "$$"
     case HtmlException = "$@$"
-
-    private static func sortedCases() -> [CosmeticRuleMarker] {
-        let allCases = CosmeticRuleMarker.allCases;
-        return allCases.sorted { (left, right) -> Bool in
-            return right.rawValue.count < left.rawValue.count;
-        };
-    }
     
     /**
      * Parses marker from string source
      */
-    static func findCosmeticRuleMarker(ruleText: String) -> ( index: Int, marker: CosmeticRuleMarker? ) {
-        let sortedCases = CosmeticRuleMarker.sortedCases();
-        for marker in sortedCases {
-            let index = ruleText.indexOf(target: marker.rawValue);
-            if (index > -1) {
-                return (index, marker);
+    static func findCosmeticRuleMarker(ruleText: NSString) -> ( index: Int, marker: CosmeticRuleMarker? ) {
+        let hash: unichar = "#".utf16.first!;
+        let atChar: unichar = "@".utf16.first!;
+        let dollar: unichar = "$".utf16.first!;
+        let percent: unichar = "%".utf16.first!;
+        let question: unichar = "?".utf16.first!;
+        
+        let maxIndex = ruleText.length-1
+        for i in 0...maxIndex {
+            let char = ruleText.character(at: i);
+            switch char {
+                case hash:
+                    if i + 4 <= maxIndex {
+                        if ruleText.character(at: i + 1) == atChar
+                            && ruleText.character(at: i + 2) == dollar
+                            && ruleText.character(at: i + 3) == question
+                            && ruleText.character(at: i + 4) == hash {
+                            return (i, CssExtCSSException);
+                        }
+                    }
+
+                    if i + 3 <= maxIndex {
+                        if ruleText.character(at: i + 1) == atChar
+                            && ruleText.character(at: i + 2) == question && ruleText.character(at: i + 3) == hash {
+                            return (i, ElementHidingExtCSSException);
+                        }
+
+                        if ruleText.character(at: i + 1) == atChar
+                            && ruleText.character(at: i + 2) == dollar && ruleText.character(at: i + 3) == hash {
+                            return (i, CssException);
+                        }
+
+                        if ruleText.character(at: i + 1) == atChar
+                            && ruleText.character(at: i + 2) == percent && ruleText.character(at: i + 3) == hash {
+                            return (i, JsException);
+                        }
+
+                        if ruleText.character(at: i + 1) == dollar
+                            && ruleText.character(at: i + 2) == question && ruleText.character(at: i + 3) == hash {
+                            return (i, CssExtCSS);
+                        }
+                    }
+
+                    if i + 2 <= maxIndex {
+                        if ruleText.character(at: i + 1) == atChar && ruleText.character(at: i + 2) == hash {
+                            return (i, ElementHidingException);
+                        }
+
+                        if ruleText.character(at: i + 1) == question && ruleText.character(at: i + 2) == hash {
+                            return (i, ElementHidingExtCSS);
+                        }
+
+                        if ruleText.character(at: i + 1) == percent && ruleText.character(at: i + 2) == hash {
+                            return (i, Js);
+                        }
+
+                        if ruleText.character(at: i + 1) == dollar && ruleText.character(at: i + 2) == hash {
+                            return (i, Css);
+                        }
+                    }
+
+                    if i + 1 <= maxIndex {
+                        if ruleText.character(at: i + 1) == hash {
+                            return (i, ElementHiding);
+                        }
+                    }
+                case dollar:
+                    if i + 2 <= maxIndex {
+                        if ruleText.character(at: i + 1) == atChar && ruleText.character(at: i + 2) == dollar {
+                            return (i, HtmlException);
+                        }
+                    }
+
+                    if i + 1 <= maxIndex {
+                        if ruleText.character(at: i + 1) == dollar {
+                            return (i, Html);
+                        }
+                    }
+                default: break
             }
         }
 

@@ -5,6 +5,10 @@ import Foundation
  */
 class NetworkRule: Rule {
     private static let MASK_WHITE_LIST = "@@";
+    private static let DOMAIN_VALIDATION_REGEXP = try! NSRegularExpression(pattern: "^[a-zA-Z0-9][a-zA-Z0-9-.]*[a-zA-Z0-9]\\.[a-zA-Z-]{2,}$", options: [.caseInsensitive]);
+    
+    private static let delimeterChar = ",".utf16.first!;
+    private static let escapeChar = "\\".utf16.first!;
 
     var isUrlBlock = false;
     var isCssExceptionRule = false;
@@ -33,30 +37,33 @@ class NetworkRule: Rule {
         super.init();
     }
     
-    override init(ruleText: String) throws {
+    override init(ruleText: NSString) throws {
         try super.init(ruleText: ruleText);
         
-        let ruleParts = try! NetworkRuleParser.parseRuleText(ruleText: ruleText);
-        self.urlRuleText = ruleParts.pattern!;
+        let ruleParts = try NetworkRuleParser.parseRuleText(ruleText: ruleText);
         self.isWhiteList = ruleParts.whitelist;
         
-        if (ruleParts.options != nil) {
+        if (ruleParts.options != nil && ruleParts.options != "") {
             try loadOptions(options: ruleParts.options!);
         }
 
-        if (self.urlRuleText == "||"
-            || self.urlRuleText == "*"
-            || self.urlRuleText == ""
-            || self.urlRuleText.count < 3
-        ) {
-            if (self.permittedDomains.count < 1) {
-                // Rule matches too much and does not have any domain restriction
-                // We should not allow this kind of rules
-                throw SyntaxError.invalidRule(message: "The rule is too wide, add domain restriction or make the pattern more specific");
+        if (ruleParts.pattern != nil) {
+            if (ruleParts.pattern! == "||"
+                || ruleParts.pattern! == "*"
+                || ruleParts.pattern! == ""
+                || ruleParts.pattern!.count < 3
+            ) {
+                if (self.permittedDomains.count < 1) {
+                    // Rule matches too much and does not have any domain restriction
+                    // We should not allow this kind of rules
+                    throw SyntaxError.invalidRule(message: "The rule is too wide, add domain restriction or make the pattern more specific");
+                }
             }
         }
         
-        if (self.urlRuleText.hasPrefix("/") && self.urlRuleText.hasSuffix("/")) {
+        self.urlRuleText = NetworkRuleParser.getAsciiDomainRule(pattern: ruleParts.pattern)!;
+        
+        if (self.isRegexRule()) {
             self.urlRegExpSource = self.urlRuleText.subString(startIndex: 1, length: self.urlRuleText.count - 2);
         } else {
             if (self.urlRuleText != "") {
@@ -69,6 +76,10 @@ class NetworkRule: Rule {
         self.isCssExceptionRule = isSingleOption(option: .Elemhide) || isSingleOption(option: .Generichide);
     }
     
+    func isRegexRule() -> Bool {
+        return self.urlRuleText.hasPrefix("/") && self.urlRuleText.hasSuffix("/")
+    }
+
     func isSingleOption(option: NetworkRuleOption) -> Bool {
         return self.enabledOptions.count == 1 && self.enabledOptions.firstIndex(of: option) != nil;
     }
@@ -139,7 +150,7 @@ class NetworkRule: Rule {
         let domain = symbolIndex == -1 ? self.urlRuleText.subString(startIndex: startIndex) : self.urlRuleText.subString(startIndex: startIndex, toIndex: symbolIndex);
         let path = symbolIndex == -1 ? nil : self.urlRuleText.subString(startIndex: symbolIndex, toIndex: pathEndIndex);
 
-        if (!domain.isMatch(regex: "^[a-zA-Z0-9][a-zA-Z0-9-.]*[a-zA-Z0-9]\\.[a-zA-Z-]{2,}$")) {
+        if (!SimpleRegex.isMatch(regex: NetworkRule.DOMAIN_VALIDATION_REGEXP, target: domain)) {
             // Not a valid domain name, ignore it
             return nil;
         }
@@ -147,8 +158,65 @@ class NetworkRule: Rule {
         return DomainInfo(domain: domain, path: path);
     };
     
+    /**
+    * Returns true if this rule negates the specified rule
+    * Only makes sense when this rule has a `badfilter` modifier
+    */
+    func negatesBadfilter(specifiedRule: NetworkRule) -> Bool {
+        if (self.isWhiteList != specifiedRule.isWhiteList) {
+            return false;
+        }
+
+        if (self.urlRuleText != specifiedRule.urlRuleText) {
+            return false;
+        }
+
+        if (self.permittedContentType != specifiedRule.permittedContentType) {
+            return false;
+        }
+
+        if (self.restrictedContentType != specifiedRule.restrictedContentType) {
+            return false;
+        }
+
+        if (self.enabledOptions != specifiedRule.enabledOptions) {
+            return false;
+        }
+
+        if (self.disabledOptions != specifiedRule.disabledOptions) {
+            return false;
+        }
+
+        if (self.restrictedDomains != specifiedRule.restrictedDomains) {
+            return false;
+        }
+        
+        if (!NetworkRule.stringArraysHaveIntersection(left: self.permittedDomains, right: specifiedRule.permittedDomains)) {
+            return false;
+        }
+        
+        return true;
+    }
+    
+    /**
+     * TODO: Move to Array extension
+     */
+    static func stringArraysHaveIntersection(left: [String], right: [String]) -> Bool {
+        if (left.count == 0 || right.count == 0) {
+            return true;
+        }
+
+        for elem in left {
+            if (right.contains(elem)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+    
     private func loadOptions(options: String) throws -> Void {
-        let optionParts = options.splitByDelimiterWithEscapeCharacter(delimeter: ",", escapeChar: "\\");
+        let optionParts = options.splitByDelimiterWithEscapeCharacter(delimeter: NetworkRule.delimeterChar, escapeChar: NetworkRule.escapeChar);
         
         for option in optionParts {
             var optionName = option;

@@ -18,44 +18,66 @@ class RuleFactory {
      */
     func createRules(lines: [String]) -> [Rule] {
         var result = [Rule]();
-        var badfilterRules = [String]();
+        
+        var networkRules = [NetworkRule]();
+        var badfilterRules = [NetworkRule]();
         
         for line in lines {
-            let convertedLines = RuleFactory.converter.convertRule(rule: line);
+            let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines) as NSString;
+            let convertedLines = RuleFactory.converter.convertRule(rule: trimmed);
             for convertedLine in convertedLines {
                 let rule = safeCreateRule(ruleText: convertedLine);
                 if (rule != nil) {
                     if (rule is NetworkRule) {
                         let networkRule = rule as! NetworkRule;
                         if (networkRule.badfilter != nil) {
-                            badfilterRules.append(networkRule.badfilter!);
-                            continue;
+                            badfilterRules.append(networkRule);
+                        } else {
+                            networkRules.append(networkRule);
                         }
+                    } else {
+                        result.append(rule!);
                     }
-                    
-                    result.append(rule!);
                 }
             }
         }
         
-        return RuleFactory.applyBadFilterExceptions(rules: result, badfilterRules: badfilterRules);
+        result += RuleFactory.applyBadFilterExceptions(rules: networkRules, badfilterRules: badfilterRules);
+        return result;
     }
     
     /**
      * Filters rules with badfilter exceptions
      */
-    static func applyBadFilterExceptions(rules: [Rule], badfilterRules: [String]) -> [Rule] {
+    static func applyBadFilterExceptions(rules: [NetworkRule], badfilterRules: [NetworkRule]) -> [Rule] {
+        var badfilters = [String]();
+        for badFilter in badfilterRules {
+            badfilters.append(badFilter.badfilter!);
+        }
+        
         var result = [Rule]();
         for rule in rules {
-            if (badfilterRules.firstIndex(of: rule.ruleText) == nil) {
-                result.append(rule);
+            if (RuleFactory.isRuleNegatedByBadFilters(rule: rule, badfilterRules: badfilterRules)) {
+                continue;
             }
+            
+            result.append(rule);
         }
         
         return result;
     }
     
-    func safeCreateRule(ruleText: String?) -> Rule? {
+    static func isRuleNegatedByBadFilters(rule: NetworkRule, badfilterRules: [NetworkRule]) -> Bool {
+        for badfilter in badfilterRules {
+            if (badfilter.negatesBadfilter(specifiedRule: rule)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    func safeCreateRule(ruleText: NSString?) -> Rule? {
         do {
             return try RuleFactory.createRule(ruleText: ruleText);
         } catch {
@@ -67,13 +89,13 @@ class RuleFactory {
     /**
      * Creates rule object from source text
      */
-    static func createRule(ruleText: String?) throws -> Rule? {
+    static func createRule(ruleText: NSString?) throws -> Rule? {
         do {
-            if (ruleText == nil || ruleText! == "" || ruleText!.hasPrefix("!") || ruleText!.hasPrefix(" ") || ruleText!.indexOf(target: " - ") > 0) {
+            if (ruleText == nil || ruleText! == "" || ruleText!.hasPrefix("!") || ruleText!.hasPrefix(" ") || ruleText!.contains(" - ")) {
                 return nil;
             }
             
-            if (ruleText!.count < 3) {
+            if (ruleText!.length < 3) {
                 return nil;
             }
             
@@ -88,7 +110,11 @@ class RuleFactory {
         }
     };
     
-    private static func isCosmetic(ruleText: String) -> Bool {
+    
+    /**
+     * Checks if the rule is cosmetic (CSS, JS) or not
+     */
+    private static func isCosmetic(ruleText: NSString) -> Bool {
         let markerInfo = CosmeticRuleMarker.findCosmeticRuleMarker(ruleText: ruleText);
         return markerInfo.index != -1;
     }

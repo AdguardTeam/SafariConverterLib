@@ -85,7 +85,7 @@ class Compiler {
         if (self.advancedBlockedEnabled) {
             // Applying CSS exceptions for extended css rules
             extendedCssBlocking = Compiler.applyActionExceptions(
-                blockingItems: &extendedCssBlocking, exceptions: cssExceptions + cosmeticCssExceptions, actionValue: "selector"
+                blockingItems: &extendedCssBlocking, exceptions: cssExceptions + cosmeticCssExceptions, actionValue: "css"
             );
             let extendedCssCompact = Compiler.compactCssRules(cssBlocking: extendedCssBlocking);
             if (!self.optimize) {
@@ -130,21 +130,61 @@ class Compiler {
         trigger.unlessDomain?.append(domain);
     };
     
+    private static func getActionValue(entry: BlockerEntry, action: String) -> String? {
+        switch action {
+        case "selector":
+            return entry.action.selector;
+        case "css":
+            return entry.action.css;
+        case "script":
+            return entry.action.script;
+        case "scriptlet":
+            return entry.action.scriptlet;
+        default:
+            return nil;
+        }
+    }
+    
+    /**
+     * Applies exceptions
+     */
     static func applyActionExceptions(blockingItems: inout [BlockerEntry], exceptions: [BlockerEntry], actionValue: String) -> [BlockerEntry] {
+        var exceptionsDictionary = [String: [BlockerEntry]]();
         for exc in exceptions {
-            for index in 0..<blockingItems.count {
-                var item = blockingItems[index];
-                if (actionValue == "selector" && item.action.selector == exc.action.selector) ||
-                    (actionValue == "script" && item.action.script == exc.action.script) ||
-                    (actionValue == "scriptlet" && item.action.scriptlet == exc.action.scriptlet) {
-                    let exceptionDomains = exc.trigger.ifDomain;
-                    if (exceptionDomains != nil) {
-                        for d in exceptionDomains! {
-                            Compiler.pushExceptionDomain(domain: d, trigger: &item.trigger);
-                        }
-                        
-                        blockingItems[index].trigger = item.trigger;
+            let key = Compiler.getActionValue(entry: exc, action: actionValue);
+            if (key == nil) {
+                continue;
+            }
+            
+            var current = exceptionsDictionary[key!];
+            if (current == nil) {
+                current = [BlockerEntry]();
+            }
+            
+            current!.append(exc);
+            exceptionsDictionary.updateValue(current!, forKey: key!);
+        }
+        
+        for index in 0..<blockingItems.count {
+            var item = blockingItems[index];
+            let key = Compiler.getActionValue(entry: item, action: actionValue);
+            if (key == nil) {
+                continue;
+            }
+            
+            let matchingExceptions = exceptionsDictionary[key!];
+            if (matchingExceptions == nil) {
+                continue;
+            }
+            
+            for exc in matchingExceptions! {
+                let exceptionDomains = exc.trigger.ifDomain;
+                if (exceptionDomains != nil) {
+                    for d in exceptionDomains! {
+                        Compiler.pushExceptionDomain(domain: d, trigger: &item.trigger);
                     }
+                    
+                    blockingItems[index].trigger = item.trigger;
                 }
             }
         }

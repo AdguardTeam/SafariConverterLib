@@ -1,10 +1,11 @@
 import Foundation
+import Punycode
 
 /**
  * AG Rule super class
  */
 class Rule {
-    var ruleText = "";
+    var ruleText: NSString = "";
     
     var isWhiteList = false;
     var isImportant = false;
@@ -20,7 +21,7 @@ class Rule {
         
     }
     
-    init(ruleText: String) throws {
+    init(ruleText: NSString) throws {
         self.ruleText = ruleText;
     }
     
@@ -44,10 +45,15 @@ class Rule {
                 throw SyntaxError.invalidRule(message: "Empty domain specified");
             }
 
+            var encoded = domain;
+            if (!domain.isASCII()) {
+                encoded = domain.idnaEncoded!;
+            }
+            
             if (restricted) {
-                self.restrictedDomains.append(domain.idnaEncoded!);
+                self.restrictedDomains.append(domain);
             } else {
-                self.permittedDomains.append(domain.idnaEncoded!);
+                self.permittedDomains.append(encoded);
             }
         }
     }

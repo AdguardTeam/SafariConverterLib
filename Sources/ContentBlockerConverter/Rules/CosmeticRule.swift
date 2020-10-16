@@ -8,10 +8,21 @@ class CosmeticRule: Rule {
      * Pseudo class indicators. They are used to detect if rule is extended or not even if rule does not
      * have extended css marker
      */
-    private static let EXT_CSS_PSEUDO_INDICATORS = ["[-ext-has=", "[-ext-contains=", "[-ext-has-text=",
-        "[-ext-matches-css=", "[-ext-matches-css-before=", "[-ext-matches-css-after=", ":has(", ":has-text(",
-        ":contains(", ":matches-css(", ":matches-css-before(", ":matches-css-after(", ":-abp-has(", ":-abp-contains(",
-        ":if(", ":if-not(", ":properties(", ":-abp-properties(", ":xpath(", ":nth-ancestor(", ":upward(", ":remove("];
+    private static let EXT_CSS_PSEUDO_INDICATORS = [
+        ":has(",
+        ":has-text(",
+        ":contains(",
+        ":matches-css",
+        ":-abp-",
+        ":if(", ":if-not(",
+        ":properties(",
+        ":xpath(",
+        ":nth-ancestor(",
+        ":upward(",
+        ":remove("
+    ];
+    
+    private static let EXT_CSS_EXT_INDICATOR = "[-ext-";
     
     var content: String = "";
     
@@ -22,7 +33,7 @@ class CosmeticRule: Rule {
     var isExtendedCss = false;
     var isInjectCss = false;
     
-    override init(ruleText: String) throws {
+    override init(ruleText: NSString) throws {
         try super.init(ruleText: ruleText);
         
         let markerInfo = CosmeticRuleMarker.findCosmeticRuleMarker(ruleText: ruleText);
@@ -30,7 +41,7 @@ class CosmeticRule: Rule {
             throw SyntaxError.invalidRule(message: "Not a cosmetic rule");
         }
 
-        self.content = ruleText.subString(startIndex: markerInfo.index + markerInfo.marker!.rawValue.count);
+        self.content = ruleText.substring(from: markerInfo.index + markerInfo.marker!.rawValue.count);
         if (self.content == "") {
             throw SyntaxError.invalidRule(message: "Rule content is empty");
         }
@@ -65,7 +76,7 @@ class CosmeticRule: Rule {
         if (markerInfo.index > 0) {
             // This means that the marker is preceded by the list of domains
             // Now it's a good time to parse them.
-            let domains = ruleText.subString(startIndex: 0, toIndex: markerInfo.index);
+            let domains = ruleText.substring(to: markerInfo.index);
             try super.setDomains(domains: domains, sep: ",");
         }
 
@@ -73,13 +84,35 @@ class CosmeticRule: Rule {
         self.isExtendedCss = CosmeticRule.isExtCssMarker(marker: markerInfo.marker!);
         if (!self.isExtendedCss) {
             // additional check if rule is extended css rule by pseudo class indicators
-            for indicator in CosmeticRule.EXT_CSS_PSEUDO_INDICATORS {
-                if (self.content.indexOf(target: indicator) >= 0) {
-                    self.isExtendedCss = true;
-                    break;
-                }
+            if (CosmeticRule.searchCssPseudoIndicators(content: self.content)) {
+                self.isExtendedCss = true;
             }
         }
+    }
+    
+    private static func searchCssPseudoIndicators(content: String) -> Bool {
+        let nsstring = content as NSString;
+        
+        // Not enought for even minimal length pseudo
+        if (nsstring.length < 6) {
+            return false;
+        }
+        
+        if (nsstring.contains(CosmeticRule.EXT_CSS_EXT_INDICATOR)) {
+            return true;
+        }
+        
+        if (!nsstring.contains(":")) {
+            return false;
+        }
+
+        for indicator in CosmeticRule.EXT_CSS_PSEUDO_INDICATORS {
+            if (nsstring.contains(indicator)) {
+                return true;
+            }
+        }
+
+        return false;
     }
     
     private static func parseWhitelist(marker: CosmeticRuleMarker) -> Bool {

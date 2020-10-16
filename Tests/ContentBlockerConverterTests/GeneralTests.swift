@@ -322,4 +322,28 @@ final class GeneralTests: XCTestCase {
         }
     }
     
+    func testPerformance() {
+        let thisSourceFile = URL(fileURLWithPath: #file);
+        let thisDirectory = thisSourceFile.deletingLastPathComponent();
+        let resourceURL = thisDirectory.appendingPathComponent("Resources/test-rules.txt");
+        
+        let content = try! String(contentsOf: resourceURL, encoding: String.Encoding.utf8);
+        let rules = content.components(separatedBy: "\n");
+        
+        self.measure {
+            let conversionResult = ContentBlockerConverter().convertArray(rules: rules);
+            NSLog(conversionResult!.message);
+            
+            XCTAssertEqual(conversionResult?.totalConvertedCount, 24681);
+            XCTAssertEqual(conversionResult?.convertedCount, 24681);
+            XCTAssertEqual(conversionResult?.errorsCount, 143);
+            XCTAssertEqual(conversionResult?.overLimit, false);
+        }
+        
+    }
+    
+    static var allTests = [
+        ("testGeneral", testGeneral),
+        ("testPerformance", testPerformance),
+    ]
 }

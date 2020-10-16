@@ -24,66 +24,97 @@ class SimpleRegex {
     private static let regexStartUrl = URL_FILTER_REGEXP_START_URL;
     private static let regexStartString = "^";
     private static let regexEndString = "$";
-    
+
     /**
-    * Creates regex
-    */
-    public static func createRegexText(str: String) -> String? {
-        if (str == maskStartUrl ||
-            str == maskPipe ||
-            str == maskAnySymbol) {
-            return regexAnySymbol;
-        }
-
-        var regex = SimpleRegex.escapeRegExp(str: str);
-
-        if (regex.hasPrefix(maskStartUrl)) {
-            regex = regex.subString(startIndex: 0, toIndex: maskStartUrl.count) +
-                replaceAll(str: regex.subString(startIndex: maskStartUrl.count, toIndex: regex.count - 1), find: "|", replace: "\\|") +
-                regex.subString(startIndex: regex.count - 1);
-        } else if (regex.hasPrefix(maskPipe)) {
-            regex = regex.subString(startIndex: 0, toIndex: maskPipe.count) +
-                replaceAll(str: regex.subString(startIndex: maskPipe.count, toIndex: regex.count - 1), find: "|", replace: "\\|") +
-                regex.subString(startIndex: regex.count - 1);
-        } else {
-            regex = replaceAll(str: regex.subString(startIndex: 0, toIndex: regex.count - 1), find: "|", replace: "\\|") +
-                regex.subString(startIndex: regex.count - 1);
-        }
-
-        // Replacing special url masks
-        regex = replaceAll(str: regex, find: maskAnySymbol, replace: regexAnySymbol);
-        regex = replaceAll(str: regex, find: maskSeparator, replace: regexSeparator);
-
-        if (regex.hasPrefix(maskStartUrl)) {
-            regex = regexStartUrl + regex.subString(startIndex: maskStartUrl.count);
-        } else if (regex.hasPrefix(maskPipe)) {
-            regex = regexStartString + regex.subString(startIndex: maskPipe.count);
-        }
-        if (regex.hasSuffix(maskPipe)) {
-            regex = regex.subString(startIndex: 0, toIndex: regex.count - 1) + regexEndString;
-        }
-
-        return regex;
-    }
-    
-    /**
-     * Escapes regular expression string
+     * Characters to be escaped in the regex
      * https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/regexp
      * should be escaped . * + ? ^ $ { } ( ) | [ ] / \
      * except of * | ^
      */
-    private static func escapeRegExp(str: String) -> String {
-        var result = str;
-        
-        let specials = [".", "?", "$", "{", "}", "(", ")", "[", "]", "/"];
-        for special in specials {
-            result = result.replacingOccurrences(of: special, with: "\\" + special);
+    private static let CHARS_TO_ESCAPE = [
+        ".".utf16.first!,
+        "?".utf16.first!,
+        "$".utf16.first!,
+        "{".utf16.first!,
+        "}".utf16.first!,
+        "(".utf16.first!,
+        ")".utf16.first!,
+        "[".utf16.first!,
+        "]".utf16.first!,
+        "/".utf16.first!
+    ]
+    private static let charPipe = "|".utf16.first!
+    private static let charSeparator = "^".utf16.first!
+    private static let charWildcard = "*".utf16.first!
+
+    /**
+     * Creates regex
+     */
+    public static func createRegexText(str: String) -> String? {
+        if (str == maskStartUrl ||
+                str == maskPipe ||
+                str == maskAnySymbol) {
+            return regexAnySymbol;
         }
         
+        var result = ""
+        let nstr = str as NSString
+        
+        let maxIndex = nstr.length - 1
+        var i = 0
+        while i <= maxIndex {
+            let char = nstr.character(at: i)
+
+            if CHARS_TO_ESCAPE.contains(char) {
+                result.append("\\")
+                result.append(Character(UnicodeScalar(char)!))
+            } else {
+                switch char {
+                case charPipe:
+                    if i == 0 {
+                        let nextChar = nstr.character(at: i+1)
+                        if nextChar == charPipe {
+                            result.append(regexStartUrl)
+                            i += 1 // increment i as we processed next char already
+                        } else {
+                            result.append(regexStartString)
+                        }
+                    } else if i == maxIndex {
+                        result.append(regexEndString)
+                    } else {
+                        result.append("\\")
+                        result.append(Character(UnicodeScalar(char)!))
+                    }
+                case charSeparator:
+                    result.append(regexSeparator)
+                case charWildcard:
+                    result.append(regexAnySymbol)
+                default:
+                    result.append(Character(UnicodeScalar(char)!))
+                }
+            }
+            
+            i += 1
+        }
+
         return result;
     }
-    
-    private static func replaceAll(str: String, find: String, replace: String) -> String {
-        return str.replacingOccurrences(of: find, with: replace);
+
+    /**
+     * Check if target string matches regex
+     */
+    static func isMatch(regex: NSRegularExpression, target: String) -> Bool {
+        let matchCount = regex.numberOfMatches(in: target, options: [], range: NSMakeRange(0, target.count))
+        return matchCount > 0;
+    }
+
+    /**
+     * Returns target string matches
+     */
+    static func matches(regex: NSRegularExpression, target: String) -> [String] {
+        let matches  = regex.matches(in: target, options: [], range: NSMakeRange(0, target.count))
+        return matches.map { match in
+            return String(target[Range(match.range, in: target)!])
+        }
     }
 }

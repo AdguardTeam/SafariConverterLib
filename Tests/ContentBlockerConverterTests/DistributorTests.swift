@@ -14,7 +14,7 @@ final class DistributorTests: XCTestCase {
         XCTAssertEqual(result.convertedCount, 0);
         XCTAssertEqual(result.errorsCount, 0);
         XCTAssertEqual(result.overLimit, false);
-        XCTAssertEqual(result.converted, "[\n\n]");
+        XCTAssertEqual(result.converted, "[]");
     }
     
     func testApplyWildcards() {
@@ -71,7 +71,7 @@ final class DistributorTests: XCTestCase {
         );
 
         var domains = [String]();
-        for var index in (1...551) {
+        for index in (1...551) {
             domains.append("test-domain-" + String(index));
         }
 
@@ -110,7 +110,7 @@ final class DistributorTests: XCTestCase {
         );
 
         var domains = [String]();
-        for var index in (1...551) {
+        for index in (1...551) {
             domains.append("test-unless-domain-" + String(index));
         }
 
