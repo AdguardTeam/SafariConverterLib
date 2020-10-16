@@ -334,8 +334,8 @@ final class GeneralTests: XCTestCase {
             let conversionResult = ContentBlockerConverter().convertArray(rules: rules);
             NSLog(conversionResult!.message);
             
-            XCTAssertEqual(conversionResult?.totalConvertedCount, 24672);
-            XCTAssertEqual(conversionResult?.convertedCount, 24672);
+            XCTAssertEqual(conversionResult?.totalConvertedCount, 24681);
+            XCTAssertEqual(conversionResult?.convertedCount, 24681);
             XCTAssertEqual(conversionResult?.errorsCount, 143);
             XCTAssertEqual(conversionResult?.overLimit, false);
         }

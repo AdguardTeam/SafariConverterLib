@@ -71,7 +71,7 @@ final class DistributorTests: XCTestCase {
         );
 
         var domains = [String]();
-        for var index in (1...551) {
+        for index in (1...551) {
             domains.append("test-domain-" + String(index));
         }
 
@@ -110,7 +110,7 @@ final class DistributorTests: XCTestCase {
         );
 
         var domains = [String]();
-        for var index in (1...551) {
+        for index in (1...551) {
             domains.append("test-unless-domain-" + String(index));
         }
 
