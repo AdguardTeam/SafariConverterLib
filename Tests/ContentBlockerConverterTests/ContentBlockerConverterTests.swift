@@ -500,7 +500,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded[0].trigger.ifDomain?[2], "*forbes.ru");
         XCTAssertEqual(decoded[0].trigger.ifDomain?[99], "*forbes.sh");
     }
-                
+
     static var allTests = [
         ("testEmpty", testEmpty),
         ("testConvertComment", testConvertComment),
