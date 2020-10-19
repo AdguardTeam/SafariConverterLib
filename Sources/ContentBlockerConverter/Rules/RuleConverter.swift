@@ -287,12 +287,16 @@ class RuleConverter {
     private static let ALL_OPTION = "all";
     private static let POPUP_OPTION = "popup";
     private static let DOCUMENT_OPTION = "document";
+    private static let UBO_1P_OPTION = "1p";
+    private static let UBO_3P_OPTION = "3p";
 
     private static let conversionMap : [String:String] = [
         EMPTY_OPTION : "redirect=nooptext",
         MP4_OPTION : "redirect=noopmp4-1s",
         INLINE_SCRIPT_OPTION : CSP_OPTION + "=script-src 'self' 'unsafe-eval' http: https: data: blob: mediastream: filesystem:",
-        INLINE_FONT_OPTION : CSP_OPTION + "=font-src 'self' 'unsafe-eval' http: https: data: blob: mediastream: filesystem:"
+        INLINE_FONT_OPTION : CSP_OPTION + "=font-src 'self' 'unsafe-eval' http: https: data: blob: mediastream: filesystem:",
+        UBO_1P_OPTION: "first-party",
+        UBO_3P_OPTION: "third-party"
     ]
 
     private func convertOptions(rule: NSString) -> [NSString]? {
