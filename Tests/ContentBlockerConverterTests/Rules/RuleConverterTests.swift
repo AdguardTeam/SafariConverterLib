@@ -130,6 +130,28 @@ final class RuleConverterTests: XCTestCase {
         XCTAssertEqual(res, [exp]);
     }
     
+    func testUboThirdPartyModifiers() {
+        var exp = "||video.example.org^$third-party,match-case"  as NSString;
+        var res = ruleConverter.convertRule(rule: "||video.example.org^$3p,match-case" as NSString);
+        XCTAssertEqual(res, [exp]);
+        
+        exp = "||video.example.org^$match-case,third-party";
+        res = ruleConverter.convertRule(rule: "||video.example.org^$match-case,3p" as NSString);
+        XCTAssertEqual(res, [exp]);
+        
+        exp = "||video.example.org^$first-party";
+        res = ruleConverter.convertRule(rule: "||video.example.org^$1p" as NSString);
+        XCTAssertEqual(res, [exp]);
+        
+        exp = "||video.example.org^$first-party";
+        res = ruleConverter.convertRule(rule: "||video.example.org^$first-party" as NSString);
+        XCTAssertEqual(res, [exp]);
+        
+        exp = "||video.example.org^$match-case,third-party,redirect=noopmp4-1s,media";
+        res = ruleConverter.convertRule(rule: "||video.example.org^$match-case,3p,mp4" as NSString);
+        XCTAssertEqual(res, [exp]);
+    }
+    
     func testConvertUboScriptTags() {
         var exp = "example.com##^script:some-another-rule(test)" as NSString;
         var res = ruleConverter.convertRule(rule: "example.com##^script:some-another-rule(test)" as NSString);
@@ -237,6 +259,7 @@ final class RuleConverterTests: XCTestCase {
         ("testConvertCssAGRules", testConvertCssAGRules),
         ("testEmptyAndMp4Modifiers", testEmptyAndMp4Modifiers),
         ("testMp4AndMediaModifiers", testMp4AndMediaModifiers),
+        ("testUboThirdPartyModifiers", testUboThirdPartyModifiers),
         ("testConvertUboScriptTags", testConvertUboScriptTags),
         ("testInlineScriptModifier", testInlineScriptModifier),
         ("testInlineFontModifier", testInlineFontModifier),
