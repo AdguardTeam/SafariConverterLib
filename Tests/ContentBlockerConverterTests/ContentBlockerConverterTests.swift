@@ -517,12 +517,12 @@ func testUboScriptletRules() {
         XCTAssertEqual(decoded.count, 2);
 
         XCTAssertEqual(decoded[0].trigger.ifDomain?[0], "*example.org");
-        XCTAssertEqual(decoded[0].action.type, "css-display-none");
-        XCTAssertEqual(decoded[0].action.selector, "//scriptlet(\"ubo-aopr,__cad.cpm_popunder\")");
+        XCTAssertNotEqual(decoded[0].action.type, "css-display-none");
+        XCTAssertNotEqual(decoded[0].action.selector, "//scriptlet(\"ubo-aopr,__cad.cpm_popunder\")");
 
         XCTAssertEqual(decoded[1].trigger.ifDomain?[0], "*example.org");
-        XCTAssertEqual(decoded[1].action.type, "css-display-none");
-        XCTAssertEqual(decoded[1].action.selector, "//scriptlet(\"ubo-acis,setTimeout,testad\")");
+        XCTAssertNotEqual(decoded[1].action.type, "css-display-none");
+        XCTAssertNotEqual(decoded[1].action.selector, "//scriptlet(\"ubo-acis,setTimeout,testad\")");
     }
 
     static var allTests = [
