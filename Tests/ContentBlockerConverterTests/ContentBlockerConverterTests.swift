@@ -501,6 +501,30 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded[0].trigger.ifDomain?[99], "*forbes.sh");
     }
 
+func testUboScriptletRules() {
+        var ruleText = [
+            "example.org##+js(aopr,__cad.cpm_popunder)",
+            "example.org##+js(acis,setTimeout,testad)",
+        ];
+
+        var result = converter.convertArray(rules: ruleText);
+
+        XCTAssertEqual(result?.totalConvertedCount, 2);
+        XCTAssertEqual(result?.convertedCount, 2);
+        XCTAssertEqual(result?.errorsCount, 0);
+
+        var decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 2);
+
+        XCTAssertEqual(decoded[0].trigger.ifDomain?[0], "*example.org");
+        XCTAssertEqual(decoded[0].action.type, "css-display-none");
+        XCTAssertEqual(decoded[0].action.selector, "//scriptlet(\"ubo-aopr,__cad.cpm_popunder\")");
+
+        XCTAssertEqual(decoded[1].trigger.ifDomain?[0], "*example.org");
+        XCTAssertEqual(decoded[1].action.type, "css-display-none");
+        XCTAssertEqual(decoded[1].action.selector, "//scriptlet(\"ubo-acis,setTimeout,testad\")");
+    }
+
     static var allTests = [
         ("testEmpty", testEmpty),
         ("testConvertComment", testConvertComment),
@@ -527,5 +551,6 @@ final class ContentBlockerConverterTests: XCTestCase {
         ("testImportantModifierRules", testImportantModifierRules),
         ("testBadfilterRules", testBadfilterRules),
         ("testTldWildcardRules", testTldWildcardRules),
+        ("testUboScriptletRules", testUboScriptletRules),
     ]
 }
