@@ -120,7 +120,11 @@ class RuleConverter {
         }
 
         let clean = getStringInBraces(str: rule as String);
-        let parsedArgs = clean.components(separatedBy: ", ");
+        var parsedArgs = clean.components(separatedBy: ", ");
+        if (parsedArgs.count == 1) {
+            // Most probably this is not correct separator, in this case we use ','
+            parsedArgs = clean.components(separatedBy: ",");
+        }
 
         var args = [String]();
         for i in (0 ..< parsedArgs.count) {

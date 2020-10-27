@@ -38,6 +38,26 @@ final class RuleConverterTests: XCTestCase {
         XCTAssertEqual(res[0], exp);
     }
     
+    func testScriptletUboRuleCommas() {
+        var rule: NSString = "si.com##+js(aeld, scroll, function(e){u(n(e,1,a))})";
+        var exp: NSString = #"si.com#%#//scriptlet("ubo-aeld", "scroll", "function(e){u(n(e,1,a))}")"#;
+        
+        var res = ruleConverter.convertRule(rule: rule);
+        XCTAssertEqual(res[0], exp);
+        
+        rule = "example.org##+js(aopr,__cad.cpm_popunder)";
+        exp = #"example.org#%#//scriptlet("ubo-aopr", "__cad.cpm_popunder")"#;
+        
+        res = ruleConverter.convertRule(rule: rule);
+        XCTAssertEqual(res[0], exp);
+        
+        rule = "example.org##+js(acis,setTimeout,testad)";
+        exp = #"example.org#%#//scriptlet("ubo-acis", "setTimeout", "testad")"#;
+        
+        res = ruleConverter.convertRule(rule: rule);
+        XCTAssertEqual(res[0], exp);
+    }
+    
     func testScriptletUboRuleException() {
         let rule: NSString = "example.org#@#+js(setTimeout-defuser.js, [native code], 8000)";
         let exp: NSString = "example.org#@%#//scriptlet(\"ubo-setTimeout-defuser.js\", \"[native code]\", \"8000\")";
@@ -253,6 +273,7 @@ final class RuleConverterTests: XCTestCase {
         ("testScriptletAGRule", testScriptletAGRule),
         ("testScriptletAGRuleException", testScriptletAGRuleException),
         ("testScriptletUboRule", testScriptletUboRule),
+        ("testScriptletUboRuleCommas", testScriptletUboRuleCommas),
         ("testScriptletUboRuleException", testScriptletUboRuleException),
         ("testScriptletAbpRule", testScriptletAbpRule),
         ("testScriptletAbpRuleMultiple", testScriptletAbpRuleMultiple),

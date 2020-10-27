@@ -501,28 +501,27 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded[0].trigger.ifDomain?[99], "*forbes.sh");
     }
 
-func testUboScriptletRules() {
-        var ruleText = [
+    func testUboScriptletRules() {
+        let ruleText = [
             "example.org##+js(aopr,__cad.cpm_popunder)",
             "example.org##+js(acis,setTimeout,testad)",
         ];
 
-        var result = converter.convertArray(rules: ruleText);
-
-        XCTAssertEqual(result?.totalConvertedCount, 2);
-        XCTAssertEqual(result?.convertedCount, 2);
+        let result = converter.convertArray(rules: ruleText, advancedBlocking: true);
         XCTAssertEqual(result?.errorsCount, 0);
 
-        var decoded = try! parseJsonString(json: result!.converted);
+        let decoded = try! parseJsonString(json: result!.advancedBlocking!);
         XCTAssertEqual(decoded.count, 2);
 
         XCTAssertEqual(decoded[0].trigger.ifDomain?[0], "*example.org");
-        XCTAssertNotEqual(decoded[0].action.type, "css-display-none");
-        XCTAssertNotEqual(decoded[0].action.selector, "//scriptlet(\"ubo-aopr,__cad.cpm_popunder\")");
+        XCTAssertEqual(decoded[0].action.type, "scriptlet");
+        XCTAssertEqual(decoded[0].action.scriptlet, "ubo-aopr");
+        XCTAssertEqual(decoded[0].action.scriptletParam, #"{"name":"ubo-aopr","args":["__cad.cpm_popunder"]}"#);
 
         XCTAssertEqual(decoded[1].trigger.ifDomain?[0], "*example.org");
-        XCTAssertNotEqual(decoded[1].action.type, "css-display-none");
-        XCTAssertNotEqual(decoded[1].action.selector, "//scriptlet(\"ubo-acis,setTimeout,testad\")");
+        XCTAssertEqual(decoded[1].action.type, "scriptlet");
+        XCTAssertEqual(decoded[1].action.scriptlet, "ubo-acis");
+        XCTAssertEqual(decoded[1].action.scriptletParam, #"{"name":"ubo-acis","args":["setTimeout","testad"]}"#);
     }
 
     static var allTests = [
