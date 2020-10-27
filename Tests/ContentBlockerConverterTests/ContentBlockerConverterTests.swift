@@ -365,10 +365,10 @@ final class ContentBlockerConverterTests: XCTestCase {
     
     func testCssPseudoClasses() {
         let result = converter.convertArray(rules: [
-                "w3schools.com###main > table.w3-table-all.notranslate:first-child > tbody > tr:nth-child(17) > td.notranslate:nth-child(2)",
-                "w3schools.com###:root div.ads",
-                "w3schools.com###body div[attr='test']:first-child  div",
-                "w3schools.com##.todaystripe::after"
+                "w3schools1.com###main > table.w3-table-all.notranslate:first-child > tbody > tr:nth-child(17) > td.notranslate:nth-child(2)",
+                "w3schools2.com###:root div.ads",
+                "w3schools3.com###body div[attr='test']:first-child  div",
+                "w3schools4.com##.todaystripe::after"
             ]
         );
         XCTAssertEqual(result?.convertedCount, 4);

@@ -6,6 +6,7 @@ import Foundation
 class Compiler {
     // Max number of CSS selectors per rule (look at compactCssRules function)
     private static let MAX_SELECTORS_PER_WIDE_RULE = 250;
+    private static let MAX_SELECTORS_PER_DOMAIN_RULE = 250;
     
     private let optimize: Bool
     private let advancedBlockedEnabled: Bool
@@ -79,8 +80,8 @@ class Compiler {
         if (!self.optimize) {
             compilationResult.cssBlockingWide = cssCompact.cssBlockingWide;
         }
-        compilationResult.cssBlockingGenericDomainSensitive = cssCompact.cssBlockingGenericDomainSensitive;
-        compilationResult.cssBlockingDomainSensitive = cssCompact.cssBlockingDomainSensitive;
+        compilationResult.cssBlockingGenericDomainSensitive = Compiler.compactDomainCssRules(entries: cssCompact.cssBlockingGenericDomainSensitive);
+        compilationResult.cssBlockingDomainSensitive = Compiler.compactDomainCssRules(entries: cssCompact.cssBlockingDomainSensitive, useUnlessDomain: true);
 
         if (self.advancedBlockedEnabled) {
             // Applying CSS exceptions for extended css rules
@@ -243,6 +244,91 @@ class Compiler {
             cssBlockingGenericDomainSensitive: cssBlockingGenericDomainSensitive
         );
     };
+    
+    /**
+     * Compacts same domain elemhide rules
+     * @param cssBlocking unsorted domain sensitive css elemhide rules
+     */
+    static func compactDomainCssRules(entries: [BlockerEntry], useUnlessDomain: Bool = false) -> [BlockerEntry] {
+        var result = [BlockerEntry]();
+        
+        var domainsDictionary = [String: [BlockerEntry]]();
+        for entry in entries {
+            var domain: String? = nil;
+            
+            if (entry.trigger.ifDomain != nil) {
+                if (entry.trigger.ifDomain?.count == 1) {
+                    domain = entry.trigger.ifDomain![0];
+                } else {
+                    result.append(entry);
+                }
+            } else if (entry.trigger.unlessDomain != nil) {
+                if (entry.trigger.unlessDomain?.count == 1) {
+                    domain = entry.trigger.unlessDomain![0];
+                } else {
+                    result.append(entry);
+                }
+            } else {
+                // Not a domain sensitive entry
+                result.append(entry);
+            }
+            
+            if (domain != nil) {
+                var current = domainsDictionary[domain!];
+                if (current == nil) {
+                    current = [BlockerEntry]();
+                }
+                
+                current!.append(entry);
+                domainsDictionary.updateValue(current!, forKey: domain!);
+            }
+        }
+        
+        for domain in domainsDictionary.keys {
+            let domainEntries = domainsDictionary[domain];
+            if (domainEntries == nil) {
+                continue;
+            }
+            
+            if (domainEntries!.count <= 1) {
+                result.append(contentsOf: domainEntries!);
+                continue;
+            }
+            
+            result.append(contentsOf: Compiler.createDomainWideEntries(domain: domain, useUnlessDomain: useUnlessDomain, domainEntries: domainEntries!));
+        }
+        
+        return result;
+    };
+    
+    private static func createDomainWideEntries(domain: String, useUnlessDomain: Bool, domainEntries: [BlockerEntry]) -> [BlockerEntry] {
+        var result = [BlockerEntry]();
+        
+        var trigger = BlockerEntry.Trigger(ifDomain: [ domain ], urlFilter: ".*");
+        if (useUnlessDomain) {
+            trigger = BlockerEntry.Trigger(urlFilter: ".*", unlessDomain: [ domain ]);
+        }
+        
+        let chunked = domainEntries.chunked(into: MAX_SELECTORS_PER_DOMAIN_RULE);
+        for chunk in chunked {
+            var selectors = [String]();
+            for entry in chunk {
+                let selector = entry.action.selector;
+                if (selector != nil) {
+                    selectors.append(entry.action.selector!);
+                }
+            }
+            
+            let wideRuleEntry = BlockerEntry(
+                trigger: trigger,
+                action: BlockerEntry.Action(type: "css-display-none", selector: selectors.joined(separator: ", "))
+            );
+            
+            result.append(wideRuleEntry);
+        }
+        
+        return result;
+    }
     
     struct CompactCssRulesData {
         var cssBlockingWide: [BlockerEntry]

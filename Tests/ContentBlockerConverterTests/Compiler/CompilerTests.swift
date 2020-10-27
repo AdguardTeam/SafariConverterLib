@@ -61,6 +61,51 @@ final class CompilerTests: XCTestCase {
         XCTAssertEqual(result.cssBlockingGenericDomainSensitive.count, 0);
     }
     
+    func testCompactIfDomainCss() {
+        let entries = [
+            BlockerEntry(
+                trigger: BlockerEntry.Trigger(ifDomain: ["some.com"], urlFilter: ".*"),
+                action: BlockerEntry.Action(type: "css-display-none", selector: "#some-selector")),
+            BlockerEntry(
+                trigger: BlockerEntry.Trigger(ifDomain: ["some.com", "an-other.com"], urlFilter: ".*"),
+                action: BlockerEntry.Action(type: "css-display-none", selector: "#some-selector")),
+            BlockerEntry(
+                trigger: BlockerEntry.Trigger(ifDomain: ["compact.com"], urlFilter: ".*"),
+                action: BlockerEntry.Action(type: "css-display-none", selector: "#selector-one")),
+            BlockerEntry(
+                trigger: BlockerEntry.Trigger(ifDomain: ["compact.com"], urlFilter: ".*"),
+                action: BlockerEntry.Action(type: "css-display-none", selector: "#selector-two")),
+            BlockerEntry(
+                trigger: BlockerEntry.Trigger(ifDomain: ["compact.com"], urlFilter: ".*"),
+                action: BlockerEntry.Action(type: "css-display-none", selector: "#selector-three")),
+            
+        ];
+        
+        let result = Compiler.compactDomainCssRules(entries: entries);
+        XCTAssertNotNil(result);
+        XCTAssertEqual(result.count, 3);
+    }
+    
+    func testCompactUnlessDomainCss() {
+        let entries = [
+            BlockerEntry(
+                trigger: BlockerEntry.Trigger(urlFilter: ".*", unlessDomain: ["some.com"]),
+                action: BlockerEntry.Action(type: "css-display-none", selector: "#some-selector")),
+            BlockerEntry(
+                trigger: BlockerEntry.Trigger(urlFilter: ".*", unlessDomain: ["compact.com"]),
+                action: BlockerEntry.Action(type: "css-display-none", selector: "#selector-two")),
+            BlockerEntry(
+                trigger: BlockerEntry.Trigger(urlFilter: ".*", unlessDomain: ["compact.com"]),
+                action: BlockerEntry.Action(type: "css-display-none", selector: "#selector-three")),
+            
+        ];
+        
+        let result = Compiler.compactDomainCssRules(entries: entries, useUnlessDomain: true);
+        
+        XCTAssertNotNil(result);
+        XCTAssertEqual(result.count, 2);
+    }
+    
     func testApplyActionExceptions() {
         var blockingItems = [
             BlockerEntry(
@@ -85,6 +130,8 @@ final class CompilerTests: XCTestCase {
     static var allTests = [
         ("testEmpty", testEmpty),
         ("testCompactCss", testCompactCss),
+        ("testCompactIfDomainCss", testCompactIfDomainCss),
+        ("testCompactUnlessDomainCss", testCompactUnlessDomainCss),
         ("testApplyActionExceptions", testApplyActionExceptions),
     ]
 }
