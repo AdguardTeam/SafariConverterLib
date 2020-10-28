@@ -325,6 +325,23 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded[1].action.type, "ignore-previous-rules");
     }
     
+    func testConvertCompactDomainSensitiveElemhide() {
+        let result = converter.convertArray(rules: [
+            "example.org###selector-one",
+            "example.org###selector-two",
+            "example.org###selector-three"
+        ]);
+        XCTAssertEqual(result?.convertedCount, 1);
+        
+        let decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        
+        XCTAssertEqual(decoded[0].trigger.urlFilter, URL_FILTER_CSS_RULES);
+        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*example.org"]);
+        XCTAssertEqual(decoded[0].action.type, "css-display-none");
+        XCTAssertEqual(decoded[0].action.selector, "#selector-one, #selector-two, #selector-three");
+    }
+    
     func testCyrillicRules() {
         let result = converter.convertArray(rules: ["меил.рф", "||меил.рф"]);
         XCTAssertEqual(result?.convertedCount, 2);
@@ -518,6 +535,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         ("testConvertGenericDomainSensitiveSortingOrder", testConvertGenericDomainSensitiveSortingOrder),
         ("testConvertGenericDomainSensitiveSortingOrderGenerichide", testConvertGenericDomainSensitiveSortingOrderGenerichide),
         ("testConvertGenericDomainSensitiveSortingOrderElemhide", testConvertGenericDomainSensitiveSortingOrderElemhide),
+        ("testConvertCompactDomainSensitiveElemhide", testConvertCompactDomainSensitiveElemhide),
         ("testCyrillicRules", testCyrillicRules),
         ("testRegexRules", testRegexRules),
         ("testCssPseudoClasses", testCssPseudoClasses),

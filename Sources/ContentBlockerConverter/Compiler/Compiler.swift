@@ -80,8 +80,8 @@ class Compiler {
         if (!self.optimize) {
             compilationResult.cssBlockingWide = cssCompact.cssBlockingWide;
         }
-        compilationResult.cssBlockingGenericDomainSensitive = Compiler.compactDomainCssRules(entries: cssCompact.cssBlockingGenericDomainSensitive);
-        compilationResult.cssBlockingDomainSensitive = Compiler.compactDomainCssRules(entries: cssCompact.cssBlockingDomainSensitive, useUnlessDomain: true);
+        compilationResult.cssBlockingGenericDomainSensitive = Compiler.compactDomainCssRules(entries: cssCompact.cssBlockingGenericDomainSensitive, useUnlessDomain: true);
+        compilationResult.cssBlockingDomainSensitive = Compiler.compactDomainCssRules(entries: cssCompact.cssBlockingDomainSensitive);
 
         if (self.advancedBlockedEnabled) {
             // Applying CSS exceptions for extended css rules
