@@ -11,6 +11,8 @@ final class RuleFactoryTests: XCTestCase {
         XCTAssertNil(try! RuleFactory.createRule(ruleText: " test"));
         XCTAssertNil(try! RuleFactory.createRule(ruleText: "! test"));
         XCTAssertNil(try! RuleFactory.createRule(ruleText: "test - test"));
+        
+        XCTAssertNil(try? RuleFactory.createRule(ruleText: "test$domain="));
     }
     
     func testNetworkRules() {

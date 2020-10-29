@@ -287,7 +287,7 @@ class NetworkRule: Rule {
 
             // $domain modifier
             case "domain":
-                try! self.setDomains(domains: optionValue, sep: "|");
+                try self.setDomains(domains: optionValue, sep: "|");
                 break;
             
             // Document-level whitelist rules
