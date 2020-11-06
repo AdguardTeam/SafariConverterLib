@@ -179,23 +179,24 @@ class BlockerEntryFactory {
             // Rule with empty regexp
             return BlockerEntryFactory.URL_FILTER_ANY_URL;
         }
+        
+        // Safari doesn't support non-ASCII characters in regular expressions
+        if (!urlRegExpSource!.isASCII()) {
+            throw ConversionError.unsupportedRegExp(message: "Safari doesn't support non-ASCII characters in regular expressions");
+        }
+        
+        // Regex that we generate for basic non-regex rules are okay
+        // But if this is a regex rule, we can't be sure
+        if rule.isRegexRule() {
+            try validateRegExp(urlRegExp: urlRegExpSource!);
+        }
 
         // Prepending WebSocket protocol to resolve this:
         // https://github.com/AdguardTeam/AdguardBrowserExtension/issues/957
         if (isWebSocket && !urlRegExpSource!.hasPrefix("^") && !urlRegExpSource!.hasPrefix("ws")) {
             return BlockerEntryFactory.URL_FILTER_WS_ANY_URL + ".*" + urlRegExpSource!;
         }
-
-        // Safari doesn't support non-ASCII characters in regular expressions
-        if (!urlRegExpSource!.isASCII()) {
-            throw ConversionError.unsupportedRegExp(message: "Safari doesn't support non-ASCII characters in regular expressions");
-        }
-
-        // Regex that we generate for basic non-regex rules are okay
-        // But if this is a regex rule, we can't be sure
-        if rule.isRegexRule() {
-            try validateRegExp(urlRegExp: urlRegExpSource!);
-        }
+        
         return urlRegExpSource!;
     };
     
