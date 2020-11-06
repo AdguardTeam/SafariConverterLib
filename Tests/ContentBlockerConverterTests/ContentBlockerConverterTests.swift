@@ -540,6 +540,16 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded[1].action.scriptlet, "ubo-acis");
         XCTAssertEqual(decoded[1].action.scriptletParam, #"{"name":"ubo-acis","args":["setTimeout","testad"]}"#);
     }
+    
+    func testInvalidRegexpRules() {
+        let ruleText = [
+            #"/([0-9]{1,3}\.){3}[0-9]{1,3}.\/proxy$/$script,websocket,third-party"#
+        ];
+
+        let result = converter.convertArray(rules: ruleText);
+        XCTAssertEqual(result?.errorsCount, 1);
+        XCTAssertEqual(result?.convertedCount, 0);
+    }
 
     static var allTests = [
         ("testEmpty", testEmpty),
@@ -569,5 +579,6 @@ final class ContentBlockerConverterTests: XCTestCase {
         ("testBadfilterRules", testBadfilterRules),
         ("testTldWildcardRules", testTldWildcardRules),
         ("testUboScriptletRules", testUboScriptletRules),
+        ("testInvalidRegexpRules", testInvalidRegexpRules),
     ]
 }
