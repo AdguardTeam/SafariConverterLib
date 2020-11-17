@@ -108,6 +108,22 @@ final class BlockerEntryFactoryTests: XCTestCase {
         XCTAssertEqual(result!.action.scriptletParam, nil);
     }
     
+    func testConvertScriptRulesForNonAdvancedBlocking() {
+        let converter = BlockerEntryFactory(advancedBlockingEnabled: false, errorsCounter: ErrorsCounter());
+
+        var rule = try! CosmeticRule(ruleText: "example.org#%#test");
+        var result = converter.createBlockerEntry(rule: rule);
+        XCTAssertNil(result);
+        
+        rule = try! CosmeticRule(ruleText: "#%#test");
+        result = converter.createBlockerEntry(rule: rule);
+        XCTAssertNil(result);
+        
+        rule = try! CosmeticRule(ruleText: "example.org#@%#test");
+        result = converter.createBlockerEntry(rule: rule);
+        XCTAssertNil(result);
+    }
+    
     func testConvertScriptRuleWhitelist() {
         let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter());
 
@@ -407,6 +423,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
         ("testConvertNetworkRulePath", testConvertNetworkRulePath),
         ("testConvertNetworkRuleWhitelist", testConvertNetworkRuleWhitelist),
         ("testConvertScriptRule", testConvertScriptRule),
+        ("testConvertScriptRulesForNonAdvancedBlocking", testConvertScriptRulesForNonAdvancedBlocking),
         ("testConvertScriptRuleWhitelist", testConvertScriptRuleWhitelist),
         ("testConvertScriptletRule", testConvertScriptletRule),
         ("testConvertScriptletRuleWhitelist", testConvertScriptletRuleWhitelist),
