@@ -76,7 +76,9 @@ class BlockerEntryFactory {
                     }
                 }
                 
-                return try convertCssRule(rule: rule as! CosmeticRule);
+                if (!rule.isScript && !rule.isScriptlet) {
+                    return try convertCssRule(rule: rule as! CosmeticRule);
+                }
             }
         } catch {
             self.errorsCounter.add();

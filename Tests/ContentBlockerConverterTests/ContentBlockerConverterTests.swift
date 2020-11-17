@@ -550,6 +550,92 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result?.errorsCount, 1);
         XCTAssertEqual(result?.convertedCount, 0);
     }
+    
+    func testCollisionCssAndScriptRules() {
+        let ruleText = [
+            "example.org##body",
+            "example.org#%#alert('1');",
+        ];
+
+        let result = converter.convertArray(rules: ruleText);
+        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result?.convertedCount, 1);
+        
+        let decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        XCTAssertEqual(decoded[0].action.type, "css-display-none");
+        XCTAssertEqual(decoded[0].action.selector, "body");
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
+        XCTAssertEqual(decoded[0].trigger.ifDomain?[0], "*example.org");
+    }
+    
+    func testCollisionCssAndScriptletRules() {
+        let ruleText = [
+            "example.org##body",
+            "example.org#%#//scriptlet('abort-on-property-read', 'I10C')",
+        ];
+
+        let result = converter.convertArray(rules: ruleText);
+        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result?.convertedCount, 1);
+        
+        let decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        XCTAssertEqual(decoded[0].action.type, "css-display-none");
+        XCTAssertEqual(decoded[0].action.selector, "body");
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
+        XCTAssertEqual(decoded[0].trigger.ifDomain?[0], "*example.org");
+    }
+    
+    func testCollisionCssAndScriptRulesAdvancedBlocking() {
+        let ruleText = [
+            "example.org##body",
+            "example.org#%#alert('1');",
+        ];
+
+        let result = converter.convertArray(rules: ruleText, advancedBlocking: true);
+        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result?.convertedCount, 1);
+        
+        let decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        XCTAssertEqual(decoded[0].action.type, "css-display-none");
+        XCTAssertEqual(decoded[0].action.selector, "body");
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
+        XCTAssertEqual(decoded[0].trigger.ifDomain?[0], "*example.org");
+        
+        let decodedAdvBlocking = try! parseJsonString(json: result!.advancedBlocking!);
+        XCTAssertEqual(decodedAdvBlocking.count, 1);
+
+        XCTAssertEqual(decodedAdvBlocking[0].trigger.ifDomain?[0], "*example.org");
+        XCTAssertEqual(decodedAdvBlocking[0].action.type, "script");
+        XCTAssertEqual(decodedAdvBlocking[0].action.script, "alert(\'1\');");
+    }
+    
+    func testCollisionCssAndScriptletRulesAdvancedBlocking() {
+        let ruleText = [
+            "example.org##body",
+            "example.org#%#//scriptlet('abort-on-property-read', 'I10C')",
+        ];
+
+        let result = converter.convertArray(rules: ruleText, advancedBlocking: true);
+        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result?.convertedCount, 1);
+        
+        let decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        XCTAssertEqual(decoded[0].action.type, "css-display-none");
+        XCTAssertEqual(decoded[0].action.selector, "body");
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
+        XCTAssertEqual(decoded[0].trigger.ifDomain?[0], "*example.org");
+        
+        let decodedAdvBlocking = try! parseJsonString(json: result!.advancedBlocking!);
+        XCTAssertEqual(decodedAdvBlocking.count, 1);
+
+        XCTAssertEqual(decodedAdvBlocking[0].trigger.ifDomain?[0], "*example.org");
+        XCTAssertEqual(decodedAdvBlocking[0].action.scriptlet, "abort-on-property-read");
+        XCTAssertEqual(decodedAdvBlocking[0].action.scriptletParam, "{\"name\":\"abort-on-property-read\",\"args\":[\"I10C\"]}");
+    }
 
     static var allTests = [
         ("testEmpty", testEmpty),
@@ -580,5 +666,9 @@ final class ContentBlockerConverterTests: XCTestCase {
         ("testTldWildcardRules", testTldWildcardRules),
         ("testUboScriptletRules", testUboScriptletRules),
         ("testInvalidRegexpRules", testInvalidRegexpRules),
+        ("testCollisionCssAndScriptRules", testCollisionCssAndScriptRules),
+        ("testCollisionCssAndScriptletRules", testCollisionCssAndScriptletRules),
+        ("testCollisionCssAndScriptRulesAdvancedBlocking", testCollisionCssAndScriptRulesAdvancedBlocking),
+        ("testCollisionCssAndScriptletRulesAdvancedBlocking", testCollisionCssAndScriptletRulesAdvancedBlocking),
     ]
 }
