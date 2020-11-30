@@ -364,6 +364,9 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result?.convertedCount, 1);
         XCTAssertEqual(result?.errorsCount, 0);
         
+        let decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded[0].trigger.urlFilter, "[/:&?]?https\\?:\\/\\/\\(\\?!static\\)\\(\\[[/:&?]?\\.\\]\\+\\)\\+\\?fastpicru\\[:\\/\\]");
+        
         ruleText = #"@@/:\/\/.*[.]wp[.]pl\/[a-z0-9_]{30,50}[.][a-z]{2,5}[/:&?]?/"#;
         result = converter.convertArray(rules: [ruleText]);
         XCTAssertEqual(result?.convertedCount, 0);
@@ -636,6 +639,49 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decodedAdvBlocking[0].action.scriptlet, "abort-on-property-read");
         XCTAssertEqual(decodedAdvBlocking[0].action.scriptletParam, "{\"name\":\"abort-on-property-read\",\"args\":[\"I10C\"]}");
     }
+    
+    func testSpecialCharactersEscape() {
+        var ruleText = [
+            "+Popunder+$popup",
+        ];
+
+        var result = converter.convertArray(rules: ruleText);
+        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result?.convertedCount, 1);
+        
+        var decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        XCTAssertEqual(decoded[0].action.type, "block");
+        XCTAssertEqual(decoded[0].trigger.urlFilter, "\\+Popunder\\+");
+        
+        ruleText = [
+            "||calabriareportage.it^+-Banner-",
+        ];
+
+        result = converter.convertArray(rules: ruleText);
+        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result?.convertedCount, 1);
+        
+        decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        XCTAssertEqual(decoded[0].action.type, "block");
+        XCTAssertEqual(decoded[0].trigger.urlFilter, START_URL_UNESCAPED + "calabriareportage\\.it[/:&?]?\\+-Banner-");
+        
+        ruleText = [
+            #"@@/:\/\/.*[.]wp[.]pl\/[a-z0-9_]+[.][a-z]+\\/"#,
+        ];
+
+        result = converter.convertArray(rules: ruleText);
+        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result?.convertedCount, 1);
+        
+        decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        XCTAssertEqual(decoded[0].action.type, "ignore-previous-rules");
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ":\\/\\/.*[.]wp[.]pl\\/[a-z0-9_]+[.][a-z]+\\\\");
+        
+        print(result!.converted);
+    }
 
     static var allTests = [
         ("testEmpty", testEmpty),
@@ -670,5 +716,6 @@ final class ContentBlockerConverterTests: XCTestCase {
         ("testCollisionCssAndScriptletRules", testCollisionCssAndScriptletRules),
         ("testCollisionCssAndScriptRulesAdvancedBlocking", testCollisionCssAndScriptRulesAdvancedBlocking),
         ("testCollisionCssAndScriptletRulesAdvancedBlocking", testCollisionCssAndScriptletRulesAdvancedBlocking),
+        ("testSpecialCharactersEscape", testSpecialCharactersEscape),
     ]
 }
