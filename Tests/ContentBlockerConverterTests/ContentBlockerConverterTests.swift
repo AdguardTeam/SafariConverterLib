@@ -680,7 +680,18 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded[0].action.type, "ignore-previous-rules");
         XCTAssertEqual(decoded[0].trigger.urlFilter, ":\\/\\/.*[.]wp[.]pl\\/[a-z0-9_]+[.][a-z]+\\\\");
         
-        print(result!.converted);
+        ruleText = [
+            #"/\\/"#,
+        ];
+
+        result = converter.convertArray(rules: ruleText);
+        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result?.convertedCount, 1);
+        
+        decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        XCTAssertEqual(decoded[0].action.type, "block");
+        XCTAssertEqual(decoded[0].trigger.urlFilter, "\\\\");
     }
 
     static var allTests = [
