@@ -33,6 +33,7 @@ class SimpleRegex {
      */
     private static let CHARS_TO_ESCAPE = [
         ".".utf16.first!,
+        "+".utf16.first!,
         "?".utf16.first!,
         "$".utf16.first!,
         "{".utf16.first!,
