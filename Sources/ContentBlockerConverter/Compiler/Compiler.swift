@@ -231,6 +231,8 @@ class Compiler {
                     cssBlockingWide.append(createWideRule(wideSelectors: wideSelectors));
                     wideSelectors = [String]();
                 }
+            } else {
+                cssBlockingWide.append(entry);
             }
         }
         
