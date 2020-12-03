@@ -640,6 +640,16 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decodedAdvBlocking[0].action.scriptletParam, "{\"name\":\"abort-on-property-read\",\"args\":[\"I10C\"]}");
     }
     
+    func testGenericCssRules() {
+        let ruleText = [
+            "#$?#.banner { display: none; debug: global; }",
+        ];
+
+        let result = converter.convertArray(rules: ruleText, advancedBlocking: true);
+        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result?.advancedBlockingConvertedCount, 1);
+    }
+    
     func testSpecialCharactersEscape() {
         var ruleText = [
             "+Popunder+$popup",
@@ -727,6 +737,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         ("testCollisionCssAndScriptletRules", testCollisionCssAndScriptletRules),
         ("testCollisionCssAndScriptRulesAdvancedBlocking", testCollisionCssAndScriptRulesAdvancedBlocking),
         ("testCollisionCssAndScriptletRulesAdvancedBlocking", testCollisionCssAndScriptletRulesAdvancedBlocking),
+        ("testGenericCssRules", testGenericCssRules),
         ("testSpecialCharactersEscape", testSpecialCharactersEscape),
     ]
 }
