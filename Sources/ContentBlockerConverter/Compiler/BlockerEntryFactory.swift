@@ -15,7 +15,7 @@ class BlockerEntryFactory {
     static let ANY_URL_TEMPLATES = ["||*", "", "*", "|*"];
     static let URL_FILTER_ANY_URL = "^[htpsw]+:\\/\\/";
     static let URL_FILTER_WS_ANY_URL = "^wss?:\\/\\/";
-    
+
     /**
      * Using .* for the css-display-none rules trigger.url-filter.
      * Please note, that this is important to use ".*" for this kind of rules, otherwise performance is degraded:
@@ -24,13 +24,13 @@ class BlockerEntryFactory {
     static let URL_FILTER_CSS_RULES = ".*";
     static let URL_FILTER_SCRIPT_RULES = ".*";
     static let URL_FILTER_SCRIPTLET_RULES = ".*";
-    
+
     /**
      * In some cases URL_FILTER_ANY_URL doesn't work for domain-specific url exceptions
      * https://github.com/AdguardTeam/AdGuardForSafari/issues/285
      */
     static let URL_FILTER_URL_RULES_EXCEPTIONS = ".*";
-    
+
     /**
      * Popular top level domains list
      */
@@ -43,7 +43,7 @@ class BlockerEntryFactory {
         "top", "ac.in", "com.hk", "com.sg", "rs", "com.co", "kr", "co.id", "pw", "uz", "com.my", "ae", "nic.in",
         "com.vn", "hk", "org.au", "tk", "lv", "live", "to", "mobi", "gov.cn", "sh"
     ];
-    
+
     /**
      * Precompiled validate regexps
      */
@@ -51,15 +51,15 @@ class BlockerEntryFactory {
     private static let VALIDATE_REGEXP_OR        = try! NSRegularExpression(pattern: #"[^\\]+\|+\S*"#, options: [.caseInsensitive]);
     private static let VALIDATE_REGEXP_LOOKAHEAD = try! NSRegularExpression(pattern: "\\(\\?!.*\\)", options: [.caseInsensitive]);
     private static let VALIDATE_REGEXP_METACHARS = try! NSRegularExpression(pattern: #"[^\\]\\[bdfnrstvw]"#, options: [.caseInsensitive]);
-    
+
     let advancedBlockingEnabled: Bool;
     let errorsCounter: ErrorsCounter;
-    
+
     init(advancedBlockingEnabled: Bool, errorsCounter: ErrorsCounter) {
         self.advancedBlockingEnabled = advancedBlockingEnabled;
         self.errorsCounter = errorsCounter;
     }
-    
+
     /**
      * Converts rule object to blocker entry object
      */
@@ -75,7 +75,7 @@ class BlockerEntryFactory {
                         return try convertScriptRule(rule: rule as! CosmeticRule);
                     }
                 }
-                
+
                 if (!rule.isScript && !rule.isScriptlet) {
                     return try convertCssRule(rule: rule as! CosmeticRule);
                 }
@@ -84,10 +84,10 @@ class BlockerEntryFactory {
             self.errorsCounter.add();
             Logger.log("AG: ContentBlockerConverter: Unexpected error: \(error) while converting \(rule.ruleText)");
         }
-        
+
         return nil;
     }
-    
+
     /**
      * Creates blocker entry object from source Network rule.
      */
@@ -100,21 +100,22 @@ class BlockerEntryFactory {
 
         var trigger = BlockerEntry.Trigger(urlFilter: urlFilter);
         var action = BlockerEntry.Action(type: "block");
-        
+
         setWhiteList(rule: rule, action: &action);
         try addResourceType(rule: rule, trigger: &trigger);
         addThirdParty(rule: rule, trigger: &trigger);
+        addDomainToThirdParty(rule: rule, trigger: &trigger);
         addMatchCase(rule: rule, trigger: &trigger);
         try addDomainOptions(rule: rule, trigger: &trigger);
-        
+
         try checkWhiteListExceptions(rule: rule, trigger: &trigger);
-        
+
         let result = BlockerEntry(trigger: trigger, action: action)
         try validateUrlBlockingRule(rule: rule, entry: result);
-        
+
         return result;
     };
-    
+
     /**
      * Creates blocker entry object from source Cosmetic script rule.
      * The result entry could be used in advanced blocking json only.
@@ -122,13 +123,13 @@ class BlockerEntryFactory {
     private func convertScriptRule(rule: CosmeticRule) throws -> BlockerEntry? {
         var trigger = BlockerEntry.Trigger(urlFilter: BlockerEntryFactory.URL_FILTER_SCRIPT_RULES);
         var action = BlockerEntry.Action(type: "script", script: rule.content);
-        
+
         setWhiteList(rule: rule, action: &action);
         try addDomainOptions(rule: rule, trigger: &trigger);
 
         return BlockerEntry(trigger: trigger, action: action);
     }
-    
+
     /**
     * Creates blocker entry object from source Cosmetic scriptlet rule.
     * Scriptetlets are functions those will be inserted to page content scripts and could be accessed by name with parameters.
@@ -137,13 +138,13 @@ class BlockerEntryFactory {
     private func convertScriptletRule(rule: CosmeticRule) throws -> BlockerEntry? {
         var trigger = BlockerEntry.Trigger(urlFilter: BlockerEntryFactory.URL_FILTER_SCRIPTLET_RULES);
         var action = BlockerEntry.Action(type: "scriptlet", scriptlet: rule.scriptlet, scriptletParam: rule.scriptletParam);
-        
+
         setWhiteList(rule: rule, action: &action);
         try addDomainOptions(rule: rule, trigger: &trigger);
 
         return BlockerEntry(trigger: trigger, action: action);
     }
-    
+
     /**
     * Creates blocker entry object from source Cosmetic script rule.
     * In case the rule selector contatins extended css or rule is an inject-style rule, then the result entry could be used in advanced blocking json only.
@@ -167,7 +168,7 @@ class BlockerEntryFactory {
 
         return result;
     }
-    
+
     private func createUrlFilterString(rule: NetworkRule) throws -> String {
         let isWebSocket = rule.isWebSocket;
 
@@ -181,12 +182,12 @@ class BlockerEntryFactory {
             // Rule with empty regexp
             return BlockerEntryFactory.URL_FILTER_ANY_URL;
         }
-        
+
         // Safari doesn't support non-ASCII characters in regular expressions
         if (!urlRegExpSource!.isASCII()) {
             throw ConversionError.unsupportedRegExp(message: "Safari doesn't support non-ASCII characters in regular expressions");
         }
-        
+
         // Regex that we generate for basic non-regex rules are okay
         // But if this is a regex rule, we can't be sure
         if rule.isRegexRule() {
@@ -198,16 +199,16 @@ class BlockerEntryFactory {
         if (isWebSocket && !urlRegExpSource!.hasPrefix("^") && !urlRegExpSource!.hasPrefix("ws")) {
             return BlockerEntryFactory.URL_FILTER_WS_ANY_URL + ".*" + urlRegExpSource!;
         }
-        
+
         return urlRegExpSource!;
     };
-    
+
     private func setWhiteList(rule: Rule, action: inout BlockerEntry.Action) -> Void {
         if (rule.isWhiteList) {
             action.type = "ignore-previous-rules";
         }
     }
-    
+
     private func addResourceType(rule: NetworkRule, trigger: inout BlockerEntry.Trigger) throws -> Void {
         var types = [String]();
 
@@ -216,7 +217,7 @@ class BlockerEntryFactory {
             // So we can use default safari content types instead.
             return;
         }
-        
+
         if (rule.hasContentType(contentType: NetworkRule.ContentType.IMAGE)) {
             types.append("image");
         }
@@ -241,7 +242,7 @@ class BlockerEntryFactory {
             || rule.hasContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT)) {
             types.append("document");
         }
-        
+
         if (rule.isBlockPopups) {
             types = ["document"];
         }
@@ -264,29 +265,41 @@ class BlockerEntryFactory {
             trigger.resourceType = types;
         }
     }
-    
+
     private func addThirdParty(rule: NetworkRule, trigger: inout BlockerEntry.Trigger) -> Void {
         if (rule.isCheckThirdParty) {
             trigger.loadType = rule.isThirdParty ? ["third-party"] : ["first-party"];
         }
     };
-    
+
+    /**
+    * Adds domain name to unless-domain for third-party rules
+    */
+    private func addDomainToThirdParty(rule: NetworkRule, trigger: inout BlockerEntry.Trigger) -> Void {
+        if (rule.isThirdParty) {
+            let parseDomainResult = rule.parseRuleDomain();
+            if (parseDomainResult != nil) {
+                trigger.unlessDomain = [String(describing: parseDomainResult)];
+            }
+        }
+    }
+
     private func addMatchCase(rule: NetworkRule, trigger: inout BlockerEntry.Trigger) -> Void {
         if (rule.isMatchCase) {
             trigger.caseSensitive = true;
         }
     };
-    
+
     private func addDomainOptions(rule: Rule, trigger: inout BlockerEntry.Trigger)  throws -> Void {
-        
+
         let included = resolveTopLevelDomainWildcards(domains: rule.permittedDomains);
         let excluded = resolveTopLevelDomainWildcards(domains: rule.restrictedDomains);
-        
+
         try writeDomainOptions(included: included, excluded: excluded, trigger: &trigger);
     }
-    
+
     private func writeDomainOptions(included: [String], excluded: [String], trigger: inout BlockerEntry.Trigger) throws -> Void {
-        
+
         if (included.count > 0 && excluded.count > 0) {
             throw ConversionError.invalidDomains(message: "Safari does not support both permitted and restricted domains");
         }
@@ -298,7 +311,7 @@ class BlockerEntryFactory {
             trigger.unlessDomain = excluded;
         }
     };
-    
+
     private func checkWhiteListExceptions(rule: NetworkRule, trigger: inout BlockerEntry.Trigger) throws -> Void {
         if (!rule.isWhiteList) {
             return;
@@ -308,7 +321,7 @@ class BlockerEntryFactory {
             if (rule.isDocumentWhiteList) {
                 trigger.resourceType = nil;
             }
-            
+
             let parseDomainResult = rule.parseRuleDomain();
             if (parseDomainResult != nil &&
                 parseDomainResult!.path != nil &&
@@ -325,12 +338,12 @@ class BlockerEntryFactory {
             let domain = parseDomainResult!.domain!;
             rule.permittedDomains.append(domain);
             try addDomainOptions(rule: rule, trigger: &trigger);
-            
+
             trigger.urlFilter = BlockerEntryFactory.URL_FILTER_URL_RULES_EXCEPTIONS;
             trigger.resourceType = nil;
         }
     };
-    
+
     /**
      * As a limited solution to support wildcard in tld, as there is no support for wildcards in "if-domain" property in CB
      * we are going to use a list of popular domains.
@@ -340,7 +353,7 @@ class BlockerEntryFactory {
      */
     private func resolveTopLevelDomainWildcards(domains: [String]) -> [String] {
         var result = [String]();
-        
+
         for domain in domains {
             if (domain.hasSuffix(".*")) {
                 for tld in BlockerEntryFactory.TOP_LEVEL_DOMAINS_LIST {
@@ -352,10 +365,10 @@ class BlockerEntryFactory {
                 result.append(domain.lowercased());
             }
         }
-        
+
         return result;
     };
-        
+
     /**
      * Safari doesn't support some regular expressions
      * Supporeted expressions:
@@ -397,7 +410,7 @@ class BlockerEntryFactory {
             }
         }
     };
-    
+
     private func validateUrlBlockingRule(rule: NetworkRule, entry: BlockerEntry) throws -> Void {
         if (rule.hasContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT)) {
             if (entry.action.type == "block" &&
@@ -414,7 +427,7 @@ class BlockerEntryFactory {
             throw ConversionError.unsupportedRule(message: "$popup rules are not supported");
         }
     }
-    
+
     /**
      * Validates url blocking rule and discards rules considered dangerous or invalid.
      */
@@ -424,7 +437,7 @@ class BlockerEntryFactory {
             throw ConversionError.dangerousCss(message: "Urls are not allowed in css styles");
         }
     };
-    
+
     enum ConversionError: Error {
         case unsupportedRule(message: String)
         case unsupportedRegExp(message: String)

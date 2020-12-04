@@ -26,7 +26,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
         XCTAssertEqual(result!.action.scriptlet, nil);
         XCTAssertEqual(result!.action.scriptletParam, nil);
     }
-    
+
     func testConvertNetworkRuleRegExp() {
         let converter = BlockerEntryFactory(advancedBlockingEnabled: false, errorsCounter: ErrorsCounter());
 
@@ -49,7 +49,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
         XCTAssertEqual(result!.action.scriptlet, nil);
         XCTAssertEqual(result!.action.scriptletParam, nil);
     }
-    
+
     func testConvertNetworkRulePath() {
         let converter = BlockerEntryFactory(advancedBlockingEnabled: false, errorsCounter: ErrorsCounter());
 
@@ -61,7 +61,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
         XCTAssertNotNil(result);
         XCTAssertEqual(result!.trigger.urlFilter, #"\/addyn\|*\|adtech"#);
     }
-    
+
     func testConvertNetworkRuleWhitelist() {
         let converter = BlockerEntryFactory(advancedBlockingEnabled: false, errorsCounter: ErrorsCounter());
 
@@ -76,7 +76,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
         XCTAssertEqual(result!.trigger.urlFilter, ".*");
         XCTAssertEqual(result!.trigger.ifDomain![0], "example.com");
         XCTAssertEqual(result!.trigger.unlessDomain, nil);
-        
+
         rule.ruleText = "@@||example.com$document";
         rule.urlRuleText = "||example.com$document";
 
@@ -86,7 +86,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
         XCTAssertEqual(result!.trigger.ifDomain![0], "example.com");
         XCTAssertEqual(result!.trigger.unlessDomain, nil);
     }
-    
+
     func testConvertScriptRule() {
         let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter());
 
@@ -107,23 +107,23 @@ final class BlockerEntryFactoryTests: XCTestCase {
         XCTAssertEqual(result!.action.scriptlet, nil);
         XCTAssertEqual(result!.action.scriptletParam, nil);
     }
-    
+
     func testConvertScriptRulesForNonAdvancedBlocking() {
         let converter = BlockerEntryFactory(advancedBlockingEnabled: false, errorsCounter: ErrorsCounter());
 
         var rule = try! CosmeticRule(ruleText: "example.org#%#test");
         var result = converter.createBlockerEntry(rule: rule);
         XCTAssertNil(result);
-        
+
         rule = try! CosmeticRule(ruleText: "#%#test");
         result = converter.createBlockerEntry(rule: rule);
         XCTAssertNil(result);
-        
+
         rule = try! CosmeticRule(ruleText: "example.org#@%#test");
         result = converter.createBlockerEntry(rule: rule);
         XCTAssertNil(result);
     }
-    
+
     func testConvertScriptRuleWhitelist() {
         let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter());
 
@@ -145,7 +145,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
         XCTAssertEqual(result!.action.scriptlet, nil);
         XCTAssertEqual(result!.action.scriptletParam, nil);
     }
-    
+
     func testConvertScriptletRule() {
         let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter());
 
@@ -166,7 +166,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
         XCTAssertEqual(result!.action.scriptlet, "test-name");
         XCTAssertEqual(result!.action.scriptletParam, "{\"name\":\"test-name\",\"args\":[]}");
     }
-    
+
     func testConvertScriptletRuleWhitelist() {
         let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter());
 
@@ -193,7 +193,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
         XCTAssertEqual(result!.action.scriptlet, "test scriptlet");
         XCTAssertEqual(result!.action.scriptletParam, "test scriptlet param");
     }
-    
+
     func testConvertCssRule() {
         let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter());
 
@@ -212,7 +212,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
         XCTAssertEqual(result!.action.selector, ".test_css_selector");
         XCTAssertEqual(result!.action.css, nil);
     }
-    
+
     func testConvertCssExceptionRule() {
         let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter());
 
@@ -228,7 +228,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
         XCTAssertEqual(result!.action.selector, "#social");
         XCTAssertEqual(result!.action.css, nil);
     }
-    
+
     func testConvertCssRuleExtendedCss() {
         let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter());
 
@@ -248,7 +248,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
         XCTAssertEqual(result!.action.selector, nil);
         XCTAssertEqual(result!.action.css, ".test_css_selector");
     }
-    
+
     func testConvertInvalidCssRule() {
         let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter());
 
@@ -259,98 +259,111 @@ final class BlockerEntryFactoryTests: XCTestCase {
         let result = converter.createBlockerEntry(rule: rule);
         XCTAssertNil(result);
     }
-    
+
     func testConvertInvalidRegexNetworkRule() {
         let converter = BlockerEntryFactory(advancedBlockingEnabled: false, errorsCounter: ErrorsCounter());
 
         let rule = NetworkRule();
         rule.urlRuleText = "/regex/";
-        
+
         rule.urlRegExpSource = "regex{0,9}";
         var result = converter.createBlockerEntry(rule: rule);
         XCTAssertNil(result);
-        
+
         rule.urlRegExpSource = "regex|test";
         result = converter.createBlockerEntry(rule: rule);
         XCTAssertNil(result);
-        
+
         rule.urlRegExpSource = "test(?!test)";
         result = converter.createBlockerEntry(rule: rule);
         XCTAssertNil(result);
-        
+
         rule.urlRegExpSource = "test\\b";
         result = converter.createBlockerEntry(rule: rule);
         XCTAssertNil(result);
     }
-    
+
     func testConvertInvalidNetworkRule() {
         let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter());
 
         let rule = createTestNetworkRule();
-        
+
         rule.permittedContentType = [NetworkRule.ContentType.SUBDOCUMENT]
         rule.isCheckThirdParty = true;
         rule.isThirdParty = false;
         let result = converter.createBlockerEntry(rule: rule);
         XCTAssertNil(result);
     }
-    
+
     func testTldDomains() {
         let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter());
         let rule = createTestRule();
-        
+
         rule.permittedDomains = [".*"];
 
         let result = converter.createBlockerEntry(rule: rule);
         XCTAssertNotNil(result);
         XCTAssertTrue(result!.trigger.ifDomain!.count >= 100);
     }
-    
+
     func testDomainsRestrictions() {
         let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter());
         let rule = createTestRule();
-        
+
         rule.permittedDomains = ["permitted"];
         rule.restrictedDomains = ["restricted"];
 
         let result = converter.createBlockerEntry(rule: rule);
         XCTAssertNil(result);
     }
-    
+
     func testThirdParty() {
         let converter = BlockerEntryFactory(advancedBlockingEnabled: false, errorsCounter: ErrorsCounter());
         let rule = createTestNetworkRule();
-        
+
         rule.isCheckThirdParty = false;
         rule.isThirdParty = true;
 
         var result = converter.createBlockerEntry(rule: rule);
         XCTAssertNil(result!.trigger.loadType);
-        
+
         rule.isCheckThirdParty = true;
         rule.isThirdParty = true;
         result = converter.createBlockerEntry(rule: rule);
         XCTAssertEqual(result!.trigger.loadType!.count, 1);
         XCTAssertEqual(result!.trigger.loadType![0], "third-party");
-        
+
         rule.isCheckThirdParty = true;
         rule.isThirdParty = false;
         result = converter.createBlockerEntry(rule: rule);
         XCTAssertEqual(result!.trigger.loadType!.count, 1);
         XCTAssertEqual(result!.trigger.loadType![0], "first-party");
     }
-    
+
+    func testThirdPartyDomain() {
+    let converter = BlockerEntryFactory(advancedBlockingEnabled: false, errorsCounter: ErrorsCounter());
+        let rule = NetworkRule();
+        rule.ruleText = "||test.com$third-party";
+        rule.permittedDomains = ["test.com"];
+        rule.isCheckThirdParty = true;
+        rule.isThirdParty = true;
+
+        let result = converter.createBlockerEntry(rule: rule);
+        XCTAssertEqual(result!.trigger.loadType![0], "third-party");
+        XCTAssertEqual(result!.trigger.unlessDomain![0], "test.com");
+    }
+
     func testMatchCase() {
         let converter = BlockerEntryFactory(advancedBlockingEnabled: false, errorsCounter: ErrorsCounter());
         let rule = createTestNetworkRule();
 
         var result = converter.createBlockerEntry(rule: rule);
         XCTAssertNil(result!.trigger.caseSensitive);
-        
+
         rule.isMatchCase = false;
         result = converter.createBlockerEntry(rule: rule);
         XCTAssertNil(result!.trigger.caseSensitive);
-        
+
         rule.isMatchCase = true;
         result = converter.createBlockerEntry(rule: rule);
         XCTAssertEqual(result!.trigger.caseSensitive, true);
@@ -372,18 +385,18 @@ final class BlockerEntryFactoryTests: XCTestCase {
         rule.restrictedContentType = [];
         result = converter.createBlockerEntry(rule: rule);
         XCTAssertEqual(result!.trigger.resourceType, ["image"]);
-        
+
         rule.permittedContentType = [NetworkRule.ContentType.IMAGE, NetworkRule.ContentType.FONT];
         rule.restrictedContentType = [];
         result = converter.createBlockerEntry(rule: rule);
         XCTAssertEqual(result!.trigger.resourceType, ["image", "font"]);
-        
+
         rule.permittedContentType = [NetworkRule.ContentType.IMAGE, NetworkRule.ContentType.FONT];
         rule.restrictedContentType = [NetworkRule.ContentType.FONT];
         result = converter.createBlockerEntry(rule: rule);
         XCTAssertEqual(result!.trigger.resourceType, ["image"]);
     }
-    
+
     func testInvalidResourceTypes() {
         let converter = BlockerEntryFactory(advancedBlockingEnabled: false, errorsCounter: ErrorsCounter());
         let rule = createTestNetworkRule();
@@ -391,32 +404,32 @@ final class BlockerEntryFactoryTests: XCTestCase {
         rule.permittedContentType = [NetworkRule.ContentType.OBJECT];
         var result = converter.createBlockerEntry(rule: rule);
         XCTAssertNil(result);
-        
+
         rule.permittedContentType = [NetworkRule.ContentType.OBJECT_SUBREQUEST];
         result = converter.createBlockerEntry(rule: rule);
         XCTAssertNil(result);
-        
+
         rule.permittedContentType = [NetworkRule.ContentType.WEBRTC];
         result = converter.createBlockerEntry(rule: rule);
         XCTAssertNil(result);
-        
+
         rule.permittedContentType = [NetworkRule.ContentType.IMAGE];
         rule.isReplace = true;
         result = converter.createBlockerEntry(rule: rule);
         XCTAssertNil(result);
     }
-    
+
     private func createTestRule() -> Rule {
         let rule = try! CosmeticRule(ruleText: "example.org#%#test");
         return rule;
     }
-    
+
     private func createTestNetworkRule() -> NetworkRule {
         let rule = NetworkRule();
-        
+
         return rule;
     }
-    
+
     static var allTests = [
         ("testConvertNetworkRule", testConvertNetworkRule),
         ("testConvertNetworkRuleRegExp", testConvertNetworkRuleRegExp),
