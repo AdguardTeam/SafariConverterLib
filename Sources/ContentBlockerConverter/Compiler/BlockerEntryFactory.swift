@@ -278,9 +278,7 @@ class BlockerEntryFactory {
     private func addDomainToThirdParty(rule: NetworkRule, trigger: inout BlockerEntry.Trigger) -> Void {
         if (rule.isThirdParty) {
             let parseDomainResult = NetworkRuleParser.parseRuleDomain(pattern: rule.ruleText as String);
-            if (parseDomainResult != nil) {
-                trigger.unlessDomain = [String(describing: parseDomainResult)];
-            }
+            trigger.unlessDomain = [String(describing: parseDomainResult)];
         }
     }
 
@@ -291,7 +289,6 @@ class BlockerEntryFactory {
     };
 
     private func addDomainOptions(rule: Rule, trigger: inout BlockerEntry.Trigger)  throws -> Void {
-
         let included = resolveTopLevelDomainWildcards(domains: rule.permittedDomains);
         let excluded = resolveTopLevelDomainWildcards(domains: rule.restrictedDomains);
 

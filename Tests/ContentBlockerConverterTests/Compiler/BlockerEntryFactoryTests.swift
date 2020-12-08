@@ -343,7 +343,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
     func testThirdPartyDomain() {
     let converter = BlockerEntryFactory(advancedBlockingEnabled: false, errorsCounter: ErrorsCounter());
         let rule = NetworkRule();
-        rule.ruleText = "||test.com^$third-party";
+        rule.ruleText = "||test.com$third-party";
         rule.permittedDomains = ["test.com"];
         rule.isCheckThirdParty = true;
         rule.isThirdParty = true;
@@ -449,6 +449,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
         ("testTldDomains", testTldDomains),
         ("testDomainsRestrictions", testDomainsRestrictions),
         ("testThirdParty", testThirdParty),
+        ("testThirdPartyDomain", testThirdPartyDomain),
         ("testMatchCase", testMatchCase),
         ("testResourceTypes", testResourceTypes),
     ]

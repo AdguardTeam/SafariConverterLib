@@ -94,7 +94,7 @@ class NetworkRuleParser {
 
     internal static func parseRuleDomain(pattern: String) -> String {
         let starts = ["http://www.", "https://www.", "http://", "https://", "||", "//"];
-        let contains = ["/", "^"];
+        let contains = ["/", "^", "$"];
 
         var startIndex = 0;
         for start in starts {
