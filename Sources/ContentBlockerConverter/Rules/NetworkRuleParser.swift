@@ -37,7 +37,7 @@ class NetworkRuleParser {
         if (delimeterIndex == ruleText.length - 1) {
             throw SyntaxError.invalidRule(message: "Invalid options");
         }
-        
+
         if (delimeterIndex >= 0) {
             ruleParts.pattern = (ruleText.substring(to: delimeterIndex) as NSString).substring(from: startIndex);
             ruleParts.options = ruleText.substring(from: delimeterIndex + 1);
@@ -50,7 +50,7 @@ class NetworkRuleParser {
         let delim:unichar = "$".utf16.first!
         let slash:unichar = "\\".utf16.first!
         let bslash:unichar = "/".utf16.first!
-        
+
         let maxIndex = ruleText.length - 1
         for i in 0...maxIndex {
             let index = maxIndex - i;
@@ -66,13 +66,13 @@ class NetworkRuleParser {
                     if (index < maxIndex && ruleText.character(at: index+1)  == bslash) {
                         continue;
                     }
-                
+
                     return index;
                 default:
                     break;
             }
         }
-        
+
         return -1;
     }
 
@@ -92,7 +92,7 @@ class NetworkRuleParser {
         return pattern!.replacingOccurrences(of: domain, with: domain.idnaEncoded!);
     }
 
-    private static func parseRuleDomain(pattern: String) -> String {
+    internal static func parseRuleDomain(pattern: String) -> String {
         let starts = ["http://www.", "https://www.", "http://", "https://", "||", "//"];
         let contains = ["/", "^"];
 

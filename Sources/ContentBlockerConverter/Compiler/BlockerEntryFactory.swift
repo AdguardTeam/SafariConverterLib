@@ -277,7 +277,7 @@ class BlockerEntryFactory {
     */
     private func addDomainToThirdParty(rule: NetworkRule, trigger: inout BlockerEntry.Trigger) -> Void {
         if (rule.isThirdParty) {
-            let parseDomainResult = rule.parseRuleDomain();
+            let parseDomainResult = NetworkRuleParser.parseRuleDomain(pattern: rule.ruleText as String);
             if (parseDomainResult != nil) {
                 trigger.unlessDomain = [String(describing: parseDomainResult)];
             }
