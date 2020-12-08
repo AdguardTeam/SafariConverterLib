@@ -349,8 +349,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
         rule.isThirdParty = true;
 
         let result = converter.createBlockerEntry(rule: rule);
-        print("%%%");
-        print(result);
+
         XCTAssertEqual(result!.trigger.loadType![0], "third-party");
         XCTAssertEqual(result!.trigger.unlessDomain![0], "test.com");
     }
