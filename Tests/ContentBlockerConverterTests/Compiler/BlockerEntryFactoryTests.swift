@@ -340,20 +340,6 @@ final class BlockerEntryFactoryTests: XCTestCase {
         XCTAssertEqual(result!.trigger.loadType![0], "first-party");
     }
 
-    func testThirdPartyDomain() {
-    let converter = BlockerEntryFactory(advancedBlockingEnabled: false, errorsCounter: ErrorsCounter());
-        let rule = NetworkRule();
-        rule.ruleText = "||test.com$third-party";
-        rule.permittedDomains = ["test.com"];
-        rule.isCheckThirdParty = true;
-        rule.isThirdParty = true;
-
-        let result = converter.createBlockerEntry(rule: rule);
-
-        XCTAssertEqual(result!.trigger.loadType![0], "third-party");
-        XCTAssertEqual(result!.trigger.unlessDomain![0], "test.com");
-    }
-
     func testMatchCase() {
         let converter = BlockerEntryFactory(advancedBlockingEnabled: false, errorsCounter: ErrorsCounter());
         let rule = createTestNetworkRule();
@@ -449,7 +435,6 @@ final class BlockerEntryFactoryTests: XCTestCase {
         ("testTldDomains", testTldDomains),
         ("testDomainsRestrictions", testDomainsRestrictions),
         ("testThirdParty", testThirdParty),
-        ("testThirdPartyDomain", testThirdPartyDomain),
         ("testMatchCase", testMatchCase),
         ("testResourceTypes", testResourceTypes),
     ]

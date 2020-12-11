@@ -104,7 +104,6 @@ class BlockerEntryFactory {
         setWhiteList(rule: rule, action: &action);
         try addResourceType(rule: rule, trigger: &trigger);
         addThirdParty(rule: rule, trigger: &trigger);
-        addDomainToThirdParty(rule: rule, trigger: &trigger);
         addMatchCase(rule: rule, trigger: &trigger);
         try addDomainOptions(rule: rule, trigger: &trigger);
 
@@ -275,12 +274,12 @@ class BlockerEntryFactory {
     /**
     * Adds domain name to unless-domain for third-party rules
     */
-    private func addDomainToThirdParty(rule: NetworkRule, trigger: inout BlockerEntry.Trigger) -> Void {
-        if (rule.isThirdParty) {
-            let parseDomainResult = NetworkRuleParser.parseRuleDomain(pattern: rule.ruleText as String);
-            trigger.unlessDomain = [String(describing: parseDomainResult)];
-        }
-    }
+//     private func addDomainToThirdParty(rule: NetworkRule, trigger: inout BlockerEntry.Trigger) -> Void {
+//         if (rule.isThirdParty) {
+//             let parseDomainResult = NetworkRuleParser.parseRuleDomain(pattern: rule.ruleText as String);
+//             trigger.unlessDomain = [String(describing: parseDomainResult)];
+//         }
+//     }
 
     private func addMatchCase(rule: NetworkRule, trigger: inout BlockerEntry.Trigger) -> Void {
         if (rule.isMatchCase) {
@@ -290,7 +289,15 @@ class BlockerEntryFactory {
 
     private func addDomainOptions(rule: Rule, trigger: inout BlockerEntry.Trigger)  throws -> Void {
         let included = resolveTopLevelDomainWildcards(domains: rule.permittedDomains);
-        let excluded = resolveTopLevelDomainWildcards(domains: rule.restrictedDomains);
+
+        var excludedDomains = rule.restrictedDomains;
+
+        if (rule is NetworkRule && rule.isThirdParty) {
+            let parseDomainResult = NetworkRuleParser.parseRuleDomain(pattern: rule.ruleText as String);
+            excludedDomains.append(parseDomainResult);
+        }
+
+        let excluded = resolveTopLevelDomainWildcards(domains: excludedDomains);
 
         try writeDomainOptions(included: included, excluded: excluded, trigger: &trigger);
     }
