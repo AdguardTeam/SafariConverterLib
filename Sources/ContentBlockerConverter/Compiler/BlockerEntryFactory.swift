@@ -271,16 +271,6 @@ class BlockerEntryFactory {
         }
     };
 
-    /**
-    * Adds domain name to unless-domain for third-party rules
-    */
-//     private func addDomainToThirdParty(rule: NetworkRule, trigger: inout BlockerEntry.Trigger) -> Void {
-//         if (rule.isThirdParty) {
-//             let parseDomainResult = NetworkRuleParser.parseRuleDomain(pattern: rule.ruleText as String);
-//             trigger.unlessDomain = [String(describing: parseDomainResult)];
-//         }
-//     }
-
     private func addMatchCase(rule: NetworkRule, trigger: inout BlockerEntry.Trigger) -> Void {
         if (rule.isMatchCase) {
             trigger.caseSensitive = true;
@@ -292,7 +282,9 @@ class BlockerEntryFactory {
 
         var excludedDomains = rule.restrictedDomains;
 
-        if (rule is NetworkRule && rule.isThirdParty) {
+        // https://github.com/AdguardTeam/AdGuardForSafari/issues/104
+        // add domain to unless-domain for third-party rules
+        if (rule is NetworkRule && (rule as! NetworkRule).isThirdParty) {
             let parseDomainResult = NetworkRuleParser.parseRuleDomain(pattern: rule.ruleText as String);
             excludedDomains.append(parseDomainResult);
         }
