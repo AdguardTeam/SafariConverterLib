@@ -1,0 +1,9 @@
+{
+  "name": "safari-converter-lib",
+  "version": "1.1.4",
+  "description": "Swift Safari Converter",
+  "repository": "github:AdguardTeam/SafariConverterLib",
+  "scripts": {
+    "build": "swift build"
+  }
+}
