@@ -1,10 +1,11 @@
 {
   "name": "safari-converter-lib",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "Swift Safari Converter",
   "repository": "github:AdguardTeam/SafariConverterLib",
   "scripts": {
     "build": "swift build -v -c release",
-    "test": "swift test"
+    "test": "swift test",
+    "ci:increment": "yarn version --patch --no-git-tag-version"
   }
 }
