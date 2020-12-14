@@ -6,6 +6,7 @@
   "scripts": {
     "build": "swift build -v -c release",
     "test": "swift test",
-    "ci:increment": "yarn version --patch --no-git-tag-version"
+    "ci:increment": "yarn version --patch --no-git-tag-version",
+    "postinstall": "./build.sh"
   }
 }
