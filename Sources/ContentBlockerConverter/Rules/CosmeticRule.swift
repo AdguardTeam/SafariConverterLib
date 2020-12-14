@@ -19,7 +19,10 @@ class CosmeticRule: Rule {
         ":xpath(",
         ":nth-ancestor(",
         ":upward(",
-        ":remove("
+        ":remove(",
+        ":matches-attr(",
+        ":matches-property(",
+        ":is("
     ];
     
     private static let EXT_CSS_EXT_INDICATOR = "[-ext-";
