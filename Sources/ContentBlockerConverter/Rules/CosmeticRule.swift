@@ -15,7 +15,6 @@ class CosmeticRule: Rule {
         ":matches-css",
         ":-abp-",
         ":if(", ":if-not(",
-        ":properties(",
         ":xpath(",
         ":nth-ancestor(",
         ":upward(",
