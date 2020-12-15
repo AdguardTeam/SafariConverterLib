@@ -3,8 +3,6 @@ const { spawn } = require('child_process');
 const { version } = require('./package.json');
 
 module.exports = (function () {
-    const RULES_LIMIT = 50000;
-
     /**
      * Runs shell script
      *
@@ -42,31 +40,24 @@ module.exports = (function () {
      *
      * @param rules array of rules
      * @param advancedBlocking if we need advanced blocking content
-     * @param log
+     * @param rulesLimit
      */
-    const jsonFromRules = async (rules, advancedBlocking, log) => {
-        log.info(`ConverterTool version: ${version}`);
-        log.info(`Conversion of ${rules.length} rules started..`);
-
+    const jsonFromRules = async (rules, advancedBlocking, rulesLimit) => {
         // TODO resolve path properly
         const toolPath = path.resolve('node_modules/safari-converter-lib/bin/ConverterTool');
-        log.info(`Running converter from: ${toolPath}`);
 
         return new Promise((resolve) => {
             const child = runScript(toolPath, [
-                `-limit=${RULES_LIMIT}`,
+                `-limit=${rulesLimit}`,
                 '-optimize=false',
                 `-advancedBlocking=${advancedBlocking}`,
             ], (code, stdout, stderr) => {
                 if (code !== 0) {
-                    log.warn(`Unexpected error converting rules: ${stderr}`);
                     resolve();
                     return;
                 }
 
-                log.info(`Conversion of ${rules.length} rules completed.`);
                 const result = JSON.parse(stdout);
-                log.info(result?.message);
 
                 resolve(result);
             });
