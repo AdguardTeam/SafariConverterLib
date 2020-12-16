@@ -2,6 +2,8 @@ const path = require('path');
 const { spawn } = require('child_process');
 const { version } = require('./package.json');
 
+const CONVERTER_TOOL_PATH = 'node_modules/safari-converter-lib/bin/ConverterTool';
+
 module.exports = (function () {
     /**
      * Runs shell script
@@ -43,17 +45,16 @@ module.exports = (function () {
      * @param rulesLimit
      */
     const jsonFromRules = async (rules, advancedBlocking, rulesLimit) => {
-        // TODO resolve path properly
-        const toolPath = path.resolve('node_modules/safari-converter-lib/bin/ConverterTool');
+        const toolPath = path.resolve(CONVERTER_TOOL_PATH);
 
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             const child = runScript(toolPath, [
                 `-limit=${rulesLimit}`,
                 '-optimize=false',
                 `-advancedBlocking=${advancedBlocking}`,
             ], (code, stdout, stderr) => {
                 if (code !== 0) {
-                    resolve();
+                    reject(stderr);
                     return;
                 }
 
