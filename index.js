@@ -2,6 +2,7 @@ const path = require('path');
 const { spawn } = require('child_process');
 const { version } = require('./package.json');
 
+// TODO resolve path to ConverterTool
 const CONVERTER_TOOL_PATH = 'node_modules/safari-converter-lib/bin/ConverterTool';
 
 module.exports = (function () {
