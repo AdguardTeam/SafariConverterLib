@@ -1,4 +1,4 @@
-const { jsonFromRules, getConverterVersion } = require('../../index');
+const { jsonFromRules, getConverterVersion } = require('../index');
 const pJson = require('../../package.json');
 
 describe('API test', () => {
