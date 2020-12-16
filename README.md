@@ -81,3 +81,5 @@ After installation the build process occurs and binary file will be copied to bi
 * rules - array of rules
 * advancedBlocking - if we need advanced blocking content (boolean)
 * logger
+
+`getConverterVersion` - returns Safari Converter Lib version

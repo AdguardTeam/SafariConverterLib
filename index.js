@@ -72,7 +72,15 @@ module.exports = (function () {
         });
     };
 
+    /**
+     * Returns Safari Converter Lib version
+     */
+    const getConverterVersion = () => {
+        return version;
+    }
+
     return {
         jsonFromRules,
+        getConverterVersion,
     };
 })();
