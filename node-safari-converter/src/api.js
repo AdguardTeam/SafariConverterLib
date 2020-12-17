@@ -2,6 +2,8 @@ const path = require('path');
 const { spawn } = require('child_process');
 const { version } = require('../../package.json');
 
+const CONVERTER_TOOL_PATH = path.resolve(__dirname, '../../bin/ConverterTool');
+
 module.exports = (function () {
     /**
      * Runs shell script
@@ -43,10 +45,8 @@ module.exports = (function () {
      * @param rulesLimit
      */
     const jsonFromRules = async (rules, advancedBlocking, rulesLimit) => {
-        const converterToolPath = path.resolve(__dirname, '../../bin/ConverterTool');
-
         return new Promise((resolve, reject) => {
-            const child = runScript(converterToolPath, [
+            const child = runScript(CONVERTER_TOOL_PATH, [
                 `-limit=${rulesLimit}`,
                 '-optimize=false',
                 `-advancedBlocking=${advancedBlocking}`,
