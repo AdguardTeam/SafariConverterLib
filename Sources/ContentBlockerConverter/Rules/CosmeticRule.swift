@@ -15,11 +15,13 @@ class CosmeticRule: Rule {
         ":matches-css",
         ":-abp-",
         ":if(", ":if-not(",
-        ":properties(",
         ":xpath(",
         ":nth-ancestor(",
         ":upward(",
-        ":remove("
+        ":remove(",
+        ":matches-attr(",
+        ":matches-property(",
+        ":is("
     ];
     
     private static let EXT_CSS_EXT_INDICATOR = "[-ext-";
