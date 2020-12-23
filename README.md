@@ -68,3 +68,18 @@ Push a new tag in `v*.*.*` format, then provided github action is intended to bu
 
 ### Third-party dependencies
 - Punycode (https://github.com/gumob/PunycodeSwift.git)
+
+### Use as node module
+
+##### Requirements:
+* Swift 4 or higher
+
+After installation the build process occurs and binary file will be copied to bin directory
+
+#### API
+`jsonFromRules(rules, advancedBlocking, log)` - method to convert rules into JSON
+* rules - array of rules
+* advancedBlocking - if we need advanced blocking content (boolean)
+* logger
+
+`getConverterVersion` - returns Safari Converter Lib version

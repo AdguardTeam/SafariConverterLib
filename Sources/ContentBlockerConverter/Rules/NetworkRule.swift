@@ -12,6 +12,7 @@ class NetworkRule: Rule {
 
     var isUrlBlock = false;
     var isCssExceptionRule = false;
+    var isJsInject = false;
     
     var urlRuleText = "";
     
@@ -74,6 +75,7 @@ class NetworkRule: Rule {
         self.isDocumentWhiteList = isOptionEnabled(option: .Document);
         self.isUrlBlock = isSingleOption(option: .Urlblock) || isSingleOption(option: .Genericblock);
         self.isCssExceptionRule = isSingleOption(option: .Elemhide) || isSingleOption(option: .Generichide);
+        self.isJsInject = isSingleOption(option: .Jsinject);
     }
     
     func isRegexRule() -> Bool {

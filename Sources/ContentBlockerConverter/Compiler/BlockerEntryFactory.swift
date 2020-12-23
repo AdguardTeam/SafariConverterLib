@@ -313,7 +313,7 @@ class BlockerEntryFactory {
             return;
         }
 
-        if (rule.isDocumentWhiteList || rule.isUrlBlock || rule.isCssExceptionRule) {
+        if (rule.isDocumentWhiteList || rule.isUrlBlock || rule.isCssExceptionRule || rule.isJsInject) {
             if (rule.isDocumentWhiteList) {
                 trigger.resourceType = nil;
             }

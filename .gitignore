@@ -4,3 +4,5 @@
 /*.xcodeproj
 xcuserdata/
 /.idea
+/node_modules
+/bin/ConverterTool
