@@ -91,8 +91,8 @@ final class AdvancedBlockingTests: XCTestCase {
         XCTAssertEqual(decoded[0].action.type, "script");
         XCTAssertEqual(decoded[0].action.script, "alert(1);");
         
-        XCTAssertEqual(decoded[1].trigger.urlFilter, "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.com[/:&?]?");
-        XCTAssertEqual(decoded[1].action.type, "ignore-previous-rules");
+        XCTAssertEqual(decoded[1].trigger.urlFilter, ".*");
+        XCTAssertEqual(decoded[1].trigger.ifDomain, ["*example.com"]);
         XCTAssertEqual(decoded[1].action.script, nil);
     }
     
