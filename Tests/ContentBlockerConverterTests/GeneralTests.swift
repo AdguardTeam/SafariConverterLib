@@ -111,6 +111,9 @@ final class GeneralTests: XCTestCase {
         },
         {
             "trigger" : {
+                "unless-domain" : [
+                    "*tardangro.com"
+                ],
                 "url-filter" : "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?tardangro\\.com[/:&?]?",
                 "load-type" : [
                     "third-party"
@@ -123,6 +126,9 @@ final class GeneralTests: XCTestCase {
         {
             "trigger" : {
                 "url-filter" : "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?videoplaza\\.com[/:&?]?",
+                "unless-domain" : [
+                    "*videoplaza.com"
+                ],
                 "load-type" : [
                     "third-party"
                 ],
@@ -151,6 +157,9 @@ final class GeneralTests: XCTestCase {
         {
             "trigger" : {
                 "url-filter" : "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?getsecuredfiles\\.com[/:&?]?",
+                "unless-domain" : [
+                    "*getsecuredfiles.com"
+                ],
                 "load-type" : [
                     "third-party"
                 ],

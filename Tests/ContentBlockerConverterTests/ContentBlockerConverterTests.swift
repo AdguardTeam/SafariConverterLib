@@ -188,16 +188,15 @@ final class ContentBlockerConverterTests: XCTestCase {
     }
 
     func testConvertScriptRestrictRules() {
-        let result = converter.convertArray(rules: ["||test.com^$~script,third-party"]);
+        let result = converter.convertArray(rules: ["||test.com^$~script,domain=example.com"]);
         XCTAssertEqual(result?.convertedCount, 1);
 
         let decoded = try! parseJsonString(json: result!.converted);
         XCTAssertEqual(decoded.count, 1);
         let entry = decoded[0];
         XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com[/:&?]?");
-        XCTAssertEqual(entry.trigger.ifDomain, nil);
+        XCTAssertEqual(entry.trigger.ifDomain, ["*example.com"]);
         XCTAssertEqual(entry.trigger.unlessDomain, nil);
-        XCTAssertEqual(entry.trigger.loadType, ["third-party"]);
         XCTAssertEqual(entry.trigger.resourceType, ["image", "style-sheet", "media", "raw", "font", "document"]);
     }
 
@@ -207,18 +206,80 @@ final class ContentBlockerConverterTests: XCTestCase {
     }
 
     func testConvertSubdocumentThirdParty() {
-        let result = converter.convertArray(rules: ["||test.com^$subdocument,third-party"]);
+        let result = converter.convertArray(rules: ["||test.com^$subdocument,domain=example.com"]);
         XCTAssertEqual(result?.convertedCount, 1);
 
         let decoded = try! parseJsonString(json: result!.converted);
         XCTAssertEqual(decoded.count, 1);
         let entry = decoded[0];
         XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com[/:&?]?");
+        XCTAssertEqual(entry.trigger.ifDomain, ["*example.com"]);
+        XCTAssertEqual(entry.trigger.unlessDomain, nil);
+        XCTAssertEqual(entry.trigger.resourceType, ["document"]);
+        XCTAssertEqual(entry.action.type, "block");
+    }
+    
+    func testAddUnlessDomainsForThirdParty() {
+        var result = converter.convertArray(rules: ["||test.com^$third-party"]);
+        XCTAssertEqual(result?.convertedCount, 1);
+
+        var decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        var entry = decoded[0];
+        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com[/:&?]?");
+        XCTAssertEqual(entry.trigger.ifDomain, nil);
+        XCTAssertEqual(entry.trigger.unlessDomain, ["*test.com"]);
+        XCTAssertEqual(entry.trigger.loadType, ["third-party"]);
+
+        
+        result = converter.convertArray(rules: ["||test.com$third-party,domain=~example.com"]);
+        XCTAssertEqual(result?.convertedCount, 1);
+
+        decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        entry = decoded[0];
+        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com");
+        XCTAssertEqual(entry.trigger.ifDomain, nil);
+        XCTAssertEqual(entry.trigger.unlessDomain, ["*example.com","*test.com"]);
+        XCTAssertEqual(entry.trigger.loadType, ["third-party"]);
+        
+        
+        // Only for third-party rules
+        result = converter.convertArray(rules: ["||test.com^$important"]);
+        XCTAssertEqual(result?.convertedCount, 1);
+
+        decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        entry = decoded[0];
+        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com[/:&?]?");
+        XCTAssertEqual(entry.trigger.ifDomain, nil);
+        XCTAssertEqual(entry.trigger.unlessDomain, nil);
+        
+        
+        // Add domains only
+        result = converter.convertArray(rules: ["not-a-domain$third-party"]);
+        XCTAssertEqual(result?.convertedCount, 1);
+
+        decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        entry = decoded[0];
+        XCTAssertEqual(entry.trigger.urlFilter, "not-a-domain");
         XCTAssertEqual(entry.trigger.ifDomain, nil);
         XCTAssertEqual(entry.trigger.unlessDomain, nil);
         XCTAssertEqual(entry.trigger.loadType, ["third-party"]);
-        XCTAssertEqual(entry.trigger.resourceType, ["document"]);
-        XCTAssertEqual(entry.action.type, "block");
+        
+        
+        // Skip rules with permitted domains
+        result = converter.convertArray(rules: ["||test.com^$third-party,domain=example.com"]);
+        XCTAssertEqual(result?.convertedCount, 1);
+
+        decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        entry = decoded[0];
+        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com[/:&?]?");
+        XCTAssertEqual(entry.trigger.ifDomain, ["*example.com"]);
+        XCTAssertEqual(entry.trigger.unlessDomain, nil);
+        XCTAssertEqual(entry.trigger.loadType, ["third-party"]);
     }
 
     func testConvertEmptyRegex() {
@@ -704,20 +765,6 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded[0].trigger.urlFilter, "\\\\");
     }
 
-//     func testThirdPartyDomain() {
-//         let converter = BlockerEntryFactory(advancedBlockingEnabled: false, errorsCounter: ErrorsCounter());
-//         let rule = NetworkRule();
-//         rule.ruleText = "||test.com$third-party";
-//         rule.permittedDomains = ["test.com"];
-//         rule.isCheckThirdParty = true;
-//         rule.isThirdParty = true;
-//
-//         let result = converter.createBlockerEntry(rule: rule);
-//
-//         XCTAssertEqual(result!.trigger.loadType![0], "third-party");
-//         XCTAssertEqual(result!.trigger.unlessDomain![0], "test.com");
-//     }
-
     static var allTests = [
         ("testEmpty", testEmpty),
         ("testConvertComment", testConvertComment),
@@ -728,6 +775,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         ("testConvertScriptRestrictRules", testConvertScriptRestrictRules),
         ("testConvertSubdocumentFirstParty", testConvertSubdocumentFirstParty),
         ("testConvertSubdocumentThirdParty", testConvertSubdocumentThirdParty),
+        ("testAddUnlessDomainsForThirdParty", testAddUnlessDomainsForThirdParty),
         ("testConvertEmptyRegex", testConvertEmptyRegex),
         ("testConvertInvertedWhitelistRule", testConvertInvertedWhitelistRule),
         ("testConvertGenerichide", testConvertGenerichide),
@@ -753,6 +801,5 @@ final class ContentBlockerConverterTests: XCTestCase {
         ("testCollisionCssAndScriptletRulesAdvancedBlocking", testCollisionCssAndScriptletRulesAdvancedBlocking),
         ("testGenericCssRules", testGenericCssRules),
         ("testSpecialCharactersEscape", testSpecialCharactersEscape),
-//         ("testThirdPartyDomain", testThirdPartyDomain),
     ]
 }

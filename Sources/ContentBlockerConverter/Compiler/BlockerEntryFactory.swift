@@ -281,17 +281,33 @@ class BlockerEntryFactory {
         let included = resolveTopLevelDomainWildcards(domains: rule.permittedDomains);
 
         var excludedDomains = rule.restrictedDomains;
-
-        // https://github.com/AdguardTeam/AdGuardForSafari/issues/104
-        // add domain to unless-domain for third-party rules
-        if (rule is NetworkRule && (rule as! NetworkRule).isThirdParty) {
-            let parseDomainResult = NetworkRuleParser.parseRuleDomain(pattern: rule.ruleText as String);
-            excludedDomains.append(parseDomainResult);
-        }
-
+        addUnlessDomainForThirdParty(rule: rule, domains: &excludedDomains);
         let excluded = resolveTopLevelDomainWildcards(domains: excludedDomains);
 
         try writeDomainOptions(included: included, excluded: excluded, trigger: &trigger);
+    }
+    
+    /**
+     * Adds domain to unless-domains for third-party rules
+     * https://github.com/AdguardTeam/AdGuardForSafari/issues/104
+     */
+    private func addUnlessDomainForThirdParty(rule: Rule, domains: inout [String]) {
+        if !(rule is NetworkRule) {
+            return;
+        }
+        
+        let networkRule = rule as! NetworkRule;
+        if (networkRule.isThirdParty) {
+            if (networkRule.permittedDomains.count == 0) {
+                let parseDomainResult = networkRule.parseRuleDomain();
+                if (parseDomainResult == nil || parseDomainResult!.domain == nil) {
+                    return;
+                }
+
+                let domain = parseDomainResult!.domain!;
+                domains.append(domain);
+            }
+        }
     }
 
     private func writeDomainOptions(included: [String], excluded: [String], trigger: inout BlockerEntry.Trigger) throws -> Void {
