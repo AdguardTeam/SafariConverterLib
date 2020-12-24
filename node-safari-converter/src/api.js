@@ -43,10 +43,11 @@ module.exports = (function () {
      * @param rules array of rules
      * @param advancedBlocking if we need advanced blocking content
      * @param rulesLimit
+     * @param converterToolPath - optional path to converter resolved by Electron
      */
-    const jsonFromRules = async (rules, advancedBlocking, rulesLimit) => {
+    const jsonFromRules = async (rules, advancedBlocking, rulesLimit, converterToolPath) => {
         return new Promise((resolve, reject) => {
-            const child = runScript(CONVERTER_TOOL_PATH, [
+            const child = runScript(converterToolPath || CONVERTER_TOOL_PATH, [
                 `-limit=${rulesLimit}`,
                 '-optimize=false',
                 `-advancedBlocking=${advancedBlocking}`,

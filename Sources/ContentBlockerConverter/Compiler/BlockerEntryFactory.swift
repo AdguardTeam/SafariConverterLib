@@ -35,13 +35,17 @@ class BlockerEntryFactory {
      * Popular top level domains list
      */
     static let TOP_LEVEL_DOMAINS_LIST = [
-        "com", "org", "ru", "net", "de", "com.br", "ir","co.uk", "pl", "it", "com.au", "fr", "info", "in", "cz", "es",
-        "io", "jp", "ro", "nl", "gr", "co", "ca", "eu", "ch", "com.tw", "se", "sk", "hu", "me", "co.za", "no", "tv",
-        "dk", "at", "co.jp", "edu", "be", "cn", "co.kr", "com.ar", "com.ua", "cl", "biz", "xyz", "com.mx", "fi", "us",
-        "vn", "pt", "com.tr", "club", "ie", "pro", "online", "co.in", "ua", "org.uk", "cc", "az", "by", "mx", "tw",
-        "co.il", "gov.in", "com.cn", "kz", "bg", "lt", "site", "su", "hr", "org.br", "gov", "com.pl", "co.nz", "si",
-        "top", "ac.in", "com.hk", "com.sg", "rs", "com.co", "kr", "co.id", "pw", "uz", "com.my", "ae", "nic.in",
-        "com.vn", "hk", "org.au", "tk", "lv", "live", "to", "mobi", "gov.cn", "sh"
+        "com", "ru", "net", "org", "ir", "in", "com.au", "com.tr", "co.uk", "io", "co", "gr", "ca", "com.ua", "vn", "info", "de", "fr", "me", "by", "jp",
+        "xyz", "ua", "com.tw", "co.za", "co.il", "online", "eu", "it", "tv", "id", "xn--p1ai", "edu", "com.br", "es", "ch", "co.in", "kz", "com.vn", "biz",
+        "app", "co.id", "nl", "pro", "us", "pl", "cl", "com.mx", "ro", "club", "co.jp", "co.nz", "ma", "com.ar", "su", "site", "cc", "rs", "cn", "ae", "co.kr",
+        "mx", "pk", "se", "gov.in", "com.my", "cz", "shop", "lk", "live", "tw", "ai", "com.sg", "top", "gov", "ac.id", "com.co", "co.th", "ac.in", "be",
+        "in.ua", "store", "org.ua", "org.tr", "dk", "hu", "az", "gov.ua", "edu.vn", "am", "uz", "com.pk", "news", "md", "tech", "nic.in", "go.id", "com.hk",
+        "ge", "com.cn", "ac.ir", "sg", "org.uk", "my", "no", "go.th", "pw", "com.bd", "to", "gov.tr", "dev", "kiev.ua", "mk", "com.ng", "ie", "asia", "at",
+        "co.ke", "com.np", "ph", "sch.id", "fi", "tk", "lv", "space", "life", "pe", "sk", "ng", "lt", "tn", "hk", "link", "vip", "cloud", "gov.bd", "website",
+        "kr", "sa", "media", "edu.in", "pt", "gg", "blog", "com.ph", "hr", "mobi", "org.au", "fun", "bg", "com.sa", "ac.th", "mn", "ws", "ee", "one", "uk",
+        "kg", "ba", "com.pe", "al", "today", "fm", "ml", "edu.tr", "bel.tr", "ac.uk", "net.ua", "dz", "win", "org.tw", "gov.co", "guru", "org.il", "edu.pk",
+        "world", "gov.vn", "is", "com.uy", "gov.np", "gob.mx", "or.id", "gov.my", "edu.co", "si", "in.th", "gen.tr", "network", "org.in", "ga", "digital",
+        "edu.au", "web.id", "work", "best", "agency", "edu.ua", "net.au", "icu", "sh"
     ];
 
     /**
