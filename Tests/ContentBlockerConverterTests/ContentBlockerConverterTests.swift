@@ -710,18 +710,36 @@ final class ContentBlockerConverterTests: XCTestCase {
     }
     
     func testEscapeBackslash() {
-        let ruleText = [
+        var ruleText = [
             "||gamer.no/?module=Tumedia\\DFProxy\\Modules^",
         ];
-
-        let result = converter.convertArray(rules: ruleText);
-
+        var result = converter.convertArray(rules: ruleText);
         XCTAssertEqual(result?.errorsCount, 0);
         XCTAssertEqual(result?.convertedCount, 1);
-        
-        let decoded = try! parseJsonString(json: result!.converted);
+        var decoded = try! parseJsonString(json: result!.converted);
         XCTAssertEqual(decoded.count, 1);
         XCTAssertTrue(decoded[0].trigger.urlFilter!.contains("Tumedia\\\\DFProxy\\\\Modules"));
+        
+        ruleText = [
+            "||xyz^$third-party,script,xmlhttprequest,domain=~anidub.com|~animedia.pro|~animeheaven.ru|~app.element.io|~assistir-filme.biz|~avtomaty-i-bonusy.com|~chelentano.top|~coomeet.com|~crackstreams.com|~crackstreams.ga|~csgoreports.com|~cvid.kiev.ua|~estream.to|~europixhd.io|~films.hds-stream.com|~funtik.tv|~getvi.tv|~hanime.tv|~hentaiz.org|~herokuapp.com|~infoua.biz|~jokehd.com|~jokerswidget.com|~kinobig.me|~kinoguru.be|~kinoguru.me|~kristinita.ru|~live-golf.stream|~lookbase.xyz|~magicfilm.net|~mail.google.com|~map-a-date.cc|~matchat.online|~mikeamigorein.xyz|~miranimbus.ru|~my.mail.ru|~nccg.ru|~newdeaf.club|~newdmn.icu​|~onmovies.se|~playjoke.xyz|~roadhub.ru|~roblox.com|~sextop.net|~soccer365.ru|~soonwalk.net|~sportsbay.org|~streetbee.io|~streetbee.ru|~telerium.club|~telerium.live|~uacycling.info|~uploadedpremiumlink.net|~vk.com|~vmeste.tv|~web.app",
+        ];
+        
+        result = converter.convertArray(rules: ruleText);
+        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result?.convertedCount, 1);
+        decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        XCTAssertTrue(decoded[0].trigger.urlFilter!.contains("^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?xyz[/:&?]?"));
+        
+        ruleText = [
+            "/g\\.alicdn\\.com\\/mm\\/yksdk\\/0\\.2\\.\\d+\\/playersdk\\.js/>>>1111.51xiaolu.com/playersdk.js>>>>keyword=playersdk",
+        ];
+        result = converter.convertArray(rules: ruleText);
+        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result?.convertedCount, 1);
+        decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        XCTAssertTrue(decoded[0].trigger.urlFilter!.contains(".com\\\\\\/mm\\\\\\/yksdk"));
     }
 
     static var allTests = [
