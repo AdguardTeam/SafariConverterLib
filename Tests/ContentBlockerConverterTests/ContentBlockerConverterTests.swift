@@ -708,6 +708,17 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded[0].action.type, "block");
         XCTAssertEqual(decoded[0].trigger.urlFilter, "\\\\");
     }
+    
+    func testProblematicRule() {
+        let ruleText = [
+            "||gamer.no/?module=Tumedia\\DFProxy\\Modules^",
+        ];
+
+        let result = converter.convertArray(rules: ruleText);
+
+        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result?.convertedCount, 1);
+    }
 
     static var allTests = [
         ("testEmpty", testEmpty),
