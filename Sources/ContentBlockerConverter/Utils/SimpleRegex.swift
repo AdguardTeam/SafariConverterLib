@@ -12,7 +12,7 @@ class SimpleRegex {
     private static let  URL_FILTER_REGEXP_START_URL = #"^[htpsw]+:\/\/([a-z0-9-]+\.)?"#;
     /** Simplified separator (to fix an issue with $ restriction - it can be only in the end of regexp) */
     private static let  URL_FILTER_REGEXP_SEPARATOR = "[/:&?]?";
-    
+
     // Constants
     private static let maskStartUrl = "||";
     private static let maskPipe = "|";
@@ -58,10 +58,10 @@ class SimpleRegex {
                 str == maskAnySymbol) {
             return regexAnySymbol;
         }
-        
+
         var result = ""
         let nstr = str as NSString
-        
+
         let maxIndex = nstr.length - 1
         var i = 0
         while i <= maxIndex {
@@ -95,7 +95,7 @@ class SimpleRegex {
                     result.append(Character(UnicodeScalar(char)!))
                 }
             }
-            
+
             i += 1
         }
 
