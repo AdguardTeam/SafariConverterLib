@@ -718,6 +718,10 @@ final class ContentBlockerConverterTests: XCTestCase {
 
         XCTAssertEqual(result?.errorsCount, 0);
         XCTAssertEqual(result?.convertedCount, 1);
+        
+        let decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        XCTAssertTrue(decoded[0].trigger.urlFilter!.contains("Tumedia\\\\DFProxy\\\\Modules"));
     }
 
     static var allTests = [
