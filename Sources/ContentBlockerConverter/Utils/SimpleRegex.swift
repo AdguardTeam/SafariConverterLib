@@ -42,7 +42,8 @@ class SimpleRegex {
         ")".utf16.first!,
         "[".utf16.first!,
         "]".utf16.first!,
-        "/".utf16.first!
+        "/".utf16.first!,
+        "\\".utf16.first!
     ]
     private static let charPipe = "|".utf16.first!
     private static let charSeparator = "^".utf16.first!
