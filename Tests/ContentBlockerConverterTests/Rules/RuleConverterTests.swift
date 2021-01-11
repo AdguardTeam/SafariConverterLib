@@ -159,12 +159,12 @@ final class RuleConverterTests: XCTestCase {
         res = ruleConverter.convertRule(rule: "||video.example.org^$match-case,3p" as NSString);
         XCTAssertEqual(res, [exp]);
         
-        exp = "||video.example.org^$first-party";
+        exp = "||video.example.org^$~third-party";
         res = ruleConverter.convertRule(rule: "||video.example.org^$1p" as NSString);
         XCTAssertEqual(res, [exp]);
         
-        exp = "||video.example.org^$first-party";
-        res = ruleConverter.convertRule(rule: "||video.example.org^$first-party" as NSString);
+        exp = "||video.example.org^$~third-party";
+        res = ruleConverter.convertRule(rule: "||video.example.org^$~third-party" as NSString);
         XCTAssertEqual(res, [exp]);
         
         exp = "||video.example.org^$match-case,third-party,redirect=noopmp4-1s,media";
