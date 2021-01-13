@@ -299,7 +299,7 @@ class RuleConverter {
         MP4_OPTION : "redirect=noopmp4-1s",
         INLINE_SCRIPT_OPTION : CSP_OPTION + "=script-src 'self' 'unsafe-eval' http: https: data: blob: mediastream: filesystem:",
         INLINE_FONT_OPTION : CSP_OPTION + "=font-src 'self' 'unsafe-eval' http: https: data: blob: mediastream: filesystem:",
-        UBO_1P_OPTION: "first-party",
+        UBO_1P_OPTION: "~third-party",
         UBO_3P_OPTION: "third-party"
     ]
 
