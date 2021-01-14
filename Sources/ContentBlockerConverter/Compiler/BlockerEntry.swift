@@ -50,6 +50,7 @@ struct BlockerEntry: Codable {
         var type: String
         var selector: String?
         var css: String?
+        var extCss: String?
         var script: String?
         var scriptlet: String?
         var scriptletParam: String?

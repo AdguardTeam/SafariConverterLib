@@ -156,7 +156,10 @@ class BlockerEntryFactory {
         var trigger = BlockerEntry.Trigger(urlFilter: BlockerEntryFactory.URL_FILTER_CSS_RULES);
         var action = BlockerEntry.Action(type:"css-display-none");
 
-        if (rule.isExtendedCss || rule.isInjectCss) {
+        if (rule.isExtendedCss) {
+            action.type = "extCss";
+            action.extCss = rule.content;
+        } else if (rule.isInjectCss) {
             action.type = "css";
             action.css = rule.content;
         } else {

@@ -51,6 +51,8 @@ class Compiler {
                 cssBlocking.append(item);
             } else if (item.action.type == "css") {
                 extendedCssBlocking.append(item);
+            } else if (item.action.type == "extCss") {
+                extendedCssBlocking.append(item);
             } else if (item.action.type == "scriptlet") {
                 scriptlets.append(item);
             } else if (item.action.type == "script") {
