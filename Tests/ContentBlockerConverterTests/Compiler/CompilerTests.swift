@@ -27,6 +27,20 @@ final class CompilerTests: XCTestCase {
         XCTAssertEqual(result.extendedCssBlockingGenericDomainSensitive.count, 0);
         XCTAssertEqual(result.extendedCssBlockingDomainSensitive.count, 0);
     }
+    
+    func testCompileCssInjectRule() {
+        let compiler = Compiler(optimize: false, advancedBlocking: true, errorsCounter: ErrorsCounter());
+        let rule = try! CosmeticRule(ruleText: "test.com#$#.banner { top: -9999px!important; }");
+        let result = compiler.compileRules(rules: [rule as Rule]);
+        
+        XCTAssertNotNil(result);
+        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.rulesCount, 1);
+        XCTAssertNotNil(result.сssInjects);
+        XCTAssertEqual(result.сssInjects[0].action.type, "css-inject");
+        XCTAssertEqual(result.сssInjects[0].trigger.ifDomain, ["test.com"]);
+        XCTAssertEqual(result.сssInjects[0].action.css, ".banner { top: -9999px!important; }");
+    }
 
     func testCompactCss() {
         let entries = [
@@ -129,6 +143,7 @@ final class CompilerTests: XCTestCase {
 
     static var allTests = [
         ("testEmpty", testEmpty),
+        ("testCompileCssInjectRule", testCompileCssInjectRule),
         ("testCompactCss", testCompactCss),
         ("testCompactIfDomainCss", testCompactIfDomainCss),
         ("testCompactUnlessDomainCss", testCompactUnlessDomainCss),
