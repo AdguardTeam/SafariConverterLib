@@ -54,12 +54,6 @@ class BlockerEntryEncoder {
             result.append(self.escapeString(value: action.css!));
             result.append("\"");
         }
-        
-        if action.extCss != nil {
-            result.append(",\"extCss\":\"");
-            result.append(self.escapeString(value: action.extCss!));
-            result.append("\"");
-        }
 
         if action.script != nil {
             result.append(",\"script\":\"");

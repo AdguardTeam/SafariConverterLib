@@ -157,10 +157,10 @@ class BlockerEntryFactory {
         var action = BlockerEntry.Action(type:"css-display-none");
 
         if (rule.isExtendedCss) {
-            action.type = "extCss";
+            action.type = "css-extended";
             action.extCss = rule.content;
         } else if (rule.isInjectCss) {
-            action.type = "css";
+            action.type = "css-inject";
             action.css = rule.content;
         } else {
             action.selector = rule.content;

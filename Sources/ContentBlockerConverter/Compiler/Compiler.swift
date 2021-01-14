@@ -49,9 +49,9 @@ class Compiler {
                 compilationResult.addBlockTypedEntry(entry: item, source: rule);
             } else if (item.action.type == "css-display-none") {
                 cssBlocking.append(item);
-            } else if (item.action.type == "css") {
-                extendedCssBlocking.append(item);
-            } else if (item.action.type == "extCss") {
+            } else if (item.action.type == "css-inject") {
+                cssBlocking.append(item);
+            } else if (item.action.type == "css-extended") {
                 extendedCssBlocking.append(item);
             } else if (item.action.type == "scriptlet") {
                 scriptlets.append(item);
