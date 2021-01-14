@@ -89,7 +89,7 @@ class Compiler {
         if (self.advancedBlockedEnabled) {
             // Applying CSS exceptions for extended css rules
             extendedCssBlocking = Compiler.applyActionExceptions(
-                blockingItems: &extendedCssBlocking, exceptions: cssExceptions + cosmeticCssExceptions, actionValue: "css"
+                blockingItems: &extendedCssBlocking, exceptions: cssExceptions + cosmeticCssExceptions, actionValue: "css-extended"
             );
             let extendedCssCompact = Compiler.compactCssRules(cssBlocking: extendedCssBlocking);
             if (!self.optimize) {
@@ -99,7 +99,9 @@ class Compiler {
             compilationResult.extendedCssBlockingDomainSensitive = extendedCssCompact.cssBlockingDomainSensitive;
             
             // Applying CSS exceptions for css injecting rules
-            cssInjects = Compiler.applyActionExceptions(blockingItems: &cssInjects, exceptions: cssExceptions, actionValue: "css-inject");
+            cssInjects = Compiler.applyActionExceptions(
+                blockingItems: &cssInjects, exceptions: cssExceptions + cosmeticCssExceptions, actionValue: "css-inject"
+            );
             compilationResult.сssInjects = cssInjects;
             
             // Applying script exceptions
