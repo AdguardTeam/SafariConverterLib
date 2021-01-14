@@ -26,6 +26,7 @@ class Compiler {
         var cssBlocking = [BlockerEntry]();
         var cssExceptions = [BlockerEntry]();
         
+        var cssInjects = [BlockerEntry]();
         var extendedCssBlocking = [BlockerEntry]();
         var scriptRules = [BlockerEntry]();
         var scriptExceptionRules = [BlockerEntry]();
@@ -50,7 +51,7 @@ class Compiler {
             } else if (item.action.type == "css-display-none") {
                 cssBlocking.append(item);
             } else if (item.action.type == "css-inject") {
-                cssBlocking.append(item);
+                cssInjects.append(item);
             } else if (item.action.type == "css-extended") {
                 extendedCssBlocking.append(item);
             } else if (item.action.type == "scriptlet") {
@@ -96,7 +97,11 @@ class Compiler {
             }
             compilationResult.extendedCssBlockingGenericDomainSensitive = extendedCssCompact.cssBlockingGenericDomainSensitive;
             compilationResult.extendedCssBlockingDomainSensitive = extendedCssCompact.cssBlockingDomainSensitive;
-
+            
+            // Applying CSS exceptions for css injecting rules
+            cssInjects = Compiler.applyActionExceptions(blockingItems: &cssInjects, exceptions: cssExceptions, actionValue: "css-inject");
+            compilationResult.сssInjects = cssInjects;
+            
             // Applying script exceptions
             scriptRules = Compiler.applyActionExceptions(blockingItems: &scriptRules, exceptions: scriptExceptionRules, actionValue: "script");
             compilationResult.script = scriptRules;

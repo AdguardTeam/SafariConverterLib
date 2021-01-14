@@ -48,6 +48,8 @@ struct CompilationResult {
     var scriptlets: [BlockerEntry] = [];
     // JsInject exception ($jsinject)
     var scriptJsInjectExceptions: [BlockerEntry] = [];
+    // Css injecting rules
+    var сssInjects: [BlockerEntry] = [];
     // Extended css Elemhide rules (##) - wide generic rules
     var extendedCssBlockingWide: [BlockerEntry] = [];
     // Extended css Elemhide rules (##) - generic domain sensitive
