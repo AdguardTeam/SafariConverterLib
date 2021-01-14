@@ -158,7 +158,7 @@ class BlockerEntryFactory {
 
         if (rule.isExtendedCss) {
             action.type = "css-extended";
-            action.extCss = rule.content;
+            action.css = rule.content;
         } else if (rule.isInjectCss) {
             action.type = "css-inject";
             action.css = rule.content;
