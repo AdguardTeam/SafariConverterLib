@@ -41,6 +41,20 @@ final class CompilerTests: XCTestCase {
         XCTAssertEqual(result.сssInjects[0].trigger.ifDomain, ["test.com"]);
         XCTAssertEqual(result.сssInjects[0].action.css, ".banner { top: -9999px!important; }");
     }
+    
+    func testCompileExtendedCssRule() {
+        let compiler = Compiler(optimize: false, advancedBlocking: true, errorsCounter: ErrorsCounter());
+        let rule = try! CosmeticRule(ruleText: "test.com##.content:has(> .test_selector)");
+        let result = compiler.compileRules(rules: [rule as Rule]);
+
+        XCTAssertNotNil(result);
+        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.rulesCount, 1);
+        XCTAssertNotNil(result.extendedCssBlockingDomainSensitive);
+        XCTAssertEqual(result.extendedCssBlockingDomainSensitive[0].action.type, "css-extended");
+        XCTAssertEqual(result.extendedCssBlockingDomainSensitive[0].trigger.ifDomain, ["test.com"]);
+        XCTAssertEqual(result.extendedCssBlockingDomainSensitive[0].action.css, ".content:has(> .test_selector)");
+    }
 
     func testCompactCss() {
         let entries = [
@@ -144,6 +158,7 @@ final class CompilerTests: XCTestCase {
     static var allTests = [
         ("testEmpty", testEmpty),
         ("testCompileCssInjectRule", testCompileCssInjectRule),
+//        ("testCompileExtendedCssRule", testCompileExtendedCssRule),
         ("testCompactCss", testCompactCss),
         ("testCompactIfDomainCss", testCompactIfDomainCss),
         ("testCompactUnlessDomainCss", testCompactUnlessDomainCss),
