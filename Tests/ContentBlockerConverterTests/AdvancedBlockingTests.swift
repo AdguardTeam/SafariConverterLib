@@ -133,12 +133,12 @@ final class AdvancedBlockingTests: XCTestCase {
         XCTAssertEqual(decoded.count, 2);
         XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
         XCTAssertEqual(decoded[0].trigger.ifDomain, ["*ksl.com"]);
-        XCTAssertEqual(decoded[0].action.type, "css");
+        XCTAssertEqual(decoded[0].action.type, "css-extended");
         XCTAssertEqual(decoded[0].action.css, ".queue:-abp-has(.sponsored)");
         
         XCTAssertEqual(decoded[1].trigger.urlFilter, ".*");
         XCTAssertEqual(decoded[1].trigger.ifDomain, ["*yelp.com"]);
-        XCTAssertEqual(decoded[1].action.type, "css");
+        XCTAssertEqual(decoded[1].action.type, "css-extended");
         XCTAssertEqual(decoded[1].action.css, "li[class^=\"domtags--li\"]:-abp-has(a[href^=\"/adredir?\"])");
     }
     
@@ -156,7 +156,7 @@ final class AdvancedBlockingTests: XCTestCase {
         XCTAssertEqual(decoded.count, 2);
         XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
         XCTAssertEqual(decoded[0].trigger.ifDomain, ["*ksl.com"]);
-        XCTAssertEqual(decoded[0].action.type, "css");
+        XCTAssertEqual(decoded[0].action.type, "css-extended");
         XCTAssertEqual(decoded[0].action.css, ".queue:-abp-has(.sponsored)");
         
         XCTAssertEqual(decoded[1].trigger.urlFilter, ".*");
@@ -179,7 +179,7 @@ final class AdvancedBlockingTests: XCTestCase {
         XCTAssertEqual(decoded.count, 2);
         XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
         XCTAssertEqual(decoded[0].trigger.ifDomain, ["*ksl.com"]);
-        XCTAssertEqual(decoded[0].action.type, "css");
+        XCTAssertEqual(decoded[0].action.type, "css-extended");
         XCTAssertEqual(decoded[0].action.css, ".queue:-abp-has(.sponsored)");
         
         XCTAssertEqual(decoded[1].trigger.urlFilter, ".*");
@@ -201,7 +201,7 @@ final class AdvancedBlockingTests: XCTestCase {
         XCTAssertEqual(decoded.count, 1);
         XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
         XCTAssertEqual(decoded[0].trigger.ifDomain, ["*filmitorrent.xyz"]);
-        XCTAssertEqual(decoded[0].action.type, "css");
+        XCTAssertEqual(decoded[0].action.type, "css-inject");
         XCTAssertEqual(decoded[0].action.css, ".content { margin-top: 0!important; }");
     }
     

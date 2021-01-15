@@ -158,7 +158,7 @@ final class CompilerTests: XCTestCase {
     static var allTests = [
         ("testEmpty", testEmpty),
         ("testCompileCssInjectRule", testCompileCssInjectRule),
-//        ("testCompileExtendedCssRule", testCompileExtendedCssRule),
+        ("testCompileExtendedCssRule", testCompileExtendedCssRule),
         ("testCompactCss", testCompactCss),
         ("testCompactIfDomainCss", testCompactIfDomainCss),
         ("testCompactUnlessDomainCss", testCompactUnlessDomainCss),

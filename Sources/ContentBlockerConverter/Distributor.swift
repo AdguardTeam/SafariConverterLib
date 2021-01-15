@@ -47,6 +47,7 @@ class Distributor {
             advBlockingEntries.append(contentsOf: data.cssBlockingGenericHideExceptions);
             advBlockingEntries.append(contentsOf: data.extendedCssBlockingDomainSensitive);
             advBlockingEntries.append(contentsOf: data.cssElemhide);
+            advBlockingEntries.append(contentsOf: data.сssInjects);
             advBlockingEntries.append(contentsOf: data.other);
             advBlockingEntries.append(contentsOf: data.importantExceptions);
             advBlockingEntries.append(contentsOf: data.documentExceptions);
