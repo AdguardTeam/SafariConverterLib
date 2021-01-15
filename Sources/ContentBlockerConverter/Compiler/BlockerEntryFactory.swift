@@ -448,11 +448,14 @@ class BlockerEntryFactory {
     }
 
     /**
-     * Validates url blocking rule and discards rules considered dangerous or invalid.
+     * Validates css rule and discards rules considered dangerous or invalid.
      */
     private func validateCssFilterRule(entry: BlockerEntry) throws -> Void {
-        if (entry.action.type == "css" &&
-            entry.action.css!.indexOf(target: "url(") >= 0) {
+        if (entry.action.type != "css-extended" && entry.action.type != "css-inject") {
+            return;
+        }
+        
+        if (entry.action.css!.indexOf(target: "url(") >= 0) {
             throw ConversionError.dangerousCss(message: "Urls are not allowed in css styles");
         }
     };
