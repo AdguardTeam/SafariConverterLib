@@ -156,8 +156,11 @@ class BlockerEntryFactory {
         var trigger = BlockerEntry.Trigger(urlFilter: BlockerEntryFactory.URL_FILTER_CSS_RULES);
         var action = BlockerEntry.Action(type:"css-display-none");
 
-        if (rule.isExtendedCss || rule.isInjectCss) {
-            action.type = "css";
+        if (rule.isExtendedCss) {
+            action.type = "css-extended";
+            action.css = rule.content;
+        } else if (rule.isInjectCss) {
+            action.type = "css-inject";
             action.css = rule.content;
         } else {
             action.selector = rule.content;
@@ -445,11 +448,14 @@ class BlockerEntryFactory {
     }
 
     /**
-     * Validates url blocking rule and discards rules considered dangerous or invalid.
+     * Validates css rule and discards rules considered dangerous or invalid.
      */
     private func validateCssFilterRule(entry: BlockerEntry) throws -> Void {
-        if (entry.action.type == "css" &&
-            entry.action.css!.indexOf(target: "url(") >= 0) {
+        if (entry.action.type != "css-extended" && entry.action.type != "css-inject") {
+            return;
+        }
+        
+        if (entry.action.css!.indexOf(target: "url(") >= 0) {
             throw ConversionError.dangerousCss(message: "Urls are not allowed in css styles");
         }
     };

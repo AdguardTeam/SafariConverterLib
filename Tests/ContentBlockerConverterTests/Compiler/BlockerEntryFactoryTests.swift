@@ -232,7 +232,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
     func testConvertCssRuleExtendedCss() {
         let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter());
 
-        let rule = try! CosmeticRule(ruleText: "##.test_css_selector");
+        let rule = try! CosmeticRule(ruleText: "##.test_css_selector:has(> .test_selector)");
         rule.isExtendedCss = true;
         rule.restrictedDomains = ["test_domain_one", "test_domain_two"];
 
@@ -244,9 +244,27 @@ final class BlockerEntryFactoryTests: XCTestCase {
         XCTAssertEqual(result!.trigger.shortcut, nil);
         XCTAssertEqual(result!.trigger.regex, nil);
 
-        XCTAssertEqual(result!.action.type, "css");
+        XCTAssertEqual(result!.action.type, "css-extended");
         XCTAssertEqual(result!.action.selector, nil);
-        XCTAssertEqual(result!.action.css, ".test_css_selector");
+        XCTAssertEqual(result!.action.css, ".test_css_selector:has(> .test_selector)");
+    }
+
+    func testConvertCssRuleCssInject() {
+        let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter());
+
+        let rule = try! CosmeticRule(ruleText: "example.com#$#.body { overflow: visible!important; }");
+
+        let result = converter.createBlockerEntry(rule: rule);
+        XCTAssertNotNil(result);
+        XCTAssertEqual(result!.trigger.urlFilter, ".*");
+        XCTAssertEqual(result!.trigger.ifDomain!, ["example.com"]);
+        XCTAssertNil(result!.trigger.unlessDomain);
+        XCTAssertEqual(result!.trigger.shortcut, nil);
+        XCTAssertEqual(result!.trigger.regex, nil);
+
+        XCTAssertEqual(result!.action.type, "css-inject");
+        XCTAssertEqual(result!.action.selector, nil);
+        XCTAssertEqual(result!.action.css, ".body { overflow: visible!important; }");
     }
 
     func testConvertInvalidCssRule() {
@@ -429,6 +447,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
         ("testConvertScriptletRuleWhitelist", testConvertScriptletRuleWhitelist),
         ("testConvertCssRule", testConvertCssRule),
         ("testConvertCssRuleExtendedCss", testConvertCssRuleExtendedCss),
+        ("testConvertCssRuleCssInject", testConvertCssRuleCssInject),
         ("testConvertInvalidCssRule", testConvertInvalidCssRule),
         ("testConvertInvalidNetworkRule", testConvertInvalidNetworkRule),
         ("testConvertInvalidRegexNetworkRule", testConvertInvalidRegexNetworkRule),
