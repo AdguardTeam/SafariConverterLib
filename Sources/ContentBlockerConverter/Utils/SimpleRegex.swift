@@ -11,7 +11,7 @@ class SimpleRegex {
      */
     private static let  URL_FILTER_REGEXP_START_URL = #"^[htpsw]+:\/\/([a-z0-9-]+\.)?"#;
     /** Simplified separator (to fix an issue with $ restriction - it can be only in the end of regexp) */
-    private static let  URL_FILTER_REGEXP_SEPARATOR = "[/:&?]";
+    private static let  URL_FILTER_REGEXP_SEPARATOR = "([/:&?]|$)";
     
     // Constants
     private static let maskStartUrl = "||";
