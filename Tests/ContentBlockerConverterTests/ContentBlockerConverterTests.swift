@@ -810,6 +810,16 @@ final class ContentBlockerConverterTests: XCTestCase {
 
         let urlRegExpSource = result.urlRegExpSource;
         XCTAssertEqual(urlRegExpSource, START_URL_UNESCAPED + "a\\.a([\\/:&\\?].*)?$");
+        
+        var testUrl = "https://a.a/test";
+        var regex = try! NSRegularExpression(pattern: urlRegExpSource!);
+        var range = NSRange(location: 0, length: testUrl.utf16.count);
+        XCTAssertNotNil(regex.firstMatch(in: testUrl, options: [], range: range));
+        
+        testUrl = "https://a.allegroimg.com";
+        regex = try! NSRegularExpression(pattern: urlRegExpSource!);
+        range = NSRange(location: 0, length: testUrl.utf16.count);
+        XCTAssertNil(regex.firstMatch(in: testUrl, options: [], range: range));
     }
 
     static var allTests = [
