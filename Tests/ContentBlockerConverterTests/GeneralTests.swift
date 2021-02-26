@@ -114,7 +114,7 @@ final class GeneralTests: XCTestCase {
                 "unless-domain" : [
                     "*tardangro.com"
                 ],
-                "url-filter" : "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?tardangro\\.com([/:&?]|$)",
+                "url-filter" : "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?tardangro\\.com([\\/:&\\?].*)?$",
                 "load-type" : [
                     "third-party"
                 ]
@@ -125,7 +125,7 @@ final class GeneralTests: XCTestCase {
         },
         {
             "trigger" : {
-                "url-filter" : "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?videoplaza\\.com([/:&?]|$)",
+                "url-filter" : "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?videoplaza\\.com([\\/:&\\?].*)?$",
                 "unless-domain" : [
                     "*videoplaza.com"
                 ],
@@ -148,7 +148,7 @@ final class GeneralTests: XCTestCase {
         },
         {
             "trigger" : {
-                "url-filter" : "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?b\\.babylon\\.com([/:&?]|$)"
+                "url-filter" : "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?b\\.babylon\\.com([\\/:&\\?].*)?$"
             },
             "action" : {
                 "type" : "block"
@@ -156,7 +156,7 @@ final class GeneralTests: XCTestCase {
         },
         {
             "trigger" : {
-                "url-filter" : "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?getsecuredfiles\\.com([/:&?]|$)",
+                "url-filter" : "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?getsecuredfiles\\.com([\\/:&\\?].*)?$",
                 "unless-domain" : [
                     "*getsecuredfiles.com"
                 ],
@@ -181,7 +181,7 @@ final class GeneralTests: XCTestCase {
         },
         {
             "trigger" : {
-                "url-filter" : "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?emjcd\\.com([/:&?]|$)",
+                "url-filter" : "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?emjcd\\.com([\\/:&\\?].*)?$",
                 "resource-type" : [
                     "image"
                 ],
