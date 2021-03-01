@@ -117,7 +117,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result?.errorsCount, 0);
 
         decoded = try! parseJsonString(json: result!.converted);
-        XCTAssertEqual(decoded[0].trigger.urlFilter, "\(START_URL_UNESCAPED)example\\.com([\\/:&\\?].*)?$");
+        XCTAssertEqual(decoded[0].trigger.urlFilter, "\(START_URL_UNESCAPED)example\\.com" + URL_FILTER_REGEXP_SEPARATOR);
         XCTAssertEqual(decoded[0].trigger.resourceType, ["document"]);
         XCTAssertEqual(decoded[0].action.type, "block");
 
@@ -131,7 +131,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result?.errorsCount, 0);
 
         decoded = try! parseJsonString(json: result!.converted);
-        XCTAssertEqual(decoded[0].trigger.urlFilter, "\(START_URL_UNESCAPED)getsecuredfiles\\.com([\\/:&\\?].*)?$");
+        XCTAssertEqual(decoded[0].trigger.urlFilter, "\(START_URL_UNESCAPED)getsecuredfiles\\.com" + URL_FILTER_REGEXP_SEPARATOR);
         XCTAssertEqual(decoded[0].trigger.resourceType, ["document"]);
         XCTAssertEqual(decoded[0].trigger.loadType, ["third-party"]);
         XCTAssertEqual(decoded[0].action.type, "block");
@@ -146,7 +146,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result?.overLimit, false);
 
         let decoded = try! parseJsonString(json: result!.converted);
-        XCTAssertEqual(decoded[0].trigger.urlFilter, "\(START_URL_UNESCAPED)adriver\\.ru([\\/:&\\?].*)?$");
+        XCTAssertEqual(decoded[0].trigger.urlFilter, "\(START_URL_UNESCAPED)adriver\\.ru" + URL_FILTER_REGEXP_SEPARATOR);
         XCTAssertEqual(decoded[0].trigger.loadType, ["first-party"]);
         XCTAssertEqual(decoded[0].action.type, "ignore-previous-rules");
     }
@@ -158,7 +158,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         var decoded = try! parseJsonString(json: result!.converted);
         XCTAssertEqual(decoded.count, 1);
         var entry = decoded[0];
-        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com([\\/:&\\?].*)?$");
+        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_SEPARATOR);
         XCTAssertEqual(entry.trigger.ifDomain, nil);
         XCTAssertEqual(entry.trigger.unlessDomain, nil);
         XCTAssertEqual(entry.trigger.loadType, nil);
@@ -194,7 +194,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         let decoded = try! parseJsonString(json: result!.converted);
         XCTAssertEqual(decoded.count, 1);
         let entry = decoded[0];
-        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com([\\/:&\\?].*)?$");
+        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_SEPARATOR);
         XCTAssertEqual(entry.trigger.ifDomain, ["*example.com"]);
         XCTAssertEqual(entry.trigger.unlessDomain, nil);
         XCTAssertEqual(entry.trigger.resourceType, ["image", "style-sheet", "media", "raw", "font", "document"]);
@@ -212,7 +212,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         let decoded = try! parseJsonString(json: result!.converted);
         XCTAssertEqual(decoded.count, 1);
         let entry = decoded[0];
-        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com([\\/:&\\?].*)?$");
+        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_SEPARATOR);
         XCTAssertEqual(entry.trigger.ifDomain, ["*example.com"]);
         XCTAssertEqual(entry.trigger.unlessDomain, nil);
         XCTAssertEqual(entry.trigger.resourceType, ["document"]);
@@ -226,7 +226,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         var decoded = try! parseJsonString(json: result!.converted);
         XCTAssertEqual(decoded.count, 1);
         var entry = decoded[0];
-        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com([\\/:&\\?].*)?$");
+        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_SEPARATOR);
         XCTAssertEqual(entry.trigger.ifDomain, nil);
         XCTAssertEqual(entry.trigger.unlessDomain, ["*test.com"]);
         XCTAssertEqual(entry.trigger.loadType, ["third-party"]);
@@ -251,7 +251,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         decoded = try! parseJsonString(json: result!.converted);
         XCTAssertEqual(decoded.count, 1);
         entry = decoded[0];
-        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com([\\/:&\\?].*)?$");
+        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_SEPARATOR);
         XCTAssertEqual(entry.trigger.ifDomain, nil);
         XCTAssertEqual(entry.trigger.unlessDomain, nil);
 
@@ -276,7 +276,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         decoded = try! parseJsonString(json: result!.converted);
         XCTAssertEqual(decoded.count, 1);
         entry = decoded[0];
-        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com([\\/:&\\?].*)?$");
+        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_SEPARATOR);
         XCTAssertEqual(entry.trigger.ifDomain, ["*example.com"]);
         XCTAssertEqual(entry.trigger.unlessDomain, nil);
         XCTAssertEqual(entry.trigger.loadType, ["third-party"]);
@@ -492,7 +492,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded[2].trigger.urlFilter, "https:\\/\\/icdn\\.lenta\\.ru\\/images\\/2017\\/04\\/10\\/16\\/20170410160659586\\/top7_f07b6db166774abba29e0de2e335f50a\\.jpg");
         XCTAssertEqual(decoded[2].action.type, "block");
 
-        XCTAssertEqual(decoded[3].trigger.urlFilter, START_URL_UNESCAPED + "lenta\\.ru([\\/:&\\?].*)?$");
+        XCTAssertEqual(decoded[3].trigger.urlFilter, START_URL_UNESCAPED + "lenta\\.ru" + URL_FILTER_REGEXP_SEPARATOR);
         XCTAssertEqual(decoded[3].action.type, "ignore-previous-rules");
     }
 
@@ -510,16 +510,16 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded.count, 5);
 
         XCTAssertEqual(decoded[0].action.type, "block");
-        XCTAssertEqual(decoded[0].trigger.urlFilter, START_URL_UNESCAPED + "example-url-block\\.org([\\/:&\\?].*)?$");
+        XCTAssertEqual(decoded[0].trigger.urlFilter, START_URL_UNESCAPED + "example-url-block\\.org" + URL_FILTER_REGEXP_SEPARATOR);
 
         XCTAssertEqual(decoded[1].action.type, "ignore-previous-rules");
-        XCTAssertEqual(decoded[1].trigger.urlFilter, START_URL_UNESCAPED + "example-url-block-exception\\.org([\\/:&\\?].*)?$");
+        XCTAssertEqual(decoded[1].trigger.urlFilter, START_URL_UNESCAPED + "example-url-block-exception\\.org" + URL_FILTER_REGEXP_SEPARATOR);
 
         XCTAssertEqual(decoded[2].action.type, "block");
-        XCTAssertEqual(decoded[2].trigger.urlFilter, START_URL_UNESCAPED + "example-url-block-important\\.org([\\/:&\\?].*)?$");
+        XCTAssertEqual(decoded[2].trigger.urlFilter, START_URL_UNESCAPED + "example-url-block-important\\.org" + URL_FILTER_REGEXP_SEPARATOR);
 
         XCTAssertEqual(decoded[3].action.type, "ignore-previous-rules");
-        XCTAssertEqual(decoded[3].trigger.urlFilter, START_URL_UNESCAPED + "example-url-block-exception-important\\.org([\\/:&\\?].*)?$");
+        XCTAssertEqual(decoded[3].trigger.urlFilter, START_URL_UNESCAPED + "example-url-block-exception-important\\.org" + URL_FILTER_REGEXP_SEPARATOR);
 
         XCTAssertEqual(decoded[4].action.type, "ignore-previous-rules");
         XCTAssertEqual(decoded[4].trigger.urlFilter, URL_FILTER_URL_RULES_EXCEPTIONS);
@@ -537,7 +537,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         let decoded = try! parseJsonString(json: result!.converted);
         XCTAssertEqual(decoded.count, 1);
 
-        XCTAssertEqual(decoded[0].trigger.urlFilter, START_URL_UNESCAPED + "test\\.org([\\/:&\\?].*)?$");
+        XCTAssertEqual(decoded[0].trigger.urlFilter, START_URL_UNESCAPED + "test\\.org" + URL_FILTER_REGEXP_SEPARATOR);
     }
 
     func testTldWildcardRules() {
@@ -790,7 +790,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result?.convertedCount, 1);
         decoded = try! parseJsonString(json: result!.converted);
         XCTAssertEqual(decoded.count, 1);
-        XCTAssertTrue(decoded[0].trigger.urlFilter!.contains("^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?xyz([\\/:&\\?].*)?$"));
+        XCTAssertTrue(decoded[0].trigger.urlFilter!.contains("^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?xyz" + URL_FILTER_REGEXP_SEPARATOR));
 
         ruleText = [
             "/g\\.alicdn\\.com\\/mm\\/yksdk\\/0\\.2\\.\\d+\\/playersdk\\.js/>>>1111.51xiaolu.com/playersdk.js>>>>keyword=playersdk",
@@ -809,7 +809,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result.ruleText, "||a.a^");
 
         let urlRegExpSource = result.urlRegExpSource;
-        XCTAssertEqual(urlRegExpSource, START_URL_UNESCAPED + "a\\.a([\\/:&\\?].*)?$");
+        XCTAssertEqual(urlRegExpSource, START_URL_UNESCAPED + "a\\.a" + URL_FILTER_REGEXP_SEPARATOR);
         
         var testUrl = "https://a.a/test";
         var regex = try! NSRegularExpression(pattern: urlRegExpSource!);
