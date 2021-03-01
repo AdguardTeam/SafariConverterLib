@@ -426,7 +426,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result?.errorsCount, 0);
 
         let decoded = try! parseJsonString(json: result!.converted);
-        XCTAssertEqual(decoded[0].trigger.urlFilter, "([\\/:&\\?].*)?$https\\?:\\/\\/\\(\\?!static\\)\\(\\[([\\/:&\\?].*)?$\\.\\]\\+\\)\\+\\?fastpicru\\[:\\/\\]");
+        XCTAssertEqual(decoded[0].trigger.urlFilter, URL_FILTER_REGEXP_SEPARATOR + "https\\?:\\/\\/\\(\\?!static\\)\\(\\[" + URL_FILTER_REGEXP_SEPARATOR + "\\.\\]\\+\\)\\+\\?fastpicru\\[:\\/\\]");
 
         ruleText = #"@@/:\/\/.*[.]wp[.]pl\/[a-z0-9_]{30,50}[.][a-z]{2,5}([\/:&\?].*)?$/"#;
         result = converter.convertArray(rules: [ruleText]);
