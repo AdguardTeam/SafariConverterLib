@@ -796,25 +796,6 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertTrue(decoded[0].trigger.urlFilter!.contains(".com\\\\\\/mm\\\\\\/yksdk"));
     }
 
-    func testDomainWithSeparator() {
-        let result = try! NetworkRule(ruleText: "||a.a^");
-
-        XCTAssertEqual(result.ruleText, "||a.a^");
-
-        let urlRegExpSource = result.urlRegExpSource;
-        XCTAssertEqual(urlRegExpSource, START_URL_UNESCAPED + "a\\.a" + URL_FILTER_REGEXP_END_SEPARATOR);
-        
-        var testUrl = "https://a.a/test";
-        var regex = try! NSRegularExpression(pattern: urlRegExpSource!);
-        var range = NSRange(location: 0, length: testUrl.utf16.count);
-        XCTAssertNotNil(regex.firstMatch(in: testUrl, options: [], range: range));
-        
-        testUrl = "https://a.allegroimg.com";
-        regex = try! NSRegularExpression(pattern: urlRegExpSource!);
-        range = NSRange(location: 0, length: testUrl.utf16.count);
-        XCTAssertNil(regex.firstMatch(in: testUrl, options: [], range: range));
-    }
-
     static var allTests = [
         ("testEmpty", testEmpty),
         ("testConvertComment", testConvertComment),
@@ -852,6 +833,5 @@ final class ContentBlockerConverterTests: XCTestCase {
         ("testGenericCssRules", testGenericCssRules),
         ("testSpecialCharactersEscape", testSpecialCharactersEscape),
         ("testEscapeBackslash", testEscapeBackslash),
-        ("testDomainWithSeparator", testDomainWithSeparator),
     ]
 }
