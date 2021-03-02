@@ -11,7 +11,8 @@ class SimpleRegex {
      */
     private static let  URL_FILTER_REGEXP_START_URL = #"^[htpsw]+:\/\/([a-z0-9-]+\.)?"#;
     /** Simplified separator (to fix an issue with $ restriction - it can be only in the end of regexp) */
-    private static let  URL_FILTER_REGEXP_SEPARATOR = "([\\/:&\\?].*)?$";
+    private static let  URL_FILTER_REGEXP_END_SEPARATOR = "([\\/:&\\?].*)?$";
+    private static let  URL_FILTER_REGEXP_SEPARATOR = "[/:&?]?";
     
     // Constants
     private static let maskStartUrl = "||";
@@ -20,7 +21,6 @@ class SimpleRegex {
     private static let maskAnySymbol = "*";
 
     private static let regexAnySymbol = ".*";
-    private static let regexSeparator = URL_FILTER_REGEXP_SEPARATOR;
     private static let regexStartUrl = URL_FILTER_REGEXP_START_URL;
     private static let regexStartString = "^";
     private static let regexEndString = "$";
@@ -88,7 +88,11 @@ class SimpleRegex {
                         result.append(Character(UnicodeScalar(char)!))
                     }
                 case charSeparator:
-                    result.append(regexSeparator)
+                    if i == maxIndex {
+                        result.append(URL_FILTER_REGEXP_END_SEPARATOR)
+                    } else {
+                        result.append(URL_FILTER_REGEXP_SEPARATOR)
+                    }
                 case charWildcard:
                     result.append(regexAnySymbol)
                 default:
