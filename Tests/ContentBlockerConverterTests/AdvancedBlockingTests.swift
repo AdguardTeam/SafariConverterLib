@@ -7,7 +7,7 @@ final class AdvancedBlockingTests: XCTestCase {
 
     let START_URL_UNESCAPED = "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?";
     let URL_FILTER_WS_ANY_URL_UNESCAPED = "^wss?:\\/\\/";
-    let URL_FILTER_REGEXP_SEPARATOR = "[/:&?]?";
+    let URL_FILTER_REGEXP_SEPARATOR = "([\\/:&\\?].*)?$";
     let URL_FILTER_CSS_RULES = ".*";
     let URL_FILTER_URL_RULES_EXCEPTIONS = ".*";
 
