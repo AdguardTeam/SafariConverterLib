@@ -72,14 +72,24 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded[0].trigger.urlFilter, START_URL_UNESCAPED + "example1\\.com");
         XCTAssertEqual(decoded[0].trigger.resourceType, ["document"]);
         XCTAssertEqual(decoded[0].action.type, "block");
+        
+        var regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!);
+        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://example1.com"));
+        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://example1.com/test"));
 
         XCTAssertEqual(decoded[1].trigger.urlFilter, START_URL_UNESCAPED + "example2\\.com");
         XCTAssertEqual(decoded[1].trigger.resourceType, ["document"]);
         XCTAssertEqual(decoded[1].action.type, "block");
+        
+        regex = try! NSRegularExpression(pattern: decoded[1].trigger.urlFilter!);
+        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://example2.com"));
 
         XCTAssertEqual(decoded[2].trigger.urlFilter, START_URL_UNESCAPED + "example5\\.com");
         XCTAssertEqual(decoded[2].trigger.resourceType, ["document"]);
         XCTAssertEqual(decoded[2].action.type, "block");
+        
+        regex = try! NSRegularExpression(pattern: decoded[2].trigger.urlFilter!);
+        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://example5.com"));
 
         // conversion of $document rule
         ruleText = ["||example.com$document"];
@@ -93,6 +103,9 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded[0].trigger.urlFilter, "\(START_URL_UNESCAPED)example\\.com");
         XCTAssertEqual(decoded[0].trigger.resourceType, ["document"]);
         XCTAssertEqual(decoded[0].action.type, "block");
+        
+        regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!);
+        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://example.com"));
 
 
         // conversion of $document and $popup rule
@@ -107,6 +120,9 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded[0].trigger.urlFilter, "\(START_URL_UNESCAPED)test\\.com");
         XCTAssertEqual(decoded[0].trigger.resourceType, ["document"]);
         XCTAssertEqual(decoded[0].action.type, "block");
+        
+        regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!);
+        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://test.com"));
 
 
         // conversion of $popup rule
@@ -121,6 +137,9 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded[0].trigger.urlFilter, "\(START_URL_UNESCAPED)example\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
         XCTAssertEqual(decoded[0].trigger.resourceType, ["document"]);
         XCTAssertEqual(decoded[0].action.type, "block");
+        
+        regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!);
+        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://example.com"));
 
 
         // conversion of $popup and third-party rule
@@ -136,6 +155,10 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded[0].trigger.resourceType, ["document"]);
         XCTAssertEqual(decoded[0].trigger.loadType, ["third-party"]);
         XCTAssertEqual(decoded[0].action.type, "block");
+        
+        regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!);
+        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://getsecuredfiles.com"));
+
     }
 
     func testConvertFirstPartyRule() {
@@ -150,6 +173,9 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded[0].trigger.urlFilter, "\(START_URL_UNESCAPED)adriver\\.ru" + URL_FILTER_REGEXP_END_SEPARATOR);
         XCTAssertEqual(decoded[0].trigger.loadType, ["first-party"]);
         XCTAssertEqual(decoded[0].action.type, "ignore-previous-rules");
+        
+        let regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!);
+        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://adriver.ru"));
     }
 
     func testConvertWebsocketRules() {
@@ -164,6 +190,9 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(entry.trigger.unlessDomain, nil);
         XCTAssertEqual(entry.trigger.loadType, nil);
         XCTAssertEqual(entry.trigger.resourceType, ["raw"]);
+        
+        let regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!);
+        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://test.com"));
 
         result = converter.convertArray(rules: ["$websocket,domain=123movies.is"]);
         XCTAssertEqual(result?.convertedCount, 1);
@@ -199,6 +228,9 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(entry.trigger.ifDomain, ["*example.com"]);
         XCTAssertEqual(entry.trigger.unlessDomain, nil);
         XCTAssertEqual(entry.trigger.resourceType, ["image", "style-sheet", "media", "raw", "font", "document"]);
+        
+        let regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!);
+        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://test.com"));
     }
 
     func testConvertSubdocumentFirstParty() {
@@ -218,6 +250,9 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(entry.trigger.unlessDomain, nil);
         XCTAssertEqual(entry.trigger.resourceType, ["document"]);
         XCTAssertEqual(entry.action.type, "block");
+        
+        let regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!);
+        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://test.com"));
     }
 
     func testAddUnlessDomainsForThirdParty() {
@@ -231,7 +266,9 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(entry.trigger.ifDomain, nil);
         XCTAssertEqual(entry.trigger.unlessDomain, ["*test.com"]);
         XCTAssertEqual(entry.trigger.loadType, ["third-party"]);
-
+        
+        var regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!);
+        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://test.com"));
 
         result = converter.convertArray(rules: ["||test.com$third-party,domain=~example.com"]);
         XCTAssertEqual(result?.convertedCount, 1);
@@ -243,6 +280,9 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(entry.trigger.ifDomain, nil);
         XCTAssertEqual(entry.trigger.unlessDomain, ["*example.com","*test.com"]);
         XCTAssertEqual(entry.trigger.loadType, ["third-party"]);
+        
+        regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!);
+        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://test.com"));
 
 
         // Only for third-party rules
@@ -255,6 +295,9 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
         XCTAssertEqual(entry.trigger.ifDomain, nil);
         XCTAssertEqual(entry.trigger.unlessDomain, nil);
+        
+        regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!);
+        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://test.com"));
 
 
         // Add domains only
@@ -281,6 +324,9 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(entry.trigger.ifDomain, ["*example.com"]);
         XCTAssertEqual(entry.trigger.unlessDomain, nil);
         XCTAssertEqual(entry.trigger.loadType, ["third-party"]);
+        
+        regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!);
+        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://test.com"));
     }
 
     func testConvertEmptyRegex() {
@@ -319,6 +365,9 @@ final class ContentBlockerConverterTests: XCTestCase {
         let entry = decoded[0];
         XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "hulu\\.com\\/page");
         XCTAssertEqual(entry.action.type, "ignore-previous-rules");
+        
+        let regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!);
+        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://hulu.com/page"));
     }
 
     func testConvertGenericDomainSensitive() {
@@ -412,7 +461,14 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded.count, 2);
 
         XCTAssertEqual(decoded[0].trigger.urlFilter, "xn--e1agjb\\.xn--p1ai");
+        
+        var regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!);
+        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://xn--e1agjb.xn--p1ai"));
+        
         XCTAssertEqual(decoded[1].trigger.urlFilter, START_URL_UNESCAPED + "xn--e1agjb\\.xn--p1ai");
+        
+        regex = try! NSRegularExpression(pattern: decoded[1].trigger.urlFilter!);
+        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://xn--e1agjb.xn--p1ai"));
     }
 
     func testRegexRules() {
@@ -456,6 +512,9 @@ final class ContentBlockerConverterTests: XCTestCase {
         let decoded = try! parseJsonString(json: result!.converted);
         XCTAssertEqual(decoded.count, 1);
         XCTAssertEqual(decoded[0].trigger.ifDomain, ["*uppercase.test"]);
+        
+        let regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!);
+        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://UpperCase.test"));
     }
 
     func testCspRules() {
@@ -487,6 +546,9 @@ final class ContentBlockerConverterTests: XCTestCase {
 
         XCTAssertEqual(decoded[3].trigger.urlFilter, START_URL_UNESCAPED + "lenta\\.ru" + URL_FILTER_REGEXP_END_SEPARATOR);
         XCTAssertEqual(decoded[3].action.type, "ignore-previous-rules");
+        
+        let regex = try! NSRegularExpression(pattern: decoded[3].trigger.urlFilter!);
+        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://lenta.ru"));
     }
 
     func testImportantModifierRules() {
@@ -504,15 +566,27 @@ final class ContentBlockerConverterTests: XCTestCase {
 
         XCTAssertEqual(decoded[0].action.type, "block");
         XCTAssertEqual(decoded[0].trigger.urlFilter, START_URL_UNESCAPED + "example-url-block\\.org" + URL_FILTER_REGEXP_END_SEPARATOR);
+        
+        var regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!);
+        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://example-url-block.org"));
 
         XCTAssertEqual(decoded[1].action.type, "ignore-previous-rules");
         XCTAssertEqual(decoded[1].trigger.urlFilter, START_URL_UNESCAPED + "example-url-block-exception\\.org" + URL_FILTER_REGEXP_END_SEPARATOR);
+        
+        regex = try! NSRegularExpression(pattern: decoded[1].trigger.urlFilter!);
+        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://example-url-block-exception.org"));
 
         XCTAssertEqual(decoded[2].action.type, "block");
         XCTAssertEqual(decoded[2].trigger.urlFilter, START_URL_UNESCAPED + "example-url-block-important\\.org" + URL_FILTER_REGEXP_END_SEPARATOR);
+        
+        regex = try! NSRegularExpression(pattern: decoded[2].trigger.urlFilter!);
+        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://example-url-block-important.org"));
 
         XCTAssertEqual(decoded[3].action.type, "ignore-previous-rules");
         XCTAssertEqual(decoded[3].trigger.urlFilter, START_URL_UNESCAPED + "example-url-block-exception-important\\.org" + URL_FILTER_REGEXP_END_SEPARATOR);
+        
+        regex = try! NSRegularExpression(pattern: decoded[2].trigger.urlFilter!);
+        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://example-url-block-important.org"));
 
         XCTAssertEqual(decoded[4].action.type, "ignore-previous-rules");
         XCTAssertEqual(decoded[4].trigger.urlFilter, URL_FILTER_URL_RULES_EXCEPTIONS);
@@ -531,6 +605,9 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded.count, 1);
 
         XCTAssertEqual(decoded[0].trigger.urlFilter, START_URL_UNESCAPED + "test\\.org" + URL_FILTER_REGEXP_END_SEPARATOR);
+        
+        let regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!);
+        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://test.org"));
     }
 
     func testTldWildcardRules() {
@@ -560,10 +637,16 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded[0].trigger.ifDomain?[1], "*surge.ru");
         XCTAssertEqual(decoded[0].trigger.ifDomain?[2], "*surge.net");
         XCTAssertEqual(decoded[0].trigger.ifDomain?.count, 250);
+        
+        var regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!);
+        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://test.com/test-files/adguard.png"));
 
         XCTAssertEqual(decoded[1].trigger.urlFilter, START_URL_UNESCAPED + ".*\\/test-files\\/adguard\\.png");
         XCTAssertNotNil(decoded[1].trigger.ifDomain?[0]);
         XCTAssertEqual(decoded[1].trigger.ifDomain?.count, 150);
+        
+        regex = try! NSRegularExpression(pattern: decoded[1].trigger.urlFilter!);
+        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://test.com/test-files/adguard.png"));
 
         result = converter.convertArray(rules: ["|http$script,domain=forbes.*"]);
         XCTAssertEqual(result?.convertedCount, 1);
