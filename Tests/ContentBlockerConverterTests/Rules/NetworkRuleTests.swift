@@ -64,7 +64,7 @@ final class NetworkRuleTests: XCTestCase {
         let result = try! NetworkRule(ruleText: "*$script,domain=a.com|b.com,denyallow=x.com|y.com");
         
         XCTAssertNotNil(result);
-        XCTAssertEqual(result.denyallowDomains, ["x.com", "y.com"]);
+        XCTAssertEqual(result.restrictedDomains, ["x.com", "y.com"]);
         XCTAssertEqual(result.permittedDomains, ["a.com", "b.com"]);
         
         var invalidRule: String = "*$script,domain=a.com|b.com,denyallow=x.com|~y.com";

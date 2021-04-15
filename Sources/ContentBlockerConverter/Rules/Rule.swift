@@ -84,7 +84,7 @@ class Rule {
                 encoded = domain.idnaEncoded!;
             }
             
-            self.denyallowDomains.append(encoded);
+            self.restrictedDomains.append(encoded);
         }
     }
 }
