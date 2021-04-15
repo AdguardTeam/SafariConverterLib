@@ -291,6 +291,11 @@ class NetworkRule: Rule {
             case "domain":
                 try self.setDomains(domains: optionValue, sep: "|");
                 break;
+                
+            // $denyallow modifier
+            case "denyallow":
+                try self.setDenyallowDomains(domains: optionValue, sep: "|");
+                break;
             
             // Document-level whitelist rules
             case "elemhide":
