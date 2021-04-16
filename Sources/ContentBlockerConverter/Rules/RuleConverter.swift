@@ -453,27 +453,26 @@ class RuleConverter {
         }
         
         let rule = try! NetworkRuleParser.parseRuleText(ruleText: ruleText);
-        let ruleParts = rule.options!.components(separatedBy: ",");
-        let denyallowPart = ruleParts.first(where: { $0.contains(DENYALLOW_MODIFIER_MASK) })!;
+        let ruleOptions = rule.options!.components(separatedBy: ",");
+        let denyallowOption = ruleOptions.first(where: { $0.contains(DENYALLOW_MODIFIER_MASK) })!;
         
         // get denyallow domains list
-        let denyallowDomains = denyallowPart.replace(target: DENYALLOW_MODIFIER_MASK, withString: "").components(separatedBy: "|");
+        let denyallowDomains = denyallowOption.replace(target: DENYALLOW_MODIFIER_MASK, withString: "").components(separatedBy: "|");
         
-        // remove denyallow from rule
-        let filtered = ruleParts.filter { part in
-            return part != denyallowPart;
-        }
-        let ruleWithoutDenyallow = filtered.joined(separator: ",");
+        // remove denyallow from options
+        let optionsWithoutDenyallow = ruleOptions.filter { part in
+            return part != denyallowOption;
+        }.joined(separator: ",");
         
         var result = [NSString]();
         
         // blocking rule
-        let blockingRule = rule.pattern! + MODIFIER_MASK + ruleWithoutDenyallow;
+        let blockingRule = rule.pattern! + MODIFIER_MASK + optionsWithoutDenyallow;
         result.append(blockingRule as NSString);
         
         // exception rules
         for domain in denyallowDomains {
-            let exceptionRule = EXCEPTION_SUFFIX + domain + MODIFIER_MASK + ruleWithoutDenyallow;
+            let exceptionRule = EXCEPTION_SUFFIX + domain + MODIFIER_MASK + optionsWithoutDenyallow;
             result.append(exceptionRule as NSString);
         }
         
