@@ -440,6 +440,38 @@ class NetworkRule: Rule {
             .replacingOccurrences(of: "$badfilter", with: "");
     }
     
+    /*
+     * Sets and validates exceptionally allowed domains presented in $denyallow modifier
+     */
+    func setDenyallowDomains(domains: String, sep: String) throws -> Void {
+        if (self.ruleText.hasPrefix("|") || self.ruleText.hasPrefix("||")) {
+            throw SyntaxError.invalidRule(message: "Rule's matching pattern cannot target any domain");
+        }
+        
+        if (domains == "") {
+            throw SyntaxError.invalidRule(message: "Modifier $denyallow cannot be empty");
+        }
+        
+        let parts = domains.components(separatedBy: sep);
+        
+        for domain in parts {
+            if (domain.hasPrefix("~")) {
+                throw SyntaxError.invalidRule(message: "Modifier $denyallow cannot be negated");
+            }
+
+            if (domain.contains("*")) {
+                throw SyntaxError.invalidRule(message: "Modifier $denyallow cannot have a wildcard TLD");
+            }
+
+            var encoded = domain;
+            if (!domain.isASCII()) {
+                encoded = domain.idnaEncoded!;
+            }
+            
+            self.denyallowDomains.append(encoded);
+        }
+    }
+    
     struct DomainInfo {
         var domain: String?;
         var path: String?;

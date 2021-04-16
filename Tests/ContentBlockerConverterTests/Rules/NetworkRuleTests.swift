@@ -64,10 +64,13 @@ final class NetworkRuleTests: XCTestCase {
         let result = try! NetworkRule(ruleText: "*$script,domain=a.com|b.com,denyallow=x.com|y.com");
         
         XCTAssertNotNil(result);
-        XCTAssertEqual(result.restrictedDomains, ["x.com", "y.com"]);
+        XCTAssertEqual(result.denyallowDomains, ["x.com", "y.com"]);
         XCTAssertEqual(result.permittedDomains, ["a.com", "b.com"]);
         
         var invalidRule: String = "*$script,domain=a.com|b.com,denyallow=x.com|~y.com";
+        XCTAssertThrowsError(try NetworkRule(ruleText: invalidRule as NSString));
+        
+        invalidRule = "||*$script,domain=a.com|b.com,denyallow=x.com|y.com";
         XCTAssertThrowsError(try NetworkRule(ruleText: invalidRule as NSString));
         
         invalidRule = "*$script,domain=a.com|b.com,denyallow=x.com|*.y.com";
@@ -198,6 +201,7 @@ final class NetworkRuleTests: XCTestCase {
     static var allTests = [
         ("testSimpleRules", testSimpleRules),
         ("testDomains", testDomains),
+        ("testDenyallow", testDenyallow),
         ("testRegexRules", testRegexRules),
         ("testUrlSlashRules", testUrlSlashRules),
         ("testParseDomainInfo", testParseDomainInfo),

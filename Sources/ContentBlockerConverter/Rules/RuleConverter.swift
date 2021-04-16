@@ -87,6 +87,12 @@ class RuleConverter {
             if (ruleWithConvertedOptions != nil) {
                 return ruleWithConvertedOptions!;
             }
+            
+            // Convert denyallow rule
+            let denyallowRule = convertDenyallowRule(ruleText: rule);
+            if (denyallowRule != nil) {
+                return denyallowRule!;
+            }
         }
         
         return [rule];
@@ -431,5 +437,35 @@ class RuleConverter {
         result = result.replace(target: "${args}", withString: args);
         
         return result as NSString;
+    }
+    
+    /**
+     * Converts rule with $denyallow modifier into blocking rule and additional exception rules
+     * https:github.com/AdguardTeam/CoreLibs/issues/1304
+     */
+    private func convertDenyallowRule(ruleText: NSString) -> [NSString]? {
+        let DENYALLOW_MODIFIER_MASK = ",denyallow=";
+        
+        if (!ruleText.contains(DENYALLOW_MODIFIER_MASK)) {
+            return nil;
+        }
+        
+        let rule = try! NetworkRule(ruleText: ruleText);
+        var result = [NSString]();
+        
+        let ruleTextString = ruleText as String;
+        let denyallowIndex = ruleTextString.indexOf(target: DENYALLOW_MODIFIER_MASK);
+        
+        // blocking rule
+        let blockingRule = ruleTextString.prefix(denyallowIndex);
+        result.append(blockingRule as NSString);
+        
+        // exception rules
+        for domain in rule.denyallowDomains {
+            let exceptionRule = "@@||" + domain + blockingRule.dropFirst(1);
+            result.append(exceptionRule as NSString);
+        }
+        
+        return result;
     }
 }

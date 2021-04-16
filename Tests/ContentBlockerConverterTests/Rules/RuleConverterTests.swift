@@ -266,6 +266,15 @@ final class RuleConverterTests: XCTestCase {
         res = ruleConverter.convertRule(rule: "example.com#@#h1:style(background-color: blue !important)" as NSString);
         XCTAssertEqual(res, [exp]);
     }
+    
+    func testDenyallowModifier() {
+        let ruleText = "*$script,domain=a.com|~b.com,denyallow=x.com|y.com" as NSString;
+        let exp: [NSString] = ["*$script,domain=a.com|~b.com",
+                               "@@||x.com$script,domain=a.com|~b.com",
+                               "@@||y.com$script,domain=a.com|~b.com"];
+        let res = ruleConverter.convertRule(rule: ruleText);
+        XCTAssertEqual(res, exp);
+    }
         
     static var allTests = [
         ("testEmpty", testEmpty),
@@ -288,5 +297,6 @@ final class RuleConverterTests: XCTestCase {
         ("testAllModifierSimple", testAllModifierSimple),
         ("testAllModifierComplicated", testAllModifierComplicated),
         ("testUboCssStyleRule", testUboCssStyleRule),
+        ("testDenyallowModifier", testDenyallowModifier),
     ]
 }
