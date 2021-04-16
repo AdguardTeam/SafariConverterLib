@@ -268,11 +268,30 @@ final class RuleConverterTests: XCTestCase {
     }
     
     func testDenyallowModifier() {
-        let ruleText = "*$script,domain=a.com|~b.com,denyallow=x.com|y.com" as NSString;
-        let exp: [NSString] = ["*$script,domain=a.com|~b.com",
-                               "@@||x.com$script,domain=a.com|~b.com",
-                               "@@||y.com$script,domain=a.com|~b.com"];
-        let res = ruleConverter.convertRule(rule: ruleText);
+        var ruleText = "*$image,denyallow=x.com,domain=a.com|~b.com" as NSString;
+        var exp: [NSString] = ["*$image,domain=a.com|~b.com", "@@||x.com$image,domain=a.com|~b.com"];
+        var res = ruleConverter.convertRule(rule: ruleText);
+        XCTAssertEqual(res, exp);
+        
+        ruleText = "*$script,domain=a.com|~b.com,denyallow=x.com|y.com" as NSString;
+        exp = ["*$script,domain=a.com|~b.com",
+               "@@||x.com$script,domain=a.com|~b.com",
+               "@@||y.com$script,domain=a.com|~b.com"];
+        res = ruleConverter.convertRule(rule: ruleText);
+        XCTAssertEqual(res, exp);
+
+        ruleText = "$image,frame,denyallow=x.com|y.com|z.com,domain=a.com" as NSString;
+        exp = ["$image,frame,domain=a.com",
+               "@@||x.com$image,frame,domain=a.com",
+               "@@||y.com$image,frame,domain=a.com",
+               "@@||z.com$image,frame,domain=a.com"];
+        res = ruleConverter.convertRule(rule: ruleText);
+        XCTAssertEqual(res, exp);
+
+        ruleText = "*$denyallow=x.com,image,frame,domain=a.com" as NSString;
+        exp = ["*$image,frame,domain=a.com",
+               "@@||x.com$image,frame,domain=a.com"];
+        res = ruleConverter.convertRule(rule: ruleText);
         XCTAssertEqual(res, exp);
     }
         

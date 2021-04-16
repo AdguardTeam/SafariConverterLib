@@ -444,25 +444,36 @@ class RuleConverter {
      * https:github.com/AdguardTeam/CoreLibs/issues/1304
      */
     private func convertDenyallowRule(ruleText: NSString) -> [NSString]? {
-        let DENYALLOW_MODIFIER_MASK = ",denyallow=";
+        let DENYALLOW_MODIFIER_MASK = "denyallow=";
+        let MODIFIER_MASK = "$";
+        let EXCEPTION_SUFFIX = "@@||";
         
         if (!ruleText.contains(DENYALLOW_MODIFIER_MASK)) {
             return nil;
         }
         
-        let rule = try! NetworkRule(ruleText: ruleText);
+        let rule = try! NetworkRuleParser.parseRuleText(ruleText: ruleText);
+        let ruleParts = rule.options!.components(separatedBy: ",");
+        let denyallowPart = ruleParts.first(where: { $0.contains(DENYALLOW_MODIFIER_MASK) })!;
+        
+        // get denyallow domains list
+        let denyallowDomains = denyallowPart.replace(target: DENYALLOW_MODIFIER_MASK, withString: "").components(separatedBy: "|");
+        
+        // remove denyallow from rule
+        let filtered = ruleParts.filter { part in
+            return part != denyallowPart;
+        }
+        let ruleWithoutDenyallow = filtered.joined(separator: ",");
+        
         var result = [NSString]();
         
-        let ruleTextString = ruleText as String;
-        let denyallowIndex = ruleTextString.indexOf(target: DENYALLOW_MODIFIER_MASK);
-        
         // blocking rule
-        let blockingRule = ruleTextString.prefix(denyallowIndex);
+        let blockingRule = rule.pattern! + MODIFIER_MASK + ruleWithoutDenyallow;
         result.append(blockingRule as NSString);
         
         // exception rules
-        for domain in rule.denyallowDomains {
-            let exceptionRule = "@@||" + domain + blockingRule.dropFirst(1);
+        for domain in denyallowDomains {
+            let exceptionRule = EXCEPTION_SUFFIX + domain + MODIFIER_MASK + ruleWithoutDenyallow;
             result.append(exceptionRule as NSString);
         }
         

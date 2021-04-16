@@ -17,8 +17,6 @@ class Rule {
     var permittedDomains = [String]();
     var restrictedDomains = [String]();
     
-    var denyallowDomains = [String]();
-    
     init() {
         
     }

@@ -294,7 +294,7 @@ class NetworkRule: Rule {
                 
             // $denyallow modifier
             case "denyallow":
-                try self.setDenyallowDomains(domains: optionValue, sep: "|");
+                try self.validateDenyallowRule(domains: optionValue, sep: "|");
                 break;
             
             // Document-level whitelist rules
@@ -443,7 +443,7 @@ class NetworkRule: Rule {
     /*
      * Sets and validates exceptionally allowed domains presented in $denyallow modifier
      */
-    func setDenyallowDomains(domains: String, sep: String) throws -> Void {
+    func validateDenyallowRule(domains: String, sep: String) throws -> Void {
         if (self.ruleText.hasPrefix("|") || self.ruleText.hasPrefix("||")) {
             throw SyntaxError.invalidRule(message: "Rule's matching pattern cannot target any domain");
         }
@@ -462,13 +462,6 @@ class NetworkRule: Rule {
             if (domain.contains("*")) {
                 throw SyntaxError.invalidRule(message: "Modifier $denyallow cannot have a wildcard TLD");
             }
-
-            var encoded = domain;
-            if (!domain.isASCII()) {
-                encoded = domain.idnaEncoded!;
-            }
-            
-            self.denyallowDomains.append(encoded);
         }
     }
     
