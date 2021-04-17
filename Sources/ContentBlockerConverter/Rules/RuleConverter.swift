@@ -9,6 +9,9 @@ class RuleConverter {
     private static let UBO_SCRIPTLET_MASK_REG = "##script\\:inject|#@?#\\s*\\+js";
     private static let UBO_SCRIPTLET_MASK_REGEXP = try! NSRegularExpression(pattern: UBO_SCRIPTLET_MASK_REG, options: [.caseInsensitive]);
     private static let SENTENCES_REGEXP = try! NSRegularExpression(pattern: #"'.*?'|".*?"|\S+"#, options: [.caseInsensitive]);
+    private static let DENYALLOW_MODIFIER_MASK = "denyallow=";
+    private static let MODIFIER_MASK = "$";
+    private static let EXCEPTION_SUFFIX = "@@||";
     
     private let UBO_SCRIPTLET_MASK_1 = "##+js";
     private let UBO_SCRIPTLET_MASK_2 = "##script:inject";
@@ -444,10 +447,6 @@ class RuleConverter {
      * https:github.com/AdguardTeam/CoreLibs/issues/1304
      */
     private func convertDenyallowRule(ruleText: NSString) -> [NSString]? {
-        let DENYALLOW_MODIFIER_MASK = "denyallow=";
-        let MODIFIER_MASK = "$";
-        let EXCEPTION_SUFFIX = "@@||";
-        
         if (!ruleText.contains(DENYALLOW_MODIFIER_MASK)) {
             return nil;
         }
