@@ -89,9 +89,9 @@ class RuleConverter {
             }
             
             // Convert denyallow rule
-            let denyallowRule = convertDenyallowRule(ruleText: rule);
-            if (denyallowRule != nil) {
-                return denyallowRule!;
+            let denyallowRules = convertDenyallowRule(ruleText: rule);
+            if (denyallowRules != nil) {
+                return denyallowRules!;
             }
         }
         
