@@ -443,20 +443,33 @@ class RuleConverter {
     }
     
     /**
-     * Converts rule with $denyallow modifier into blocking rule and additional exception rules
+     * Validates and converts rule with $denyallow modifier into blocking rule and additional exception rules
      * https:github.com/AdguardTeam/CoreLibs/issues/1304
      */
     private func convertDenyallowRule(ruleText: NSString) -> [NSString]? {
-        if (!ruleText.contains(DENYALLOW_MODIFIER_MASK)) {
+        if (!ruleText.contains(RuleConverter.DENYALLOW_MODIFIER_MASK)) {
             return nil;
         }
         
         let rule = try! NetworkRuleParser.parseRuleText(ruleText: ruleText);
+        
+        if (rule.pattern!.hasPrefix("|") || rule.pattern!.hasPrefix("||")) {
+            // Rule's matching pattern cannot target any domain
+            return nil;
+        }
+        
         let ruleOptions = rule.options!.components(separatedBy: ",");
-        let denyallowOption = ruleOptions.first(where: { $0.contains(DENYALLOW_MODIFIER_MASK) })!;
+        let denyallowOption = ruleOptions.first(where: { $0.contains(RuleConverter.DENYALLOW_MODIFIER_MASK) })!;
         
         // get denyallow domains list
-        let denyallowDomains = denyallowOption.replace(target: DENYALLOW_MODIFIER_MASK, withString: "").components(separatedBy: "|");
+        let denyallowDomains = denyallowOption.replace(target: RuleConverter.DENYALLOW_MODIFIER_MASK, withString: "").components(separatedBy: "|");
+        
+        for domain in denyallowDomains {
+            if (domain.hasPrefix("~") || domain.contains("*")) {
+                // Modifier $denyallow cannot be negated or have a wildcard TLD
+                return nil;
+            }
+        }
         
         // remove denyallow from options
         let optionsWithoutDenyallow = ruleOptions.filter { part in
@@ -466,12 +479,12 @@ class RuleConverter {
         var result = [NSString]();
         
         // blocking rule
-        let blockingRule = rule.pattern! + MODIFIER_MASK + optionsWithoutDenyallow;
+        let blockingRule = rule.pattern! + RuleConverter.MODIFIER_MASK + optionsWithoutDenyallow;
         result.append(blockingRule as NSString);
         
         // exception rules
         for domain in denyallowDomains {
-            let exceptionRule = EXCEPTION_SUFFIX + domain + MODIFIER_MASK + optionsWithoutDenyallow;
+            let exceptionRule = RuleConverter.EXCEPTION_SUFFIX + domain + RuleConverter.MODIFIER_MASK + optionsWithoutDenyallow;
             result.append(exceptionRule as NSString);
         }
         
