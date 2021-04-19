@@ -8,7 +8,7 @@
     "build": "swift build -v -c release",
     "test": "swift test",
     "api-test": "yarn jest",
-    "ci:increment": "yarn version --patch --no-git-tag-version",
+    "increment": "yarn version --patch --no-git-tag-version",
     "postinstall": "node-safari-converter/script/build.sh"
   },
   "devDependencies": {
