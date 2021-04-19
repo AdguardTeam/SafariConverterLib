@@ -312,6 +312,7 @@ final class RuleConverterTests: XCTestCase {
         ("testInlineFontModifier", testInlineFontModifier),
         ("testInlineFontAndInlineScriptModifier", testInlineFontAndInlineScriptModifier),
         ("testAllModifierSimple", testAllModifierSimple),
+        ("testNoopModifier", testNoopModifier),
         ("testAllModifierComplicated", testAllModifierComplicated),
         ("testUboCssStyleRule", testUboCssStyleRule),
     ]
