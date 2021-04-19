@@ -79,7 +79,11 @@ class CosmeticRule: Rule {
             // This means that the marker is preceded by the list of domains
             // Now it's a good time to parse them.
             let domains = ruleText.substring(to: markerInfo.index);
-            try super.setDomains(domains: domains, sep: ",");
+            // suppport for *## for generic rules
+            // https://github.com/AdguardTeam/SafariConverterLib/issues/11
+            if (!(domains.count == 1 && domains.contains("*"))) {
+                try super.setDomains(domains: domains, sep: ",");
+            }
         }
 
         self.isWhiteList = CosmeticRule.parseWhitelist(marker: markerInfo.marker!);

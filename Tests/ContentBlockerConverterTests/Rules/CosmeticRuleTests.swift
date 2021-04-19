@@ -6,10 +6,28 @@ import XCTest
 final class CosmeticRuleTests: XCTestCase {
     func testElemhidingRules() {
         
-        let result = try! CosmeticRule(ruleText: "##.banner");
+        var result = try! CosmeticRule(ruleText: "##.banner");
         
         XCTAssertNotNil(result);
         XCTAssertEqual(result.ruleText, "##.banner");
+        XCTAssertEqual(result.isWhiteList, false);
+        XCTAssertEqual(result.isImportant, false);
+        XCTAssertEqual(result.isScript, false);
+        XCTAssertEqual(result.isScriptlet, false);
+        XCTAssertEqual(result.isDocumentWhiteList, false);
+        
+        XCTAssertEqual(result.permittedDomains, []);
+        XCTAssertEqual(result.restrictedDomains, []);
+        
+        
+        XCTAssertEqual(result.content, ".banner");
+        XCTAssertEqual(result.scriptlet, nil);
+        XCTAssertEqual(result.scriptletParam, nil);
+        
+        XCTAssertEqual(result.isExtendedCss, false);
+        XCTAssertEqual(result.isInjectCss, false);
+        
+        result = try! CosmeticRule(ruleText: "*##.banner");
         XCTAssertEqual(result.isWhiteList, false);
         XCTAssertEqual(result.isImportant, false);
         XCTAssertEqual(result.isScript, false);
@@ -41,6 +59,14 @@ final class CosmeticRuleTests: XCTestCase {
         XCTAssertNotNil(result);
         XCTAssertEqual(result.isWhiteList, true);
         XCTAssertEqual(result.content, "#banner");
+        
+        result = try! CosmeticRule(ruleText: "*#@#.banner");
+        
+        XCTAssertNotNil(result);
+        XCTAssertEqual(result.isWhiteList, true);
+        XCTAssertEqual(result.permittedDomains, []);
+        XCTAssertEqual(result.restrictedDomains, []);
+        XCTAssertEqual(result.content, ".banner");
     }
     
     func testCssRules() {
