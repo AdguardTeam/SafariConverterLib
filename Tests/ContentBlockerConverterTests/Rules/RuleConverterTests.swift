@@ -249,6 +249,32 @@ final class RuleConverterTests: XCTestCase {
         XCTAssertEqual(res[3], exp4);
     }
     
+    func testNoopModifier() {
+        var rule = "||example.com$domain=example.org,image,script,___,important" as NSString;
+        var exp =  "||example.com$domain=example.org,image,script,important" as NSString;
+        
+        var res = ruleConverter.convertRule(rule: rule);
+        XCTAssertEqual(res, [exp]);
+        
+        rule = "||example.com$domain=example.org,__,_,image,__________,script,_,___,_,_,_,_,__,important" as NSString;
+        exp =  "||example.com$domain=example.org,image,script,important" as NSString;
+        
+        res = ruleConverter.convertRule(rule: rule);
+        XCTAssertEqual(res, [exp]);
+        
+        rule = "||example.com$replace=/bad/good/,___,~third-party" as NSString;
+        exp =  "||example.com$replace=/bad/good/,~third-party" as NSString;
+        
+        res = ruleConverter.convertRule(rule: rule);
+        XCTAssertEqual(res, [exp]);
+        
+        rule = "||example.com$_,removeparam=/^ss\\$/,_,image" as NSString;
+        exp =  "||example.com$_,removeparam=/^ss\\$/,image" as NSString;
+        
+        res = ruleConverter.convertRule(rule: rule);
+        XCTAssertEqual(res, [exp]);
+    }
+    
     func testBadFilterModifier() {
         let rule = "||example.org/favicon.ico$domain=example.org,empty,important,badfilter" as NSString;
         let exp = #"||example.org/favicon.ico$domain=example.org,redirect=nooptext,important,badfilter"# as NSString;
