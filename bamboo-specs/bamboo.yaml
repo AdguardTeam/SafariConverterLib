@@ -17,6 +17,10 @@ Increment:
   key: INCR
   other:
     clean-working-dir: true
+  docker:
+    image: ${bamboo.dockerNode}
+    volumes:
+      ${system.YARN_DIR}: "${bamboo.cacheYarn}"
   tasks:
     - checkout:
         force-clean-build: 'true'
