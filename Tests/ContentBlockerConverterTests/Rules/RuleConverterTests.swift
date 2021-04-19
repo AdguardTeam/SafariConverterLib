@@ -294,6 +294,14 @@ final class RuleConverterTests: XCTestCase {
         res = ruleConverter.convertRule(rule: ruleText);
         XCTAssertEqual(res, exp);
         
+        ruleText = "*$script,denyallow=x.com|y.com" as NSString;
+        res = ruleConverter.convertRule(rule: ruleText);
+        XCTAssertEqual(res, [ruleText]);
+        
+        ruleText = "*$denyallow=test.com,script,image,frame" as NSString;
+        res = ruleConverter.convertRule(rule: ruleText);
+        XCTAssertEqual(res, [ruleText]);
+        
         ruleText = "*$script,domain=a.com|b.com,denyallow=x.com|~y.com" as NSString;
         res = ruleConverter.convertRule(rule: ruleText);
         XCTAssertEqual(res, [ruleText]);

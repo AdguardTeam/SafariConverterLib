@@ -10,6 +10,8 @@ class RuleConverter {
     private static let UBO_SCRIPTLET_MASK_REGEXP = try! NSRegularExpression(pattern: UBO_SCRIPTLET_MASK_REG, options: [.caseInsensitive]);
     private static let SENTENCES_REGEXP = try! NSRegularExpression(pattern: #"'.*?'|".*?"|\S+"#, options: [.caseInsensitive]);
     private static let DENYALLOW_MODIFIER_MASK = "denyallow=";
+    private static let DOMAIN_MODIFIER_MASK = "domain=";
+    
     private static let MODIFIER_MASK = "$";
     private static let EXCEPTION_SUFFIX = "@@||";
     
@@ -453,8 +455,8 @@ class RuleConverter {
         
         let rule = try! NetworkRuleParser.parseRuleText(ruleText: ruleText);
         
-        if (rule.pattern!.hasPrefix("|") || rule.pattern!.hasPrefix("||")) {
-            // Rule's matching pattern cannot target any domain
+        if (rule.pattern!.hasPrefix("|") || rule.pattern!.hasPrefix("||") || !ruleText.contains(RuleConverter.DOMAIN_MODIFIER_MASK)) {
+            // Rule's matching pattern cannot target any domain or been used without $domain modifier
             return nil;
         }
         
