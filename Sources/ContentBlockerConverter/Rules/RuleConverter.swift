@@ -21,6 +21,7 @@ class RuleConverter {
     private let UBO_SCRIPTLET_EXCEPTION_MASK_2 = "#@#script:inject";
     private let UBO_SCRIPT_TAG_MASK = "##^script";
     private let UBO_CSS_STYLE_MASK = ":style(";
+    
     /**
      * AdBlock Plus snippet rule mask
      */
