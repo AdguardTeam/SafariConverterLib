@@ -1,6 +1,6 @@
 {
   "name": "safari-converter-lib",
-  "version": "1.1.16",
+  "version": "1.1.17",
   "description": "Wrapper with version for Swift Safari Converter to use it as node module",
   "repository": "github:AdguardTeam/SafariConverterLib",
   "main": "node-safari-converter/index.js",
