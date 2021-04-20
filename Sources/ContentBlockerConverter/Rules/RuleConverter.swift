@@ -9,6 +9,11 @@ class RuleConverter {
     private static let UBO_SCRIPTLET_MASK_REG = "##script\\:inject|#@?#\\s*\\+js";
     private static let UBO_SCRIPTLET_MASK_REGEXP = try! NSRegularExpression(pattern: UBO_SCRIPTLET_MASK_REG, options: [.caseInsensitive]);
     private static let SENTENCES_REGEXP = try! NSRegularExpression(pattern: #"'.*?'|".*?"|\S+"#, options: [.caseInsensitive]);
+    private static let DENYALLOW_MODIFIER_MASK = "denyallow=";
+    private static let DOMAIN_MODIFIER_MASK = "domain=";
+    
+    private static let MODIFIER_MASK = "$";
+    private static let EXCEPTION_SUFFIX = "@@||";
     
     private let UBO_SCRIPTLET_MASK_1 = "##+js";
     private let UBO_SCRIPTLET_MASK_2 = "##script:inject";
@@ -86,6 +91,12 @@ class RuleConverter {
             let ruleWithConvertedOptions = convertOptions(rule: rule);
             if (ruleWithConvertedOptions != nil) {
                 return ruleWithConvertedOptions!;
+            }
+            
+            // Convert denyallow rule
+            let denyallowRules = convertDenyallowRule(ruleText: rule);
+            if (denyallowRules != nil) {
+                return denyallowRules!;
             }
         }
         
@@ -431,5 +442,54 @@ class RuleConverter {
         result = result.replace(target: "${args}", withString: args);
         
         return result as NSString;
+    }
+    
+    /**
+     * Validates and converts rule with $denyallow modifier into blocking rule and additional exception rules
+     * https:github.com/AdguardTeam/CoreLibs/issues/1304
+     */
+    private func convertDenyallowRule(ruleText: NSString) -> [NSString]? {
+        if (!ruleText.contains(RuleConverter.DENYALLOW_MODIFIER_MASK)) {
+            return nil;
+        }
+        
+        let rule = try! NetworkRuleParser.parseRuleText(ruleText: ruleText);
+        
+        if (rule.pattern!.hasPrefix("|") || rule.pattern!.hasPrefix("||") || !ruleText.contains(RuleConverter.DOMAIN_MODIFIER_MASK)) {
+            // Rule's matching pattern cannot target any domain or been used without $domain modifier
+            return nil;
+        }
+        
+        let ruleOptions = rule.options!.components(separatedBy: ",");
+        let denyallowOption = ruleOptions.first(where: { $0.contains(RuleConverter.DENYALLOW_MODIFIER_MASK) })!;
+        
+        // get denyallow domains list
+        let denyallowDomains = denyallowOption.replace(target: RuleConverter.DENYALLOW_MODIFIER_MASK, withString: "").components(separatedBy: "|");
+        
+        for domain in denyallowDomains {
+            if (domain.hasPrefix("~") || domain.contains("*")) {
+                // Modifier $denyallow cannot be negated or have a wildcard TLD
+                return nil;
+            }
+        }
+        
+        // remove denyallow from options
+        let optionsWithoutDenyallow = ruleOptions.filter { part in
+            return part != denyallowOption;
+        }.joined(separator: ",");
+        
+        var result = [NSString]();
+        
+        // blocking rule
+        let blockingRule = rule.pattern! + RuleConverter.MODIFIER_MASK + optionsWithoutDenyallow;
+        result.append(blockingRule as NSString);
+        
+        // exception rules
+        for domain in denyallowDomains {
+            let exceptionRule = RuleConverter.EXCEPTION_SUFFIX + domain + RuleConverter.MODIFIER_MASK + optionsWithoutDenyallow;
+            result.append(exceptionRule as NSString);
+        }
+        
+        return result;
     }
 }
