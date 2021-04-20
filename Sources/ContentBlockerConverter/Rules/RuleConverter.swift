@@ -17,7 +17,6 @@ class RuleConverter {
     private let UBO_SCRIPT_TAG_MASK = "##^script";
     private let UBO_CSS_STYLE_MASK = ":style(";
     
-    private static let NOOP_REGEXP = ",_+,(_+,)*";
     /**
      * AdBlock Plus snippet rule mask
      */
