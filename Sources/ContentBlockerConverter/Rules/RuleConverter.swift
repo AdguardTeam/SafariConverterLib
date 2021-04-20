@@ -78,12 +78,6 @@ class RuleConverter {
                 }
             }
         } else {
-            // Handle noop modifier
-            let ruleWithoutNoop = removeNoop(rule: rule);
-            if (ruleWithoutNoop != nil) {
-                return [ruleWithoutNoop!];
-            }
-            
             // Convert abp redirect rule
             let abpRedirectRule = convertAbpRedirectRule(rule: rule);
             if (abpRedirectRule != nil) {
@@ -404,20 +398,6 @@ class RuleConverter {
         }
 
         return nil;
-    }
-    
-    private func removeNoop(rule: NSString) -> NSString? {
-        if (!(rule.contains(",_") && rule.contains("_,"))) {
-            return nil;
-        }
-        
-        let ruleText = rule as String;
-        if let noopRegex = try? NSRegularExpression(pattern: RuleConverter.NOOP_REGEXP, options: .caseInsensitive) {
-            let ruleWithoutNoop = noopRegex.stringByReplacingMatches(in: ruleText, options: [], range: NSRange(location: 0, length:  ruleText.count), withTemplate: ",");
-            return ruleWithoutNoop as NSString;
-        }
-        
-        return rule;
     }
 
     // Helpers

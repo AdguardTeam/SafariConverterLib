@@ -9,6 +9,8 @@ class NetworkRule: Rule {
     
     private static let delimeterChar = ",".utf16.first!;
     private static let escapeChar = "\\".utf16.first!;
+    
+    private static let NOOP_PATTERN = "_";
 
     var isUrlBlock = false;
     var isCssExceptionRule = false;
@@ -251,6 +253,15 @@ class NetworkRule: Rule {
     }
 
     private func loadOption(optionName: String, optionValue: String) throws -> Void {
+        if (optionName.hasSuffix(NetworkRule.NOOP_PATTERN)) {
+            // A noop modifier does nothing and can be used to increase some rules readability.
+            // It consists of the sequence of underscore characters (_) of any length
+            // and can appear in a rule as many times as it's needed.
+            let isNoopOption = !optionName.components(separatedBy: NetworkRule.NOOP_PATTERN).contains{ !$0.isEmpty };
+            if (isNoopOption) {
+                return;
+            }
+        }
         switch (optionName) {
             // General options
             case "third-party",

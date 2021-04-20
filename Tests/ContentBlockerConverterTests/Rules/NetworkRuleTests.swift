@@ -180,6 +180,43 @@ final class NetworkRuleTests: XCTestCase {
         XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://example.com/path"));
         XCTAssertFalse(SimpleRegex.isMatch(regex: regex, target: "https://example.com"));
     }
+    
+    func testNoopModifier() {
+        var rule = "||example.com^$domain=example.org,image,script,______,important" as NSString;
+        
+        var result = try! NetworkRule(ruleText: rule);
+        XCTAssertEqual(result.ruleText, rule)
+        XCTAssertEqual(result.isWhiteList, false);
+        XCTAssertEqual(result.isImportant, true);
+        XCTAssertEqual(result.isScript, false);
+        XCTAssertEqual(result.isScriptlet, false);
+        XCTAssertEqual(result.isDocumentWhiteList, false);
+        XCTAssertEqual(result.permittedDomains, ["example.org"]);
+        XCTAssertEqual(result.restrictedDomains, []);
+        XCTAssertEqual(result.isCspRule, false);
+        XCTAssertEqual(result.isWebSocket, false);
+        XCTAssertEqual(result.isUrlBlock, false);
+        XCTAssertEqual(result.isCssExceptionRule, false);
+        XCTAssertEqual(result.urlRuleText, "||example.com^");
+        XCTAssertEqual(result.isThirdParty, false);
+        XCTAssertEqual(result.isMatchCase, false);
+        XCTAssertEqual(result.isBlockPopups, false);
+        XCTAssertEqual(result.isReplace, false);
+        
+        rule = "@@||example.com^$domain=example.org,__,_,image,__________,script,_,___,_,_,_,_,__,important" as NSString;
+
+        result = try! NetworkRule(ruleText: rule);
+        XCTAssertEqual(result.ruleText, rule)
+        XCTAssertEqual(result.isWhiteList, true);
+        XCTAssertEqual(result.isImportant, true);
+        XCTAssertEqual(result.permittedDomains, ["example.org"]);
+        XCTAssertEqual(result.restrictedDomains, []);
+        XCTAssertEqual(result.urlRuleText, "||example.com^");
+        
+        let invalidNoopRule = "@@||example.com^$domain=example.org,__,_,image,________z__,script,important" as NSString;
+
+        XCTAssertThrowsError(try NetworkRule(ruleText: invalidNoopRule));
+    }
 
     static var allTests = [
         ("testSimpleRules", testSimpleRules),
@@ -189,5 +226,6 @@ final class NetworkRuleTests: XCTestCase {
         ("testParseDomainInfo", testParseDomainInfo),
         ("testDomainWithSeparator", testDomainWithSeparator),
         ("testVariousUrlRegex", testVariousUrlRegex),
+        ("testNoopModifier", testNoopModifier),
     ]
 }
