@@ -87,11 +87,11 @@ class Compiler {
         if (!self.optimize) {
             compilationResult.cssBlockingWide = cssCompact.cssBlockingWide;
         }
-        compilationResult.cssBlockingGenericDomainSensitive = Compiler.applyActionExceptions(blockingItems: &compilationResult.cssBlockingGenericDomainSensitive, exceptions: specifichideExceptions, actionValue: "selector");
         compilationResult.cssBlockingGenericDomainSensitive = Compiler.compactDomainCssRules(entries: cssCompact.cssBlockingGenericDomainSensitive, useUnlessDomain: true);
+        compilationResult.cssBlockingGenericDomainSensitive = Compiler.applyActionExceptions(blockingItems: &compilationResult.cssBlockingGenericDomainSensitive, exceptions: specifichideExceptions, actionValue: "selector");
         
-        compilationResult.cssBlockingDomainSensitive = Compiler.applyActionExceptions(blockingItems: &compilationResult.cssBlockingDomainSensitive, exceptions: specifichideExceptions, actionValue: "selector");
         compilationResult.cssBlockingDomainSensitive = Compiler.compactDomainCssRules(entries: cssCompact.cssBlockingDomainSensitive);
+        compilationResult.cssBlockingDomainSensitive = Compiler.applyActionExceptions(blockingItems: &compilationResult.cssBlockingDomainSensitive, exceptions: specifichideExceptions, actionValue: "selector");
 
         if (self.advancedBlockedEnabled) {
             // Applying CSS exceptions for extended css rules
@@ -102,11 +102,11 @@ class Compiler {
             if (!self.optimize) {
                 compilationResult.extendedCssBlockingWide = extendedCssCompact.cssBlockingWide;
             }
-            Compiler.applyActionExceptions(blockingItems: &compilationResult.extendedCssBlockingGenericDomainSensitive, exceptions: specifichideExceptions, actionValue: "css");
             compilationResult.extendedCssBlockingGenericDomainSensitive = extendedCssCompact.cssBlockingGenericDomainSensitive;
+            compilationResult.extendedCssBlockingGenericDomainSensitive = Compiler.applyActionExceptions(blockingItems: &compilationResult.extendedCssBlockingGenericDomainSensitive, exceptions: specifichideExceptions, actionValue: "css");
             
-            Compiler.applyActionExceptions(blockingItems: &extendedCssBlocking, exceptions: specifichideExceptions, actionValue: "css");
             compilationResult.extendedCssBlockingDomainSensitive = extendedCssCompact.cssBlockingDomainSensitive;
+            compilationResult.extendedCssBlockingDomainSensitive = Compiler.applyActionExceptions(blockingItems: &compilationResult.extendedCssBlockingDomainSensitive, exceptions: specifichideExceptions, actionValue: "css");
             
             // Applying CSS exceptions for css injecting rules
             cssInjects = Compiler.applyActionExceptions(

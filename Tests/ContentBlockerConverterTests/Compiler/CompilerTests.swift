@@ -28,15 +28,28 @@ final class CompilerTests: XCTestCase {
         XCTAssertEqual(result.extendedCssBlockingDomainSensitive.count, 0);
     }
 
-    func testSpecifichide() {
-
+    func testSpecifichide1() {
+        var rules = [Rule]();
         let compiler = Compiler(optimize: false, advancedBlocking: false, errorsCounter: ErrorsCounter());
-        let rule = try! RuleFactory.createRule(ruleText: "@@||example.com^$specifichide");
-        let result = compiler.compileRules(rules: [rule!]);
-
+        
+        let rulesArray:[NSString] = [
+            "example.org##.banner1",
+            "example.org#$#.banner2 { display: none !important; }",
+            "#$#.banner3 { display: none !important; }",
+            "##.banner4",
+            "~google.com#$#.banner5 { display: none !important }",
+            "@@||example.org^$specifichide"
+        ];
+        
+        for rule in rulesArray {
+            rules.append(try! RuleFactory.createRule(ruleText: rule)!);
+        }
+        
+        let result = compiler.compileRules(rules: rules);
+        
         XCTAssertNotNil(result);
-        XCTAssertEqual(result.cssBlockingWide.count, 0);
-        XCTAssertEqual(result.cssBlockingGenericDomainSensitive.count, 0);
+        XCTAssertEqual(result.cssBlockingWide.count, 2);
+        XCTAssertEqual(result.cssBlockingGenericDomainSensitive.count, 1);
         XCTAssertEqual(result.cssBlockingDomainSensitive.count, 0);
         XCTAssertEqual(result.cssBlockingGenericHideExceptions.count, 0);
         XCTAssertEqual(result.cssElemhide.count, 0);
