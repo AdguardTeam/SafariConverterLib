@@ -210,7 +210,7 @@ class BlockerEntryFactory {
     };
 
     private func setWhiteList(rule: Rule, action: inout BlockerEntry.Action) -> Void {
-        if (rule.isWhiteList || rule.isSpecifichide) {
+        if (rule.isWhiteList) {
             action.type = "ignore-previous-rules";
         }
     }

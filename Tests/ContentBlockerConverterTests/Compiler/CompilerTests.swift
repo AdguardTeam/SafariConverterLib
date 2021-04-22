@@ -31,7 +31,7 @@ final class CompilerTests: XCTestCase {
     func testSpecifichide() {
 
         let compiler = Compiler(optimize: false, advancedBlocking: false, errorsCounter: ErrorsCounter());
-        let rule = try! RuleFactory.createRule(ruleText: "||example.com^$specifichide");
+        let rule = try! RuleFactory.createRule(ruleText: "@@||example.com^$specifichide");
         let result = compiler.compileRules(rules: [rule!]);
 
         XCTAssertNotNil(result);

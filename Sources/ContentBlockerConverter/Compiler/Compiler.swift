@@ -73,7 +73,7 @@ class Compiler {
                     cssExceptions.append(item);
                 } else if (item.action.css != nil && item.action.css! != "") {
                     cosmeticCssExceptions.append(item);
-                } else if (rule.isSpecifichide) {
+                } else if ((rule as! NetworkRule).isSingleOption(option: .Specifichide)) {
                     specifichideExceptions.append(item);
                 } else {
                     compilationResult.addIgnorePreviousTypedEntry(entry: item, source: rule);

@@ -315,7 +315,6 @@ class NetworkRule: Rule {
                 break;
             case "specifichide":
                 try setOptionEnabled(option: NetworkRuleOption.Specifichide, value: true);
-                self.isSpecifichide = true;
                 break;
             case "jsinject":
                 try setOptionEnabled(option: NetworkRuleOption.Jsinject, value: true);
