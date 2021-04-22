@@ -34,6 +34,8 @@ class Compiler {
         var scriptletsExceptions = [BlockerEntry]();
         var cosmeticCssExceptions = [BlockerEntry]();
 
+        var specifichideExceptions = [BlockerEntry]();
+
         var compilationResult = CompilationResult();
         compilationResult.rulesCount = rules.count;
 
@@ -71,6 +73,8 @@ class Compiler {
                     cssExceptions.append(item);
                 } else if (item.action.css != nil && item.action.css! != "") {
                     cosmeticCssExceptions.append(item);
+                } else if (rule.isSpecifichide) {
+                    specifichideExceptions.append(item);
                 } else {
                     compilationResult.addIgnorePreviousTypedEntry(entry: item, source: rule);
                 }
@@ -83,7 +87,10 @@ class Compiler {
         if (!self.optimize) {
             compilationResult.cssBlockingWide = cssCompact.cssBlockingWide;
         }
+        compilationResult.cssBlockingGenericDomainSensitive = Compiler.applyActionExceptions(blockingItems: &compilationResult.cssBlockingGenericDomainSensitive, exceptions: specifichideExceptions, actionValue: "selector");
         compilationResult.cssBlockingGenericDomainSensitive = Compiler.compactDomainCssRules(entries: cssCompact.cssBlockingGenericDomainSensitive, useUnlessDomain: true);
+
+        compilationResult.cssBlockingDomainSensitive = Compiler.applyActionExceptions(blockingItems: &compilationResult.cssBlockingDomainSensitive, exceptions: specifichideExceptions, actionValue: "selector");
         compilationResult.cssBlockingDomainSensitive = Compiler.compactDomainCssRules(entries: cssCompact.cssBlockingDomainSensitive);
 
         if (self.advancedBlockedEnabled) {
@@ -95,7 +102,10 @@ class Compiler {
             if (!self.optimize) {
                 compilationResult.extendedCssBlockingWide = extendedCssCompact.cssBlockingWide;
             }
+            Compiler.applyActionExceptions(blockingItems: &compilationResult.extendedCssBlockingGenericDomainSensitive, exceptions: specifichideExceptions, actionValue: "css");
             compilationResult.extendedCssBlockingGenericDomainSensitive = extendedCssCompact.cssBlockingGenericDomainSensitive;
+
+            Compiler.applyActionExceptions(blockingItems: &extendedCssBlocking, exceptions: specifichideExceptions, actionValue: "css");
             compilationResult.extendedCssBlockingDomainSensitive = extendedCssCompact.cssBlockingDomainSensitive;
 
             // Applying CSS exceptions for css injecting rules
