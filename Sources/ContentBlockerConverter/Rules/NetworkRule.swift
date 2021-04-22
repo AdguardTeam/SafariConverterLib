@@ -76,7 +76,7 @@ class NetworkRule: Rule {
         
         self.isDocumentWhiteList = isOptionEnabled(option: .Document);
         self.isUrlBlock = isSingleOption(option: .Urlblock) || isSingleOption(option: .Genericblock);
-        self.isCssExceptionRule = isSingleOption(option: .Elemhide) || isSingleOption(option: .Generichide);
+        self.isCssExceptionRule = isSingleOption(option: .Elemhide) || isSingleOption(option: .Generichide) || isSingleOption(option: .Specifichide);
         self.isJsInject = isSingleOption(option: .Jsinject);
     }
     
@@ -313,6 +313,10 @@ class NetworkRule: Rule {
             case "genericblock":
                 try setOptionEnabled(option: NetworkRuleOption.Genericblock, value: true);
                 break;
+            case "specifichide":
+                try setOptionEnabled(option: NetworkRuleOption.Specifichide, value: true);
+                self.isSpecifichide = true;
+                break;
             case "jsinject":
                 try setOptionEnabled(option: NetworkRuleOption.Jsinject, value: true);
                 break;
@@ -473,6 +477,7 @@ class NetworkRule: Rule {
         case Elemhide
         case Generichide
         case Genericblock
+        case Specifichide
         case Jsinject
         case Urlblock
         case Content

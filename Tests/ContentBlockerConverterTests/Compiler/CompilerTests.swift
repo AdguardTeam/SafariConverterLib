@@ -28,6 +28,25 @@ final class CompilerTests: XCTestCase {
         XCTAssertEqual(result.extendedCssBlockingDomainSensitive.count, 0);
     }
 
+    func testSpecifichide() {
+
+        let compiler = Compiler(optimize: false, advancedBlocking: false, errorsCounter: ErrorsCounter());
+        let rule = try! RuleFactory.createRule(ruleText: "||example.com^$specifichide");
+        let result = compiler.compileRules(rules: [rule!]);
+
+        XCTAssertNotNil(result);
+        XCTAssertEqual(result.cssBlockingWide.count, 0);
+        XCTAssertEqual(result.cssBlockingGenericDomainSensitive.count, 0);
+        XCTAssertEqual(result.cssBlockingDomainSensitive.count, 0);
+        XCTAssertEqual(result.cssBlockingGenericHideExceptions.count, 0);
+        XCTAssertEqual(result.cssElemhide.count, 0);
+        XCTAssertEqual(result.urlBlocking.count, 0);
+        XCTAssertEqual(result.other.count, 0);
+        XCTAssertEqual(result.important.count, 0);
+        XCTAssertEqual(result.importantExceptions.count, 0);
+        XCTAssertEqual(result.documentExceptions.count, 0);
+    }
+
     func testCompactCss() {
         let entries = [
             BlockerEntry(

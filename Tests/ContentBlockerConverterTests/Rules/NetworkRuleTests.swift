@@ -217,6 +217,16 @@ final class NetworkRuleTests: XCTestCase {
 
         XCTAssertThrowsError(try NetworkRule(ruleText: invalidNoopRule));
     }
+    
+    func testSpecifichide() {
+        let result = try! NetworkRule(ruleText: "||example.org^$specifichide");
+
+        XCTAssertNotNil(result);
+        XCTAssertEqual(result.ruleText, "||example.org^$specifichide");
+        XCTAssertEqual(result.isCssExceptionRule, true);
+        XCTAssertEqual(result.urlRuleText, "||example.org^");
+        XCTAssertEqual(result.enabledOptions, [NetworkRule.NetworkRuleOption.Specifichide]);
+    }
 
     static var allTests = [
         ("testSimpleRules", testSimpleRules),
@@ -227,5 +237,6 @@ final class NetworkRuleTests: XCTestCase {
         ("testDomainWithSeparator", testDomainWithSeparator),
         ("testVariousUrlRegex", testVariousUrlRegex),
         ("testNoopModifier", testNoopModifier),
+        ("testSpecifichide", testSpecifichide),
     ]
 }

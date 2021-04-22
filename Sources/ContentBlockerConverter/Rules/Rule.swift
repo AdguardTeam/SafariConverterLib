@@ -13,6 +13,7 @@ class Rule {
     var isScript = false;
     var isScriptlet = false;
     var isDocumentWhiteList = false;
+    var isSpecifichide = false;
     
     var permittedDomains = [String]();
     var restrictedDomains = [String]();
