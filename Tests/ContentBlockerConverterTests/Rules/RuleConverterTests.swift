@@ -317,32 +317,43 @@ final class RuleConverterTests: XCTestCase {
     
     func testIfDomainAndUnlessDomain() {
         var rule: NSString = "example.org,~subdomain.example.org###banner";
-        var exp: [NSString] = ["example.org###banner", "~subdomain.example.org###banner"];
+        var exp: [NSString] = ["example.org###banner", "subdomain.example.org#@##banner"];
         var res = ruleConverter.convertRule(rule: rule);
         XCTAssertEqual(res, exp);
         
         rule = "test.com,example.org,~subdomain.example.org###banner";
         exp = ["test.com,example.org###banner",
-               "~subdomain.example.org###banner"];
+               "subdomain.example.org#@##banner"];
         res = ruleConverter.convertRule(rule: rule);
         XCTAssertEqual(res, exp);
-        
+
         rule = "test.com,~subdomain.test.com,example.org,~subdomain.example.org###banner";
         exp = ["test.com,example.org###banner",
-               "~subdomain.test.com,~subdomain.example.org###banner"];
+               "subdomain.test.com,subdomain.example.org#@##banner"];
         res = ruleConverter.convertRule(rule: rule);
         XCTAssertEqual(res, exp);
-        
+
         rule = "example.org,~subdomain.test.org###banner";
         res = ruleConverter.convertRule(rule: rule);
         XCTAssertEqual(res, [rule]);
-        
+
         rule = "test.com,~sub1.test.com,~sub2.test.com,example.com,~example.org###banner";
         exp = ["test.com,example.com###banner",
-               "~sub1.test.com,~sub2.test.com,~example.org###banner"];
+               "sub1.test.com,sub2.test.com,example.org#@##banner"];
         res = ruleConverter.convertRule(rule: rule);
         XCTAssertEqual(res, exp);
         
+        rule = "test.com,example.org,~subdomain.example.org#$#body { background-color: #333!important; }";
+        exp = ["test.com,example.org#$#body { background-color: #333!important; }",
+               "subdomain.example.org#@$#body { background-color: #333!important; }"];
+        res = ruleConverter.convertRule(rule: rule);
+        XCTAssertEqual(res, exp);
+        
+        rule = "test.com,~sub1.test.com,~sub2.test.com,example.com,~example.org#$?#div:has(> a[target='_blank'][rel='nofollow'])";
+        exp = ["test.com,example.com#$?#div:has(> a[target='_blank'][rel='nofollow'])",
+               "sub1.test.com,sub2.test.com,example.org#@$?#div:has(> a[target='_blank'][rel='nofollow'])"];
+        res = ruleConverter.convertRule(rule: rule);
+        XCTAssertEqual(res, exp);
     }
         
     static var allTests = [

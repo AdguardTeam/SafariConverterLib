@@ -81,7 +81,7 @@ class RuleConverter {
                     return [uboCssStyleRule!];
                 }
             }
-            let permittedAndRestrictedDomainsRules = convertPermittedAndRestrictedDomainsRules(rule: rule, markerIndex: markerInfo.index);
+            let permittedAndRestrictedDomainsRules = convertPermittedAndRestrictedDomainsRules(rule: rule, marker: markerInfo);
             if (permittedAndRestrictedDomainsRules != nil) {
                 return permittedAndRestrictedDomainsRules!;
             }
@@ -414,22 +414,32 @@ class RuleConverter {
         return nil;
     }
     
-    private func convertPermittedAndRestrictedDomainsRules(rule: NSString, markerIndex: Int) -> [NSString]? {
+    /**
+     * Converts rule including permitted and restricted domains
+     * Example: rule `example.org,~subdomain.example.org###banner` will be converted to
+     * `example.org###banner` and  `subdomain.example.org#@##banner`
+     */
+    private func convertPermittedAndRestrictedDomainsRules(rule: NSString, marker: (index: Int, marker: CosmeticRuleMarker?)) -> [NSString]? {
         if (!rule.contains("~")) {
             return nil;
         }
     
-        let domains = (rule as String).prefix(markerIndex).components(separatedBy: ",");
-        let rulePart = (rule as String).dropFirst(markerIndex);
+        let domains = (rule as String).prefix(marker.index).components(separatedBy: ",");
         
         for domain in domains {
             if domain.hasPrefix("~") {
-                let dmz = domains.filter{ $0 != domain && domain.contains("." + $0) }.joined(separator: ",");
-                if (!dmz.isEmpty) {
-                    let permittedDomains = domains.filter{ $0.hasPrefix("~") }.joined(separator: ",");
+                let conflictingDomians = domains.filter{ $0 != domain && domain.contains("." + $0) }.joined(separator: ",");
+                if (!conflictingDomians.isEmpty) {
+                    let ruleMarker = marker.marker?.rawValue;
+                    let exceptionMarker: String = (try! CosmeticRuleMarker.getExceptionMarker(marker: marker.marker!)).rawValue;
+                    
+                    let ruleContent = (rule as String).dropFirst(marker.index + (marker.marker?.rawValue.count)!);
+                    
+                    let permittedDomains = domains.filter{ $0.hasPrefix("~") }.map{ $0.dropFirst() }.joined(separator: ",");
                     let restrictedDomains = domains.filter{ !$0.hasPrefix("~") }.joined(separator: ",");
                     
-                    return [(restrictedDomains + rulePart) as NSString, (permittedDomains + rulePart) as NSString];
+                    return [(restrictedDomains + ruleMarker! + ruleContent) as NSString,
+                            (permittedDomains + exceptionMarker + ruleContent) as NSString];
                 }
             }
         }

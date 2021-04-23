@@ -127,26 +127,26 @@ final class CompilerTests: XCTestCase {
         XCTAssertEqual(filtered[0].trigger.unlessDomain, ["whitelisted.com"]);
     }
     
-    func testIfDomainAndUnlessDomain() {
-        var ruleText: NSString = "example.org,~subdomain.example.org###banner";
-
-        let compiler = Compiler(optimize: false, advancedBlocking: false, errorsCounter: ErrorsCounter());
-        var rule = try! RuleFactory.createRule(ruleText: ruleText)
-        var result = compiler.compileRules(rules: [rule!]);
-        
-        XCTAssertNotNil(result);
-        XCTAssertEqual(result.rulesCount, 1);
-        XCTAssertEqual(result.errorsCount, 0);
-        
-        ruleText = "yandex.kz,~afisha.yandex.kz##body.i-bem > a[data-statlog^='banner']";
-
-        rule = try! RuleFactory.createRule(ruleText: ruleText)
-        result = compiler.compileRules(rules: [rule!]);
-        
-        XCTAssertNotNil(result);
-        XCTAssertEqual(result.rulesCount, 1);
-        XCTAssertEqual(result.errorsCount, 0);
-    }
+//    func testIfDomainAndUnlessDomain() {
+//        var ruleText: NSString = "example.org,~subdomain.example.org###banner";
+//
+//        let compiler = Compiler(optimize: false, advancedBlocking: false, errorsCounter: ErrorsCounter());
+//        var rule = try! RuleFactory.createRule(ruleText: ruleText)
+//        var result = compiler.compileRules(rules: [rule!]);
+//        
+//        XCTAssertNotNil(result);
+//        XCTAssertEqual(result.rulesCount, 1);
+//        XCTAssertEqual(result.errorsCount, 0);
+//        
+//        ruleText = "yandex.kz,~afisha.yandex.kz##body.i-bem > a[data-statlog^='banner']";
+//
+//        rule = try! RuleFactory.createRule(ruleText: ruleText)
+//        result = compiler.compileRules(rules: [rule!]);
+//        
+//        XCTAssertNotNil(result);
+//        XCTAssertEqual(result.rulesCount, 1);
+//        XCTAssertEqual(result.errorsCount, 0);
+//    }
 
     static var allTests = [
         ("testEmpty", testEmpty),

@@ -108,4 +108,23 @@ enum CosmeticRuleMarker: String, CaseIterable {
 
         return (-1, nil);
     }
+    
+    static func getExceptionMarker(marker: CosmeticRuleMarker) throws -> CosmeticRuleMarker {
+        switch (marker) {
+        case self.ElementHiding:
+                return self.ElementHidingException;
+            case self.ElementHidingExtCSS:
+                return self.ElementHidingExtCSSException;
+            case self.Css:
+                return self.CssException;
+            case self.CssExtCSS:
+                return self.CssExtCSSException;
+            case self.Js:
+                return self.JsException;
+            case self.Html:
+                return self.HtmlException;
+            default:
+                throw SyntaxError.invalidMarker(message: "Invalid marker");
+        }
+    }
 }
