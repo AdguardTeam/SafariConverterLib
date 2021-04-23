@@ -415,8 +415,24 @@ class RuleConverter {
     }
     
     private func convertPermittedAndRestrictedDomainsRules(rule: NSString, markerIndex: Int) -> [NSString]? {
+        if (!rule.contains("~")) {
+            return nil;
+        }
+    
         let domains = (rule as String).prefix(markerIndex).components(separatedBy: ",");
-        // TODO: detect and convert rule into separate rules
+        let rulePart = (rule as String).dropFirst(markerIndex);
+        
+        for domain in domains {
+            if domain.hasPrefix("~") {
+                let dmz = domains.filter{ $0 != domain && domain.contains("." + $0) }.joined(separator: ",");
+                if (!dmz.isEmpty) {
+                    let permittedDomains = domains.filter{ $0.hasPrefix("~") }.joined(separator: ",");
+                    let restrictedDomains = domains.filter{ !$0.hasPrefix("~") }.joined(separator: ",");
+                    
+                    return [(restrictedDomains + rulePart) as NSString, (permittedDomains + rulePart) as NSString];
+                }
+            }
+        }
         return nil;
     }
 

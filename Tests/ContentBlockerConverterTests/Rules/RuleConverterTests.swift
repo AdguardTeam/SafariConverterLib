@@ -322,14 +322,27 @@ final class RuleConverterTests: XCTestCase {
         XCTAssertEqual(res, exp);
         
         rule = "test.com,example.org,~subdomain.example.org###banner";
-        exp = ["test.com,example.org###banner", "~subdomain.example.org###banner"];
+        exp = ["test.com,example.org###banner",
+               "~subdomain.example.org###banner"];
         res = ruleConverter.convertRule(rule: rule);
         XCTAssertEqual(res, exp);
         
         rule = "test.com,~subdomain.test.com,example.org,~subdomain.example.org###banner";
-        exp = ["test.com,example.org###banner", "~subdomain.example.org,~subdomain.test.com###banner"];
+        exp = ["test.com,example.org###banner",
+               "~subdomain.test.com,~subdomain.example.org###banner"];
         res = ruleConverter.convertRule(rule: rule);
         XCTAssertEqual(res, exp);
+        
+        rule = "example.org,~subdomain.test.org###banner";
+        res = ruleConverter.convertRule(rule: rule);
+        XCTAssertEqual(res, [rule]);
+        
+        rule = "test.com,~sub1.test.com,~sub2.test.com,example.com,~example.org###banner";
+        exp = ["test.com,example.com###banner",
+               "~sub1.test.com,~sub2.test.com,~example.org###banner"];
+        res = ruleConverter.convertRule(rule: rule);
+        XCTAssertEqual(res, exp);
+        
     }
         
     static var allTests = [
