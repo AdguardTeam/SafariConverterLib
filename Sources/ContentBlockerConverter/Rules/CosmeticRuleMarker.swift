@@ -110,11 +110,13 @@ enum CosmeticRuleMarker: String, CaseIterable {
     }
     
     /**
-     * Returns exception marker for the provided marker
+     * Inverts marker:
+     * if exception marker provided, returns regular marker
+     * if regular marker provided, returns exception marker
      */
-    static func getExceptionMarker(marker: CosmeticRuleMarker) throws -> CosmeticRuleMarker {
+    static func invertMarker(marker: CosmeticRuleMarker) throws -> CosmeticRuleMarker {
         switch (marker) {
-        case self.ElementHiding:
+            case self.ElementHiding:
                 return self.ElementHidingException;
             case self.ElementHidingExtCSS:
                 return self.ElementHidingExtCSSException;
@@ -126,6 +128,19 @@ enum CosmeticRuleMarker: String, CaseIterable {
                 return self.JsException;
             case self.Html:
                 return self.HtmlException;
+            case self.ElementHidingException:
+                return self.ElementHiding;
+            case self.ElementHidingExtCSSException:
+                return self.ElementHidingExtCSS;
+            case self.CssException:
+                return self.Css;
+            case self.CssExtCSSException:
+                return self.CssExtCSS;
+            case self.JsException:
+                return self.Js;
+            case self.HtmlException:
+                return self.Html;
+                
             default:
                 throw SyntaxError.invalidMarker(message: "Invalid marker");
         }

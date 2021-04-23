@@ -431,7 +431,7 @@ class RuleConverter {
                 let conflictingDomians = domains.filter{ $0 != domain && domain.contains("." + $0) }.joined(separator: ",");
                 if (!conflictingDomians.isEmpty) {
                     let ruleMarker = marker.marker?.rawValue;
-                    let exceptionMarker: String = (try! CosmeticRuleMarker.getExceptionMarker(marker: marker.marker!)).rawValue;
+                    let exceptionMarker: String = (try! CosmeticRuleMarker.invertMarker(marker: marker.marker!)).rawValue;
                     
                     let ruleContent = (rule as String).dropFirst(marker.index + (marker.marker?.rawValue.count)!);
                     
