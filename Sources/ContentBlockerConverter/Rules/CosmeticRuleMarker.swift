@@ -109,6 +109,9 @@ enum CosmeticRuleMarker: String, CaseIterable {
         return (-1, nil);
     }
     
+    /**
+     * Returns exception marker for the provided marker
+     */
     static func getExceptionMarker(marker: CosmeticRuleMarker) throws -> CosmeticRuleMarker {
         switch (marker) {
         case self.ElementHiding:
