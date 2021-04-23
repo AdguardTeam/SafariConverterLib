@@ -314,6 +314,23 @@ final class RuleConverterTests: XCTestCase {
         res = ruleConverter.convertRule(rule: ruleText);
         XCTAssertEqual(res, [ruleText]);
     }
+    
+    func testIfDomainAndUnlessDomain() {
+        var rule: NSString = "example.org,~subdomain.example.org###banner";
+        var exp: [NSString] = ["example.org###banner", "~subdomain.example.org###banner"];
+        var res = ruleConverter.convertRule(rule: rule);
+        XCTAssertEqual(res, exp);
+        
+        rule = "test.com,example.org,~subdomain.example.org###banner";
+        exp = ["test.com,example.org###banner", "~subdomain.example.org###banner"];
+        res = ruleConverter.convertRule(rule: rule);
+        XCTAssertEqual(res, exp);
+        
+        rule = "test.com,~subdomain.test.com,example.org,~subdomain.example.org###banner";
+        exp = ["test.com,example.org###banner", "~subdomain.example.org,~subdomain.test.com###banner"];
+        res = ruleConverter.convertRule(rule: rule);
+        XCTAssertEqual(res, exp);
+    }
         
     static var allTests = [
         ("testEmpty", testEmpty),
@@ -337,5 +354,6 @@ final class RuleConverterTests: XCTestCase {
         ("testAllModifierComplicated", testAllModifierComplicated),
         ("testUboCssStyleRule", testUboCssStyleRule),
         ("testDenyallowModifier", testDenyallowModifier),
+        ("testIfDomainAndUnlessDomain", testIfDomainAndUnlessDomain),
     ]
 }

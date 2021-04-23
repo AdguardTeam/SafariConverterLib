@@ -135,8 +135,8 @@ final class CompilerTests: XCTestCase {
         var result = compiler.compileRules(rules: [rule!]);
         
         XCTAssertNotNil(result);
-        XCTAssertEqual(rulesCount, 1);
-        XCTAssertEqual(errorsCount:, 0);
+        XCTAssertEqual(result.rulesCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
         
         ruleText = "yandex.kz,~afisha.yandex.kz##body.i-bem > a[data-statlog^='banner']";
 
@@ -144,8 +144,8 @@ final class CompilerTests: XCTestCase {
         result = compiler.compileRules(rules: [rule!]);
         
         XCTAssertNotNil(result);
-        XCTAssertEqual(rulesCount, 1);
-        XCTAssertEqual(errorsCount:, 0);
+        XCTAssertEqual(result.rulesCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
     }
 
     static var allTests = [

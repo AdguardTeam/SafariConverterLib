@@ -81,6 +81,10 @@ class RuleConverter {
                     return [uboCssStyleRule!];
                 }
             }
+            let permittedAndRestrictedDomainsRules = convertPermittedAndRestrictedDomainsRules(rule: rule, markerIndex: markerInfo.index);
+            if (permittedAndRestrictedDomainsRules != nil) {
+                return permittedAndRestrictedDomainsRules!;
+            }
         } else {
             // Convert abp redirect rule
             let abpRedirectRule = convertAbpRedirectRule(rule: rule);
@@ -407,6 +411,12 @@ class RuleConverter {
             return [newRule as NSString];
         }
 
+        return nil;
+    }
+    
+    private func convertPermittedAndRestrictedDomainsRules(rule: NSString, markerIndex: Int) -> [NSString]? {
+        let domains = (rule as String).prefix(markerIndex).components(separatedBy: ",");
+        // TODO: detect and convert rule into separate rules
         return nil;
     }
 
