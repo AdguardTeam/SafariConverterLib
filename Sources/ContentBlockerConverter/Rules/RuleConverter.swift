@@ -423,27 +423,28 @@ class RuleConverter {
         if (!rule.contains("~")) {
             return nil;
         }
-    
+        
+        var result = [NSString]();
+        
         let domains = (rule as String).prefix(marker.index).components(separatedBy: ",");
         
-        for domain in domains {
-            if domain.hasPrefix("~") {
-                let conflictingDomians = domains.filter{ $0 != domain && domain.contains("." + $0) }.joined(separator: ",");
-                if (!conflictingDomians.isEmpty) {
-                    let ruleMarker = marker.marker?.rawValue;
-                    let exceptionMarker: String = (try! CosmeticRuleMarker.invertMarker(marker: marker.marker!)).rawValue;
-                    
-                    let ruleContent = (rule as String).dropFirst(marker.index + (marker.marker?.rawValue.count)!);
-                    
-                    let permittedDomains = domains.filter{ $0.hasPrefix("~") }.map{ $0.dropFirst() }.joined(separator: ",");
-                    let restrictedDomains = domains.filter{ !$0.hasPrefix("~") }.joined(separator: ",");
-                    
-                    return [(restrictedDomains + ruleMarker! + ruleContent) as NSString,
-                            (permittedDomains + exceptionMarker + ruleContent) as NSString];
-                }
+        domains.filter{ $0.hasPrefix("~") }.forEach { domain in
+            let conflictingDomians = domains.filter{ $0 != domain && domain.contains("." + $0) }.joined(separator: ",");
+            if (!conflictingDomians.isEmpty) {
+                let ruleMarker = marker.marker?.rawValue;
+                let exceptionMarker: String = (try! CosmeticRuleMarker.invertMarker(marker: marker.marker!)).rawValue;
+                
+                let ruleContent = (rule as String).dropFirst(marker.index + (marker.marker?.rawValue.count)!);
+                
+                let permittedDomains = domains.filter{ $0.hasPrefix("~") }.map{ $0.dropFirst() }.joined(separator: ",");
+                let restrictedDomains = domains.filter{ !$0.hasPrefix("~") }.joined(separator: ",");
+                
+                result = [(restrictedDomains + ruleMarker! + ruleContent) as NSString,
+                        (permittedDomains + exceptionMarker + ruleContent) as NSString];
             }
         }
-        return nil;
+        
+        return result.isEmpty ? nil : result;
     }
 
     // Helpers
