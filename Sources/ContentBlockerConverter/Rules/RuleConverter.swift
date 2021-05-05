@@ -437,10 +437,16 @@ class RuleConverter {
                 let ruleContent = (rule as String).dropFirst(marker.index + (marker.marker?.rawValue.count)!);
                 
                 let permittedDomains = domains.filter{ $0.hasPrefix("~") }.map{ $0.dropFirst() }.joined(separator: ",");
+                let permittedDomainsWithTilda = domains.filter{ $0.hasPrefix("~") }.joined(separator: ",");
                 let restrictedDomains = domains.filter{ !$0.hasPrefix("~") }.joined(separator: ",");
                 
-                result = [(restrictedDomains + ruleMarker! + ruleContent) as NSString,
-                        (permittedDomains + exceptionMarker + ruleContent) as NSString];
+                if ruleMarker!.contains("@") {
+                    result = [(restrictedDomains + ruleMarker! + ruleContent) as NSString,
+                            (permittedDomainsWithTilda + ruleMarker! + ruleContent) as NSString];
+                } else {
+                    result = [(restrictedDomains + ruleMarker! + ruleContent) as NSString,
+                            (permittedDomains + exceptionMarker + ruleContent) as NSString];
+                }
             }
         }
         

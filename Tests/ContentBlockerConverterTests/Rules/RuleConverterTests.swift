@@ -329,7 +329,13 @@ final class RuleConverterTests: XCTestCase {
         
         rule = "example.org,~subdomain.example.org#@##banner";
         exp = ["example.org#@##banner",
-               "subdomain.example.org###banner"];
+               "~subdomain.example.org#@##banner"];
+        res = ruleConverter.convertRule(rule: rule);
+        XCTAssertEqual(res, exp);
+        
+        rule = "example.org,~subdomain.example.org,test.com,~sub.test.com#@##banner";
+        exp = ["example.org,test.com#@##banner",
+               "~subdomain.example.org,~sub.test.com#@##banner"];
         res = ruleConverter.convertRule(rule: rule);
         XCTAssertEqual(res, exp);
 
