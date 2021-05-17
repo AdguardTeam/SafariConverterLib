@@ -128,25 +128,43 @@ final class CompilerTests: XCTestCase {
     }
 
     func testIfDomainAndUnlessDomain() {
-           var ruleText: NSString = "example.org,~subdomain.example.org###banner";
+        var ruleText: NSString = "example.org,~subdomain.example.org###banner";
 
-           let compiler = Compiler(optimize: false, advancedBlocking: false, errorsCounter: ErrorsCounter());
-           var rule = try! RuleFactory.createRule(ruleText: ruleText)
-           var result = compiler.compileRules(rules: [rule!]);
+        let compiler = Compiler(optimize: false, advancedBlocking: false, errorsCounter: ErrorsCounter());
+        var rule = try! RuleFactory.createRule(ruleText: ruleText)
+        var result = compiler.compileRules(rules: [rule!]);
 
-           XCTAssertNotNil(result);
-           XCTAssertEqual(result.rulesCount, 1);
-           XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertNotNil(result);
+        XCTAssertEqual(result.rulesCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
 
-           ruleText = "yandex.kz,~afisha.yandex.kz##body.i-bem > a[data-statlog^='banner']";
+        ruleText = "yandex.kz,~afisha.yandex.kz#@#body.i-bem > a[data-statlog^='banner']";
 
-           rule = try! RuleFactory.createRule(ruleText: ruleText)
-           result = compiler.compileRules(rules: [rule!]);
+        rule = try! RuleFactory.createRule(ruleText: ruleText)
+        result = compiler.compileRules(rules: [rule!]);
 
-           XCTAssertNotNil(result);
-           XCTAssertEqual(result.rulesCount, 1);
-           XCTAssertEqual(result.errorsCount, 0);
-       }
+        XCTAssertNotNil(result);
+        XCTAssertEqual(result.rulesCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
+        
+        ruleText = "||example.org^$domain=test.com|~sub.test.com";
+
+        rule = try! RuleFactory.createRule(ruleText: ruleText)
+        result = compiler.compileRules(rules: [rule!]);
+
+        XCTAssertNotNil(result);
+        XCTAssertEqual(result.rulesCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
+        
+        ruleText = "@@||example.org^$domain=test.com|~sub.test.com";
+
+        rule = try! RuleFactory.createRule(ruleText: ruleText)
+        result = compiler.compileRules(rules: [rule!]);
+
+        XCTAssertNotNil(result);
+        XCTAssertEqual(result.rulesCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
+    }
 
     static var allTests = [
         ("testEmpty", testEmpty),
