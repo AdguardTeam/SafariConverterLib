@@ -81,10 +81,6 @@ class RuleConverter {
                     return [uboCssStyleRule!];
                 }
             }
-            let permittedAndRestrictedDomainsRules = convertPermittedAndRestrictedDomainsRules(rule: rule, marker: markerInfo);
-            if (permittedAndRestrictedDomainsRules != nil) {
-                return permittedAndRestrictedDomainsRules!;
-            }
         } else {
             // Convert abp redirect rule
             let abpRedirectRule = convertAbpRedirectRule(rule: rule);
@@ -412,45 +408,6 @@ class RuleConverter {
         }
 
         return nil;
-    }
-    
-    /**
-     * Converts rule including permitted and restricted domains
-     * Example: rule `example.org,~subdomain.example.org###banner` will be converted to
-     * `example.org###banner` and  `subdomain.example.org#@##banner`
-     */
-    private func convertPermittedAndRestrictedDomainsRules(rule: NSString, marker: (index: Int, marker: CosmeticRuleMarker?)) -> [NSString]? {
-        if (!rule.contains("~")) {
-            return nil;
-        }
-        
-        var result = [NSString]();
-        
-        let domains = (rule as String).prefix(marker.index).components(separatedBy: ",");
-        
-        domains.filter{ $0.hasPrefix("~") }.forEach { domain in
-            let conflictingDomians = domains.filter{ $0 != domain && domain.contains("." + $0) }.joined(separator: ",");
-            if (!conflictingDomians.isEmpty) {
-                let ruleMarker = marker.marker?.rawValue;
-                let exceptionMarker: String = (try! CosmeticRuleMarker.invertMarker(marker: marker.marker!)).rawValue;
-                
-                let ruleContent = (rule as String).dropFirst(marker.index + (marker.marker?.rawValue.count)!);
-                
-                let permittedDomains = domains.filter{ $0.hasPrefix("~") }.map{ $0.dropFirst() }.joined(separator: ",");
-                let permittedDomainsWithTilda = domains.filter{ $0.hasPrefix("~") }.joined(separator: ",");
-                let restrictedDomains = domains.filter{ !$0.hasPrefix("~") }.joined(separator: ",");
-                
-                if ruleMarker!.contains("@") {
-                    result = [(restrictedDomains + ruleMarker! + ruleContent) as NSString,
-                            (permittedDomainsWithTilda + ruleMarker! + ruleContent) as NSString];
-                } else {
-                    result = [(restrictedDomains + ruleMarker! + ruleContent) as NSString,
-                            (permittedDomains + exceptionMarker + ruleContent) as NSString];
-                }
-            }
-        }
-        
-        return result.isEmpty ? nil : result;
     }
 
     // Helpers
