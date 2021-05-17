@@ -101,10 +101,19 @@ final class CosmeticRuleTests: XCTestCase {
     
     func testCssRulesWhitelist() {
         
-        let result = try! CosmeticRule(ruleText: "example.com#@$?#h3:contains(cookies) { display: none!important; }");
+        var result = try! CosmeticRule(ruleText: "example.com#@$?#h3:contains(cookies) { display: none!important; }");
         
         XCTAssertNotNil(result);
         XCTAssertEqual(result.isWhiteList, true);
+        
+        result = try! CosmeticRule(ruleText: "*#@$?#h3:contains(cookies) { display: none!important; }");
+        
+        XCTAssertNotNil(result);
+        XCTAssertEqual(result.isWhiteList, true);
+        XCTAssertEqual(result.permittedDomains, []);
+        XCTAssertEqual(result.restrictedDomains, []);
+        XCTAssertEqual(result.isInjectCss, true);
+        XCTAssertEqual(result.content, "h3:contains(cookies) { display: none!important; }");
     }
     
     func testExtendedCssRules() {
