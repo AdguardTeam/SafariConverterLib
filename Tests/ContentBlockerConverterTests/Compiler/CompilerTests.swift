@@ -142,7 +142,7 @@ final class CompilerTests: XCTestCase {
         
         XCTAssertNotNil(filtered);
         XCTAssertEqual(filtered.count, 1);
-        XCTAssertNil(filtered[0].trigger.unlessDomain);
+        XCTAssertEqual(filtered[0].trigger.unlessDomain?.count, 0);
         XCTAssertEqual(filtered[0].trigger.ifDomain!, ["example.org"]);
         XCTAssertEqual(filtered[0].action.selector, ".banner");
         
@@ -159,17 +159,11 @@ final class CompilerTests: XCTestCase {
         ];
 
         filtered = Compiler.applyActionExceptions(blockingItems: &blockingItems, exceptions: exceptions, actionValue: "selector");
-
-        print("%%%")
-        print(filtered)
-        print("%%%")
         
         XCTAssertNotNil(filtered);
-        XCTAssertEqual(filtered.count, 0);
-//        XCTAssertNil(filtered[0].trigger.unlessDomain);
-//        XCTAssertNil(filtered[0].trigger.ifDomain);
-//        XCTAssertEqual(filtered[0].trigger.ifDomain!, ["example.org"]);
-//        XCTAssertEqual(filtered[0].action.selector, ".banner");
+        XCTAssertEqual(filtered.count, 1);
+        XCTAssertEqual(filtered[0].trigger.unlessDomain?.count, 0);
+        XCTAssertEqual(filtered[0].trigger.ifDomain?.count, 0);
     }
 
     static var allTests = [
