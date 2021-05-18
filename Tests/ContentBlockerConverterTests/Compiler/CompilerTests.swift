@@ -126,6 +126,16 @@ final class CompilerTests: XCTestCase {
         XCTAssertNotNil(filtered[0].trigger.unlessDomain);
         XCTAssertEqual(filtered[0].trigger.unlessDomain, ["whitelisted.com"]);
     }
+    
+    func testCssExceptions() {
+       let rules = ["test.com,example.com##.ad-banner", "test.com#@#.ad-banner"]
+       let result = ContentBlockerConverter().convertArray(rules: rules);
+       
+       XCTAssertEqual(result?.totalConvertedCount, 1);
+       XCTAssertEqual(result?.convertedCount, 1);
+       XCTAssertEqual(result?.errorsCount, 0);
+       XCTAssertEqual(result?.converted, "[{\"trigger\":{\"url-filter\":\".*\",\"if-domain\":[\"*example.com\"],\"unless-domain\":[]},\"action\":{\"type\":\"css-display-none\",\"selector\":\".ad-banner\"}}]");
+   }
 
     static var allTests = [
         ("testEmpty", testEmpty),
@@ -133,5 +143,6 @@ final class CompilerTests: XCTestCase {
         ("testCompactIfDomainCss", testCompactIfDomainCss),
         ("testCompactUnlessDomainCss", testCompactUnlessDomainCss),
         ("testApplyActionExceptions", testApplyActionExceptions),
+        ("testCssExceptions", testCssExceptions),
     ]
 }

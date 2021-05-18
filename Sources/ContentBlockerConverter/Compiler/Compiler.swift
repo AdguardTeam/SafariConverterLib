@@ -130,14 +130,13 @@ class Compiler {
                 return;
             }
             
-            // TODO: Remove domain from trigger.ifDomain?
+            // remove exception domain from ifDomain
+            trigger.ifDomain = permittedDomains!.filter{ $0 != domain }
         }
 
         if (trigger.unlessDomain == nil) {
             trigger.unlessDomain = [];
         }
-        
-        trigger.unlessDomain?.append(domain);
     };
     
     private static func getActionValue(entry: BlockerEntry, action: String) -> String? {
