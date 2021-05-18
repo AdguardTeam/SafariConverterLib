@@ -894,7 +894,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result?.totalConvertedCount, 1);
         XCTAssertEqual(result?.convertedCount, 1);
         XCTAssertEqual(result?.errorsCount, 0);
-        XCTAssertEqual(result?.converted, "[{\"trigger\":{\"url-filter\":\".*\",\"if-domain\":[]},\"action\":{\"type\":\"css-display-none\",\"selector\":\".ad-banner\"}}]");
+        XCTAssertEqual(result?.converted, "[{\"trigger\":{\"url-filter\":\".*\",\"if-domain\":[],\"unless-domain\":[]},\"action\":{\"type\":\"css-display-none\",\"selector\":\".ad-banner\"}}]");
     }
 
     static var allTests = [
