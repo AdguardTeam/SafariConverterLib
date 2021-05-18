@@ -468,7 +468,6 @@ class NetworkRule: Rule {
         case OBJECT
         case OBJECT_SUBREQUEST
         case WEBRTC
-        case PING
     }
     
     enum NetworkRuleOption {
