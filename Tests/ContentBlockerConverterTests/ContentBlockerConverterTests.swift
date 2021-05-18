@@ -878,6 +878,24 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded.count, 1);
         XCTAssertTrue(decoded[0].trigger.urlFilter!.contains(".com\\\\\\/mm\\\\\\/yksdk"));
     }
+    
+    func testCssExceptions() {
+        var rules = ["test.com,example.com##.ad-banner", "test.com#@#.ad-banner"]
+        var result = ContentBlockerConverter().convertArray(rules: rules);
+
+        XCTAssertEqual(result?.totalConvertedCount, 1);
+        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result?.converted, "[{\"trigger\":{\"url-filter\":\".*\",\"if-domain\":[\"*example.com\"],\"unless-domain\":[]},\"action\":{\"type\":\"css-display-none\",\"selector\":\".ad-banner\"}}]");
+
+        rules = ["test.com##.ad-banner", "test.com#@#.ad-banner"]
+        result = ContentBlockerConverter().convertArray(rules: rules);
+
+        XCTAssertEqual(result?.totalConvertedCount, 1);
+        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result?.converted, "[{\"trigger\":{\"url-filter\":\".*\",\"if-domain\":[]},\"action\":{\"type\":\"css-display-none\",\"selector\":\".ad-banner\"}}]");
+    }
 
     static var allTests = [
         ("testEmpty", testEmpty),
@@ -916,5 +934,6 @@ final class ContentBlockerConverterTests: XCTestCase {
         ("testGenericCssRules", testGenericCssRules),
         ("testSpecialCharactersEscape", testSpecialCharactersEscape),
         ("testEscapeBackslash", testEscapeBackslash),
+        ("testCssExceptions", testCssExceptions),
     ]
 }

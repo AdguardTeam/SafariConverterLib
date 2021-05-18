@@ -130,12 +130,17 @@ class Compiler {
                 return;
             }
             
-            // remove exception domain from ifDomain
+            // remove exception domain from trigger.ifDomain
             trigger.ifDomain = permittedDomains!.filter{ $0 != domain }
+            return;
         }
 
         if (trigger.unlessDomain == nil) {
             trigger.unlessDomain = [];
+        }
+        
+        if (permittedDomains == nil || permittedDomains?.count == 0) {
+            trigger.unlessDomain?.append(domain);
         }
     };
     
