@@ -137,6 +137,22 @@ final class CompilerTests: XCTestCase {
         XCTAssertNotNil(result);
         XCTAssertEqual(result.rulesCount, 1);
         XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.cssBlockingWide.count, 0);
+        XCTAssertEqual(result.cssBlockingGenericDomainSensitive.count, 0);
+        XCTAssertEqual(result.cssBlockingDomainSensitive.count, 0);
+        XCTAssertEqual(result.cssBlockingGenericHideExceptions.count, 0);
+        XCTAssertEqual(result.cssElemhide.count, 0);
+        XCTAssertEqual(result.urlBlocking.count, 0);
+        XCTAssertEqual(result.other.count, 0);
+        XCTAssertEqual(result.important.count, 0);
+        XCTAssertEqual(result.importantExceptions.count, 0);
+        XCTAssertEqual(result.documentExceptions.count, 0);
+        XCTAssertEqual(result.script.count, 0);
+        XCTAssertEqual(result.scriptlets.count, 0);
+        XCTAssertEqual(result.scriptJsInjectExceptions.count, 0);
+        XCTAssertEqual(result.extendedCssBlockingWide.count, 0);
+        XCTAssertEqual(result.extendedCssBlockingGenericDomainSensitive.count, 0);
+        XCTAssertEqual(result.extendedCssBlockingDomainSensitive.count, 0);
 
         ruleText = "yandex.kz,~afisha.yandex.kz#@#body.i-bem > a[data-statlog^='banner']";
 
@@ -146,6 +162,22 @@ final class CompilerTests: XCTestCase {
         XCTAssertNotNil(result);
         XCTAssertEqual(result.rulesCount, 1);
         XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.cssBlockingWide.count, 0);
+        XCTAssertEqual(result.cssBlockingGenericDomainSensitive.count, 0);
+        XCTAssertEqual(result.cssBlockingDomainSensitive.count, 0);
+        XCTAssertEqual(result.cssBlockingGenericHideExceptions.count, 0);
+        XCTAssertEqual(result.cssElemhide.count, 0);
+        XCTAssertEqual(result.urlBlocking.count, 0);
+        XCTAssertEqual(result.other.count, 0);
+        XCTAssertEqual(result.important.count, 0);
+        XCTAssertEqual(result.importantExceptions.count, 0);
+        XCTAssertEqual(result.documentExceptions.count, 0);
+        XCTAssertEqual(result.script.count, 0);
+        XCTAssertEqual(result.scriptlets.count, 0);
+        XCTAssertEqual(result.scriptJsInjectExceptions.count, 0);
+        XCTAssertEqual(result.extendedCssBlockingWide.count, 0);
+        XCTAssertEqual(result.extendedCssBlockingGenericDomainSensitive.count, 0);
+        XCTAssertEqual(result.extendedCssBlockingDomainSensitive.count, 0);
         
         ruleText = "||example.org^$domain=test.com|~sub.test.com";
 
@@ -155,6 +187,22 @@ final class CompilerTests: XCTestCase {
         XCTAssertNotNil(result);
         XCTAssertEqual(result.rulesCount, 1);
         XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.cssBlockingWide.count, 0);
+        XCTAssertEqual(result.cssBlockingGenericDomainSensitive.count, 0);
+        XCTAssertEqual(result.cssBlockingDomainSensitive.count, 0);
+        XCTAssertEqual(result.cssBlockingGenericHideExceptions.count, 0);
+        XCTAssertEqual(result.cssElemhide.count, 0);
+        XCTAssertEqual(result.urlBlocking.count, 0);
+        XCTAssertEqual(result.other.count, 0);
+        XCTAssertEqual(result.important.count, 0);
+        XCTAssertEqual(result.importantExceptions.count, 0);
+        XCTAssertEqual(result.documentExceptions.count, 0);
+        XCTAssertEqual(result.script.count, 0);
+        XCTAssertEqual(result.scriptlets.count, 0);
+        XCTAssertEqual(result.scriptJsInjectExceptions.count, 0);
+        XCTAssertEqual(result.extendedCssBlockingWide.count, 0);
+        XCTAssertEqual(result.extendedCssBlockingGenericDomainSensitive.count, 0);
+        XCTAssertEqual(result.extendedCssBlockingDomainSensitive.count, 0);
         
         ruleText = "@@||example.org^$domain=test.com|~sub.test.com";
 
@@ -164,6 +212,22 @@ final class CompilerTests: XCTestCase {
         XCTAssertNotNil(result);
         XCTAssertEqual(result.rulesCount, 1);
         XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.cssBlockingWide.count, 0);
+        XCTAssertEqual(result.cssBlockingGenericDomainSensitive.count, 0);
+        XCTAssertEqual(result.cssBlockingDomainSensitive.count, 0);
+        XCTAssertEqual(result.cssBlockingGenericHideExceptions.count, 0);
+        XCTAssertEqual(result.cssElemhide.count, 0);
+        XCTAssertEqual(result.urlBlocking.count, 0);
+        XCTAssertEqual(result.other.count, 0);
+        XCTAssertEqual(result.important.count, 0);
+        XCTAssertEqual(result.importantExceptions.count, 0);
+        XCTAssertEqual(result.documentExceptions.count, 0);
+        XCTAssertEqual(result.script.count, 0);
+        XCTAssertEqual(result.scriptlets.count, 0);
+        XCTAssertEqual(result.scriptJsInjectExceptions.count, 0);
+        XCTAssertEqual(result.extendedCssBlockingWide.count, 0);
+        XCTAssertEqual(result.extendedCssBlockingGenericDomainSensitive.count, 0);
+        XCTAssertEqual(result.extendedCssBlockingDomainSensitive.count, 0);
     }
 
     static var allTests = [
