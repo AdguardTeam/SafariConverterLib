@@ -76,7 +76,7 @@ class NetworkRule: Rule {
         
         self.isDocumentWhiteList = isOptionEnabled(option: .Document);
         self.isUrlBlock = isSingleOption(option: .Urlblock) || isSingleOption(option: .Genericblock);
-        self.isCssExceptionRule = isSingleOption(option: .Elemhide) || isSingleOption(option: .Generichide) || isSingleOption(option: .Specifichide);
+        self.isCssExceptionRule = isSingleOption(option: .Elemhide) || isSingleOption(option: .Generichide);
         self.isJsInject = isSingleOption(option: .Jsinject);
     }
     

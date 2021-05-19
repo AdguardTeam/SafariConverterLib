@@ -845,6 +845,20 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded[0].action.type, "block");
         XCTAssertEqual(decoded[0].trigger.urlFilter, "\\\\");
     }
+    
+    func testSpecifichide() {
+        let ruleText = [
+            "example.org##.banner1",
+            "##.banner2",
+            "@@||example.org^$specifichide",
+        ];
+
+        let result = converter.convertArray(rules: ruleText);
+
+        XCTAssertEqual(result?.totalConvertedCount, 3);
+        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result?.errorsCount, 0);
+    }
 
     func testEscapeBackslash() {
         var ruleText = [

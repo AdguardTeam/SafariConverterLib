@@ -88,10 +88,12 @@ class Compiler {
             compilationResult.cssBlockingWide = cssCompact.cssBlockingWide;
         }
         compilationResult.cssBlockingGenericDomainSensitive = Compiler.compactDomainCssRules(entries: cssCompact.cssBlockingGenericDomainSensitive, useUnlessDomain: true);
-        compilationResult.cssBlockingGenericDomainSensitive = Compiler.applyActionExceptions(blockingItems: &compilationResult.cssBlockingGenericDomainSensitive, exceptions: specifichideExceptions, actionValue: "selector");
+        
+//        compilationResult.cssBlockingGenericDomainSensitive = Compiler.applySpecifichideExceptions(blockingItems: &compilationResult.cssBlockingGenericDomainSensitive, exceptions: specifichideExceptions, actionValue: "selector");
         
         compilationResult.cssBlockingDomainSensitive = Compiler.compactDomainCssRules(entries: cssCompact.cssBlockingDomainSensitive);
-        compilationResult.cssBlockingDomainSensitive = Compiler.applyActionExceptions(blockingItems: &compilationResult.cssBlockingDomainSensitive, exceptions: specifichideExceptions, actionValue: "selector");
+        
+        compilationResult.cssBlockingDomainSensitive = Compiler.applySpecifichideExceptions(blockingItems: &compilationResult.cssBlockingDomainSensitive, exceptions: specifichideExceptions, actionValue: "selector");
 
         if (self.advancedBlockedEnabled) {
             // Applying CSS exceptions for extended css rules
@@ -163,6 +165,14 @@ class Compiler {
         default:
             return nil;
         }
+    }
+    
+    /**
+     * Applies specifichide exceptions
+     */
+    static func applySpecifichideExceptions(blockingItems: inout [BlockerEntry], exceptions: [BlockerEntry], actionValue: String) -> [BlockerEntry] {
+        
+        return blockingItems;
     }
     
     /**
