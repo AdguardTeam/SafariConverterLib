@@ -145,18 +145,57 @@ final class CompilerTests: XCTestCase {
                 action: BlockerEntry.Action(type: "selector", selector: "test_selector"))
         ];
 
-        let exceptions = [
+        var exceptions = [
             BlockerEntry(
                 trigger: BlockerEntry.Trigger(ifDomain: ["whitelisted.com"]),
                 action: BlockerEntry.Action(type: "ignore-previous-rules", selector: "test_selector"))
         ];
 
-        let filtered = Compiler.applyActionExceptions(blockingItems: &blockingItems, exceptions: exceptions, actionValue: "selector");
+        var filtered = Compiler.applyActionExceptions(blockingItems: &blockingItems, exceptions: exceptions, actionValue: "selector");
 
         XCTAssertNotNil(filtered);
         XCTAssertEqual(filtered.count, 1);
         XCTAssertNotNil(filtered[0].trigger.unlessDomain);
         XCTAssertEqual(filtered[0].trigger.unlessDomain, ["whitelisted.com"]);
+        
+        blockingItems = [
+            BlockerEntry(
+                trigger: BlockerEntry.Trigger(ifDomain: ["example.org", "test.com"], urlFilter: ".*"),
+                action: BlockerEntry.Action(type: "selector", selector: ".banner"))
+        ];
+
+        exceptions = [
+            BlockerEntry(
+                trigger: BlockerEntry.Trigger(ifDomain: ["test.com"]),
+                action: BlockerEntry.Action(type: "ignore-previous-rules", selector: ".banner"))
+        ];
+
+        filtered = Compiler.applyActionExceptions(blockingItems: &blockingItems, exceptions: exceptions, actionValue: "selector");
+        
+        XCTAssertNotNil(filtered);
+        XCTAssertEqual(filtered.count, 1);
+        XCTAssertEqual(filtered[0].trigger.unlessDomain?.count, 0);
+        XCTAssertEqual(filtered[0].trigger.ifDomain!, ["example.org"]);
+        XCTAssertEqual(filtered[0].action.selector, ".banner");
+        
+        blockingItems = [
+            BlockerEntry(
+                trigger: BlockerEntry.Trigger(ifDomain: ["example.org"]),
+                action: BlockerEntry.Action(type: "selector", selector: ".banner"))
+        ];
+
+        exceptions = [
+            BlockerEntry(
+                trigger: BlockerEntry.Trigger(ifDomain: ["example.org"]),
+                action: BlockerEntry.Action(type: "ignore-previous-rules", selector: ".banner"))
+        ];
+
+        filtered = Compiler.applyActionExceptions(blockingItems: &blockingItems, exceptions: exceptions, actionValue: "selector");
+        
+        XCTAssertNotNil(filtered);
+        XCTAssertEqual(filtered.count, 1);
+        XCTAssertEqual(filtered[0].trigger.unlessDomain?.count, 0);
+        XCTAssertEqual(filtered[0].trigger.ifDomain?.count, 0);
     }
 
     static var allTests = [
