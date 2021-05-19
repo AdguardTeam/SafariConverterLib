@@ -12,6 +12,8 @@ class Compiler {
     private let advancedBlockedEnabled: Bool
 
     private let blockerEntryFactory: BlockerEntryFactory;
+    
+    static let cosmeticActions: [String] = ["css-display-none", "css-inject", "css-extended", "scriptlet", "script"];
 
     init(optimize: Bool, advancedBlocking: Bool, errorsCounter: ErrorsCounter) {
         self.optimize = optimize;
@@ -155,16 +157,6 @@ class Compiler {
             return nil;
         }
     }
-    
-    /**
-     * Checks if provided action type is cosmetic
-     */
-    static func isCosmeticAction(action: String) -> Bool {
-        // TODO make enum of actions and replace hardcode everywhere
-        let cosmeticActions: [String] = ["css-display-none", "css-inject", "css-extended", "scriptlet", "script"];
-        
-        return cosmeticActions.contains(action);
-    }
 
     /**
      * Applies exceptions
@@ -213,7 +205,8 @@ class Compiler {
         var result = [BlockerEntry]();
 
         for r in blockingItems {
-            if (r.trigger.ifDomain?.count == 0 && r.trigger.unlessDomain?.count == 0 && isCosmeticAction(action: r.action.type)) {
+            // skip cosmetic entries, which must be excepted by exclusions
+            if (r.trigger.ifDomain?.count == 0 && r.trigger.unlessDomain?.count == 0 && self.cosmeticActions.contains(r.action.type)) {
                 continue;
             }
             
