@@ -155,6 +155,16 @@ class Compiler {
             return nil;
         }
     }
+    
+    /**
+     * Checks if provided action type is cosmetic
+     */
+    static func isCosmeticAction(action: String) -> Bool {
+        // TODO make enum of actions and replace hardcode everywhere
+        let cosmeticActions: [String] = ["css-display-none", "css-inject", "css-extended", "scriptlet", "script"];
+        
+        return cosmeticActions.contains(action);
+    }
 
     /**
      * Applies exceptions
@@ -203,9 +213,10 @@ class Compiler {
         var result = [BlockerEntry]();
 
         for r in blockingItems {
-            if (r.trigger.ifDomain?.count == 0 && r.trigger.unlessDomain?.count == 0 && r.action.type == "css-display-none") {
+            if (r.trigger.ifDomain?.count == 0 && r.trigger.unlessDomain?.count == 0 && isCosmeticAction(action: r.action.type)) {
                 continue;
             }
+            
             if (r.trigger.ifDomain == nil || r.trigger.ifDomain?.count == 0 ||
                 r.trigger.unlessDomain == nil || r.trigger.unlessDomain?.count == 0) {
                 result.append(r);
