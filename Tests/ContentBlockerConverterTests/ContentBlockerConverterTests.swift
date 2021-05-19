@@ -891,10 +891,10 @@ final class ContentBlockerConverterTests: XCTestCase {
         rules = ["test.com##.ad-banner", "test.com#@#.ad-banner"]
         result = ContentBlockerConverter().convertArray(rules: rules);
 
-        XCTAssertEqual(result?.totalConvertedCount, 1);
-        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result?.totalConvertedCount, 0);
+        XCTAssertEqual(result?.convertedCount, 0);
         XCTAssertEqual(result?.errorsCount, 0);
-        XCTAssertEqual(result?.converted, "[{\"trigger\":{\"url-filter\":\".*\",\"if-domain\":[],\"unless-domain\":[]},\"action\":{\"type\":\"css-display-none\",\"selector\":\".ad-banner\"}}]");
+        XCTAssertEqual(result?.converted, "[]");
     }
 
     static var allTests = [
