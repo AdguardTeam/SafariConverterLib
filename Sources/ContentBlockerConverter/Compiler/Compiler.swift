@@ -91,11 +91,9 @@ class Compiler {
         }
         compilationResult.cssBlockingGenericDomainSensitive = Compiler.compactDomainCssRules(entries: cssCompact.cssBlockingGenericDomainSensitive, useUnlessDomain: true);
 
-//        compilationResult.cssBlockingGenericDomainSensitive = Compiler.applySpecifichideExceptions(blockingItems: &compilationResult.cssBlockingGenericDomainSensitive, exceptions: specifichideExceptions, actionValue: "selector");
-
         compilationResult.cssBlockingDomainSensitive = Compiler.compactDomainCssRules(entries: cssCompact.cssBlockingDomainSensitive);
 
-        compilationResult.cssBlockingDomainSensitive = Compiler.applySpecifichideExceptions(blockingItems: &compilationResult.cssBlockingDomainSensitive, exceptions: specifichideExceptions, actionValue: "selector");
+        compilationResult.cssBlockingDomainSensitive = Compiler.applySpecifichideExceptions(blockingItems: &compilationResult.cssBlockingDomainSensitive, specifichideExceptions: specifichideExceptions);
 
         if (self.advancedBlockedEnabled) {
             // Applying CSS exceptions for extended css rules
@@ -175,9 +173,43 @@ class Compiler {
     /**
      * Applies specifichide exceptions
      */
-    static func applySpecifichideExceptions(blockingItems: inout [BlockerEntry], exceptions: [BlockerEntry], actionValue: String) -> [BlockerEntry] {
+    static func applySpecifichideExceptions(blockingItems: inout [BlockerEntry], specifichideExceptions: [BlockerEntry]) -> [BlockerEntry] {
+        for index in 0..<blockingItems.count {
+            var item = blockingItems[index];
 
-        return blockingItems;
+            for exception in specifichideExceptions {
+                let exceptionDomain = exception.trigger.urlFilter;
+                if (exceptionDomain != nil) {
+                    do {
+                        let regex = try NSRegularExpression(pattern: exceptionDomain!.replace(target: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?", withString: ""));
+                        
+                        item.trigger.ifDomain?.forEach {
+                            if (regex.firstMatch(in: $0, options: [], range: NSRange(location: 0, length: $0.utf16.count)) != nil) {
+                                let exceptedDomain = $0;
+                                // remove exception domain from trigger.ifDomain
+                                item.trigger.ifDomain = item.trigger.ifDomain!.filter{ $0 != exceptedDomain }
+                            }
+                        }
+                    } catch {
+                        print("$$$$")
+                        print(error)
+                        Logger.log("AG: ContentBlockerConverter: Unexpected error: \(error) while applying specifichide exceptions for domain \(exceptionDomain)");
+                    }
+                    blockingItems[index].trigger = item.trigger;
+                }
+            }
+        }
+
+        var result = [BlockerEntry]();
+
+        for r in blockingItems {
+            // skip entries with exculed ifDomain
+            if (r.trigger.ifDomain != nil && r.trigger.ifDomain!.count > 0) {
+                result.append(r);
+            }
+        }
+
+        return result;
     }
 
     /**

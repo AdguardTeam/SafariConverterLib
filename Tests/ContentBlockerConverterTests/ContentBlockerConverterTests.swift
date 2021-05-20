@@ -849,15 +849,34 @@ final class ContentBlockerConverterTests: XCTestCase {
     func testSpecifichide() {
         let ruleText = [
             "example.org##.banner1",
-            "##.banner2",
+            "example.org,test.com##.banner2",
+            "##.banner3",
             "@@||example.org^$specifichide",
         ];
+        
 
         let result = converter.convertArray(rules: ruleText);
-
-        XCTAssertEqual(result?.totalConvertedCount, 3);
-        XCTAssertEqual(result?.convertedCount, 1);
+        
+        // should remain only "##.banner3" and "test.com##.banner2"
+        
+        XCTAssertEqual(result?.totalConvertedCount, 2);
+        XCTAssertEqual(result?.convertedCount, 2);
         XCTAssertEqual(result?.errorsCount, 0);
+        
+        let decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 2);
+
+        XCTAssertNil(decoded[0].trigger.ifDomain);
+        XCTAssertNil(decoded[0].trigger.unlessDomain);
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
+        XCTAssertEqual(decoded[0].action.type, "css-display-none");
+        XCTAssertEqual(decoded[0].action.selector, ".banner3");
+        
+        XCTAssertEqual(decoded[1].trigger.ifDomain, ["*test.com"]);
+        XCTAssertNil(decoded[1].trigger.unlessDomain);
+        XCTAssertEqual(decoded[1].trigger.urlFilter, ".*");
+        XCTAssertEqual(decoded[1].action.type, "css-display-none");
+        XCTAssertEqual(decoded[1].action.selector, ".banner2");
     }
 
     func testEscapeBackslash() {
