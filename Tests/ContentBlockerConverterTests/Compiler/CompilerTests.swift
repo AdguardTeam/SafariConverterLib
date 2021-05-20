@@ -28,38 +28,6 @@ final class CompilerTests: XCTestCase {
         XCTAssertEqual(result.extendedCssBlockingDomainSensitive.count, 0);
     }
 
-    func testSpecifichide1() {
-        var rules = [Rule]();
-        let compiler = Compiler(optimize: false, advancedBlocking: false, errorsCounter: ErrorsCounter());
-        
-        let rulesArray:[NSString] = [
-            "example.org##.banner1",
-            "example.org#$#.banner2 { display: none !important; }",
-            "#$#.banner3 { display: none !important; }",
-            "##.banner4",
-            "~google.com#$#.banner5 { display: none !important }",
-            "@@||example.org^$specifichide"
-        ];
-        
-        for rule in rulesArray {
-            rules.append(try! RuleFactory.createRule(ruleText: rule)!);
-        }
-        
-        let result = compiler.compileRules(rules: rules);
-        
-        XCTAssertNotNil(result);
-        XCTAssertEqual(result.cssBlockingWide.count, 2);
-        XCTAssertEqual(result.cssBlockingGenericDomainSensitive.count, 1);
-        XCTAssertEqual(result.cssBlockingDomainSensitive.count, 0);
-        XCTAssertEqual(result.cssBlockingGenericHideExceptions.count, 0);
-        XCTAssertEqual(result.cssElemhide.count, 0);
-        XCTAssertEqual(result.urlBlocking.count, 0);
-        XCTAssertEqual(result.other.count, 0);
-        XCTAssertEqual(result.important.count, 0);
-        XCTAssertEqual(result.importantExceptions.count, 0);
-        XCTAssertEqual(result.documentExceptions.count, 0);
-    }
-
     func testCompactCss() {
         let entries = [
             BlockerEntry(
@@ -145,57 +113,18 @@ final class CompilerTests: XCTestCase {
                 action: BlockerEntry.Action(type: "selector", selector: "test_selector"))
         ];
 
-        var exceptions = [
+        let exceptions = [
             BlockerEntry(
                 trigger: BlockerEntry.Trigger(ifDomain: ["whitelisted.com"]),
                 action: BlockerEntry.Action(type: "ignore-previous-rules", selector: "test_selector"))
         ];
 
-        var filtered = Compiler.applyActionExceptions(blockingItems: &blockingItems, exceptions: exceptions, actionValue: "selector");
+        let filtered = Compiler.applyActionExceptions(blockingItems: &blockingItems, exceptions: exceptions, actionValue: "selector");
 
         XCTAssertNotNil(filtered);
         XCTAssertEqual(filtered.count, 1);
         XCTAssertNotNil(filtered[0].trigger.unlessDomain);
         XCTAssertEqual(filtered[0].trigger.unlessDomain, ["whitelisted.com"]);
-        
-        blockingItems = [
-            BlockerEntry(
-                trigger: BlockerEntry.Trigger(ifDomain: ["example.org", "test.com"], urlFilter: ".*"),
-                action: BlockerEntry.Action(type: "selector", selector: ".banner"))
-        ];
-
-        exceptions = [
-            BlockerEntry(
-                trigger: BlockerEntry.Trigger(ifDomain: ["test.com"]),
-                action: BlockerEntry.Action(type: "ignore-previous-rules", selector: ".banner"))
-        ];
-
-        filtered = Compiler.applyActionExceptions(blockingItems: &blockingItems, exceptions: exceptions, actionValue: "selector");
-        
-        XCTAssertNotNil(filtered);
-        XCTAssertEqual(filtered.count, 1);
-        XCTAssertEqual(filtered[0].trigger.unlessDomain?.count, 0);
-        XCTAssertEqual(filtered[0].trigger.ifDomain!, ["example.org"]);
-        XCTAssertEqual(filtered[0].action.selector, ".banner");
-        
-        blockingItems = [
-            BlockerEntry(
-                trigger: BlockerEntry.Trigger(ifDomain: ["example.org"]),
-                action: BlockerEntry.Action(type: "selector", selector: ".banner"))
-        ];
-
-        exceptions = [
-            BlockerEntry(
-                trigger: BlockerEntry.Trigger(ifDomain: ["example.org"]),
-                action: BlockerEntry.Action(type: "ignore-previous-rules", selector: ".banner"))
-        ];
-
-        filtered = Compiler.applyActionExceptions(blockingItems: &blockingItems, exceptions: exceptions, actionValue: "selector");
-        
-        XCTAssertNotNil(filtered);
-        XCTAssertEqual(filtered.count, 1);
-        XCTAssertEqual(filtered[0].trigger.unlessDomain?.count, 0);
-        XCTAssertEqual(filtered[0].trigger.ifDomain?.count, 0);
     }
 
     static var allTests = [
