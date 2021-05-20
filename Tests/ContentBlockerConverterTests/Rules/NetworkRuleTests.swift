@@ -223,7 +223,7 @@ final class NetworkRuleTests: XCTestCase {
 
         XCTAssertNotNil(result);
         XCTAssertEqual(result.ruleText, "||example.org^$specifichide");
-        XCTAssertEqual(result.isCssExceptionRule, true);
+        XCTAssertEqual(result.isCssExceptionRule, false);
         XCTAssertEqual(result.urlRuleText, "||example.org^");
         XCTAssertEqual(result.enabledOptions, [NetworkRule.NetworkRuleOption.Specifichide]);
     }
