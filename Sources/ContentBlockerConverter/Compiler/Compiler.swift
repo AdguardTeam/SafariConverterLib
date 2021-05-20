@@ -141,6 +141,7 @@ class Compiler {
         
         } else {
             trigger.unlessDomain?.append(domain);
+        }
     };
     
     private static func getActionValue(entry: BlockerEntry, action: String) -> String? {
