@@ -90,7 +90,7 @@ class Compiler {
         compilationResult.cssBlockingGenericDomainSensitive = Compiler.compactDomainCssRules(entries: cssCompact.cssBlockingGenericDomainSensitive, useUnlessDomain: true);
         compilationResult.cssBlockingDomainSensitive = Compiler.compactDomainCssRules(entries: cssCompact.cssBlockingDomainSensitive);
         
-        compilationResult.cssBlockingDomainSensitive = Compiler.applySpecifichideExceptions(blockingItems: &compilationResult.cssBlockingDomainSensitive, specifichideExceptions: specifichideExceptions);
+        compilationResult.cssBlockingDomainSensitive = Compiler.applySpecifichide(blockingItems: &compilationResult.cssBlockingDomainSensitive, specifichideExceptions: specifichideExceptions);
 
         if (self.advancedBlockedEnabled) {
             // Applying CSS exceptions for extended css rules
@@ -164,7 +164,7 @@ class Compiler {
     /**
      * Applies specifichide exceptions
      */
-    static func applySpecifichideExceptions(blockingItems: inout [BlockerEntry], specifichideExceptions: [BlockerEntry]) -> [BlockerEntry] {
+    static func applySpecifichide(blockingItems: inout [BlockerEntry], specifichideExceptions: [BlockerEntry]) -> [BlockerEntry] {
         for index in 0..<blockingItems.count {
             var item = blockingItems[index];
 
