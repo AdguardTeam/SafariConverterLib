@@ -207,7 +207,7 @@ class Compiler {
         
         for r in blockingItems {
             // skip cosmetic entries, which must be excepted by exclusions
-            if (r.trigger.ifDomain?.count == 0 && r.trigger.unlessDomain?.count == 0 && self.cosmeticActions.contains(r.action.type)) {
+            if (r.trigger.ifDomain?.count == 0 && r.trigger.unlessDomain?.count == 0 && self.COSMETIC_ACTIONS.contains(r.action.type)) {
                 continue;
             }
             
