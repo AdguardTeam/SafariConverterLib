@@ -164,7 +164,7 @@ class Compiler {
     /**
      * Applies specifichide exceptions
      */
-    static func applySpecifichide(blockingItems: inout [BlockerEntry], specifichideExceptions: [BlockerEntry]) -> [BlockerEntry] {
+    private static func applySpecifichide(blockingItems: inout [BlockerEntry], specifichideExceptions: [BlockerEntry]) -> [BlockerEntry] {
         for index in 0..<blockingItems.count {
             var item = blockingItems[index];
 
@@ -182,8 +182,6 @@ class Compiler {
                             }
                         }
                     } catch {
-                        print("$$$$")
-                        print(error)
                         Logger.log("AG: ContentBlockerConverter: Unexpected error: \(error) while applying specifichide exceptions for domain \(exceptionDomain)");
                     }
                     blockingItems[index].trigger = item.trigger;
@@ -194,7 +192,7 @@ class Compiler {
         var result = [BlockerEntry]();
 
         for r in blockingItems {
-            // skip entries with exculed ifDomain
+            // skip entries with excluded ifDomain
             if (r.trigger.ifDomain != nil && r.trigger.ifDomain!.count > 0) {
                 result.append(r);
             }
