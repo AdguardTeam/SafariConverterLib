@@ -217,6 +217,14 @@ final class NetworkRuleTests: XCTestCase {
 
         XCTAssertThrowsError(try NetworkRule(ruleText: invalidNoopRule));
     }
+    
+    func testPingModifier() {
+        var rule = "||example.com^$ping" as NSString;
+        XCTAssertThrowsError(try NetworkRule(ruleText: rule));
+        
+        rule = "||example.com^$~ping" as NSString;
+        XCTAssertThrowsError(try NetworkRule(ruleText: rule));
+    }
 
     static var allTests = [
         ("testSimpleRules", testSimpleRules),
@@ -227,5 +235,6 @@ final class NetworkRuleTests: XCTestCase {
         ("testDomainWithSeparator", testDomainWithSeparator),
         ("testVariousUrlRegex", testVariousUrlRegex),
         ("testNoopModifier", testNoopModifier),
+        ("testPingModifier", testPingModifier),
     ]
 }
