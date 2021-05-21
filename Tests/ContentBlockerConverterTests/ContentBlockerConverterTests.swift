@@ -847,23 +847,22 @@ final class ContentBlockerConverterTests: XCTestCase {
     }
     
     func testSpecifichide() {
-        let ruleText = [
+        var ruleText: [String] = [
             "example.org##.banner1",
             "example.org,test.com##.banner2",
             "##.banner3",
             "@@||example.org^$specifichide",
         ];
         
-
-        let result = converter.convertArray(rules: ruleText);
-        
         // should remain only "##.banner3" and "test.com##.banner2"
+        
+        var result = converter.convertArray(rules: ruleText);
         
         XCTAssertEqual(result?.totalConvertedCount, 2);
         XCTAssertEqual(result?.convertedCount, 2);
         XCTAssertEqual(result?.errorsCount, 0);
         
-        let decoded = try! parseJsonString(json: result!.converted);
+        var decoded = try! parseJsonString(json: result!.converted);
         XCTAssertEqual(decoded.count, 2);
 
         XCTAssertNil(decoded[0].trigger.ifDomain);
@@ -877,6 +876,96 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded[1].trigger.urlFilter, ".*");
         XCTAssertEqual(decoded[1].action.type, "css-display-none");
         XCTAssertEqual(decoded[1].action.selector, ".banner2");
+        
+        ruleText = [
+            "example.org##.banner1",
+            "##.banner2",
+            "@@||example.org^$specifichide",
+        ];
+        
+        // should remain only "##.banner2"
+        
+        result = converter.convertArray(rules: ruleText);
+        
+        XCTAssertEqual(result?.totalConvertedCount, 1);
+        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result?.errorsCount, 0);
+        
+        decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        
+        XCTAssertNil(decoded[0].trigger.ifDomain);
+        XCTAssertNil(decoded[0].trigger.unlessDomain);
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
+        XCTAssertEqual(decoded[0].action.type, "css-display-none");
+        XCTAssertEqual(decoded[0].action.selector, ".banner2");
+        
+        ruleText = [
+            "test.com,example.org#$#body { overflow: visible!important; }",
+            "##.banner",
+            "@@||example.org^$specifichide",
+        ];
+        
+        // should remain only "##.banner" and "test.com#$#body { overflow: visible!important }"
+        
+        result = converter.convertArray(rules: ruleText, advancedBlocking: true);
+        
+        XCTAssertEqual(result?.totalConvertedCount, 1);
+        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result?.advancedBlockingConvertedCount, 1);
+        XCTAssertEqual(result?.errorsCount, 0);
+        
+        decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        
+        XCTAssertNil(decoded[0].trigger.ifDomain);
+        XCTAssertNil(decoded[0].trigger.unlessDomain);
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
+        XCTAssertEqual(decoded[0].action.type, "css-display-none");
+        XCTAssertEqual(decoded[0].action.selector, ".banner");
+        
+        var decodedAdvBlocking = try! parseJsonString(json: result!.advancedBlocking!);
+        XCTAssertEqual(decodedAdvBlocking.count, 1);
+        
+        XCTAssertEqual(decodedAdvBlocking[0].trigger.ifDomain, ["*test.com"]);
+        XCTAssertNil(decodedAdvBlocking[0].trigger.unlessDomain);
+        XCTAssertEqual(decodedAdvBlocking[0].trigger.urlFilter, ".*");
+        XCTAssertEqual(decodedAdvBlocking[0].action.type, "css-inject");
+        XCTAssertEqual(decodedAdvBlocking[0].action.css, "body { overflow: visible!important; }");
+        
+        ruleText = [
+            "test.com,example.org#$?#div:has(> .banner) { visibility: hidden!important; }",
+            "##.banner",
+            "example.org#$#.adsblock { opacity: 0!important; }",
+            "@@||example.org^$specifichide",
+        ];
+        
+        // should remain only "##.banner" and "test.com#$?#div:has(> .banner) { visibility: hidden!important; }"
+        
+        result = converter.convertArray(rules: ruleText, advancedBlocking: true);
+        
+        XCTAssertEqual(result?.totalConvertedCount, 1);
+        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result?.advancedBlockingConvertedCount, 1);
+        XCTAssertEqual(result?.errorsCount, 0);
+        
+        decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        
+        XCTAssertNil(decoded[0].trigger.ifDomain);
+        XCTAssertNil(decoded[0].trigger.unlessDomain);
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
+        XCTAssertEqual(decoded[0].action.type, "css-display-none");
+        XCTAssertEqual(decoded[0].action.selector, ".banner");
+        
+        decodedAdvBlocking = try! parseJsonString(json: result!.advancedBlocking!);
+        XCTAssertEqual(decodedAdvBlocking.count, 1);
+        
+        XCTAssertEqual(decodedAdvBlocking[0].trigger.ifDomain, ["*test.com"]);
+        XCTAssertNil(decodedAdvBlocking[0].trigger.unlessDomain);
+        XCTAssertEqual(decodedAdvBlocking[0].trigger.urlFilter, ".*");
+        XCTAssertEqual(decodedAdvBlocking[0].action.type, "css-extended");
+        XCTAssertEqual(decodedAdvBlocking[0].action.css, "div:has(> .banner) { visibility: hidden!important; }");
     }
 
     func testEscapeBackslash() {

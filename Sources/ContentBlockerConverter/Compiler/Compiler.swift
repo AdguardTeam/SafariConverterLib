@@ -90,6 +90,7 @@ class Compiler {
         compilationResult.cssBlockingGenericDomainSensitive = Compiler.compactDomainCssRules(entries: cssCompact.cssBlockingGenericDomainSensitive, useUnlessDomain: true);
         compilationResult.cssBlockingDomainSensitive = Compiler.compactDomainCssRules(entries: cssCompact.cssBlockingDomainSensitive);
         
+        // Apply specifichide exceptions
         compilationResult.cssBlockingDomainSensitive = Compiler.applySpecifichide(blockingItems: &compilationResult.cssBlockingDomainSensitive, specifichideExceptions: specifichideExceptions);
 
         if (self.advancedBlockedEnabled) {
@@ -104,11 +105,17 @@ class Compiler {
             compilationResult.extendedCssBlockingGenericDomainSensitive = extendedCssCompact.cssBlockingGenericDomainSensitive;
             compilationResult.extendedCssBlockingDomainSensitive = extendedCssCompact.cssBlockingDomainSensitive;
             
+            // Apply specifichide exceptions for extended css rules
+            compilationResult.extendedCssBlockingDomainSensitive = Compiler.applySpecifichide(blockingItems: &compilationResult.extendedCssBlockingDomainSensitive, specifichideExceptions: specifichideExceptions);
+            
             // Applying CSS exceptions for css injecting rules
             cssInjects = Compiler.applyActionExceptions(
                 blockingItems: &cssInjects, exceptions: cssExceptions + cosmeticCssExceptions, actionValue: "css"
             );
             compilationResult.сssInjects = cssInjects;
+            
+            // Apply specifichide exceptions for css injecting rules
+            compilationResult.сssInjects = Compiler.applySpecifichide(blockingItems: &compilationResult.сssInjects, specifichideExceptions: specifichideExceptions);
             
             // Applying script exceptions
             scriptRules = Compiler.applyActionExceptions(blockingItems: &scriptRules, exceptions: scriptExceptionRules, actionValue: "script");
@@ -169,21 +176,10 @@ class Compiler {
             var item = blockingItems[index];
 
             for exception in specifichideExceptions {
-                let exceptionDomain = exception.trigger.urlFilter;
-                if (exceptionDomain != nil) {
-                    do {
-                        let regex = try NSRegularExpression(pattern: exceptionDomain!.replace(target: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?", withString: ""));
-                        
-                        item.trigger.ifDomain?.forEach {
-                            if (regex.firstMatch(in: $0, options: [], range: NSRange(location: 0, length: $0.utf16.count)) != nil) {
-                                let exceptedDomain = $0;
-                                // remove exception domain from trigger.ifDomain
-                                item.trigger.ifDomain = item.trigger.ifDomain!.filter{ $0 != exceptedDomain }
-                            }
-                        }
-                    } catch {
-                        Logger.log("AG: ContentBlockerConverter: Unexpected error: \(error) while applying specifichide exceptions for domain \(exceptionDomain)");
-                    }
+                let exceptionDomain = exception.trigger.urlFilter?.replace(target: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?", withString: "").replace(target: "([\\/:&\\?].*)?$", withString: "").replace(target: "\\", withString: "");
+                
+                if (exceptionDomain != nil && item.trigger.ifDomain?.contains(exceptionDomain!) != nil) {
+                    item.trigger.ifDomain = item.trigger.ifDomain!.filter{ $0 != exceptionDomain }
                     blockingItems[index].trigger = item.trigger;
                 }
             }
