@@ -241,6 +241,98 @@ final class CosmeticRuleTests: XCTestCase {
         XCTAssertEqual(result.restrictedDomains, ["sub.example.org"]);
     }
     
+    func testGenericWildcardRules() {
+        // test elemhide generic rule
+        var result = try! CosmeticRule(ruleText: "*##.adsblock");
+
+        XCTAssertEqual(result.isElemhide, true);
+        XCTAssertEqual(result.isWhiteList, false);
+        XCTAssertEqual(result.permittedDomains, []);
+        XCTAssertEqual(result.restrictedDomains, []);
+        XCTAssertEqual(result.content, ".adsblock");
+        
+        // test elemhide generic exception rule
+        result = try! CosmeticRule(ruleText: "*#@#.adsblock");
+
+        XCTAssertEqual(result.isElemhide, true);
+        XCTAssertEqual(result.isWhiteList, true);
+        XCTAssertEqual(result.permittedDomains, []);
+        XCTAssertEqual(result.restrictedDomains, []);
+        XCTAssertEqual(result.content, ".adsblock");
+        
+        // test css-inject generic rule
+        result = try! CosmeticRule(ruleText: "*#$#.adsblock { visibility: hidden!important; }");
+
+        XCTAssertEqual(result.isInjectCss, true);
+        XCTAssertEqual(result.isWhiteList, false);
+        XCTAssertEqual(result.permittedDomains, []);
+        XCTAssertEqual(result.restrictedDomains, []);
+        XCTAssertEqual(result.content, ".adsblock { visibility: hidden!important; }");
+        
+        // test css-inject generic exception rule
+        result = try! CosmeticRule(ruleText: "*#@$#.adsblock { visibility: hidden!important; }");
+
+        XCTAssertEqual(result.isInjectCss, true);
+        XCTAssertEqual(result.isWhiteList, true);
+        XCTAssertEqual(result.permittedDomains, []);
+        XCTAssertEqual(result.restrictedDomains, []);
+        XCTAssertEqual(result.content, ".adsblock { visibility: hidden!important; }");
+        
+        // test extended-css generic rule
+        result = try! CosmeticRule(ruleText: "*#?#div:has(> .adsblock)");
+
+        XCTAssertEqual(result.isExtendedCss, true);
+        XCTAssertEqual(result.isWhiteList, false);
+        XCTAssertEqual(result.permittedDomains, []);
+        XCTAssertEqual(result.restrictedDomains, []);
+        XCTAssertEqual(result.content, "div:has(> .adsblock)");
+        
+        // test extended-css generic exception rule
+        result = try! CosmeticRule(ruleText: "*#@?#div:has(> .adsblock)");
+
+        XCTAssertEqual(result.isExtendedCss, true);
+        XCTAssertEqual(result.isWhiteList, true);
+        XCTAssertEqual(result.permittedDomains, []);
+        XCTAssertEqual(result.restrictedDomains, []);
+        XCTAssertEqual(result.content, "div:has(> .adsblock)");
+        
+        // test script generic rule
+        result = try! CosmeticRule(ruleText: "*#%#window.__gaq = undefined;");
+
+        XCTAssertEqual(result.isScript, true);
+        XCTAssertEqual(result.isWhiteList, false);
+        XCTAssertEqual(result.permittedDomains, []);
+        XCTAssertEqual(result.restrictedDomains, []);
+        XCTAssertEqual(result.content, "window.__gaq = undefined;");
+        
+        // test script generic exception rule
+        result = try! CosmeticRule(ruleText: "*#@%#window.__gaq = undefined;");
+
+        XCTAssertEqual(result.isScript, true);
+        XCTAssertEqual(result.isWhiteList, true);
+        XCTAssertEqual(result.permittedDomains, []);
+        XCTAssertEqual(result.restrictedDomains, []);
+        XCTAssertEqual(result.content, "window.__gaq = undefined;");
+        
+        // test scriptlet generic rule
+        result = try! CosmeticRule(ruleText: "*#%#//scriptlet(\"abort-on-property-read\", \"alert\")");
+
+        XCTAssertEqual(result.isScriptlet, true);
+        XCTAssertEqual(result.isWhiteList, false);
+        XCTAssertEqual(result.permittedDomains, []);
+        XCTAssertEqual(result.restrictedDomains, []);
+        XCTAssertEqual(result.content, "//scriptlet(\"abort-on-property-read\", \"alert\")");
+        
+        // test scriptlet generic exception rule
+        result = try! CosmeticRule(ruleText: "*#%#//scriptlet(\"abort-on-property-read\", \"alert\")");
+
+        XCTAssertEqual(result.isScriptlet, true);
+        XCTAssertEqual(result.isWhiteList, false);
+        XCTAssertEqual(result.permittedDomains, []);
+        XCTAssertEqual(result.restrictedDomains, []);
+        XCTAssertEqual(result.content, "//scriptlet(\"abort-on-property-read\", \"alert\")");
+    }
+    
     static var allTests = [
         ("testElemhidingRules", testElemhidingRules),
         ("testElemhidingRulesWhitelist", testElemhidingRulesWhitelist),
@@ -252,6 +344,7 @@ final class CosmeticRuleTests: XCTestCase {
         ("testScriptletRules", testScriptletRules),
         ("testScriptletRulesWhitelist", testScriptletRulesWhitelist),
         ("testDomains", testDomains),
+        ("testGenericWildcardRules", testGenericWildcardRules),
     ]
 }
 
