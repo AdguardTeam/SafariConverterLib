@@ -123,9 +123,6 @@ class Compiler {
      * If so - it may be that domain is redundant.
      */
     private static func pushExceptionDomain(domain: String, trigger: inout BlockerEntry.Trigger) -> Void {
-        if (trigger.unlessDomain == nil) {
-                trigger.unlessDomain = [];
-            }
         let permittedDomains = trigger.ifDomain;
         if (permittedDomains != nil && permittedDomains!.count > 0) {
             
@@ -137,9 +134,11 @@ class Compiler {
             
             // remove exception domain from trigger.ifDomain
             trigger.ifDomain = permittedDomains!.filter{ $0 != domain }
-            return;
         
         } else {
+            if (trigger.unlessDomain == nil) {
+                    trigger.unlessDomain = [];
+                }
             trigger.unlessDomain?.append(domain);
         }
     };
@@ -206,8 +205,8 @@ class Compiler {
         var result = [BlockerEntry]();
         
         for r in blockingItems {
-            // skip cosmetic entries, which must be excepted by exclusions
-            if (r.trigger.ifDomain?.count == 0 && r.trigger.unlessDomain?.count == 0 && self.COSMETIC_ACTIONS.contains(r.action.type)) {
+            // skip cosmetic entries, that has been disabled by exclusion rules
+            if (r.trigger.ifDomain?.count == 0 && r.trigger.unlessDomain == nil && self.COSMETIC_ACTIONS.contains(r.action.type)) {
                 continue;
             }
             
