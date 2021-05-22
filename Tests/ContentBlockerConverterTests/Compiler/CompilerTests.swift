@@ -105,65 +105,69 @@ final class CompilerTests: XCTestCase {
         XCTAssertNotNil(result);
         XCTAssertEqual(result.count, 2);
     }
-
+    
     func testApplyActionExceptions() {
+        var blockingItems = [
+            BlockerEntry(
+                trigger: BlockerEntry.Trigger(ifDomain: ["example.org"]),
+                action: BlockerEntry.Action(type: "selector", selector: ".banner"))
+        ];
+
+        let exceptions = [
+            BlockerEntry(
+                trigger: BlockerEntry.Trigger(ifDomain: ["example.org"]),
+                action: BlockerEntry.Action(type: "ignore-previous-rules", selector: ".banner"))
+        ];
+
+        let filtered = Compiler.applyActionExceptions(blockingItems: &blockingItems, exceptions: exceptions, actionValue: "selector");
+        
+        XCTAssertNotNil(filtered);
+        XCTAssertEqual(filtered.count, 1);
+        XCTAssertNil(filtered[0].trigger.unlessDomain);
+        XCTAssertEqual(filtered[0].trigger.ifDomain?.count, 0);
+    }
+
+    func testApplyActionExceptionsForGenericRule() {
         var blockingItems = [
             BlockerEntry(
                 trigger: BlockerEntry.Trigger(urlFilter: ".*"),
                 action: BlockerEntry.Action(type: "selector", selector: "test_selector"))
         ];
 
-        var exceptions = [
+        let exceptions = [
             BlockerEntry(
                 trigger: BlockerEntry.Trigger(ifDomain: ["whitelisted.com"]),
                 action: BlockerEntry.Action(type: "ignore-previous-rules", selector: "test_selector"))
         ];
 
-        var filtered = Compiler.applyActionExceptions(blockingItems: &blockingItems, exceptions: exceptions, actionValue: "selector");
+        let filtered = Compiler.applyActionExceptions(blockingItems: &blockingItems, exceptions: exceptions, actionValue: "selector");
 
         XCTAssertNotNil(filtered);
         XCTAssertEqual(filtered.count, 1);
         XCTAssertNotNil(filtered[0].trigger.unlessDomain);
         XCTAssertEqual(filtered[0].trigger.unlessDomain, ["whitelisted.com"]);
-        
-        blockingItems = [
+    }
+    
+    func testApplyActionExceptionsForMultiDomainRule() {
+        var blockingItems = [
             BlockerEntry(
                 trigger: BlockerEntry.Trigger(ifDomain: ["example.org", "test.com"], urlFilter: ".*"),
                 action: BlockerEntry.Action(type: "selector", selector: ".banner"))
         ];
 
-        exceptions = [
+        let exceptions = [
             BlockerEntry(
                 trigger: BlockerEntry.Trigger(ifDomain: ["test.com"]),
                 action: BlockerEntry.Action(type: "ignore-previous-rules", selector: ".banner"))
         ];
 
-        filtered = Compiler.applyActionExceptions(blockingItems: &blockingItems, exceptions: exceptions, actionValue: "selector");
+        let filtered = Compiler.applyActionExceptions(blockingItems: &blockingItems, exceptions: exceptions, actionValue: "selector");
         
         XCTAssertNotNil(filtered);
         XCTAssertEqual(filtered.count, 1);
         XCTAssertNil(filtered[0].trigger.unlessDomain);
         XCTAssertEqual(filtered[0].trigger.ifDomain!, ["example.org"]);
         XCTAssertEqual(filtered[0].action.selector, ".banner");
-        
-        blockingItems = [
-            BlockerEntry(
-                trigger: BlockerEntry.Trigger(ifDomain: ["example.org"]),
-                action: BlockerEntry.Action(type: "selector", selector: ".banner"))
-        ];
-
-        exceptions = [
-            BlockerEntry(
-                trigger: BlockerEntry.Trigger(ifDomain: ["example.org"]),
-                action: BlockerEntry.Action(type: "ignore-previous-rules", selector: ".banner"))
-        ];
-
-        filtered = Compiler.applyActionExceptions(blockingItems: &blockingItems, exceptions: exceptions, actionValue: "selector");
-        
-        XCTAssertNotNil(filtered);
-        XCTAssertEqual(filtered.count, 1);
-        XCTAssertNil(filtered[0].trigger.unlessDomain);
-        XCTAssertEqual(filtered[0].trigger.ifDomain?.count, 0);
     }
 
     static var allTests = [
@@ -172,5 +176,7 @@ final class CompilerTests: XCTestCase {
         ("testCompactIfDomainCss", testCompactIfDomainCss),
         ("testCompactUnlessDomainCss", testCompactUnlessDomainCss),
         ("testApplyActionExceptions", testApplyActionExceptions),
+        ("testApplyActionExceptionsForGenericRule", testApplyActionExceptionsForGenericRule),
+        ("testApplyActionExceptionsForMultiDomainRule", testApplyActionExceptionsForMultiDomainRule),
     ]
 }
