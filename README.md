@@ -83,3 +83,7 @@ After installation the build process occurs and binary file will be copied to bi
 * logger
 
 `getConverterVersion` - returns Safari Converter Lib version
+
+### Limitations
+* Safari doesn't support both permitted and restricted domains. So the rules like `example.org,~foo.example.org##.textad` are invalid.
+* Rules with `ping` modifier are ignored.
