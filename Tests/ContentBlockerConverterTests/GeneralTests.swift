@@ -351,8 +351,29 @@ final class GeneralTests: XCTestCase {
         
     }
     
+    func testSpecifichidePerformance() {
+        let thisSourceFile = URL(fileURLWithPath: #file);
+        let thisDirectory = thisSourceFile.deletingLastPathComponent();
+        let resourceURL = thisDirectory.appendingPathComponent("Resources/specifichide-test-filter.txt");
+        
+        let content = try! String(contentsOf: resourceURL, encoding: String.Encoding.utf8);
+        let rules = content.components(separatedBy: "\n");
+        
+        self.measure {
+            let conversionResult = ContentBlockerConverter().convertArray(rules: rules);
+            NSLog(conversionResult!.message);
+            
+            XCTAssertEqual(conversionResult?.totalConvertedCount, 1000);
+            XCTAssertEqual(conversionResult?.convertedCount, 1000);
+            XCTAssertEqual(conversionResult?.errorsCount, 0);
+            XCTAssertEqual(conversionResult?.overLimit, false);
+        }
+        
+    }
+    
     static var allTests = [
         ("testGeneral", testGeneral),
         ("testPerformance", testPerformance),
+        ("testSpecifichidePerformance", testSpecifichidePerformance),
     ]
 }

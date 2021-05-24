@@ -966,6 +966,42 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decodedAdvBlocking[0].trigger.urlFilter, ".*");
         XCTAssertEqual(decodedAdvBlocking[0].action.type, "css-extended");
         XCTAssertEqual(decodedAdvBlocking[0].action.css, "div:has(> .banner) { visibility: hidden!important; }");
+        
+        ruleText = [
+            "test.sub.example.org##.banner1",
+            "example.org##.banner2",
+            "##.banner3",
+            "@@||sub.example.org^$specifichide",
+        ];
+        
+        // should remain "##.banner3", "test.sub.example.org##.banner1" and "example.org##.banner2"
+        
+        result = converter.convertArray(rules: ruleText);
+        
+        XCTAssertEqual(result?.totalConvertedCount, 3);
+        XCTAssertEqual(result?.convertedCount, 3);
+        XCTAssertEqual(result?.errorsCount, 0);
+        
+        decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 3);
+
+        XCTAssertNil(decoded[0].trigger.ifDomain);
+        XCTAssertNil(decoded[0].trigger.unlessDomain);
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
+        XCTAssertEqual(decoded[0].action.type, "css-display-none");
+        XCTAssertEqual(decoded[0].action.selector, ".banner3");
+        
+        XCTAssertEqual(decoded[1].trigger.ifDomain, ["*test.sub.example.org"]);
+        XCTAssertNil(decoded[1].trigger.unlessDomain);
+        XCTAssertEqual(decoded[1].trigger.urlFilter, ".*");
+        XCTAssertEqual(decoded[1].action.type, "css-display-none");
+        XCTAssertEqual(decoded[1].action.selector, ".banner1");
+        
+        XCTAssertEqual(decoded[2].trigger.ifDomain, ["*example.org"]);
+        XCTAssertNil(decoded[2].trigger.unlessDomain);
+        XCTAssertEqual(decoded[2].trigger.urlFilter, ".*");
+        XCTAssertEqual(decoded[2].action.type, "css-display-none");
+        XCTAssertEqual(decoded[2].action.selector, ".banner2");
     }
 
     func testEscapeBackslash() {
