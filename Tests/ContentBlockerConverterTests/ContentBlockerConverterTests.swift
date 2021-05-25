@@ -982,26 +982,26 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result?.convertedCount, 3);
         XCTAssertEqual(result?.errorsCount, 0);
         
-        decoded = try! parseJsonString(json: result!.converted);
-        XCTAssertEqual(decoded.count, 3);
+        let decodedResult = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decodedResult.count, 3);
 
-        XCTAssertNil(decoded[0].trigger.ifDomain);
-        XCTAssertNil(decoded[0].trigger.unlessDomain);
-        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
-        XCTAssertEqual(decoded[0].action.type, "css-display-none");
-        XCTAssertEqual(decoded[0].action.selector, ".banner3");
-        
-        XCTAssertEqual(decoded[1].trigger.ifDomain, ["*test.sub.example.org"]);
-        XCTAssertNil(decoded[1].trigger.unlessDomain);
-        XCTAssertEqual(decoded[1].trigger.urlFilter, ".*");
-        XCTAssertEqual(decoded[1].action.type, "css-display-none");
-        XCTAssertEqual(decoded[1].action.selector, ".banner1");
-        
-        XCTAssertEqual(decoded[2].trigger.ifDomain, ["*example.org"]);
-        XCTAssertNil(decoded[2].trigger.unlessDomain);
-        XCTAssertEqual(decoded[2].trigger.urlFilter, ".*");
-        XCTAssertEqual(decoded[2].action.type, "css-display-none");
-        XCTAssertEqual(decoded[2].action.selector, ".banner2");
+        XCTAssertNil(decodedResult[0].trigger.ifDomain);
+        XCTAssertNil(decodedResult[0].trigger.unlessDomain);
+        XCTAssertEqual(decodedResult[0].trigger.urlFilter, ".*");
+        XCTAssertEqual(decodedResult[0].action.type, "css-display-none");
+        XCTAssertEqual(decodedResult[0].action.selector, ".banner3");
+
+        XCTAssertEqual(decodedResult[1].trigger.ifDomain, ["*test.sub.example.org"]);
+        XCTAssertNil(decodedResult[1].trigger.unlessDomain);
+        XCTAssertEqual(decodedResult[1].trigger.urlFilter, ".*");
+        XCTAssertEqual(decodedResult[1].action.type, "css-display-none");
+        XCTAssertEqual(decodedResult[1].action.selector, ".banner1");
+
+        XCTAssertEqual(decodedResult[2].trigger.ifDomain, ["*example.org"]);
+        XCTAssertNil(decodedResult[2].trigger.unlessDomain);
+        XCTAssertEqual(decodedResult[2].trigger.urlFilter, ".*");
+        XCTAssertEqual(decodedResult[2].action.type, "css-display-none");
+        XCTAssertEqual(decodedResult[2].action.selector, ".banner2");
     }
 
     func testEscapeBackslash() {
