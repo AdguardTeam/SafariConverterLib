@@ -54,12 +54,14 @@ Push a new tag in `v*.*.*` format, then provided github action is intended to bu
 ### Supported AdGuard rules types:
 
 #### Basic content blocker format:
+
 - Elemhide rules (##)
 - Elemhide exceptions
 - Url blocking rules
 - Url blocking exceptions
 
 #### Extended Advanced blocking types:
+
 - Script rules (#%#)
 - Script rules exceptions
 - Extended css elemhide rules (##)
@@ -67,19 +69,27 @@ Push a new tag in `v*.*.*` format, then provided github action is intended to bu
 - Scriptlet rules exceptions
 
 ### Third-party dependencies
+
 - Punycode (https://github.com/gumob/PunycodeSwift.git)
 
 ### Use as node module
 
 ##### Requirements:
+
 * Swift 4 or higher
 
 After installation the build process occurs and binary file will be copied to bin directory
 
 #### API
+
 `jsonFromRules(rules, advancedBlocking, log)` - method to convert rules into JSON
 * rules - array of rules
 * advancedBlocking - if we need advanced blocking content (boolean)
 * logger
 
 `getConverterVersion` - returns Safari Converter Lib version
+
+### Limitations
+
+* Safari does not support both `if-domain` and `unless-domain` triggers. That's why rules like `example.org,~foo.example.orgs` are invalid. [Feature request](https://bugs.webkit.org/show_bug.cgi?id=226076) to WebKit to allow such rules.
+* Rules with `ping` modifier are ignored (until [#18](https://github.com/AdguardTeam/SafariConverterLib/issues/18) is solved)

@@ -339,3 +339,4 @@ final class RuleConverterTests: XCTestCase {
         ("testDenyallowModifier", testDenyallowModifier),
     ]
 }
+

@@ -105,7 +105,7 @@ final class CompilerTests: XCTestCase {
         XCTAssertNotNil(result);
         XCTAssertEqual(result.count, 2);
     }
-    
+
     func testApplyActionExceptions() {
         let blockingItems = [
             BlockerEntry(
@@ -120,7 +120,7 @@ final class CompilerTests: XCTestCase {
         ];
 
         let filtered = Compiler.applyActionExceptions(blockingItems: &blockingItems, exceptions: exceptions, actionValue: "selector");
-        
+
         XCTAssertNotNil(filtered);
         XCTAssertEqual(filtered.count, 1);
         XCTAssertNil(filtered[0].trigger.unlessDomain);
@@ -147,7 +147,7 @@ final class CompilerTests: XCTestCase {
         XCTAssertNotNil(filtered[0].trigger.unlessDomain);
         XCTAssertEqual(filtered[0].trigger.unlessDomain, ["whitelisted.com"]);
     }
-    
+
     func testApplyActionExceptionsForMultiDomainRule() {
         var blockingItems = [
             BlockerEntry(
@@ -162,12 +162,79 @@ final class CompilerTests: XCTestCase {
         ];
 
         let filtered = Compiler.applyActionExceptions(blockingItems: &blockingItems, exceptions: exceptions, actionValue: "selector");
-        
+
         XCTAssertNotNil(filtered);
         XCTAssertEqual(filtered.count, 1);
         XCTAssertNil(filtered[0].trigger.unlessDomain);
         XCTAssertEqual(filtered[0].trigger.ifDomain!, ["example.org"]);
         XCTAssertEqual(filtered[0].action.selector, ".banner");
+    }
+
+    func testIfDomainAndUnlessDomain() {
+        let compiler = Compiler(optimize: false, advancedBlocking: false, errorsCounter: ErrorsCounter());
+
+        func assertResultEmpty(result: CompilationResult) -> Void {
+            XCTAssertEqual(result.cssBlockingWide.count, 0);
+            XCTAssertEqual(result.cssBlockingGenericDomainSensitive.count, 0);
+            XCTAssertEqual(result.cssBlockingDomainSensitive.count, 0);
+            XCTAssertEqual(result.cssBlockingGenericHideExceptions.count, 0);
+            XCTAssertEqual(result.cssElemhide.count, 0);
+            XCTAssertEqual(result.urlBlocking.count, 0);
+            XCTAssertEqual(result.other.count, 0);
+            XCTAssertEqual(result.important.count, 0);
+            XCTAssertEqual(result.importantExceptions.count, 0);
+            XCTAssertEqual(result.documentExceptions.count, 0);
+            XCTAssertEqual(result.script.count, 0);
+            XCTAssertEqual(result.scriptlets.count, 0);
+            XCTAssertEqual(result.scriptJsInjectExceptions.count, 0);
+            XCTAssertEqual(result.extendedCssBlockingWide.count, 0);
+            XCTAssertEqual(result.extendedCssBlockingGenericDomainSensitive.count, 0);
+            XCTAssertEqual(result.extendedCssBlockingDomainSensitive.count, 0);
+        }
+
+        var ruleText: NSString = "example.org,~subdomain.example.org###banner";
+
+        var rule = try! RuleFactory.createRule(ruleText: ruleText)
+        var result = compiler.compileRules(rules: [rule!]);
+
+        XCTAssertNotNil(result);
+        XCTAssertEqual(result.rulesCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
+
+        assertResultEmpty(result: result);
+
+        ruleText = "yandex.kz,~afisha.yandex.kz#@#body.i-bem > a[data-statlog^='banner']";
+
+        rule = try! RuleFactory.createRule(ruleText: ruleText)
+        result = compiler.compileRules(rules: [rule!]);
+
+        XCTAssertNotNil(result);
+        XCTAssertEqual(result.rulesCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
+
+        assertResultEmpty(result: result);
+
+        ruleText = "||example.org^$domain=test.com|~sub.test.com";
+
+        rule = try! RuleFactory.createRule(ruleText: ruleText)
+        result = compiler.compileRules(rules: [rule!]);
+
+        XCTAssertNotNil(result);
+        XCTAssertEqual(result.rulesCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
+
+        assertResultEmpty(result: result);
+
+        ruleText = "@@||example.org^$domain=test.com|~sub.test.com";
+
+        rule = try! RuleFactory.createRule(ruleText: ruleText)
+        result = compiler.compileRules(rules: [rule!]);
+
+        XCTAssertNotNil(result);
+        XCTAssertEqual(result.rulesCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
+
+        assertResultEmpty(result: result);
     }
 
     static var allTests = [
@@ -178,5 +245,6 @@ final class CompilerTests: XCTestCase {
         ("testApplyActionExceptions", testApplyActionExceptions),
         ("testApplyActionExceptionsForGenericRule", testApplyActionExceptionsForGenericRule),
         ("testApplyActionExceptionsForMultiDomainRule", testApplyActionExceptionsForMultiDomainRule),
+        ("testIfDomainAndUnlessDomain", testIfDomainAndUnlessDomain),
     ]
 }
