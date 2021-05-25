@@ -149,7 +149,7 @@ final class CompilerTests: XCTestCase {
     }
 
     func testApplyActionExceptionsForMultiDomainRule() {
-        var blockingItems = [
+        let blockingItems = [
             BlockerEntry(
                 trigger: BlockerEntry.Trigger(ifDomain: ["example.org", "test.com"], urlFilter: ".*"),
                 action: BlockerEntry.Action(type: "selector", selector: ".banner"))
