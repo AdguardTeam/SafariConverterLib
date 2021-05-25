@@ -886,7 +886,14 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result?.totalConvertedCount, 1);
         XCTAssertEqual(result?.convertedCount, 1);
         XCTAssertEqual(result?.errorsCount, 0);
-        XCTAssertEqual(result?.converted, "[{\"trigger\":{\"url-filter\":\".*\",\"if-domain\":[\"*example.com\"]},\"action\":{\"type\":\"css-display-none\",\"selector\":\".ad-banner\"}}]");
+        
+        var decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
+        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*example.com"]);
+        XCTAssertEqual(decoded[0].action.type, "css-display-none");
+        XCTAssertEqual(decoded[0].action.selector, ".ad-banner");
 
         rules = ["test.com##.ad-banner", "test.com#@#.ad-banner"]
         result = ContentBlockerConverter().convertArray(rules: rules);
@@ -895,6 +902,54 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result?.convertedCount, 0);
         XCTAssertEqual(result?.errorsCount, 0);
         XCTAssertEqual(result?.converted, "[]");
+        
+        rules = ["~test.com##.ad-banner", "test.com#@#.ad-banner"]
+        result = ContentBlockerConverter().convertArray(rules: rules);
+
+        XCTAssertEqual(result?.totalConvertedCount, 1);
+        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result?.errorsCount, 0);
+
+        decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
+        XCTAssertNil(decoded[0].trigger.ifDomain);
+        XCTAssertEqual(decoded[0].trigger.unlessDomain, ["*test.com", "*test.com"]); // TODO fix duplicate
+        XCTAssertEqual(decoded[0].action.type, "css-display-none");
+        XCTAssertEqual(decoded[0].action.selector, ".ad-banner");
+        
+        rules = ["##.ad-banner", "test.com#@#.ad-banner"]
+        result = ContentBlockerConverter().convertArray(rules: rules);
+
+        XCTAssertEqual(result?.totalConvertedCount, 1);
+        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result?.errorsCount, 0);
+        
+        decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
+        XCTAssertNil(decoded[0].trigger.ifDomain);
+        XCTAssertEqual(decoded[0].trigger.unlessDomain, ["*test.com"]);
+        XCTAssertEqual(decoded[0].action.type, "css-display-none");
+        XCTAssertEqual(decoded[0].action.selector, ".ad-banner");
+        
+        rules = ["##.ad-banner", "test.com#@#.ad-banner", "test.com##.ad-banner"]
+        result = ContentBlockerConverter().convertArray(rules: rules);
+
+        XCTAssertEqual(result?.totalConvertedCount, 1);
+        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result?.errorsCount, 0);
+        
+        decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
+        XCTAssertNil(decoded[0].trigger.ifDomain);
+        XCTAssertEqual(decoded[0].trigger.unlessDomain, ["*test.com"]);
+        XCTAssertEqual(decoded[0].action.type, "css-display-none");
+        XCTAssertEqual(decoded[0].action.selector, ".ad-banner");
     }
 
     static var allTests = [

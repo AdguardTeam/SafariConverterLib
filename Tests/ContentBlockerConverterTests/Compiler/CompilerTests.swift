@@ -107,7 +107,7 @@ final class CompilerTests: XCTestCase {
     }
     
     func testApplyActionExceptions() {
-        var blockingItems = [
+        let blockingItems = [
             BlockerEntry(
                 trigger: BlockerEntry.Trigger(ifDomain: ["example.org"]),
                 action: BlockerEntry.Action(type: "selector", selector: ".banner"))

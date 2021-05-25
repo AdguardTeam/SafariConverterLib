@@ -139,6 +139,7 @@ class Compiler {
             if (trigger.unlessDomain == nil) {
                     trigger.unlessDomain = [];
                 }
+            // TODO fix exceptions for cosmetic rules with negated domain
             trigger.unlessDomain?.append(domain);
         }
     };
@@ -206,7 +207,7 @@ class Compiler {
         
         for r in blockingItems {
             // skip cosmetic entries, that has been disabled by exclusion rules
-            if (r.trigger.ifDomain?.count == 0 && r.trigger.unlessDomain == nil && self.COSMETIC_ACTIONS.contains(r.action.type)) {
+            if ((r.trigger.ifDomain == nil || r.trigger.ifDomain?.count == 0) && (r.trigger.unlessDomain == nil || r.trigger.unlessDomain?.count == 0) && self.COSMETIC_ACTIONS.contains(r.action.type)) {
                 continue;
             }
             
