@@ -950,11 +950,9 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded[0].trigger.unlessDomain, ["*test.com", "*example.org"]);
         XCTAssertEqual(decoded[0].action.type, "css-display-none");
         XCTAssertEqual(decoded[0].action.selector, "#banner");
-    }
-    
-    func testTEMP() {
-        let rules = ["~test.com##.ad-banner", "~test.com#@#.ad-banner"]
-        let result = ContentBlockerConverter().convertArray(rules: rules);
+        
+        rules = ["~test.com##.ad-banner", "~test.com#@#.ad-banner"]
+        result = ContentBlockerConverter().convertArray(rules: rules);
 
         XCTAssertEqual(result?.totalConvertedCount, 0);
         XCTAssertEqual(result?.convertedCount, 0);
