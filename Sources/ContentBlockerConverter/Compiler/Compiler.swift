@@ -139,7 +139,6 @@ class Compiler {
             if (trigger.unlessDomain == nil) {
                     trigger.unlessDomain = [];
                 }
-            // TODO fix exceptions for cosmetic rules with negated domain
             trigger.unlessDomain?.append(domain);
         }
     };

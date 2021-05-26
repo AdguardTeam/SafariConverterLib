@@ -903,7 +903,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result?.errorsCount, 0);
         XCTAssertEqual(result?.converted, "[]");
         
-        rules = ["~test.com##.ad-banner", "test.com#@#.ad-banner"]
+        rules = ["~test.com##.ad-banner", "~test.com#@#.ad-banner"]
         result = ContentBlockerConverter().convertArray(rules: rules);
 
         XCTAssertEqual(result?.totalConvertedCount, 1);
@@ -915,7 +915,7 @@ final class ContentBlockerConverterTests: XCTestCase {
 
         XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
         XCTAssertNil(decoded[0].trigger.ifDomain);
-        XCTAssertEqual(decoded[0].trigger.unlessDomain, ["*test.com", "*test.com"]); // TODO fix duplicate
+        XCTAssertEqual(decoded[0].trigger.unlessDomain, ["*test.com"]);
         XCTAssertEqual(decoded[0].action.type, "css-display-none");
         XCTAssertEqual(decoded[0].action.selector, ".ad-banner");
         
