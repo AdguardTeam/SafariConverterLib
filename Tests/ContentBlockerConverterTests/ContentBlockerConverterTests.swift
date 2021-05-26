@@ -384,6 +384,27 @@ final class ContentBlockerConverterTests: XCTestCase {
 
     func testConvertGenericDomainSensitiveSortingOrder() {
         let result = converter.convertArray(rules: ["~example.org##generic", "##wide1", "##specific", "@@||example.org^$generichide"]);
+        XCTAssertEqual(result?.convertedCount, 3);
+
+        let decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 3);
+
+        XCTAssertEqual(decoded[0].trigger.urlFilter, URL_FILTER_CSS_RULES);
+        XCTAssertEqual(decoded[0].action.type, "css-display-none");
+        XCTAssertEqual(decoded[0].action.selector, "wide1, specific");
+        XCTAssertEqual(decoded[1].trigger.urlFilter, URL_FILTER_CSS_RULES);
+        
+        XCTAssertEqual(decoded[1].action.type, "css-display-none");
+        XCTAssertEqual(decoded[1].action.selector, "generic");
+        XCTAssertEqual(decoded[1].trigger.unlessDomain, ["*example.org"]);
+
+        XCTAssertEqual(decoded[2].trigger.urlFilter, URL_FILTER_URL_RULES_EXCEPTIONS);
+        XCTAssertEqual(decoded[2].action.type, "ignore-previous-rules");
+        XCTAssertEqual(decoded[2].trigger.ifDomain, ["*example.org"]);
+    }
+
+    func testConvertGenericDomainSensitiveSortingOrderGenerichide() {
+        let result = converter.convertArray(rules: ["###generic", "@@||example.org^$generichide"]);
         XCTAssertEqual(result?.convertedCount, 2);
 
         let decoded = try! parseJsonString(json: result!.converted);
@@ -391,24 +412,11 @@ final class ContentBlockerConverterTests: XCTestCase {
 
         XCTAssertEqual(decoded[0].trigger.urlFilter, URL_FILTER_CSS_RULES);
         XCTAssertEqual(decoded[0].action.type, "css-display-none");
-        XCTAssertEqual(decoded[0].action.selector, "generic");
-        XCTAssertEqual(decoded[0].trigger.unlessDomain, ["*example.org"]);
+        XCTAssertEqual(decoded[0].action.selector, "#generic");
 
         XCTAssertEqual(decoded[1].trigger.urlFilter, URL_FILTER_URL_RULES_EXCEPTIONS);
         XCTAssertEqual(decoded[1].action.type, "ignore-previous-rules");
         XCTAssertEqual(decoded[1].trigger.ifDomain, ["*example.org"]);
-    }
-
-    func testConvertGenericDomainSensitiveSortingOrderGenerichide() {
-        let result = converter.convertArray(rules: ["###generic", "@@||example.org^$generichide"]);
-        XCTAssertEqual(result?.convertedCount, 1);
-
-        let decoded = try! parseJsonString(json: result!.converted);
-        XCTAssertEqual(decoded.count, 1);
-
-        XCTAssertEqual(decoded[0].trigger.urlFilter, URL_FILTER_URL_RULES_EXCEPTIONS);
-        XCTAssertEqual(decoded[0].action.type, "ignore-previous-rules");
-        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*example.org"]);
     }
 
     func testConvertGenericDomainSensitiveSortingOrderElemhide() {
@@ -934,6 +942,24 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded[0].trigger.unlessDomain, ["*test.com"]);
         XCTAssertEqual(decoded[0].action.type, "css-display-none");
         XCTAssertEqual(decoded[0].action.selector, ".ad-banner");
+    }
+    
+    func testTEMP() {
+        let rules = ["test.com#@##banner", "example.org#@##banner", "###banner"]
+        let result = ContentBlockerConverter().convertArray(rules: rules);
+
+        XCTAssertEqual(result?.totalConvertedCount, 1);
+        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result?.errorsCount, 0);
+        
+        let decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
+        XCTAssertNil(decoded[0].trigger.ifDomain);
+        XCTAssertEqual(decoded[0].trigger.unlessDomain, ["*test.com", "*example.org"]);
+        XCTAssertEqual(decoded[0].action.type, "css-display-none");
+        XCTAssertEqual(decoded[0].action.selector, "#banner");
     }
 
     static var allTests = [

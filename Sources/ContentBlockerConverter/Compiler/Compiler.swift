@@ -123,7 +123,7 @@ class Compiler {
      * If so - it may be that domain is redundant.
      */
     private static func pushExceptionDomain(domain: String, trigger: inout BlockerEntry.Trigger) -> Void {
-        let permittedDomains = trigger.ifDomain ?? trigger.unlessDomain;
+        let permittedDomains = trigger.ifDomain;
         if (permittedDomains != nil && permittedDomains!.count > 0) {
             
             // First check that domain is not redundant
