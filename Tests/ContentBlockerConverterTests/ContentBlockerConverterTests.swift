@@ -959,6 +959,69 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result?.errorsCount, 0);
         XCTAssertEqual(result?.converted, "[]");
     }
+    
+    func testAdvancedBlockingExceptions() {
+        func assertResultEmpty(result: ConversionResult) -> Void {
+            XCTAssertEqual(result.totalConvertedCount, 0);
+            XCTAssertEqual(result.convertedCount, 0);
+            XCTAssertEqual(result.advancedBlockingConvertedCount, 0);
+            XCTAssertEqual(result.errorsCount, 0);
+            XCTAssertEqual(result.converted, "[]");
+            XCTAssertNil(result.advancedBlocking);
+        }
+        
+        // script exception rules
+        var rules = ["test.com#%#window.__testCase2 = true;", "test.com#@%#window.__testCase2 = true;"]
+        var result = ContentBlockerConverter().convertArray(rules: rules, advancedBlocking: true);
+
+        XCTAssertEqual(result?.errorsCount, 0);
+        assertResultEmpty(result: result!);
+        
+        rules = ["~test.com#%#window.__testCase2 = true;", "~test.com#@%#window.__testCase2 = true;"]
+        result = ContentBlockerConverter().convertArray(rules: rules, advancedBlocking: true);
+
+        XCTAssertEqual(result?.errorsCount, 0);
+        assertResultEmpty(result: result!);
+        
+        // css-inject exception rules
+        rules = ["test.com#$#.banner { display: none!important; }", "test.com#@$#.banner { display: none!important; }"]
+        result = ContentBlockerConverter().convertArray(rules: rules, advancedBlocking: true);
+
+        XCTAssertEqual(result?.errorsCount, 0);
+        assertResultEmpty(result: result!);
+        
+        rules = ["~test.com#$#.banner { display: none!important; }", "~test.com#@$#.banner { display: none!important; }"]
+        result = ContentBlockerConverter().convertArray(rules: rules, advancedBlocking: true);
+
+        XCTAssertEqual(result?.errorsCount, 0);
+        assertResultEmpty(result: result!);
+        
+        // extended-css exception rules
+        rules = ["test.com#$?#div:has(> .banner) { display: none!important; }", "test.com#@$?#div:has(> .banner) { display: none!important; }"]
+        result = ContentBlockerConverter().convertArray(rules: rules, advancedBlocking: true);
+
+        XCTAssertEqual(result?.errorsCount, 0);
+        assertResultEmpty(result: result!);
+        
+        rules = ["~test.com#$?#div:has(> .banner) { display: none!important; }", "~test.com#@$?#div:has(> .banner) { display: none!important; }"]
+        result = ContentBlockerConverter().convertArray(rules: rules, advancedBlocking: true);
+
+        XCTAssertEqual(result?.errorsCount, 0);
+        assertResultEmpty(result: result!);
+        
+        // scriptlet exception rules
+        rules = ["test.com#%#//scriptlet('abort-on-property-read', 'abc')", "test.com#@%#//scriptlet('abort-on-property-read', 'abc')"]
+        result = ContentBlockerConverter().convertArray(rules: rules, advancedBlocking: true);
+
+        XCTAssertEqual(result?.errorsCount, 0);
+        assertResultEmpty(result: result!);
+        
+        rules = ["~test.com#%#//scriptlet('abort-on-property-read', 'abc')", "~test.com#@%#//scriptlet('abort-on-property-read', 'abc')"]
+        result = ContentBlockerConverter().convertArray(rules: rules, advancedBlocking: true);
+
+        XCTAssertEqual(result?.errorsCount, 0);
+        assertResultEmpty(result: result!);
+    }
 
     static var allTests = [
         ("testEmpty", testEmpty),
@@ -998,5 +1061,6 @@ final class ContentBlockerConverterTests: XCTestCase {
         ("testSpecialCharactersEscape", testSpecialCharactersEscape),
         ("testEscapeBackslash", testEscapeBackslash),
         ("testCssExceptions", testCssExceptions),
+        ("testAdvancedBlockingExceptions", testAdvancedBlockingExceptions),
     ]
 }
