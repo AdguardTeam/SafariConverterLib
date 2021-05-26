@@ -122,9 +122,7 @@ final class CompilerTests: XCTestCase {
         let filtered = Compiler.applyActionExceptions(blockingItems: &blockingItems, exceptions: exceptions, actionValue: "selector");
 
         XCTAssertNotNil(filtered);
-        XCTAssertEqual(filtered.count, 1);
-        XCTAssertNil(filtered[0].trigger.unlessDomain);
-        XCTAssertEqual(filtered[0].trigger.ifDomain?.count, 0);
+        XCTAssertEqual(filtered.count, 0);
     }
 
     func testApplyActionExceptionsForGenericRule() {
