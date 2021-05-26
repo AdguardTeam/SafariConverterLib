@@ -906,19 +906,11 @@ final class ContentBlockerConverterTests: XCTestCase {
         rules = ["~test.com##.ad-banner", "~test.com#@#.ad-banner"]
         result = ContentBlockerConverter().convertArray(rules: rules);
 
-        XCTAssertEqual(result?.totalConvertedCount, 1);
-        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result?.totalConvertedCount, 0);
+        XCTAssertEqual(result?.convertedCount, 0);
         XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result?.converted, "[]");
 
-        decoded = try! parseJsonString(json: result!.converted);
-        XCTAssertEqual(decoded.count, 1);
-
-        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
-        XCTAssertNil(decoded[0].trigger.ifDomain);
-        XCTAssertEqual(decoded[0].trigger.unlessDomain, ["*test.com"]);
-        XCTAssertEqual(decoded[0].action.type, "css-display-none");
-        XCTAssertEqual(decoded[0].action.selector, ".ad-banner");
-        
         rules = ["##.ad-banner", "test.com#@#.ad-banner"]
         result = ContentBlockerConverter().convertArray(rules: rules);
 
