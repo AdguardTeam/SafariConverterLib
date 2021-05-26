@@ -162,6 +162,18 @@ class Compiler {
     }
     
     /**
+     * Applies exception domains for provided trigger
+     */
+    private static func applyException(exceptionDomains: [String]?, domainsList: [String]?, trigger: inout BlockerEntry.Trigger) -> BlockerEntry.Trigger {
+        if (exceptionDomains != nil) {
+            for d in exceptionDomains! {
+                Compiler.pushExceptionDomain(exceptionDomain: d, domainsList: domainsList, trigger: &trigger);
+            }
+        }
+        return trigger;
+    }
+    
+    /**
      * Applies exceptions
      */
     static func applyActionExceptions(blockingItems: inout [BlockerEntry], exceptions: [BlockerEntry], actionValue: String) -> [BlockerEntry] {
@@ -195,23 +207,10 @@ class Compiler {
             
             for exc in matchingExceptions! {
                 if (exc.action.type == "ignore-previous-rules" && exc.trigger.ifDomain != nil && exc.trigger.ifDomain!.count > 0) {
-                    let exceptionDomains = exc.trigger.ifDomain;
-                    if (exceptionDomains != nil) {
-                        for d in exceptionDomains! {
-                            Compiler.pushExceptionDomain(exceptionDomain: d, domainsList: item.trigger.ifDomain, trigger: &item.trigger);
-                        }
-                        
-                        blockingItems[index].trigger = item.trigger;
-                    }
+                    blockingItems[index].trigger = Compiler.applyException(exceptionDomains: exc.trigger.ifDomain, domainsList: item.trigger.ifDomain, trigger: &item.trigger);
+                    
                 } else if (exc.action.type == "ignore-previous-rules" && exc.trigger.unlessDomain != nil && exc.trigger.unlessDomain!.count > 0) {
-                    let exceptionDomains = exc.trigger.unlessDomain;
-                    if (exceptionDomains != nil) {
-                        for d in exceptionDomains! {
-                            Compiler.pushExceptionDomain(exceptionDomain: d, domainsList: item.trigger.unlessDomain, trigger: &item.trigger);
-                        }
-                        
-                        blockingItems[index].trigger = item.trigger;
-                    }
+                    blockingItems[index].trigger = Compiler.applyException(exceptionDomains: exc.trigger.unlessDomain, domainsList: item.trigger.unlessDomain, trigger: &item.trigger)
                 }
             }
         }
