@@ -902,14 +902,6 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result?.convertedCount, 0);
         XCTAssertEqual(result?.errorsCount, 0);
         XCTAssertEqual(result?.converted, "[]");
-        
-        rules = ["~test.com##.ad-banner", "~test.com#@#.ad-banner"]
-        result = ContentBlockerConverter().convertArray(rules: rules);
-
-        XCTAssertEqual(result?.totalConvertedCount, 0);
-        XCTAssertEqual(result?.convertedCount, 0);
-        XCTAssertEqual(result?.errorsCount, 0);
-        XCTAssertEqual(result?.converted, "[]");
 
         rules = ["##.ad-banner", "test.com#@#.ad-banner"]
         result = ContentBlockerConverter().convertArray(rules: rules);
@@ -942,17 +934,15 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded[0].trigger.unlessDomain, ["*test.com"]);
         XCTAssertEqual(decoded[0].action.type, "css-display-none");
         XCTAssertEqual(decoded[0].action.selector, ".ad-banner");
-    }
-    
-    func testTEMP() {
-        let rules = ["test.com#@##banner", "example.org#@##banner", "###banner"]
-        let result = ContentBlockerConverter().convertArray(rules: rules);
+        
+        rules = ["test.com#@##banner", "example.org#@##banner", "###banner"]
+        result = ContentBlockerConverter().convertArray(rules: rules);
 
         XCTAssertEqual(result?.totalConvertedCount, 1);
         XCTAssertEqual(result?.convertedCount, 1);
         XCTAssertEqual(result?.errorsCount, 0);
         
-        let decoded = try! parseJsonString(json: result!.converted);
+        decoded = try! parseJsonString(json: result!.converted);
         XCTAssertEqual(decoded.count, 1);
         
         XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
@@ -960,6 +950,16 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded[0].trigger.unlessDomain, ["*test.com", "*example.org"]);
         XCTAssertEqual(decoded[0].action.type, "css-display-none");
         XCTAssertEqual(decoded[0].action.selector, "#banner");
+    }
+    
+    func testTEMP() {
+        let rules = ["~test.com##.ad-banner", "~test.com#@#.ad-banner"]
+        let result = ContentBlockerConverter().convertArray(rules: rules);
+
+        XCTAssertEqual(result?.totalConvertedCount, 0);
+        XCTAssertEqual(result?.convertedCount, 0);
+        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result?.converted, "[]");
     }
 
     static var allTests = [
