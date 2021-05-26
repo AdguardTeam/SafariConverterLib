@@ -123,7 +123,7 @@ class Compiler {
      * If so - it may be that domain is redundant.
      */
     private static func pushExceptionDomain(domain: String, trigger: inout BlockerEntry.Trigger) -> Void {
-        let permittedDomains = trigger.ifDomain;
+        let permittedDomains = trigger.ifDomain ?? trigger.unlessDomain;
         if (permittedDomains != nil && permittedDomains!.count > 0) {
             
             // First check that domain is not redundant
@@ -132,8 +132,12 @@ class Compiler {
                 return;
             }
             
-            // remove exception domain from trigger.ifDomain
-            trigger.ifDomain = permittedDomains!.filter{ $0 != domain }
+            // remove exception domain
+            if (trigger.ifDomain != nil) {
+                trigger.ifDomain = permittedDomains!.filter{ $0 != domain }
+            } else if (trigger.unlessDomain != nil) {
+                trigger.unlessDomain = permittedDomains!.filter{ $0 != domain }
+            }
         
         } else {
             if (trigger.unlessDomain == nil) {
@@ -191,7 +195,7 @@ class Compiler {
             }
             
             for exc in matchingExceptions! {
-                let exceptionDomains = exc.trigger.ifDomain;
+                let exceptionDomains = exc.trigger.ifDomain ?? exc.trigger.unlessDomain;
                 if (exceptionDomains != nil) {
                     for d in exceptionDomains! {
                         Compiler.pushExceptionDomain(domain: d, trigger: &item.trigger);
@@ -206,7 +210,7 @@ class Compiler {
         
         for r in blockingItems {
             // skip cosmetic entries, that has been disabled by exclusion rules
-            if ((r.trigger.ifDomain == nil || r.trigger.ifDomain?.count == 0) && (r.trigger.unlessDomain == nil || r.trigger.unlessDomain?.count == 0) && self.COSMETIC_ACTIONS.contains(r.action.type)) {
+            if ((r.trigger.ifDomain?.count == 0 && r.trigger.unlessDomain == nil) || (r.trigger.unlessDomain?.count == 0 && r.trigger.ifDomain == nil) && self.COSMETIC_ACTIONS.contains(r.action.type)) {
                 continue;
             }
             
