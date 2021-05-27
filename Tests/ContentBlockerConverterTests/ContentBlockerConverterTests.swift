@@ -791,6 +791,25 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result?.errorsCount, 0);
         XCTAssertEqual(result?.advancedBlockingConvertedCount, 1);
     }
+    
+    func testCssInjectWithMultiSelectors() {
+        let ruleText = [
+            "google.com#$##js-header, #searchform, .O-j-k, .header:not(.column-section):not(.viewed):not(.ng-star-inserted):not([class*=\"_ngcontent\"]), .js-header.chr-header, .mobile-action-bar, body > .ng-scope, #flt-nav, .gws-flights__scrollbar-padding.gws-flights__selection-bar, .gws-flights__selection-bar-shadow-mask { position: absolute !important; }",
+        ];
+        let result = converter.convertArray(rules: ruleText, advancedBlocking: true);
+        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result?.convertedCount, 0);
+        XCTAssertEqual(result?.advancedBlockingConvertedCount, 1);
+        
+        let decoded = try! parseJsonString(json: result!.advancedBlocking!);
+        XCTAssertEqual(decoded.count, 1);
+        
+        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*google.com"]);
+        XCTAssertNil(decoded[0].trigger.unlessDomain);
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
+        XCTAssertEqual(decoded[0].action.type, "css-inject");
+        XCTAssertEqual(decoded[0].action.css, "#js-header, #searchform, .O-j-k, .header:not(.column-section):not(.viewed):not(.ng-star-inserted):not([class*=\"_ngcontent\"]), .js-header.chr-header, .mobile-action-bar, body > .ng-scope, #flt-nav, .gws-flights__scrollbar-padding.gws-flights__selection-bar, .gws-flights__selection-bar-shadow-mask { position: absolute !important; }");
+    }
 
     func testSpecialCharactersEscape() {
         var ruleText = [
@@ -914,6 +933,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         ("testCollisionCssAndScriptRulesAdvancedBlocking", testCollisionCssAndScriptRulesAdvancedBlocking),
         ("testCollisionCssAndScriptletRulesAdvancedBlocking", testCollisionCssAndScriptletRulesAdvancedBlocking),
         ("testGenericCssRules", testGenericCssRules),
+        ("testCssInjectWithMultiSelectors", testCssInjectWithMultiSelectors),
         ("testSpecialCharactersEscape", testSpecialCharactersEscape),
         ("testEscapeBackslash", testEscapeBackslash),
     ]
