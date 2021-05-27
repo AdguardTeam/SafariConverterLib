@@ -34,7 +34,7 @@ class Compiler {
         var scriptletsExceptions = [BlockerEntry]();
         var cosmeticCssExceptions = [BlockerEntry]();
         
-        var specifichideExceptions = [BlockerEntry]();
+        var specifichideExceptionDomains = [String]();
         
         var compilationResult = CompilationResult();
         compilationResult.rulesCount = rules.count;
@@ -74,7 +74,8 @@ class Compiler {
                 } else if (item.action.css != nil && item.action.css! != "") {
                     cosmeticCssExceptions.append(item);
                 } else if ((rule as! NetworkRule).isSingleOption(option: .Specifichide)) {
-                    specifichideExceptions.append(item);
+                    let exceptionDomain = NetworkRuleParser.parseRuleDomain(pattern: rule.ruleText as String);
+                    specifichideExceptionDomains.append(exceptionDomain);
                 } else {
                     compilationResult.addIgnorePreviousTypedEntry(entry: item, source: rule);
                 }
@@ -91,7 +92,7 @@ class Compiler {
         compilationResult.cssBlockingDomainSensitive = Compiler.compactDomainCssRules(entries: cssCompact.cssBlockingDomainSensitive);
         
         // Apply specifichide exceptions
-        compilationResult.cssBlockingDomainSensitive = Compiler.applySpecifichide(blockingItems: &compilationResult.cssBlockingDomainSensitive, specifichideExceptions: specifichideExceptions);
+        compilationResult.cssBlockingDomainSensitive = Compiler.applySpecifichide(blockingItems: &compilationResult.cssBlockingDomainSensitive, specifichideExceptions: specifichideExceptionDomains);
 
         if (self.advancedBlockedEnabled) {
             // Applying CSS exceptions for extended css rules
@@ -106,7 +107,7 @@ class Compiler {
             compilationResult.extendedCssBlockingDomainSensitive = extendedCssCompact.cssBlockingDomainSensitive;
             
             // Apply specifichide exceptions for extended css rules
-            compilationResult.extendedCssBlockingDomainSensitive = Compiler.applySpecifichide(blockingItems: &compilationResult.extendedCssBlockingDomainSensitive, specifichideExceptions: specifichideExceptions);
+            compilationResult.extendedCssBlockingDomainSensitive = Compiler.applySpecifichide(blockingItems: &compilationResult.extendedCssBlockingDomainSensitive, specifichideExceptions: specifichideExceptionDomains);
             
             // Applying CSS exceptions for css injecting rules
             cssInjects = Compiler.applyActionExceptions(
@@ -115,7 +116,7 @@ class Compiler {
             compilationResult.сssInjects = cssInjects;
             
             // Apply specifichide exceptions for css injecting rules
-            compilationResult.сssInjects = Compiler.applySpecifichide(blockingItems: &compilationResult.сssInjects, specifichideExceptions: specifichideExceptions);
+            compilationResult.сssInjects = Compiler.applySpecifichide(blockingItems: &compilationResult.сssInjects, specifichideExceptions: specifichideExceptionDomains);
             
             // Applying script exceptions
             scriptRules = Compiler.applyActionExceptions(blockingItems: &scriptRules, exceptions: scriptExceptionRules, actionValue: "script");
@@ -171,15 +172,13 @@ class Compiler {
     /**
      * Applies specifichide exceptions
      */
-    private static func applySpecifichide(blockingItems: inout [BlockerEntry], specifichideExceptions: [BlockerEntry]) -> [BlockerEntry] {
+    private static func applySpecifichide(blockingItems: inout [BlockerEntry], specifichideExceptions: [String]) -> [BlockerEntry] {
         for index in 0..<blockingItems.count {
             var item = blockingItems[index];
 
             for exception in specifichideExceptions {
-                let exceptionDomain = exception.trigger.urlFilter?.replace(target: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?", withString: "").replace(target: "([\\/:&\\?].*)?$", withString: "").replace(target: "\\", withString: "");
-                
-                if (exceptionDomain != nil && item.trigger.ifDomain?.contains(exceptionDomain!) != nil) {
-                    item.trigger.ifDomain = item.trigger.ifDomain!.filter{ $0 != exceptionDomain }
+                if (item.trigger.ifDomain?.contains(exception) != nil) {
+                    item.trigger.ifDomain = item.trigger.ifDomain!.filter{ $0 != exception }
                     blockingItems[index].trigger = item.trigger;
                 }
             }

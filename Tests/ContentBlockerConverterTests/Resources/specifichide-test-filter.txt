@@ -999,7 +999,6 @@ test998.com,example998.org##.banner
 test999.com,example999.org##.banner
 test1000.com,example1000.org##.banner
 !
-!
 @@||example1.org^$specifichide
 @@||example2.org^$specifichide
 @@||example3.org^$specifichide
