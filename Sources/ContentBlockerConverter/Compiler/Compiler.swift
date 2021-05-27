@@ -122,9 +122,19 @@ class Compiler {
      * First it checks if rule has if-domain restriction.
      * If so - it may be that domain is redundant.
      */
-    private static func pushExceptionDomain(domains: [String], trigger: inout BlockerEntry.Trigger, flag: String) -> Void {
-        for domain in domains {
-            let domainsList = flag == "ifDomain" ? trigger.ifDomain : trigger.unlessDomain;
+    private static func applyExceptionDomains(exceptionTrigger: BlockerEntry.Trigger, ruleTrigger: inout BlockerEntry.Trigger) -> Void {
+        var exceptionDomains:[String]?;
+        var domainsList:[String]?;
+        
+        if (exceptionTrigger.ifDomain != nil) {
+            exceptionDomains = exceptionTrigger.ifDomain;
+            domainsList = ruleTrigger.ifDomain;
+        } else if (exceptionTrigger.unlessDomain != nil) {
+            exceptionDomains = exceptionTrigger.unlessDomain;
+            domainsList = ruleTrigger.unlessDomain;
+        }
+        
+        for domain in exceptionDomains! {
             if (domainsList != nil && domainsList!.count > 0) {
                 
                 // First check that domain is not redundant
@@ -134,17 +144,17 @@ class Compiler {
                 }
                 
                 // remove exception domain
-                if (trigger.ifDomain != nil) {
-                    trigger.ifDomain = domainsList!.filter{ $0 != domain }
-                } else if (trigger.unlessDomain != nil) {
-                    trigger.unlessDomain = domainsList!.filter{ $0 != domain }
+                if (ruleTrigger.ifDomain != nil) {
+                    ruleTrigger.ifDomain = domainsList!.filter{ $0 != domain }
+                } else if (ruleTrigger.unlessDomain != nil) {
+                    ruleTrigger.unlessDomain = domainsList!.filter{ $0 != domain }
                 }
             
             } else {
-                if (trigger.unlessDomain == nil) {
-                        trigger.unlessDomain = [];
+                if (ruleTrigger.unlessDomain == nil) {
+                        ruleTrigger.unlessDomain = [];
                     }
-                trigger.unlessDomain?.append(domain);
+                ruleTrigger.unlessDomain?.append(domain);
             }
         }
     };
@@ -196,14 +206,7 @@ class Compiler {
             }
             
             for exc in matchingExceptions! {
-                if (exc.trigger.ifDomain != nil) {
-                    Compiler.pushExceptionDomain(domains: exc.trigger.ifDomain!, trigger: &blockingItems[index].trigger, flag: "ifDomain");
-                    
-                } else if (exc.trigger.unlessDomain != nil) {
-                    Compiler.pushExceptionDomain(domains: exc.trigger.unlessDomain!, trigger: &blockingItems[index].trigger, flag: "unlessDomain");
-                }
-                
-                
+                Compiler.applyExceptionDomains(exceptionTrigger: exc.trigger, ruleTrigger: &blockingItems[index].trigger);
             }
         }
         
