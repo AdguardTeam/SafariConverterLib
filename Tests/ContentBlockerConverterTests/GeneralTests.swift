@@ -351,23 +351,57 @@ final class GeneralTests: XCTestCase {
         
     }
     
+    func createSpecifichideTestFilter(filePath: URL, iterations: Int) -> Void {
+        var rules: String = "";
+        
+        for index in 1...iterations {
+            let rule1 = "test\(index).com,example\(index).org##.banner";
+            let rule2 = "@@||example\(index).org^$specifichide";
+            
+            rules += rule1 + "\n" + rule2 + "\n";
+        }
+        
+        do {
+            let data = rules.data(using: .utf8);
+            try data!.write(to: filePath)
+        }
+        catch let error as NSError {
+            print("Error: \(error.domain)")
+        }
+    }
+    
+    func removeFile(filePath: URL) {
+        do {
+            try FileManager.default.removeItem(at: filePath)
+        } catch let error as NSError {
+            print("Error: \(error.domain)")
+        }
+    }
+    
     func testSpecifichidePerformance() {
+        let testFileName: String = "specifichide-test-filter.txt";
+        let testIterations: Int = 10;
+        
         let thisSourceFile = URL(fileURLWithPath: #file);
         let thisDirectory = thisSourceFile.deletingLastPathComponent();
-        let resourceURL = thisDirectory.appendingPathComponent("Resources/specifichide-test-filter.txt");
+        let specifichideTestFilterURL = thisDirectory.appendingPathComponent(testFileName);
         
-        let content = try! String(contentsOf: resourceURL, encoding: String.Encoding.utf8);
+        createSpecifichideTestFilter(filePath: specifichideTestFilterURL, iterations: testIterations);
+
+        let content = try! String(contentsOf: specifichideTestFilterURL, encoding: String.Encoding.utf8);
         let rules = content.components(separatedBy: "\n");
-        
+
         self.measure {
             let conversionResult = ContentBlockerConverter().convertArray(rules: rules);
             NSLog(conversionResult!.message);
-            
-            XCTAssertEqual(conversionResult?.totalConvertedCount, 1000);
-            XCTAssertEqual(conversionResult?.convertedCount, 1000);
+
+            XCTAssertEqual(conversionResult?.totalConvertedCount, testIterations);
+            XCTAssertEqual(conversionResult?.convertedCount, testIterations);
             XCTAssertEqual(conversionResult?.errorsCount, 0);
             XCTAssertEqual(conversionResult?.overLimit, false);
         }
+        
+        removeFile(filePath: specifichideTestFilterURL);
         
     }
     
