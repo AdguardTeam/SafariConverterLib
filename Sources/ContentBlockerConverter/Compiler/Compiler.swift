@@ -179,9 +179,10 @@ class Compiler {
             for exception in specifichideExceptions {
                 if (item.trigger.ifDomain?.contains(exception) != nil) {
                     item.trigger.ifDomain = item.trigger.ifDomain!.filter{ $0 != exception }
-                    blockingItems[index].trigger = item.trigger;
                 }
             }
+            
+            blockingItems[index].trigger = item.trigger;
         }
 
         var result = [BlockerEntry]();
