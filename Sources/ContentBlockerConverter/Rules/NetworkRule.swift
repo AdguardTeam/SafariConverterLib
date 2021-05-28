@@ -64,6 +64,10 @@ class NetworkRule: Rule {
             }
         }
         
+        if (ruleParts.options == "specifichide" && ruleParts.whitelist == false) {
+            throw SyntaxError.invalidRule(message: "Specifichide modifier must be used for exception rules only");
+        }
+        
         self.urlRuleText = NetworkRuleParser.getAsciiDomainRule(pattern: ruleParts.pattern)!;
         
         if (self.isRegexRule()) {

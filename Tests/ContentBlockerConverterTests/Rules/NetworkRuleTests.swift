@@ -227,14 +227,19 @@ final class NetworkRuleTests: XCTestCase {
     }
     
     func testSpecifichide() {
-            let result = try! NetworkRule(ruleText: "||example.org^$specifichide");
+        var rule = "@@||example.org^$specifichide" as NSString;
+        
+        let result = try! NetworkRule(ruleText: rule);
 
-            XCTAssertNotNil(result);
-            XCTAssertEqual(result.ruleText, "||example.org^$specifichide");
-            XCTAssertEqual(result.isCssExceptionRule, false);
-            XCTAssertEqual(result.urlRuleText, "||example.org^");
-            XCTAssertEqual(result.enabledOptions, [NetworkRule.NetworkRuleOption.Specifichide]);
-        }
+        XCTAssertNotNil(result);
+        XCTAssertEqual(result.ruleText, "@@||example.org^$specifichide");
+        XCTAssertEqual(result.isCssExceptionRule, false);
+        XCTAssertEqual(result.urlRuleText, "||example.org^");
+        XCTAssertEqual(result.enabledOptions, [NetworkRule.NetworkRuleOption.Specifichide]);
+        
+        rule = "||example.org^$specifichide" as NSString;
+        XCTAssertThrowsError(try NetworkRule(ruleText: rule));
+    }
 
     static var allTests = [
         ("testSimpleRules", testSimpleRules),
