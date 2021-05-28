@@ -92,5 +92,5 @@ After installation the build process occurs and binary file will be copied to bi
 ### Limitations
 
 * Safari does not support both `if-domain` and `unless-domain` triggers. That's why rules like `example.org,~foo.example.orgs` are invalid. [Feature request](https://bugs.webkit.org/show_bug.cgi?id=226076) to WebKit to allow such rules.
-* Cosmetic exception rules work only on level of provided domain and has no any effect on rules with subdomain and top-level domains, i.e. the exceptions rule `subdomain.example.org#@##banner` doesn't disable `example.org###banner`.
+* Cosmetic exception rules work only on level of provided domain and has no any effect on rules with subdomains and top-level domains, i.e. the exceptions rule `subdomain.example.org#@##banner` doesn't disable `example.org###banner`.
 * Rules with `ping` modifier are ignored (until [#18](https://github.com/AdguardTeam/SafariConverterLib/issues/18) is solved)
