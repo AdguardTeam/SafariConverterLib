@@ -109,6 +109,25 @@ final class CompilerTests: XCTestCase {
     func testApplyActionExceptions() {
         var blockingItems = [
             BlockerEntry(
+                trigger: BlockerEntry.Trigger(ifDomain: ["example.org"]),
+                action: BlockerEntry.Action(type: "selector", selector: ".banner"))
+        ];
+
+        let exceptions = [
+            BlockerEntry(
+                trigger: BlockerEntry.Trigger(ifDomain: ["example.org"]),
+                action: BlockerEntry.Action(type: "ignore-previous-rules", selector: ".banner"))
+        ];
+
+        let filtered = Compiler.applyActionExceptions(blockingItems: &blockingItems, exceptions: exceptions, actionValue: "selector");
+
+        XCTAssertNotNil(filtered);
+        XCTAssertEqual(filtered.count, 0);
+    }
+
+    func testApplyActionExceptionsForGenericRule() {
+        var blockingItems = [
+            BlockerEntry(
                 trigger: BlockerEntry.Trigger(urlFilter: ".*"),
                 action: BlockerEntry.Action(type: "selector", selector: "test_selector"))
         ];
@@ -127,9 +146,31 @@ final class CompilerTests: XCTestCase {
         XCTAssertEqual(filtered[0].trigger.unlessDomain, ["whitelisted.com"]);
     }
 
+    func testApplyActionExceptionsForMultiDomainRule() {
+        var blockingItems = [
+            BlockerEntry(
+                trigger: BlockerEntry.Trigger(ifDomain: ["example.org", "test.com"], urlFilter: ".*"),
+                action: BlockerEntry.Action(type: "selector", selector: ".banner"))
+        ];
+
+        let exceptions = [
+            BlockerEntry(
+                trigger: BlockerEntry.Trigger(ifDomain: ["test.com"]),
+                action: BlockerEntry.Action(type: "ignore-previous-rules", selector: ".banner"))
+        ];
+
+        let filtered = Compiler.applyActionExceptions(blockingItems: &blockingItems, exceptions: exceptions, actionValue: "selector");
+
+        XCTAssertNotNil(filtered);
+        XCTAssertEqual(filtered.count, 1);
+        XCTAssertNil(filtered[0].trigger.unlessDomain);
+        XCTAssertEqual(filtered[0].trigger.ifDomain!, ["example.org"]);
+        XCTAssertEqual(filtered[0].action.selector, ".banner");
+    }
+
     func testIfDomainAndUnlessDomain() {
         let compiler = Compiler(optimize: false, advancedBlocking: false, errorsCounter: ErrorsCounter());
-        
+
         func assertResultEmpty(result: CompilationResult) -> Void {
             XCTAssertEqual(result.cssBlockingWide.count, 0);
             XCTAssertEqual(result.cssBlockingGenericDomainSensitive.count, 0);
@@ -148,16 +189,16 @@ final class CompilerTests: XCTestCase {
             XCTAssertEqual(result.extendedCssBlockingGenericDomainSensitive.count, 0);
             XCTAssertEqual(result.extendedCssBlockingDomainSensitive.count, 0);
         }
-        
+
         var ruleText: NSString = "example.org,~subdomain.example.org###banner";
-        
+
         var rule = try! RuleFactory.createRule(ruleText: ruleText)
         var result = compiler.compileRules(rules: [rule!]);
 
         XCTAssertNotNil(result);
         XCTAssertEqual(result.rulesCount, 1);
         XCTAssertEqual(result.errorsCount, 0);
-        
+
         assertResultEmpty(result: result);
 
         ruleText = "yandex.kz,~afisha.yandex.kz#@#body.i-bem > a[data-statlog^='banner']";
@@ -168,9 +209,9 @@ final class CompilerTests: XCTestCase {
         XCTAssertNotNil(result);
         XCTAssertEqual(result.rulesCount, 1);
         XCTAssertEqual(result.errorsCount, 0);
-        
+
         assertResultEmpty(result: result);
-        
+
         ruleText = "||example.org^$domain=test.com|~sub.test.com";
 
         rule = try! RuleFactory.createRule(ruleText: ruleText)
@@ -179,9 +220,9 @@ final class CompilerTests: XCTestCase {
         XCTAssertNotNil(result);
         XCTAssertEqual(result.rulesCount, 1);
         XCTAssertEqual(result.errorsCount, 0);
-        
+
         assertResultEmpty(result: result);
-        
+
         ruleText = "@@||example.org^$domain=test.com|~sub.test.com";
 
         rule = try! RuleFactory.createRule(ruleText: ruleText)
@@ -190,7 +231,7 @@ final class CompilerTests: XCTestCase {
         XCTAssertNotNil(result);
         XCTAssertEqual(result.rulesCount, 1);
         XCTAssertEqual(result.errorsCount, 0);
-        
+
         assertResultEmpty(result: result);
     }
 
@@ -200,6 +241,8 @@ final class CompilerTests: XCTestCase {
         ("testCompactIfDomainCss", testCompactIfDomainCss),
         ("testCompactUnlessDomainCss", testCompactUnlessDomainCss),
         ("testApplyActionExceptions", testApplyActionExceptions),
+        ("testApplyActionExceptionsForGenericRule", testApplyActionExceptionsForGenericRule),
+        ("testApplyActionExceptionsForMultiDomainRule", testApplyActionExceptionsForMultiDomainRule),
         ("testIfDomainAndUnlessDomain", testIfDomainAndUnlessDomain),
     ]
 }

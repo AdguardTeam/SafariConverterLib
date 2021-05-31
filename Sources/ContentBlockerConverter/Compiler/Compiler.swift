@@ -13,6 +13,8 @@ class Compiler {
     
     private let blockerEntryFactory: BlockerEntryFactory;
     
+    private static let COSMETIC_ACTIONS: [String] = ["css-display-none", "css-inject", "css-extended", "scriptlet", "script"];
+    
     init(optimize: Bool, advancedBlocking: Bool, errorsCounter: ErrorsCounter) {
         self.optimize = optimize;
         self.advancedBlockedEnabled = advancedBlocking;
@@ -120,24 +122,41 @@ class Compiler {
      * First it checks if rule has if-domain restriction.
      * If so - it may be that domain is redundant.
      */
-    private static func pushExceptionDomain(domain: String, trigger: inout BlockerEntry.Trigger) -> Void {
-        let permittedDomains = trigger.ifDomain;
-        if (permittedDomains != nil && permittedDomains!.count > 0) {
-            
-            // First check that domain is not redundant
-            let applicable = permittedDomains?.firstIndex(of: domain) != nil;
-            if (!applicable) {
-                return;
-            }
-            
-            // TODO: Remove domain from trigger.ifDomain?
-        }
-
-        if (trigger.unlessDomain == nil) {
-            trigger.unlessDomain = [];
+    private static func applyExceptionDomains(exceptionTrigger: BlockerEntry.Trigger, ruleTrigger: inout BlockerEntry.Trigger) -> Void {
+        var exceptionDomains:[String]?;
+        var domainsList:[String]?;
+        
+        if (exceptionTrigger.ifDomain != nil) {
+            exceptionDomains = exceptionTrigger.ifDomain;
+            domainsList = ruleTrigger.ifDomain;
+        } else if (exceptionTrigger.unlessDomain != nil) {
+            exceptionDomains = exceptionTrigger.unlessDomain;
+            domainsList = ruleTrigger.unlessDomain;
         }
         
-        trigger.unlessDomain?.append(domain);
+        for domain in exceptionDomains! {
+            if (domainsList != nil && domainsList!.count > 0) {
+                
+                // First check that domain is not redundant
+                let applicable = domainsList?.firstIndex(of: domain) != nil;
+                if (!applicable) {
+                    return;
+                }
+                
+                // remove exception domain
+                if (ruleTrigger.ifDomain != nil) {
+                    ruleTrigger.ifDomain = domainsList!.filter{ $0 != domain }
+                } else if (ruleTrigger.unlessDomain != nil) {
+                    ruleTrigger.unlessDomain = domainsList!.filter{ $0 != domain }
+                }
+            
+            } else {
+                if (ruleTrigger.unlessDomain == nil) {
+                        ruleTrigger.unlessDomain = [];
+                    }
+                ruleTrigger.unlessDomain?.append(domain);
+            }
+        }
     };
     
     private static func getActionValue(entry: BlockerEntry, action: String) -> String? {
@@ -176,8 +195,7 @@ class Compiler {
         }
         
         for index in 0..<blockingItems.count {
-            var item = blockingItems[index];
-            let key = Compiler.getActionValue(entry: item, action: actionValue);
+            let key = Compiler.getActionValue(entry: blockingItems[index], action: actionValue);
             if (key == nil) {
                 continue;
             }
@@ -188,20 +206,18 @@ class Compiler {
             }
             
             for exc in matchingExceptions! {
-                let exceptionDomains = exc.trigger.ifDomain;
-                if (exceptionDomains != nil) {
-                    for d in exceptionDomains! {
-                        Compiler.pushExceptionDomain(domain: d, trigger: &item.trigger);
-                    }
-                    
-                    blockingItems[index].trigger = item.trigger;
-                }
+                Compiler.applyExceptionDomains(exceptionTrigger: exc.trigger, ruleTrigger: &blockingItems[index].trigger);
             }
         }
         
         var result = [BlockerEntry]();
         
         for r in blockingItems {
+            // skip cosmetic entries, that has been disabled by exclusion rules
+            if ((r.trigger.ifDomain?.count == 0 && r.trigger.unlessDomain == nil) || (r.trigger.unlessDomain?.count == 0 && r.trigger.ifDomain == nil) && self.COSMETIC_ACTIONS.contains(r.action.type)) {
+                continue;
+            }
+            
             if (r.trigger.ifDomain == nil || r.trigger.ifDomain?.count == 0 ||
                 r.trigger.unlessDomain == nil || r.trigger.unlessDomain?.count == 0) {
                 result.append(r);

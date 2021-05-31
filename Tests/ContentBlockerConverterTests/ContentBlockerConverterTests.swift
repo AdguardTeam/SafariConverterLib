@@ -392,8 +392,8 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded[0].trigger.urlFilter, URL_FILTER_CSS_RULES);
         XCTAssertEqual(decoded[0].action.type, "css-display-none");
         XCTAssertEqual(decoded[0].action.selector, "wide1, specific");
-
         XCTAssertEqual(decoded[1].trigger.urlFilter, URL_FILTER_CSS_RULES);
+        
         XCTAssertEqual(decoded[1].action.type, "css-display-none");
         XCTAssertEqual(decoded[1].action.selector, "generic");
         XCTAssertEqual(decoded[1].trigger.unlessDomain, ["*example.org"]);
@@ -784,7 +784,7 @@ final class ContentBlockerConverterTests: XCTestCase {
 
     func testGenericCssRules() {
         let ruleText = [
-            "#$?#.banner { display: none; debug: global; }",
+            "#$#.banner { display: none; debug: global; }",
         ];
 
         let result = converter.convertArray(rules: ruleText, advancedBlocking: true);
@@ -897,6 +897,197 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded.count, 1);
         XCTAssertTrue(decoded[0].trigger.urlFilter!.contains(".com\\\\\\/mm\\\\\\/yksdk"));
     }
+    
+    func testCssExceptions() {
+        var rules = ["test.com,example.com##.ad-banner", "test.com#@#.ad-banner"]
+        var result = ContentBlockerConverter().convertArray(rules: rules);
+
+        XCTAssertEqual(result?.totalConvertedCount, 1);
+        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result?.errorsCount, 0);
+        
+        var decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
+        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*example.com"]);
+        XCTAssertEqual(decoded[0].action.type, "css-display-none");
+        XCTAssertEqual(decoded[0].action.selector, ".ad-banner");
+
+        rules = ["test.com##.ad-banner", "test.com#@#.ad-banner"]
+        result = ContentBlockerConverter().convertArray(rules: rules);
+
+        XCTAssertEqual(result?.totalConvertedCount, 0);
+        XCTAssertEqual(result?.convertedCount, 0);
+        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result?.converted, "[]");
+
+        rules = ["##.ad-banner", "test.com#@#.ad-banner"]
+        result = ContentBlockerConverter().convertArray(rules: rules);
+
+        XCTAssertEqual(result?.totalConvertedCount, 1);
+        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result?.errorsCount, 0);
+        
+        decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
+        XCTAssertNil(decoded[0].trigger.ifDomain);
+        XCTAssertEqual(decoded[0].trigger.unlessDomain, ["*test.com"]);
+        XCTAssertEqual(decoded[0].action.type, "css-display-none");
+        XCTAssertEqual(decoded[0].action.selector, ".ad-banner");
+        
+        rules = ["##.ad-banner", "test.com#@#.ad-banner", "test.com##.ad-banner"]
+        result = ContentBlockerConverter().convertArray(rules: rules);
+
+        XCTAssertEqual(result?.totalConvertedCount, 1);
+        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result?.errorsCount, 0);
+        
+        decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
+        XCTAssertNil(decoded[0].trigger.ifDomain);
+        XCTAssertEqual(decoded[0].trigger.unlessDomain, ["*test.com"]);
+        XCTAssertEqual(decoded[0].action.type, "css-display-none");
+        XCTAssertEqual(decoded[0].action.selector, ".ad-banner");
+        
+        rules = ["test.com#@##banner", "example.org#@##banner", "###banner"]
+        result = ContentBlockerConverter().convertArray(rules: rules);
+
+        XCTAssertEqual(result?.totalConvertedCount, 1);
+        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result?.errorsCount, 0);
+        
+        decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
+        XCTAssertNil(decoded[0].trigger.ifDomain);
+        XCTAssertEqual(decoded[0].trigger.unlessDomain, ["*test.com", "*example.org"]);
+        XCTAssertEqual(decoded[0].action.type, "css-display-none");
+        XCTAssertEqual(decoded[0].action.selector, "#banner");
+        
+        rules = ["~test.com##.ad-banner", "~test.com#@#.ad-banner"]
+        result = ContentBlockerConverter().convertArray(rules: rules);
+
+        XCTAssertEqual(result?.totalConvertedCount, 0);
+        XCTAssertEqual(result?.convertedCount, 0);
+        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result?.converted, "[]");
+        
+        rules = ["subdomain.example.org##.ad-banner", "example.org#@#.ad-banner"]
+        result = ContentBlockerConverter().convertArray(rules: rules);
+
+        XCTAssertEqual(result?.totalConvertedCount, 1);
+        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result?.errorsCount, 0);
+        
+        decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
+        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*subdomain.example.org"]);
+        XCTAssertEqual(decoded[0].action.type, "css-display-none");
+        XCTAssertEqual(decoded[0].action.selector, ".ad-banner");
+    }
+    
+    func testAdvancedBlockingExceptions() {
+        func assertEmptyResult(result: ConversionResult) -> Void {
+            XCTAssertEqual(result.totalConvertedCount, 0);
+            XCTAssertEqual(result.convertedCount, 0);
+            XCTAssertEqual(result.advancedBlockingConvertedCount, 0);
+            XCTAssertEqual(result.errorsCount, 0);
+            XCTAssertEqual(result.converted, "[]");
+            XCTAssertNil(result.advancedBlocking);
+        }
+        
+        var rules = [
+            "test.com#%#window.__testCase2 = true;",
+            "test.com#@%#window.__testCase2 = true;",
+            "test.com#$#.banner { display: none!important; }",
+            "test.com#@$#.banner { display: none!important; }",
+            "test.com#$?#div:has(> .banner) { display: none!important; }",
+            "test.com#@$?#div:has(> .banner) { display: none!important; }",
+            "test.com#%#//scriptlet('abort-on-property-read', 'abc')",
+            "test.com#@%#//scriptlet('abort-on-property-read', 'abc')",
+        ]
+        
+        var result = ContentBlockerConverter().convertArray(rules: rules, advancedBlocking: true);
+
+        XCTAssertEqual(result?.errorsCount, 0);
+        assertEmptyResult(result: result!);
+        
+        rules = [
+            "~test.com#%#window.__testCase2 = true;",
+            "~test.com#@%#window.__testCase2 = true;",
+            "~test.com#$#.banner { display: none!important; }",
+            "~test.com#@$#.banner { display: none!important; }",
+            "~test.com#$?#div:has(> .banner) { display: none!important; }",
+            "~test.com#@$?#div:has(> .banner) { display: none!important; }",
+            "~test.com#%#//scriptlet('abort-on-property-read', 'abc')",
+            "~test.com#@%#//scriptlet('abort-on-property-read', 'abc')",
+        ]
+        
+        result = ContentBlockerConverter().convertArray(rules: rules, advancedBlocking: true);
+
+        XCTAssertEqual(result?.errorsCount, 0);
+        assertEmptyResult(result: result!);
+        
+        // css-inject exception
+        rules = ["test.com,example.org#$#.banner { display: none!important; }", "test.com#@$#.banner { display: none!important; }"]
+        result = ContentBlockerConverter().convertArray(rules: rules, advancedBlocking: true);
+        
+        var decoded = try! parseJsonString(json: result!.advancedBlocking!);
+        XCTAssertEqual(decoded.count, 1);
+        
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
+        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*example.org"]);
+        XCTAssertNil(decoded[0].trigger.unlessDomain);
+        XCTAssertEqual(decoded[0].action.type, "css-inject");
+        XCTAssertEqual(decoded[0].action.css, ".banner { display: none!important; }");
+        
+        // css-extended exception
+        rules = ["test.com,example.org#?#div:has(> .banner)", "test.com#@?#div:has(> .banner)"]
+        result = ContentBlockerConverter().convertArray(rules: rules, advancedBlocking: true);
+        
+        decoded = try! parseJsonString(json: result!.advancedBlocking!);
+        XCTAssertEqual(decoded.count, 1);
+        
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
+        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*example.org"]);
+        XCTAssertNil(decoded[0].trigger.unlessDomain);
+        XCTAssertEqual(decoded[0].action.type, "css-extended");
+        XCTAssertEqual(decoded[0].action.css, "div:has(> .banner)");
+        
+        // script exception
+        rules = ["test.com,example.org#%#alert(1)", "test.com#@%#alert(1)"]
+        result = ContentBlockerConverter().convertArray(rules: rules, advancedBlocking: true);
+        
+        decoded = try! parseJsonString(json: result!.advancedBlocking!);
+        XCTAssertEqual(decoded.count, 1);
+        
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
+        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*example.org"]);
+        XCTAssertNil(decoded[0].trigger.unlessDomain);
+        XCTAssertEqual(decoded[0].action.type, "script");
+        XCTAssertEqual(decoded[0].action.script, "alert(1)");
+        
+        // scriptlet exception
+        rules = ["test.com,example.org#%#//scriptlet('abort-on-property-read', 'abc')", "test.com#@%#//scriptlet('abort-on-property-read', 'abc')"]
+        result = ContentBlockerConverter().convertArray(rules: rules, advancedBlocking: true);
+        
+        decoded = try! parseJsonString(json: result!.advancedBlocking!);
+        XCTAssertEqual(decoded.count, 1);
+        
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
+        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*example.org"]);
+        XCTAssertNil(decoded[0].trigger.unlessDomain);
+        XCTAssertEqual(decoded[0].action.type, "scriptlet");
+        XCTAssertEqual(decoded[0].action.scriptlet, "abort-on-property-read");
+    }
 
     static var allTests = [
         ("testEmpty", testEmpty),
@@ -936,5 +1127,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         ("testCssInjectWithMultiSelectors", testCssInjectWithMultiSelectors),
         ("testSpecialCharactersEscape", testSpecialCharactersEscape),
         ("testEscapeBackslash", testEscapeBackslash),
+        ("testCssExceptions", testCssExceptions),
+        ("testAdvancedBlockingExceptions", testAdvancedBlockingExceptions),
     ]
 }
