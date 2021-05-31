@@ -147,6 +147,13 @@ class Compiler {
             exceptionDomains = exceptionTrigger.unlessDomain;
             domainsList = ruleTrigger.unlessDomain;
         }
+        
+        // generic exception case
+        if (exceptionDomains == nil) {
+            exceptionDomains = [];
+            ruleTrigger.ifDomain = [];
+            return;
+        }
 
         for domain in exceptionDomains! {
             if (domainsList != nil && domainsList!.count > 0) {
@@ -159,9 +166,9 @@ class Compiler {
 
                 // remove exception domain
                 if (ruleTrigger.ifDomain != nil) {
-                    ruleTrigger.ifDomain = domainsList!.filter{ $0 != domain }
+                    ruleTrigger.ifDomain = ruleTrigger.ifDomain!.filter{ $0 != domain }
                 } else if (ruleTrigger.unlessDomain != nil) {
-                    ruleTrigger.unlessDomain = domainsList!.filter{ $0 != domain }
+                    ruleTrigger.unlessDomain = ruleTrigger.unlessDomain!.filter{ $0 != domain }
                 }
 
             } else {
