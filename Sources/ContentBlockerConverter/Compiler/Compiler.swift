@@ -147,6 +147,10 @@ class Compiler {
             exceptionDomains = exceptionTrigger.unlessDomain;
             domainsList = ruleTrigger.unlessDomain;
         }
+        
+        if (exceptionDomains == nil) {
+            return;
+        }
 
         for domain in exceptionDomains! {
             if (domainsList != nil && domainsList!.count > 0) {
