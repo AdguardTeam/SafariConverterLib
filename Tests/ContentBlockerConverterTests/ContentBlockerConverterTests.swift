@@ -1222,6 +1222,17 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result?.totalConvertedCount, 0);
         XCTAssertEqual(result?.convertedCount, 0);
         XCTAssertEqual(result?.errorsCount, 0);
+        
+        rules = [
+            "example.org,test.com,ya.ru###banner",
+            "example.org,test.com,ya.ru#@##banner"
+        ];
+        
+        result = ContentBlockerConverter().convertArray(rules: rules);
+
+        XCTAssertEqual(result?.totalConvertedCount, 0);
+        XCTAssertEqual(result?.convertedCount, 0);
+        XCTAssertEqual(result?.errorsCount, 0);
     }
 
     func testAdvancedBlockingExceptions() {
@@ -1317,23 +1328,6 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertNil(decoded[0].trigger.unlessDomain);
         XCTAssertEqual(decoded[0].action.type, "scriptlet");
         XCTAssertEqual(decoded[0].action.scriptlet, "abort-on-property-read");
-    }
-    
-    func testTemp() {
-        let rules = [
-            "example.org,test.com###banner",
-            "example.org,test.com#@##banner"
-        ];
-        
-        let result = ContentBlockerConverter().convertArray(rules: rules);
-
-        XCTAssertEqual(result?.totalConvertedCount, 0);
-        XCTAssertEqual(result?.convertedCount, 0);
-        XCTAssertEqual(result?.advancedBlockingConvertedCount, 0);
-        XCTAssertEqual(result?.errorsCount, 0);
-        
-        let decoded = try! parseJsonString(json: result!.converted);
-        XCTAssertEqual(decoded.count, 0);
     }
 
     static var allTests = [
