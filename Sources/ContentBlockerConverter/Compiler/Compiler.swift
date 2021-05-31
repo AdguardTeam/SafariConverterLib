@@ -165,9 +165,9 @@ class Compiler {
 
                 // remove exception domain
                 if (ruleTrigger.ifDomain != nil) {
-                    ruleTrigger.ifDomain = domainsList!.filter{ $0 != domain }
+                    ruleTrigger.ifDomain = ruleTrigger.ifDomain!.filter{ $0 != domain }
                 } else if (ruleTrigger.unlessDomain != nil) {
-                    ruleTrigger.unlessDomain = domainsList!.filter{ $0 != domain }
+                    ruleTrigger.unlessDomain = ruleTrigger.unlessDomain!.filter{ $0 != domain }
                 }
 
             } else {

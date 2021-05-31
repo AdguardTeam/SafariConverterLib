@@ -1206,6 +1206,22 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded[0].trigger.ifDomain, ["*subdomain.example.org"]);
         XCTAssertEqual(decoded[0].action.type, "css-display-none");
         XCTAssertEqual(decoded[0].action.selector, ".ad-banner");
+        
+        rules = ["example.org###banner", "#@##banner"];
+        
+        result = ContentBlockerConverter().convertArray(rules: rules);
+
+        XCTAssertEqual(result?.totalConvertedCount, 0);
+        XCTAssertEqual(result?.convertedCount, 0);
+        XCTAssertEqual(result?.errorsCount, 0);
+        
+        rules = ["example.org###banner", "*#@##banner"];
+        
+        result = ContentBlockerConverter().convertArray(rules: rules);
+
+        XCTAssertEqual(result?.totalConvertedCount, 0);
+        XCTAssertEqual(result?.convertedCount, 0);
+        XCTAssertEqual(result?.errorsCount, 0);
     }
 
     func testAdvancedBlockingExceptions() {
@@ -1305,15 +1321,19 @@ final class ContentBlockerConverterTests: XCTestCase {
     
     func testTemp() {
         let rules = [
-            "example.org###banner",
-            "*#@##banner"
+            "example.org,test.com###banner",
+            "example.org,test.com#@##banner"
         ];
         
         let result = ContentBlockerConverter().convertArray(rules: rules);
 
         XCTAssertEqual(result?.totalConvertedCount, 0);
         XCTAssertEqual(result?.convertedCount, 0);
+        XCTAssertEqual(result?.advancedBlockingConvertedCount, 0);
         XCTAssertEqual(result?.errorsCount, 0);
+        
+        let decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 0);
     }
 
     static var allTests = [
