@@ -148,8 +148,10 @@ class Compiler {
             domainsList = ruleTrigger.unlessDomain;
         }
         
+        // generic exception case
         if (exceptionDomains == nil) {
-            return;
+            exceptionDomains = [];
+            ruleTrigger.ifDomain = [];
         }
 
         for domain in exceptionDomains! {

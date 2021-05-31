@@ -1302,6 +1302,19 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded[0].action.type, "scriptlet");
         XCTAssertEqual(decoded[0].action.scriptlet, "abort-on-property-read");
     }
+    
+    func testTemp() {
+        let rules = [
+            "example.org###banner",
+            "*#@##banner"
+        ];
+        
+        let result = ContentBlockerConverter().convertArray(rules: rules);
+
+        XCTAssertEqual(result?.totalConvertedCount, 0);
+        XCTAssertEqual(result?.convertedCount, 0);
+        XCTAssertEqual(result?.errorsCount, 0);
+    }
 
     static var allTests = [
         ("testEmpty", testEmpty),
