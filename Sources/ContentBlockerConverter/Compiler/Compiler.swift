@@ -152,6 +152,7 @@ class Compiler {
         if (exceptionDomains == nil) {
             exceptionDomains = [];
             ruleTrigger.ifDomain = [];
+            return;
         }
 
         for domain in exceptionDomains! {
