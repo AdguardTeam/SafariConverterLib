@@ -816,11 +816,12 @@ final class ContentBlockerConverterTests: XCTestCase {
 
     func testGenericCssRules() {
         let ruleText = [
-            "#$#.banner { display: none; debug: global; }",
+            "#$?#div:has(> .banner) { display: none; debug: global; }",
         ];
 
         let result = converter.convertArray(rules: ruleText, advancedBlocking: true);
         XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result?.convertedCount, 0);
         XCTAssertEqual(result?.advancedBlockingConvertedCount, 1);
     }
 
