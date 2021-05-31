@@ -1215,6 +1215,14 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result?.convertedCount, 0);
         XCTAssertEqual(result?.errorsCount, 0);
         
+        rules = ["~example.org###banner", "#@##banner"];
+        
+        result = ContentBlockerConverter().convertArray(rules: rules);
+
+        XCTAssertEqual(result?.totalConvertedCount, 0);
+        XCTAssertEqual(result?.convertedCount, 0);
+        XCTAssertEqual(result?.errorsCount, 0);
+        
         rules = ["example.org###banner", "*#@##banner"];
         
         result = ContentBlockerConverter().convertArray(rules: rules);
