@@ -92,8 +92,8 @@ class NetworkRuleParser {
         return pattern!.replacingOccurrences(of: domain, with: domain.idnaEncoded!);
     }
 
-    private static func parseRuleDomain(pattern: String) -> String {
-        let starts = ["http://www.", "https://www.", "http://", "https://", "||", "//"];
+    static func parseRuleDomain(pattern: String) -> String {
+        let starts = ["http://www.", "https://www.", "http://", "https://", "||", "@@||", "//"];
         let contains = ["/", "^"];
 
         var startIndex = 0;

@@ -351,8 +351,30 @@ final class GeneralTests: XCTestCase {
         
     }
     
+    func testSpecifichidePerformance() {
+        let rulePairsCount: Int = 1000;
+        var rules = [String]();
+        
+        for index in 1...rulePairsCount {
+            rules.append("test\(index).com,example\(index).org##.banner");
+            rules.append("@@||example\(index).org^$specifichide");
+        }
+
+        self.measure {
+            // expected about 0.25s in Time Profiler for 100 rule pairs and 3s for 1000 rule pairs
+            let conversionResult = ContentBlockerConverter().convertArray(rules: rules);
+            NSLog(conversionResult!.message);
+
+            XCTAssertEqual(conversionResult?.totalConvertedCount, rulePairsCount);
+            XCTAssertEqual(conversionResult?.convertedCount, rulePairsCount);
+            XCTAssertEqual(conversionResult?.errorsCount, 0);
+            XCTAssertEqual(conversionResult?.overLimit, false);
+        }
+    }
+    
     static var allTests = [
         ("testGeneral", testGeneral),
         ("testPerformance", testPerformance),
+        ("testSpecifichidePerformance", testSpecifichidePerformance),
     ]
 }

@@ -50,6 +50,7 @@ public class ContentBlockerConverter {
         message += "\nElemhide rules (generic domain sensitive): \(String(describing: compilationResult.cssBlockingGenericDomainSensitive.count))";
         message += "\nExceptions Elemhide (wide): \(String(describing: compilationResult.cssBlockingGenericHideExceptions.count))";
         message += "\nElemhide rules (domain-sensitive): \(String(describing: compilationResult.cssBlockingDomainSensitive.count))";
+        message += "\nCssInject rules (domain-sensitive): \(String(describing: compilationResult.сssInjects.count))";
         message += "\nScript rules: \(String(describing: compilationResult.script.count))";
         message += "\nScriptlets rules: \(String(describing: compilationResult.scriptlets.count))";
         message += "\nExtended Css Elemhide rules (wide): \(String(describing: compilationResult.extendedCssBlockingWide.count))";

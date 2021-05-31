@@ -64,6 +64,10 @@ class NetworkRule: Rule {
             }
         }
         
+        if (ruleParts.options == "specifichide" && ruleParts.whitelist == false) {
+            throw SyntaxError.invalidRule(message: "Specifichide modifier must be used for exception rules only");
+        }
+        
         self.urlRuleText = NetworkRuleParser.getAsciiDomainRule(pattern: ruleParts.pattern)!;
         
         if (self.isRegexRule()) {
@@ -313,6 +317,9 @@ class NetworkRule: Rule {
             case "genericblock":
                 try setOptionEnabled(option: NetworkRuleOption.Genericblock, value: true);
                 break;
+            case "specifichide":
+                try setOptionEnabled(option: NetworkRuleOption.Specifichide, value: true);
+                break;
             case "jsinject":
                 try setOptionEnabled(option: NetworkRuleOption.Jsinject, value: true);
                 break;
@@ -474,6 +481,7 @@ class NetworkRule: Rule {
         case Elemhide
         case Generichide
         case Genericblock
+        case Specifichide
         case Jsinject
         case Urlblock
         case Content
