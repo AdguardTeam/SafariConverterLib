@@ -352,10 +352,10 @@ final class GeneralTests: XCTestCase {
     }
     
     func testSpecifichidePerformance() {
-        let rulePairs: Int = 1000;
+        let rulePairsCount: Int = 1000;
         var rules = [String]();
         
-        for index in 1...rulePairs {
+        for index in 1...rulePairsCount {
             rules.append("test\(index).com,example\(index).org##.banner");
             rules.append("@@||example\(index).org^$specifichide");
         }
@@ -365,8 +365,8 @@ final class GeneralTests: XCTestCase {
             let conversionResult = ContentBlockerConverter().convertArray(rules: rules);
             NSLog(conversionResult!.message);
 
-            XCTAssertEqual(conversionResult?.totalConvertedCount, rulePairs);
-            XCTAssertEqual(conversionResult?.convertedCount, rulePairs);
+            XCTAssertEqual(conversionResult?.totalConvertedCount, rulePairsCount);
+            XCTAssertEqual(conversionResult?.convertedCount, rulePairsCount);
             XCTAssertEqual(conversionResult?.errorsCount, 0);
             XCTAssertEqual(conversionResult?.overLimit, false);
         }

@@ -357,10 +357,10 @@ final class ContentBlockerConverterTests: XCTestCase {
     }
 
     func testConvertGenerichide() {
-        let result = converter.convertArray(rules: ["@@||hulu.com/page$generichide"]);
+        var result = converter.convertArray(rules: ["@@||hulu.com/page$generichide"]);
         XCTAssertEqual(result?.convertedCount, 1);
 
-        let decoded = try! parseJsonString(json: result!.converted);
+        var decoded = try! parseJsonString(json: result!.converted);
         XCTAssertEqual(decoded.count, 1);
         let entry = decoded[0];
         XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "hulu\\.com\\/page");
@@ -368,6 +368,38 @@ final class ContentBlockerConverterTests: XCTestCase {
 
         let regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!);
         XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://hulu.com/page"));
+        
+        let rules = [
+            "@@||example.org^$generichide,genericblock",
+            "##.ad-banner",
+            "||example.org^"
+        ]
+        result = ContentBlockerConverter().convertArray(rules: rules);
+
+        XCTAssertEqual(result?.totalConvertedCount, 3);
+        XCTAssertEqual(result?.convertedCount, 3);
+        XCTAssertEqual(result?.errorsCount, 0);
+        
+        decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 3);
+        
+        XCTAssertNil(decoded[0].trigger.ifDomain);
+        XCTAssertNil(decoded[0].trigger.unlessDomain);
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
+        XCTAssertEqual(decoded[0].action.type, "css-display-none");
+        XCTAssertEqual(decoded[0].action.selector, ".ad-banner");
+        
+        XCTAssertNil(decoded[1].trigger.ifDomain);
+        XCTAssertNil(decoded[1].trigger.unlessDomain);
+        XCTAssertEqual(decoded[1].trigger.urlFilter, "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$");
+        XCTAssertNil(decoded[1].trigger.resourceType);
+        XCTAssertEqual(decoded[1].action.type, "block");
+        
+        XCTAssertNil(decoded[2].trigger.ifDomain);
+        XCTAssertNil(decoded[2].trigger.unlessDomain);
+        XCTAssertEqual(decoded[2].trigger.urlFilter, "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$");
+        XCTAssertEqual(decoded[2].trigger.resourceType, ["document"]);
+        XCTAssertEqual(decoded[2].action.type, "ignore-previous-rules");
     }
 
     func testConvertGenericDomainSensitive() {
