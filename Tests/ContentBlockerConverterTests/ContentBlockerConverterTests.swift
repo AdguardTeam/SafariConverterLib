@@ -22,6 +22,10 @@ final class ContentBlockerConverterTests: XCTestCase {
 
         return parsedData;
     }
+    
+    private func checkEntriesByCondition(entries: [BlockerEntry], condition: (BlockerEntry)->Bool) -> Bool {
+        entries.contains{ condition($0) }
+    }
 
     func testEmpty() {
         let result = converter.convertArray(rules: [""]);
@@ -1026,7 +1030,7 @@ final class ContentBlockerConverterTests: XCTestCase {
             "@@||subdomain.test.com^$specifichide",
         ];
 
-        // should remain "##.banner3", "test.sub.example.org##.banner1" and "example.org##.banner2"
+        // should remain "##.ad-banner", "test.subdomain.test.com##.banner" and "test.com##.headeads"
 
         result = converter.convertArray(rules: ruleText);
 
@@ -1036,24 +1040,39 @@ final class ContentBlockerConverterTests: XCTestCase {
 
         decoded = try! parseJsonString(json: result!.converted);
         XCTAssertEqual(decoded.count, 3);
-
-        XCTAssertNil(decoded[0].trigger.ifDomain);
-        XCTAssertNil(decoded[0].trigger.unlessDomain);
-        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
-        XCTAssertEqual(decoded[0].action.type, "css-display-none");
-        XCTAssertEqual(decoded[0].action.selector, ".ad-banner");
-
-        XCTAssertEqual(decoded[1].trigger.ifDomain, ["*test.subdomain.test.com"]);
-        XCTAssertNil(decoded[1].trigger.unlessDomain);
-        XCTAssertEqual(decoded[1].trigger.urlFilter, ".*");
-        XCTAssertEqual(decoded[1].action.type, "css-display-none");
-        XCTAssertEqual(decoded[1].action.selector, ".banner");
-
-        XCTAssertEqual(decoded[2].trigger.ifDomain, ["*test.com"]);
-        XCTAssertNil(decoded[2].trigger.unlessDomain);
-        XCTAssertEqual(decoded[2].trigger.urlFilter, ".*");
-        XCTAssertEqual(decoded[2].action.type, "css-display-none");
-        XCTAssertEqual(decoded[2].action.selector, ".headeads");
+        
+        XCTAssertTrue(checkEntriesByCondition(
+                        entries: decoded,
+                        condition: {
+                            $0.trigger.ifDomain == nil &&
+                            $0.trigger.unlessDomain == nil &&
+                            $0.trigger.urlFilter == ".*" &&
+                            $0.action.type == "css-display-none" &&
+                            $0.action.selector == ".ad-banner"
+                            
+                        }));
+        
+        XCTAssertTrue(checkEntriesByCondition(
+                        entries: decoded,
+                        condition: {
+                            $0.trigger.ifDomain == ["*test.subdomain.test.com"] &&
+                            $0.trigger.unlessDomain == nil &&
+                            $0.trigger.urlFilter == ".*" &&
+                            $0.action.type == "css-display-none" &&
+                            $0.action.selector == ".banner"
+                            
+                        }));
+        
+        XCTAssertTrue(checkEntriesByCondition(
+                        entries: decoded,
+                        condition: {
+                            $0.trigger.ifDomain == ["*test.com"] &&
+                            $0.trigger.unlessDomain == nil &&
+                            $0.trigger.urlFilter == ".*" &&
+                            $0.action.type == "css-display-none" &&
+                            $0.action.selector == ".headeads"
+                        }));
+        
 
         ruleText = [
             "example1.org,example2.org,example3.org##.banner1",
