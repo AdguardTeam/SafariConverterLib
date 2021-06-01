@@ -215,9 +215,10 @@ class Compiler {
 
         for r in blockingItems {
             // skip entries with excluded ifDomain
-            if (r.trigger.ifDomain != nil && r.trigger.ifDomain!.count > 0) {
-                result.append(r);
+            if (r.trigger.ifDomain?.count == 0) {
+                continue;
             }
+            result.append(r);
         }
 
         return result;
