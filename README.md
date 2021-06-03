@@ -96,3 +96,27 @@ After installation the build process occurs and binary file will be copied to bi
 * Rules with `ping` modifier are ignored (until [#18](https://github.com/AdguardTeam/SafariConverterLib/issues/18) is solved)
 * Exception rule with `specifichide` modifier disables all specific element hiding rules for the same level domain and doesn't influence on subdomains or top-level domains, i.e. the rule `@@||sub.example.org^$specifichide` doesn't disable `test.sub.example.org##.banner` and  `example.org##.banner`
 * `generichide`, `elemhide`, `specifichide` and `jsinject` modifiers can be used only as a single modifier in a rule.
+
+#### Converter Info
+The rule with `denyallow` modifier will be converted into blocking rule and additional exception rules. For example:
+
+* Generic rule `*$denyallow=x.com,image,domain=a.com`  will be converted in
+```
+*$image,domain=a.com
+@@||x.com$image,domain=a.com
+```
+
+* Blocking rule `/banner.png$image,denyallow=test1.com|test2.com,domain=example.org` will be converted in
+```
+/banner.png$image,domain=example.org
+@@||test1.com/banner.png$image,domain=example.org
+@@||test1.com/*/banner.png$image,domain=example.org
+@@||test2.com/banner.png$image,domain=example.org
+@@||test2.com/*/banner.png$image,domain=example.org
+```
+Exception rule `@@/banner.png$image,denyallow=test.com,domain=example.org` will be converted in
+```
+@@/banner.png$image,domain=example.org
+||test.com/banner.png$image,domain=example.org,important
+||test.com/*/banner.png$image,domain=example.org,important
+```
