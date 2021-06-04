@@ -267,9 +267,12 @@ final class RuleConverterTests: XCTestCase {
         XCTAssertEqual(res, [exp]);
     }
     
-    func testDenyallowModifier() {
+    func testDenyallowModifierForGenericRules() {
         var ruleText = "*$image,denyallow=x.com,domain=a.com|~b.com" as NSString;
-        var exp: [NSString] = ["*$image,domain=a.com|~b.com", "@@||x.com$image,domain=a.com|~b.com"];
+        var exp: [NSString] = [
+            "*$image,domain=a.com|~b.com",
+            "@@||x.com$image,domain=a.com|~b.com"
+        ];
         var res = ruleConverter.convertRule(rule: ruleText);
         XCTAssertEqual(res, exp);
         
@@ -314,6 +317,75 @@ final class RuleConverterTests: XCTestCase {
         res = ruleConverter.convertRule(rule: ruleText);
         XCTAssertEqual(res, [ruleText]);
     }
+    
+    func testDenyallowModifier() {
+        var ruleText = "/banner.png$image,denyallow=test.com,domain=example.org" as NSString;
+        var exp: [NSString] = [
+            "/banner.png$image,domain=example.org",
+            "@@||test.com/banner.png$image,domain=example.org",
+            "@@||test.com/*/banner.png$image,domain=example.org",
+        ];
+        var res = ruleConverter.convertRule(rule: ruleText);
+        XCTAssertEqual(res, exp);
+        
+        ruleText = "banner.png$image,denyallow=test.com,domain=example.org" as NSString;
+        exp = [
+            "banner.png$image,domain=example.org",
+            "@@||test.com/banner.png$image,domain=example.org",
+            "@@||test.com/*/banner.png$image,domain=example.org",
+        ];
+        res = ruleConverter.convertRule(rule: ruleText);
+        XCTAssertEqual(res, exp);
+        
+        ruleText = "/banner.png$image,denyallow=test1.com|test2.com,domain=example.org" as NSString;
+        exp = [
+            "/banner.png$image,domain=example.org",
+            "@@||test1.com/banner.png$image,domain=example.org",
+            "@@||test1.com/*/banner.png$image,domain=example.org",
+            "@@||test2.com/banner.png$image,domain=example.org",
+            "@@||test2.com/*/banner.png$image,domain=example.org",
+        ];
+        res = ruleConverter.convertRule(rule: ruleText);
+        XCTAssertEqual(res, exp);
+        
+        ruleText = "@@/banner.png$image,denyallow=test.com,domain=example.org" as NSString;
+        exp = [
+            "@@/banner.png$image,domain=example.org",
+            "||test.com/banner.png$image,domain=example.org,important",
+            "||test.com/*/banner.png$image,domain=example.org,important",
+        ];
+        res = ruleConverter.convertRule(rule: ruleText);
+        XCTAssertEqual(res, exp);
+
+        ruleText = "@@/banner.png$image,denyallow=test1.com|test2.com,domain=example.org" as NSString;
+        exp = [
+            "@@/banner.png$image,domain=example.org",
+            "||test1.com/banner.png$image,domain=example.org,important",
+            "||test1.com/*/banner.png$image,domain=example.org,important",
+            "||test2.com/banner.png$image,domain=example.org,important",
+            "||test2.com/*/banner.png$image,domain=example.org,important",
+        ];
+        res = ruleConverter.convertRule(rule: ruleText);
+        XCTAssertEqual(res, exp);
+        
+        ruleText = "/adguard_dns_map.png$image,denyallow=cdn.adguard.com,domain=testcases.adguard.com|surge.sh" as NSString;
+        exp = [
+            "/adguard_dns_map.png$image,domain=testcases.adguard.com|surge.sh",
+            "@@||cdn.adguard.com/adguard_dns_map.png$image,domain=testcases.adguard.com|surge.sh",
+            "@@||cdn.adguard.com/*/adguard_dns_map.png$image,domain=testcases.adguard.com|surge.sh"
+        ];
+        res = ruleConverter.convertRule(rule: ruleText);
+        XCTAssertEqual(res, exp);
+
+        ruleText = "@@/adguard_dns_map.png$image,denyallow=cdn.adguard.com,domain=testcases.adguard.com|surge.sh" as NSString;
+        exp = [
+            "@@/adguard_dns_map.png$image,domain=testcases.adguard.com|surge.sh",
+            "||cdn.adguard.com/adguard_dns_map.png$image,domain=testcases.adguard.com|surge.sh,important",
+            "||cdn.adguard.com/*/adguard_dns_map.png$image,domain=testcases.adguard.com|surge.sh,important"
+        ];
+        res = ruleConverter.convertRule(rule: ruleText);
+        XCTAssertEqual(res, exp);
+    }
         
     static var allTests = [
         ("testEmpty", testEmpty),
@@ -336,6 +408,7 @@ final class RuleConverterTests: XCTestCase {
         ("testAllModifierSimple", testAllModifierSimple),
         ("testAllModifierComplicated", testAllModifierComplicated),
         ("testUboCssStyleRule", testUboCssStyleRule),
+        ("testDenyallowModifierForGenericRules", testDenyallowModifierForGenericRules),
         ("testDenyallowModifier", testDenyallowModifier),
     ]
 }

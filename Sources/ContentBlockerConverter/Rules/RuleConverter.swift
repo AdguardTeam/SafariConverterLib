@@ -11,6 +11,7 @@ class RuleConverter {
     private static let SENTENCES_REGEXP = try! NSRegularExpression(pattern: #"'.*?'|".*?"|\S+"#, options: [.caseInsensitive]);
     private static let DENYALLOW_MODIFIER_MASK = "denyallow=";
     private static let DOMAIN_MODIFIER_MASK = "domain=";
+    private static let IMPORTANT_MODIFIER_MASK = "important";
     
     private static let MODIFIER_MASK = "$";
     private static let EXCEPTION_SUFFIX = "@@||";
@@ -461,6 +462,13 @@ class RuleConverter {
             return nil;
         }
         
+        var blockingElement: String = rule.pattern!;
+        if (blockingElement.starts(with: "/")) {
+            blockingElement = String(blockingElement.dropFirst());
+        }
+        
+        let isGenericRule = blockingElement == "" || blockingElement == "*";
+        
         let ruleOptions = rule.options!.components(separatedBy: ",");
         let denyallowOption = ruleOptions.first(where: { $0.contains(RuleConverter.DENYALLOW_MODIFIER_MASK) })!;
         
@@ -481,14 +489,27 @@ class RuleConverter {
         
         var result = [NSString]();
         
+        let blockingRulePrefix:String = rule.whitelist ? "@@" : "";
+        let exceptionRulePrefix:String = rule.whitelist ? "||" : RuleConverter.EXCEPTION_SUFFIX;
+        let exceptionRuleSuffix:String = rule.whitelist ? "," + RuleConverter.IMPORTANT_MODIFIER_MASK : "";
+        
         // blocking rule
-        let blockingRule = rule.pattern! + RuleConverter.MODIFIER_MASK + optionsWithoutDenyallow;
+        let blockingRule = blockingRulePrefix + rule.pattern! + RuleConverter.MODIFIER_MASK + optionsWithoutDenyallow;
         result.append(blockingRule as NSString);
         
         // exception rules
         for domain in denyallowDomains {
-            let exceptionRule = RuleConverter.EXCEPTION_SUFFIX + domain + RuleConverter.MODIFIER_MASK + optionsWithoutDenyallow;
-            result.append(exceptionRule as NSString);
+            if (!isGenericRule) {
+                let exceptionRule = exceptionRulePrefix + domain + "/" + blockingElement + RuleConverter.MODIFIER_MASK + optionsWithoutDenyallow + exceptionRuleSuffix;
+                result.append(exceptionRule as NSString);
+                
+                let exceptionRuleWide = exceptionRulePrefix + domain + "/*/" + blockingElement + RuleConverter.MODIFIER_MASK + optionsWithoutDenyallow + exceptionRuleSuffix;
+                result.append(exceptionRuleWide as NSString);
+                
+            } else {
+                let exceptionRule = exceptionRulePrefix + domain + RuleConverter.MODIFIER_MASK + optionsWithoutDenyallow + exceptionRuleSuffix;
+                result.append(exceptionRule as NSString);
+            }
         }
         
         return result;
