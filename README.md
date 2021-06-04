@@ -98,7 +98,10 @@ After installation the build process occurs and binary file will be copied to bi
 * `generichide`, `elemhide`, `specifichide` and `jsinject` modifiers can be used only as a single modifier in a rule.
 
 #### `denyallow` rules
-The rule with `denyallow` modifier will be converted into blocking rule and additional exception rules. For example:
+
+A rule with the `denyallow` modifier will be converted into a blocking rule and additional exception rules.
+
+For example:
 
 * Generic rule `*$denyallow=x.com,image,domain=a.com`  will be converted in
 ```
