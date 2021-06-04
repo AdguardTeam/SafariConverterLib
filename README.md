@@ -117,7 +117,7 @@ For example:
 @@||test2.com/banner.png$image,domain=example.org
 @@||test2.com/*/banner.png$image,domain=example.org
 ```
-Exception rule `@@/banner.png$image,denyallow=test.com,domain=example.org` will be converted in
+Exception rule `@@/banner.png$image,denyallow=test.com,domain=example.org` will be converted to
 ```
 @@/banner.png$image,domain=example.org
 ||test.com/banner.png$image,domain=example.org,important
