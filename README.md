@@ -109,7 +109,7 @@ For example:
 @@||x.com$image,domain=a.com
 ```
 
-* Blocking rule `/banner.png$image,denyallow=test1.com|test2.com,domain=example.org` will be converted in
+* Blocking rule `/banner.png$image,denyallow=test1.com|test2.com,domain=example.org` will be converted to
 ```
 /banner.png$image,domain=example.org
 @@||test1.com/banner.png$image,domain=example.org
