@@ -103,7 +103,7 @@ A rule with the `denyallow` modifier will be converted into a blocking rule and 
 
 For example:
 
-* Generic rule `*$denyallow=x.com,image,domain=a.com`  will be converted in
+* Generic rule `*$denyallow=x.com,image,domain=a.com`  will be converted to
 ```
 *$image,domain=a.com
 @@||x.com$image,domain=a.com
