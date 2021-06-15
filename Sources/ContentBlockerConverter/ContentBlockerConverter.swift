@@ -8,11 +8,18 @@ public class ContentBlockerConverter {
     public init() {
         
     }
+    
+    public static let SAFARI_VERSION_DEFAULT: Int = 14;
 
     /**
      * Converts filter rules in AdGuard format to the format supported by Safari.
      */
-    public func convertArray(rules: [String], limit: Int = 0, optimize: Bool = false, advancedBlocking: Bool = false) -> ConversionResult? {
+    public func convertArray(rules: [String], safariVersion: Int = 14, optimize: Bool = false, advancedBlocking: Bool = false) -> ConversionResult? {
+        
+        // Safari allows up to 50k rules,
+        // but starting from 15 version it allows up to 150k rules
+        let limit: Int = safariVersion > ContentBlockerConverter.SAFARI_VERSION_DEFAULT ? 150000 : 50000;
+        
         if rules.count == 0 {
             Logger.log("AG: ContentBlockerConverter: No rules presented");
             return nil;

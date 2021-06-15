@@ -45,10 +45,10 @@ module.exports = (function () {
      * @param rulesLimit
      * @param converterToolPath - optional path to converter resolved by Electron
      */
-    const jsonFromRules = async (rules, advancedBlocking, rulesLimit, converterToolPath) => {
+    const jsonFromRules = async (rules, advancedBlocking, safariVersion, converterToolPath) => {
         return new Promise((resolve, reject) => {
             const child = runScript(converterToolPath || CONVERTER_TOOL_PATH, [
-                `-limit=${rulesLimit}`,
+                `-safariVersion=${safariVersion}`,
                 '-optimize=false',
                 `-advancedBlocking=${advancedBlocking}`,
             ], (code, stdout, stderr) => {
