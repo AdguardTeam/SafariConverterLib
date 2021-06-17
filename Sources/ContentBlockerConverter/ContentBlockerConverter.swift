@@ -9,7 +9,7 @@ public class ContentBlockerConverter {
         
     }
     
-    public static let SAFARI_VERSION_DEFAULT: Int = 14;
+    public static let MIN_VERSION_EXTENDED_LIMIT: Int = 15
     private static let RULES_LIMIT: Int = 50000;
     private static let RULES_LIMIT_EXTENDED: Int = 150000;
     
@@ -21,7 +21,7 @@ public class ContentBlockerConverter {
         
         // Safari allows up to 50k rules,
         // but starting from 15 version it allows up to 150k rules
-        let limit: Int = safariVersion > ContentBlockerConverter.SAFARI_VERSION_DEFAULT ? ContentBlockerConverter.RULES_LIMIT_EXTENDED : ContentBlockerConverter.RULES_LIMIT;
+        let limit: Int = safariVersion < ContentBlockerConverter.MIN_VERSION_EXTENDED_LIMIT ? ContentBlockerConverter.RULES_LIMIT : ContentBlockerConverter.RULES_LIMIT_EXTENDED;
         
         if rules.count == 0 {
             Logger.log("AG: ContentBlockerConverter: No rules presented");
