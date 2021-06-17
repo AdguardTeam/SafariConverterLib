@@ -966,7 +966,7 @@ final class ContentBlockerConverterTests: XCTestCase {
 
         result = converter.convertArray(rules: ruleText, advancedBlocking: true);
 
-        XCTAssertEqual(result?.totalConvertedCount, 1);
+        XCTAssertEqual(result?.totalConvertedCount, 2);
         XCTAssertEqual(result?.convertedCount, 1);
         XCTAssertEqual(result?.advancedBlockingConvertedCount, 1);
         XCTAssertEqual(result?.errorsCount, 0);
@@ -1000,7 +1000,7 @@ final class ContentBlockerConverterTests: XCTestCase {
 
         result = converter.convertArray(rules: ruleText, advancedBlocking: true);
 
-        XCTAssertEqual(result?.totalConvertedCount, 1);
+        XCTAssertEqual(result?.totalConvertedCount, 2);
         XCTAssertEqual(result?.convertedCount, 1);
         XCTAssertEqual(result?.advancedBlockingConvertedCount, 1);
         XCTAssertEqual(result?.errorsCount, 0);
@@ -1106,7 +1106,7 @@ final class ContentBlockerConverterTests: XCTestCase {
 
         result = converter.convertArray(rules: ruleText, advancedBlocking: true);
 
-        XCTAssertEqual(result?.totalConvertedCount, 0);
+        XCTAssertEqual(result?.totalConvertedCount, 1);
         XCTAssertEqual(result?.convertedCount, 0);
         XCTAssertEqual(result?.errorsCount, 0);
         XCTAssertEqual(result?.advancedBlockingConvertedCount, 1);

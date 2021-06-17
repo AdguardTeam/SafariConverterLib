@@ -44,7 +44,7 @@ public struct ConversionResult: Encodable {
     public var message: String;
     
     init(entries: [BlockerEntry], advBlockingEntries: [BlockerEntry] = [], limit: Int, errorsCount: Int, message: String) throws {
-        self.totalConvertedCount = entries.count;
+        self.totalConvertedCount = entries.count + advBlockingEntries.count;
         
         self.overLimit = (limit > 0 && entries.count > limit);
         self.errorsCount = self.overLimit ? errorsCount + 1 : errorsCount;
