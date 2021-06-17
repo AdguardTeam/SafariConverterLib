@@ -9,7 +9,9 @@ public class ContentBlockerConverter {
         
     }
     
-    public static let MIN_VERSION_EXTENDED_LIMIT: Int = 15
+    public static let SAFARI_VERSION_DEFAULT: Int = 14;
+    public static let MIN_VERSION_EXTENDED_LIMIT: Int = 15;
+    
     private static let RULES_LIMIT: Int = 50000;
     private static let RULES_LIMIT_EXTENDED: Int = 150000;
     
