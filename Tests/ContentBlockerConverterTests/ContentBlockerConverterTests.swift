@@ -28,13 +28,21 @@ final class ContentBlockerConverterTests: XCTestCase {
     }
 
     func testEmpty() {
-        let result = converter.convertArray(rules: [""]);
+        var result = converter.convertArray(rules: []);
 
         XCTAssertEqual(result?.totalConvertedCount, 0);
         XCTAssertEqual(result?.convertedCount, 0);
         XCTAssertEqual(result?.errorsCount, 0);
         XCTAssertEqual(result?.overLimit, false);
-        XCTAssertEqual(result?.converted, "[]");
+        XCTAssertEqual(result?.converted, "[{\"trigger\": {},\"action\": {}}]");
+        
+        result = converter.convertArray(rules: [""]);
+
+        XCTAssertEqual(result?.totalConvertedCount, 0);
+        XCTAssertEqual(result?.convertedCount, 0);
+        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result?.overLimit, false);
+        XCTAssertEqual(result?.converted, "[{\"trigger\": {},\"action\": {}}]");
     }
 
     func testConvertComment() {
