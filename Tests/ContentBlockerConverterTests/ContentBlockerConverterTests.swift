@@ -243,12 +243,12 @@ final class ContentBlockerConverterTests: XCTestCase {
     }
 
     func testConvertSubdocumentThirdParty() {
-        let result = converter.convertArray(rules: ["||test.com^$subdocument,domain=example.com"]);
+        var result = converter.convertArray(rules: ["||test.com^$subdocument,domain=example.com"]);
         XCTAssertEqual(result?.convertedCount, 1);
 
-        let decoded = try! parseJsonString(json: result!.converted);
+        var decoded = try! parseJsonString(json: result!.converted);
         XCTAssertEqual(decoded.count, 1);
-        let entry = decoded[0];
+        var entry = decoded[0];
         XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
         XCTAssertEqual(entry.trigger.ifDomain, ["*example.com"]);
         XCTAssertEqual(entry.trigger.unlessDomain, nil);
@@ -257,6 +257,30 @@ final class ContentBlockerConverterTests: XCTestCase {
 
         let regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!);
         XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://test.com"));
+        
+        result = converter.convertArray(rules: ["||test.com^$subdocument,domain=example.com"], safariVersion: 15);
+        XCTAssertEqual(result?.convertedCount, 1);
+
+        decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        entry = decoded[0];
+        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
+        XCTAssertEqual(entry.trigger.ifDomain, ["*example.com"]);
+        XCTAssertEqual(entry.trigger.unlessDomain, nil);
+        XCTAssertEqual(entry.trigger.resourceType, ["iframe-document"]);
+        XCTAssertEqual(entry.action.type, "block");
+        
+        result = converter.convertArray(rules: ["||test.com^$~subdocument,domain=example.com"], safariVersion: 15);
+        XCTAssertEqual(result?.convertedCount, 1);
+
+        decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        entry = decoded[0];
+        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
+        XCTAssertEqual(entry.trigger.ifDomain, ["*example.com"]);
+        XCTAssertEqual(entry.trigger.unlessDomain, nil);
+        XCTAssertEqual(entry.trigger.resourceType, ["image", "style-sheet", "script", "media", "raw", "font", "document", "top-document"]);
+        XCTAssertEqual(entry.action.type, "block");
     }
 
     func testAddUnlessDomainsForThirdParty() {

@@ -15,10 +15,10 @@ class Compiler {
 
     private static let COSMETIC_ACTIONS: [String] = ["css-display-none", "css-inject", "css-extended", "scriptlet", "script"];
 
-    init(optimize: Bool, advancedBlocking: Bool, errorsCounter: ErrorsCounter) {
+    init(optimize: Bool, advancedBlocking: Bool, errorsCounter: ErrorsCounter, safariVersion: Int = ContentBlockerConverter.SAFARI_VERSION_DEFAULT) {
         self.optimize = optimize;
         self.advancedBlockedEnabled = advancedBlocking;
-        self.blockerEntryFactory = BlockerEntryFactory(advancedBlockingEnabled: advancedBlocking, errorsCounter: errorsCounter);
+        self.blockerEntryFactory = BlockerEntryFactory(advancedBlockingEnabled: advancedBlocking, errorsCounter: errorsCounter, safariVersion: safariVersion);
     }
 
     /**

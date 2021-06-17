@@ -58,10 +58,12 @@ class BlockerEntryFactory {
 
     let advancedBlockingEnabled: Bool;
     let errorsCounter: ErrorsCounter;
+    let safariVersion: Int;
 
-    init(advancedBlockingEnabled: Bool, errorsCounter: ErrorsCounter) {
+    init(advancedBlockingEnabled: Bool, errorsCounter: ErrorsCounter, safariVersion: Int = ContentBlockerConverter.SAFARI_VERSION_DEFAULT) {
         self.advancedBlockingEnabled = advancedBlockingEnabled;
         self.errorsCounter = errorsCounter;
+        self.safariVersion = safariVersion;
     }
 
     /**
@@ -244,9 +246,21 @@ class BlockerEntryFactory {
         if (rule.hasContentType(contentType: NetworkRule.ContentType.FONT)) {
             types.append("font");
         }
-        if (rule.hasContentType(contentType: NetworkRule.ContentType.DOCUMENT)
-            || rule.hasContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT)) {
+        if (rule.hasContentType(contentType: NetworkRule.ContentType.DOCUMENT)) {
             types.append("document");
+        }
+        if (rule.hasContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT)) {
+            if self.safariVersion < ContentBlockerConverter.MIN_VERSION_EXTENDED_LIMIT {
+                types.append("document");
+            } else {
+                types.append("iframe-document");
+            }
+        }
+        
+        if (rule.isRestrictedContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT)) {
+            if self.safariVersion >= ContentBlockerConverter.MIN_VERSION_EXTENDED_LIMIT {
+                types.append("top-document");
+            }
         }
 
         if (rule.isBlockPopups) {
