@@ -256,7 +256,7 @@ class BlockerEntryFactory {
         if (rule.hasContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT) && !isDefaultSafariVersion()) {
              types.append("iframe-document");
         }
-        if (rule.isRestrictedContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT) && !isDefaultSafariVersion()) {
+        if (rule.hasRestrictedContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT) && !isDefaultSafariVersion()) {
             types.append("top-document");
         }
 

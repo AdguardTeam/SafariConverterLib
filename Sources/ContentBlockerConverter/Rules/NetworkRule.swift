@@ -114,8 +114,8 @@ class NetworkRule: Rule {
         return permittedContentType.count == 1 && permittedContentType[0] == contentType;
     }
     
-    func isRestrictedContentType(contentType: ContentType) -> Bool {
-        return restrictedContentType.count == 1 && restrictedContentType[0] == contentType;
+    func hasRestrictedContentType(contentType: ContentType) -> Bool {
+        return restrictedContentType.contains(contentType);
     }
     
     /**
