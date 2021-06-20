@@ -43,7 +43,7 @@ public struct ConversionResult: Encodable {
      */
     public var message: String;
     
-    public static let EMPTY_RESULT_JSON: String = "[{\"trigger\": {},\"action\": {}}]";
+    public static let EMPTY_RESULT_JSON: String = "[{\"trigger\": {\"url-filter\": \".*\",\"if-domain\": [\"domain.com\"]},\"action\":{\"type\": \"ignore-previous-rules\"}}]";
     
     init(entries: [BlockerEntry], advBlockingEntries: [BlockerEntry] = [], limit: Int, errorsCount: Int, message: String) throws {
         self.totalConvertedCount = entries.count;
