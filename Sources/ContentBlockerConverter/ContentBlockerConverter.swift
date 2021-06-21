@@ -15,7 +15,7 @@ public class ContentBlockerConverter {
     public func convertArray(rules: [String], limit: Int = 0, optimize: Bool = false, advancedBlocking: Bool = false) -> ConversionResult? {
         do {
             if rules.count == 0 || (rules.count == 1 && rules[0].isEmpty) {
-                Logger.log("AG: ContentBlockerConverter: No rules presented");
+                Logger.log("AG: ContentBlockerConverter: No rules passed");
                 return try ConversionResult.createEmptyResult();
             }
             
