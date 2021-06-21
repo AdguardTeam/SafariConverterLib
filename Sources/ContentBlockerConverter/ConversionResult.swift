@@ -74,7 +74,7 @@ public struct ConversionResult: Encodable {
         return encoder.encode(entries: entries);
     }
     
-    public static func createEmptyResult() throws -> ConversionResult {
+    static func createEmptyResult() throws -> ConversionResult {
         var result = try ConversionResult(
             entries: [BlockerEntry](),
             advBlockingEntries: [],
