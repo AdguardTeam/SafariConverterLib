@@ -34,7 +34,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result?.convertedCount, 0);
         XCTAssertEqual(result?.errorsCount, 0);
         XCTAssertEqual(result?.overLimit, false);
-        XCTAssertEqual(result?.converted, "[{\"trigger\": {},\"action\": {}}]");
+        XCTAssertEqual(result?.converted, ConversionResult.EMPTY_RESULT_JSON);
         
         result = converter.convertArray(rules: [""]);
 
@@ -42,7 +42,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result?.convertedCount, 0);
         XCTAssertEqual(result?.errorsCount, 0);
         XCTAssertEqual(result?.overLimit, false);
-        XCTAssertEqual(result?.converted, "[{\"trigger\": {},\"action\": {}}]");
+        XCTAssertEqual(result?.converted, ConversionResult.EMPTY_RESULT_JSON);
     }
 
     func testConvertComment() {
