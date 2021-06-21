@@ -9,21 +9,12 @@ public class ContentBlockerConverter {
         
     }
     
-    public static let SAFARI_VERSION_DEFAULT: Int = 14;
-    public static let MIN_VERSION_EXTENDED_LIMIT: Int = 15;
-    
-    private static let RULES_LIMIT: Int = 50000;
-    private static let RULES_LIMIT_EXTENDED: Int = 150000;
-    
-
     /**
      * Converts filter rules in AdGuard format to the format supported by Safari.
      */
-    public func convertArray(rules: [String], safariVersion: Int = 14, optimize: Bool = false, advancedBlocking: Bool = false) -> ConversionResult? {
+    public func convertArray(rules: [String], safariVersion: SafariVersions = .DEFAULT, optimize: Bool = false, advancedBlocking: Bool = false) -> ConversionResult? {
         
-        // Safari allows up to 50k rules,
-        // but starting from 15 version it allows up to 150k rules
-        let limit: Int = safariVersion < ContentBlockerConverter.MIN_VERSION_EXTENDED_LIMIT ? ContentBlockerConverter.RULES_LIMIT : ContentBlockerConverter.RULES_LIMIT_EXTENDED;
+        let rulesLimit: Int = safariVersion.getRulesLimit();
         
         if rules.count == 0 {
             Logger.log("AG: ContentBlockerConverter: No rules presented");
@@ -46,7 +37,7 @@ public class ContentBlockerConverter {
             Logger.log("AG: ContentBlockerConverter: " + message);
             compilationResult.message = message;
             
-            return try Distributor(limit: limit, advancedBlocking: advancedBlocking).createConversionResult(data: compilationResult);
+            return try Distributor(limit: rulesLimit, advancedBlocking: advancedBlocking).createConversionResult(data: compilationResult);
         } catch {
             Logger.log("AG: ContentBlockerConverter: Unexpected error: \(error)");
         }

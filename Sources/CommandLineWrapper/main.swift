@@ -41,8 +41,9 @@ do {
     }
     
     
-    let safariVersion = Int(arguments[1][String.Index(encodedOffset: 15)...]) ?? ContentBlockerConverter.SAFARI_VERSION_DEFAULT;
-    Logger.log("AG: Safari version: \(safariVersion)");
+    let safariVersionNum = Int(arguments[1][String.Index(encodedOffset: 15)...]) ?? SafariVersions.DEFAULT.rawValue;
+    let safariVersion = SafariVersions(rawValue: safariVersionNum);
+    Logger.log("AG: Safari version: \(safariVersion!)");
     
     let optimize = arguments[2] == "-optimize=true";
     Logger.log("AG: Optimize: \(optimize)");
@@ -64,7 +65,7 @@ do {
     Logger.log("AG: Rules to convert: \(rules.count)");
     
     let result: ConversionResult? = ContentBlockerConverter().convertArray(
-        rules: rules, safariVersion: safariVersion, optimize: optimize, advancedBlocking: advancedBlocking
+        rules: rules, safariVersion: safariVersion!, optimize: optimize, advancedBlocking: advancedBlocking
     );
 
     Logger.log("AG: Conversion done");
