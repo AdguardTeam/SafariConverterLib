@@ -1,10 +1,10 @@
-const { jsonFromRules, getConverterVersion } = require('../index');
+const { jsonFromRules, getConverterVersion, safariVersions } = require('../index');
 const pJson = require('../../package.json');
 
 describe('API test', () => {
     it('jsonFromRules test', async () => {
         const rules = ['example.com##.ads-banner', '||test.com^$image'];
-        const result = await jsonFromRules(rules, false, 14);
+        const result = await jsonFromRules(rules, false, safariVersions.safari14);
         const converted = JSON.parse(result.converted);
 
         expect(converted[0].trigger['if-domain']).toStrictEqual(['*example.com']);
