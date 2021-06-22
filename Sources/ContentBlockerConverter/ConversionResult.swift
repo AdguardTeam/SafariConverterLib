@@ -26,7 +26,7 @@ public struct ConversionResult: Encodable {
     /**
      * Json string of content blocker rules
      */
-    public let converted: String;
+    public var converted: String;
     
     /**
      * Count of entries in advanced blocking part
@@ -43,8 +43,10 @@ public struct ConversionResult: Encodable {
      */
     public var message: String;
     
+    public static let EMPTY_RESULT_JSON: String = "[{\"trigger\": {\"url-filter\": \".*\",\"if-domain\": [\"domain.com\"]},\"action\":{\"type\": \"ignore-previous-rules\"}}]";
+    
     init(entries: [BlockerEntry], advBlockingEntries: [BlockerEntry] = [], limit: Int, errorsCount: Int, message: String) throws {
-        self.totalConvertedCount = entries.count;
+        self.totalConvertedCount = entries.count + advBlockingEntries.count;
         
         self.overLimit = (limit > 0 && entries.count > limit);
         self.errorsCount = self.overLimit ? errorsCount + 1 : errorsCount;
@@ -70,5 +72,18 @@ public struct ConversionResult: Encodable {
     private static func createJSONString(entries: [BlockerEntry]) throws -> String {
         let encoder = BlockerEntryEncoder();
         return encoder.encode(entries: entries);
+    }
+    
+    static func createEmptyResult() throws -> ConversionResult {
+        var result = try ConversionResult(
+            entries: [BlockerEntry](),
+            advBlockingEntries: [],
+            limit: 0,
+            errorsCount: 0,
+            message: ""
+        );
+        
+        result.converted = self.EMPTY_RESULT_JSON;
+        return result;
     }
 }

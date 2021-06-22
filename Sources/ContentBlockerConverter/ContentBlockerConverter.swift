@@ -4,35 +4,26 @@ import Foundation
  * Entry point
  */
 public class ContentBlockerConverter {
-    
+
     public init() {
-        
+
     }
-    
-    public static let SAFARI_VERSION_DEFAULT: Int = 14;
-    public static let MIN_VERSION_EXTENDED_LIMIT: Int = 15;
-    
-    private static let RULES_LIMIT: Int = 50000;
-    private static let RULES_LIMIT_EXTENDED: Int = 150000;
-    
 
     /**
      * Converts filter rules in AdGuard format to the format supported by Safari.
      */
-    public func convertArray(rules: [String], safariVersion: Int = 14, optimize: Bool = false, advancedBlocking: Bool = false) -> ConversionResult? {
-        
-        // Safari allows up to 50k rules,
-        // but starting from 15 version it allows up to 150k rules
-        let limit: Int = safariVersion < ContentBlockerConverter.MIN_VERSION_EXTENDED_LIMIT ? ContentBlockerConverter.RULES_LIMIT : ContentBlockerConverter.RULES_LIMIT_EXTENDED;
-        
-        if rules.count == 0 {
-            Logger.log("AG: ContentBlockerConverter: No rules presented");
-            return nil;
-        }
+    public func convertArray(rules: [String], safariVersion: SafariVersion = .safari14, optimize: Bool = false, advancedBlocking: Bool = false) -> ConversionResult? {
+
+        let rulesLimit: Int = safariVersion.rulesLimit;
         
         do {
-            let errorsCounter = ErrorsCounter();
+            if rules.count == 0 || (rules.count == 1 && rules[0].isEmpty) {
+                Logger.log("AG: ContentBlockerConverter: No rules passed");
+                return try ConversionResult.createEmptyResult();
+            }
             
+            let errorsCounter = ErrorsCounter();
+
             let parsedRules = RuleFactory(errorsCounter: errorsCounter).createRules(lines: rules);
             var compilationResult = Compiler(
                 optimize: optimize,
@@ -40,21 +31,21 @@ public class ContentBlockerConverter {
                 errorsCounter: errorsCounter,
                 safariVersion: safariVersion
             ).compileRules(rules: parsedRules);
-            
+
             compilationResult.errorsCount = errorsCounter.getCount();
-            
+
             let message = createLogMessage(compilationResult: compilationResult);
             Logger.log("AG: ContentBlockerConverter: " + message);
             compilationResult.message = message;
-            
-            return try Distributor(limit: limit, advancedBlocking: advancedBlocking).createConversionResult(data: compilationResult);
+
+            return try Distributor(limit: rulesLimit, advancedBlocking: advancedBlocking).createConversionResult(data: compilationResult);
         } catch {
             Logger.log("AG: ContentBlockerConverter: Unexpected error: \(error)");
         }
-        
+
         return nil;
     }
-    
+
     private func createLogMessage(compilationResult: CompilationResult) -> String {
         var message = "Rules converted:  \(compilationResult.rulesCount) (\(compilationResult.errorsCount) errors)";
         message += "\nBasic rules: \(String(describing: compilationResult.urlBlocking.count))";
@@ -74,7 +65,7 @@ public class ContentBlockerConverter {
         message += "\nExceptions (document): \(String(describing: compilationResult.documentExceptions.count))";
         message += "\nExceptions (jsinject): \(String(describing: compilationResult.scriptJsInjectExceptions.count))";
         message += "\nExceptions (other): \(String(describing: compilationResult.other.count))";
-        
+
         return message;
     }
 }

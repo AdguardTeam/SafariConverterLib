@@ -28,13 +28,21 @@ final class ContentBlockerConverterTests: XCTestCase {
     }
 
     func testEmpty() {
-        let result = converter.convertArray(rules: [""]);
+        var result = converter.convertArray(rules: []);
 
         XCTAssertEqual(result?.totalConvertedCount, 0);
         XCTAssertEqual(result?.convertedCount, 0);
         XCTAssertEqual(result?.errorsCount, 0);
         XCTAssertEqual(result?.overLimit, false);
-        XCTAssertEqual(result?.converted, "[]");
+        XCTAssertEqual(result?.converted, ConversionResult.EMPTY_RESULT_JSON);
+        
+        result = converter.convertArray(rules: [""]);
+
+        XCTAssertEqual(result?.totalConvertedCount, 0);
+        XCTAssertEqual(result?.convertedCount, 0);
+        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result?.overLimit, false);
+        XCTAssertEqual(result?.converted, ConversionResult.EMPTY_RESULT_JSON);
     }
 
     func testConvertComment() {
@@ -990,7 +998,7 @@ final class ContentBlockerConverterTests: XCTestCase {
 
         result = converter.convertArray(rules: ruleText, advancedBlocking: true);
 
-        XCTAssertEqual(result?.totalConvertedCount, 1);
+        XCTAssertEqual(result?.totalConvertedCount, 2);
         XCTAssertEqual(result?.convertedCount, 1);
         XCTAssertEqual(result?.advancedBlockingConvertedCount, 1);
         XCTAssertEqual(result?.errorsCount, 0);
@@ -1024,7 +1032,7 @@ final class ContentBlockerConverterTests: XCTestCase {
 
         result = converter.convertArray(rules: ruleText, advancedBlocking: true);
 
-        XCTAssertEqual(result?.totalConvertedCount, 1);
+        XCTAssertEqual(result?.totalConvertedCount, 2);
         XCTAssertEqual(result?.convertedCount, 1);
         XCTAssertEqual(result?.advancedBlockingConvertedCount, 1);
         XCTAssertEqual(result?.errorsCount, 0);
@@ -1130,7 +1138,7 @@ final class ContentBlockerConverterTests: XCTestCase {
 
         result = converter.convertArray(rules: ruleText, advancedBlocking: true);
 
-        XCTAssertEqual(result?.totalConvertedCount, 0);
+        XCTAssertEqual(result?.totalConvertedCount, 1);
         XCTAssertEqual(result?.convertedCount, 0);
         XCTAssertEqual(result?.errorsCount, 0);
         XCTAssertEqual(result?.advancedBlockingConvertedCount, 1);

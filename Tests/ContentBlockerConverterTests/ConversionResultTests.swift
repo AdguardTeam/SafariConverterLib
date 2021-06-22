@@ -84,7 +84,7 @@ final class ConversionResultTests: XCTestCase {
         
         let result = try! ConversionResult(entries: entries, advBlockingEntries: entries, limit: 1, errorsCount: 0, message: "test");
         
-        XCTAssertEqual(result.totalConvertedCount, 1);
+        XCTAssertEqual(result.totalConvertedCount, 2);
         XCTAssertEqual(result.convertedCount, 1);
         XCTAssertEqual(result.errorsCount, 0);
         XCTAssertEqual(result.overLimit, false);
