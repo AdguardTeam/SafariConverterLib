@@ -266,7 +266,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         let regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!);
         XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://test.com"));
         
-        result = converter.convertArray(rules: ["||test.com^$subdocument,domain=example.com"], safariVersion: 15);
+        result = converter.convertArray(rules: ["||test.com^$subdocument,domain=example.com"], safariVersion: SafariVersion.safari15);
         XCTAssertEqual(result?.convertedCount, 1);
 
         decoded = try! parseJsonString(json: result!.converted);
@@ -278,7 +278,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(entry.trigger.resourceType, ["iframe-document"]);
         XCTAssertEqual(entry.action.type, "block");
         
-        result = converter.convertArray(rules: ["||test.com^$~subdocument,domain=example.com"], safariVersion: 15);
+        result = converter.convertArray(rules: ["||test.com^$~subdocument,domain=example.com"], safariVersion: SafariVersion.safari15);
         XCTAssertEqual(result?.convertedCount, 1);
 
         decoded = try! parseJsonString(json: result!.converted);

@@ -58,9 +58,9 @@ class BlockerEntryFactory {
 
     let advancedBlockingEnabled: Bool;
     let errorsCounter: ErrorsCounter;
-    let safariVersion: Int;
+    let safariVersion: SafariVersion;
 
-    init(advancedBlockingEnabled: Bool, errorsCounter: ErrorsCounter, safariVersion: Int = ContentBlockerConverter.SAFARI_VERSION_DEFAULT) {
+    init(advancedBlockingEnabled: Bool, errorsCounter: ErrorsCounter, safariVersion: SafariVersion = .safari14) {
         self.advancedBlockingEnabled = advancedBlockingEnabled;
         self.errorsCounter = errorsCounter;
         self.safariVersion = safariVersion;
@@ -216,10 +216,6 @@ class BlockerEntryFactory {
             action.type = "ignore-previous-rules";
         }
     }
-    
-    private func isDefaultSafariVersion() -> Bool {
-        return self.safariVersion <= ContentBlockerConverter.SAFARI_VERSION_DEFAULT;
-    }
 
     private func addResourceType(rule: NetworkRule, trigger: inout BlockerEntry.Trigger) throws -> Void {
         var types = [String]();
@@ -250,13 +246,13 @@ class BlockerEntryFactory {
         if (rule.hasContentType(contentType: NetworkRule.ContentType.FONT)) {
             types.append("font");
         }
-        if (rule.hasContentType(contentType: NetworkRule.ContentType.DOCUMENT) || (rule.hasContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT) && isDefaultSafariVersion()))  {
+        if (rule.hasContentType(contentType: NetworkRule.ContentType.DOCUMENT) || (rule.hasContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT) && self.safariVersion.isDefaultSafariVersion()))  {
             types.append("document");
         }
-        if (rule.hasContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT) && !isDefaultSafariVersion()) {
+        if (rule.hasContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT) && !self.safariVersion.isDefaultSafariVersion()) {
              types.append("iframe-document");
         }
-        if (rule.hasRestrictedContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT) && !isDefaultSafariVersion()) {
+        if (rule.hasRestrictedContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT) && !self.safariVersion.isDefaultSafariVersion()) {
             types.append("top-document");
         }
 

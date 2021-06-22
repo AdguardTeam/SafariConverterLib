@@ -14,4 +14,8 @@ public enum SafariVersion: Int {
             case .safari15: return 150000
         }
     }
+    
+    func isDefaultSafariVersion() -> Bool {
+        return self.rawValue <= SafariVersion.safari14.rawValue;
+    }
 }
