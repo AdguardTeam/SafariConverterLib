@@ -40,10 +40,18 @@ do {
         exit(EXIT_FAILURE);
     }
     
+    let safariVersionIndex = String.Index(utf16Offset: 15, in: arguments[1]);
+    let safariVersionStr = arguments[1][safariVersionIndex...];
     
-    let safariVersionNum = Int(arguments[1][String.Index(encodedOffset: 15)...]) ?? SafariVersion.safari14.rawValue;
-    let safariVersion = SafariVersion(rawValue: safariVersionNum);
-    Logger.log("AG: Safari version: \(safariVersion!)");
+    guard let safariVersionNum = Int(safariVersionStr) else {
+        throw SafariVersionError.invalidSafariVersion(message: "Invalid Safari version value");
+    };
+    
+    guard let safariVersion = SafariVersion(rawValue: safariVersionNum) else {
+        throw SafariVersionError.unsupportedSafariVersion(message: "The provided Safari version is not supported");
+    };
+    
+    Logger.log("AG: Safari version: \(safariVersion)");
     
     let optimize = arguments[2] == "-optimize=true";
     Logger.log("AG: Optimize: \(optimize)");
@@ -65,7 +73,7 @@ do {
     Logger.log("AG: Rules to convert: \(rules.count)");
     
     let result: ConversionResult? = ContentBlockerConverter().convertArray(
-        rules: rules, safariVersion: safariVersion!, optimize: optimize, advancedBlocking: advancedBlocking
+        rules: rules, safariVersion: safariVersion, optimize: optimize, advancedBlocking: advancedBlocking
     );
 
     Logger.log("AG: Conversion done");

@@ -6,6 +6,9 @@ const CONVERTER_TOOL_PATH = path.resolve(__dirname, '../../bin/ConverterTool');
 
 module.exports = (function () {
     const safariVersions = Object.freeze({
+        safari11: 11,
+        safari12: 12,
+        safari13: 13,
         safari14: 14,
         safari15: 15,
     });
@@ -52,7 +55,7 @@ module.exports = (function () {
      */
     const jsonFromRules = async (rules, advancedBlocking, safariVersion, converterToolPath) => {
         let currentSafariVersion = Object.values(safariVersions).includes(safariVersion) ? safariVersion : safariVersions.safari14;
-        console.log(`SAFARI: ${currentSafariVersion}`);
+
         return new Promise((resolve, reject) => {
             const child = runScript(converterToolPath || CONVERTER_TOOL_PATH, [
                 `-safariVersion=${currentSafariVersion}`,
@@ -60,10 +63,10 @@ module.exports = (function () {
                 `-advancedBlocking=${advancedBlocking}`,
             ], (code, stdout, stderr) => {
                 if (code !== 0) {
-                    reject(stderr);
+                    reject(new Error(stderr));
                     return;
                 }
-
+                console.log(stdout);
                 const result = JSON.parse(stdout);
 
                 resolve(result);

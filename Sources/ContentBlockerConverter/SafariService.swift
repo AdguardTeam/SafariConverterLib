@@ -1,6 +1,14 @@
 import Foundation
 
 public enum SafariVersion: Int {
+    // AdGuard for iOS supports Safari from 11 version
+    // AdGuard for Safari doesn't support OS Sierra, so minimal Safari version is 13
+    @available (OSX, unavailable)
+    case safari11 = 11;
+    @available (OSX, unavailable)
+    case safari12 = 12;
+    
+    case safari13 = 13;
     case safari14 = 14;
     case safari15 = 15;
     
@@ -10,7 +18,7 @@ public enum SafariVersion: Int {
      */
     var rulesLimit: Int {
         switch self {
-            case .safari14: return 50000
+            case .safari11, .safari12, .safari13, .safari14: return 50000
             case .safari15: return 150000
         }
     }
@@ -18,4 +26,9 @@ public enum SafariVersion: Int {
     func isDefaultSafariVersion() -> Bool {
         return self.rawValue <= SafariVersion.safari14.rawValue;
     }
+}
+
+public enum SafariVersionError: Error {
+    case invalidSafariVersion(message: String)
+    case unsupportedSafariVersion(message: String)
 }
