@@ -4,15 +4,18 @@ import Foundation
  * Entry point
  */
 public class ContentBlockerConverter {
-    
+
     public init() {
-        
+
     }
 
     /**
      * Converts filter rules in AdGuard format to the format supported by Safari.
      */
-    public func convertArray(rules: [String], limit: Int = 0, optimize: Bool = false, advancedBlocking: Bool = false) -> ConversionResult? {
+    public func convertArray(rules: [String], safariVersion: SafariVersion = .safari14, optimize: Bool = false, advancedBlocking: Bool = false) -> ConversionResult? {
+
+        let rulesLimit = safariVersion.rulesLimit;
+        
         do {
             if rules.count == 0 || (rules.count == 1 && rules[0].isEmpty) {
                 Logger.log("AG: ContentBlockerConverter: No rules passed");
@@ -20,28 +23,28 @@ public class ContentBlockerConverter {
             }
             
             let errorsCounter = ErrorsCounter();
-            
+
             let parsedRules = RuleFactory(errorsCounter: errorsCounter).createRules(lines: rules);
             var compilationResult = Compiler(
                 optimize: optimize,
                 advancedBlocking: advancedBlocking,
                 errorsCounter: errorsCounter
             ).compileRules(rules: parsedRules);
-            
+
             compilationResult.errorsCount = errorsCounter.getCount();
-            
+
             let message = createLogMessage(compilationResult: compilationResult);
             Logger.log("AG: ContentBlockerConverter: " + message);
             compilationResult.message = message;
-            
-            return try Distributor(limit: limit, advancedBlocking: advancedBlocking).createConversionResult(data: compilationResult);
+
+            return try Distributor(limit: rulesLimit, advancedBlocking: advancedBlocking).createConversionResult(data: compilationResult);
         } catch {
             Logger.log("AG: ContentBlockerConverter: Unexpected error: \(error)");
         }
-        
+
         return nil;
     }
-    
+
     private func createLogMessage(compilationResult: CompilationResult) -> String {
         var message = "Rules converted:  \(compilationResult.rulesCount) (\(compilationResult.errorsCount) errors)";
         message += "\nBasic rules: \(String(describing: compilationResult.urlBlocking.count))";
@@ -61,7 +64,7 @@ public class ContentBlockerConverter {
         message += "\nExceptions (document): \(String(describing: compilationResult.documentExceptions.count))";
         message += "\nExceptions (jsinject): \(String(describing: compilationResult.scriptJsInjectExceptions.count))";
         message += "\nExceptions (other): \(String(describing: compilationResult.other.count))";
-        
+
         return message;
     }
 }

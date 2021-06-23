@@ -24,22 +24,23 @@ Converts filter rules in AdGuard format to the format supported by Safari.
 
 ```
     let result: ConversionResult? = ContentBlockerConverter.convertArray(
-        rules: [String], limit: Int = 0, optimize: Bool = false, advancedBlocking: Bool = false
+        rules: [String], safariVersion: SafariVersions = .DEFAULT, optimize: Bool = false, advancedBlocking: Bool = false
     );
 ```
+Please note, that `safariVersion` must be an instance of enum SafariVersions.
 
 The result contains following properties:
 - totalConvertedCount: length of content blocker
-- convertedCount: length after reducing to limit if provided
+- convertedCount: length after reducing to limit (depends on provided Safari version)
 - errorsCount: errors count
-- overLimit: is limit exceeded flag
+- overLimit: is limit exceeded flag (the limit depends on provided Safari version)
 - converted: json string of content blocker rules
 - advancedBlocking: json string of advanced blocking rules
 
 ### How to use converter from command line:
 
 ```
-    ./ConverterTool -limit=0 -optimize=true -advancedBlocking=false <<STDIN -o other --options
+    ./ConverterTool -safariVersion=14 -optimize=true -advancedBlocking=false <<STDIN -o other --options
     test_rule_one
     test_rule_two
     STDIN
@@ -82,10 +83,11 @@ After installation the build process occurs and binary file will be copied to bi
 
 #### API
 
-`jsonFromRules(rules, advancedBlocking, log)` - method to convert rules into JSON
+`jsonFromRules(rules, advancedBlocking, safariVersion, converterToolPath)` - method to convert rules into JSON
 * rules - array of rules
 * advancedBlocking - if we need advanced blocking content (boolean)
-* logger
+* safariVersion
+* converterToolPath - path to ConverterTool binary
 
 `getConverterVersion` - returns Safari Converter Lib version
 
