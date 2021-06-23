@@ -251,12 +251,12 @@ final class ContentBlockerConverterTests: XCTestCase {
     }
 
     func testConvertSubdocumentThirdParty() {
-        var result = converter.convertArray(rules: ["||test.com^$subdocument,domain=example.com"]);
+        let result = converter.convertArray(rules: ["||test.com^$subdocument,domain=example.com"]);
         XCTAssertEqual(result?.convertedCount, 1);
 
-        var decoded = try! parseJsonString(json: result!.converted);
+        let decoded = try! parseJsonString(json: result!.converted);
         XCTAssertEqual(decoded.count, 1);
-        var entry = decoded[0];
+        let entry = decoded[0];
         XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
         XCTAssertEqual(entry.trigger.ifDomain, ["*example.com"]);
         XCTAssertEqual(entry.trigger.unlessDomain, nil);
@@ -265,13 +265,15 @@ final class ContentBlockerConverterTests: XCTestCase {
 
         let regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!);
         XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://test.com"));
-        
-        result = converter.convertArray(rules: ["||test.com^$subdocument,domain=example.com"], safariVersion: SafariVersion.safari15);
+    }
+    
+    func testSubdocumentRuleProperConversion() {
+        var result = converter.convertArray(rules: ["||test.com^$subdocument,domain=example.com"], safariVersion: SafariVersion.safari15);
         XCTAssertEqual(result?.convertedCount, 1);
 
-        decoded = try! parseJsonString(json: result!.converted);
+        var decoded = try! parseJsonString(json: result!.converted);
         XCTAssertEqual(decoded.count, 1);
-        entry = decoded[0];
+        var entry = decoded[0];
         XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
         XCTAssertEqual(entry.trigger.ifDomain, ["*example.com"]);
         XCTAssertEqual(entry.trigger.unlessDomain, nil);
@@ -1422,6 +1424,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         ("testConvertScriptRestrictRules", testConvertScriptRestrictRules),
         ("testConvertSubdocumentFirstParty", testConvertSubdocumentFirstParty),
         ("testConvertSubdocumentThirdParty", testConvertSubdocumentThirdParty),
+        ("testSubdocumentRuleProperConversion", testSubdocumentRuleProperConversion),
         ("testAddUnlessDomainsForThirdParty", testAddUnlessDomainsForThirdParty),
         ("testConvertEmptyRegex", testConvertEmptyRegex),
         ("testConvertInvertedWhitelistRule", testConvertInvertedWhitelistRule),
