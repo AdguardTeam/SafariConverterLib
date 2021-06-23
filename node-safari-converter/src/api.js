@@ -66,7 +66,6 @@ module.exports = (function () {
                     reject(new Error(stderr));
                     return;
                 }
-                console.log(stdout);
                 const result = JSON.parse(stdout);
 
                 resolve(result);
