@@ -1,6 +1,8 @@
 import Foundation
 
 public enum SafariVersion: Int {
+    // AdGuard for iOS supports Safari from 11 version
+    // AdGuard for Safari doesn't support OS Sierra, so minimal Safari version is 13
     @available (OSX, unavailable)
     case safari11 = 11;
     @available (OSX, unavailable)
