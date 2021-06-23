@@ -55,7 +55,7 @@ module.exports = (function () {
      */
     const jsonFromRules = async (rules, advancedBlocking, safariVersion, converterToolPath) => {
         let currentSafariVersion = Object.values(safariVersions).includes(safariVersion) ? safariVersion : safariVersions.safari14;
-        // console.log(`PROVIDED VERSION: ${currentSafariVersion}`);
+
         return new Promise((resolve, reject) => {
             const child = runScript(converterToolPath || CONVERTER_TOOL_PATH, [
                 `-safariVersion=${currentSafariVersion}`,
