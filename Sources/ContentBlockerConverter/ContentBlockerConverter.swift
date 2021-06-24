@@ -28,7 +28,8 @@ public class ContentBlockerConverter {
             var compilationResult = Compiler(
                 optimize: optimize,
                 advancedBlocking: advancedBlocking,
-                errorsCounter: errorsCounter
+                errorsCounter: errorsCounter,
+                safariVersion: safariVersion
             ).compileRules(rules: parsedRules);
 
             compilationResult.errorsCount = errorsCounter.getCount();
