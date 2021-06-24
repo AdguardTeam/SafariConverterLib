@@ -37,6 +37,6 @@ class SafariService {
 }
 
 public enum SafariVersionError: Error {
-    case invalidSafariVersion(message: String)
-    case unsupportedSafariVersion(message: String)
+    case invalidSafariVersion(message: String = "Invalid Safari version value")
+    case unsupportedSafariVersion(message: String = "The provided Safari version is not supported")
 }
