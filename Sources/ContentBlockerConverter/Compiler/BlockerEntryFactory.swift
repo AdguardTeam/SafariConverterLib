@@ -238,8 +238,17 @@ class BlockerEntryFactory {
         }
         if (rule.hasContentType(contentType: NetworkRule.ContentType.XMLHTTPREQUEST) ||
             rule.hasContentType(contentType: NetworkRule.ContentType.OTHER) ||
-            rule.hasContentType(contentType: NetworkRule.ContentType.WEBSOCKET)) {
+            rule.hasContentType(contentType: NetworkRule.ContentType.WEBSOCKET)) && SafariService.current.version.isDefaultSafariVersion() {
             types.append("raw");
+        }
+        if (rule.hasContentType(contentType: NetworkRule.ContentType.XMLHTTPREQUEST) && !SafariService.current.version.isDefaultSafariVersion()) {
+            types.append("fetch");
+        }
+        if (rule.hasContentType(contentType: NetworkRule.ContentType.OTHER) && !SafariService.current.version.isDefaultSafariVersion()) {
+            types.append("other");
+        }
+        if (rule.hasContentType(contentType: NetworkRule.ContentType.WEBSOCKET) && !SafariService.current.version.isDefaultSafariVersion()) {
+            types.append("websocket");
         }
         if (rule.hasContentType(contentType: NetworkRule.ContentType.FONT)) {
             types.append("font");
