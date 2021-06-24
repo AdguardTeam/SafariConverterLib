@@ -28,6 +28,14 @@ public enum SafariVersion: Int {
     }
 }
 
+class SafariService {
+    var version: SafariVersion = .safari14;
+    
+    static let current: SafariService = {
+        return SafariService();
+    }();
+}
+
 public enum SafariVersionError: Error {
     case invalidSafariVersion(message: String)
     case unsupportedSafariVersion(message: String)

@@ -58,12 +58,10 @@ class BlockerEntryFactory {
 
     let advancedBlockingEnabled: Bool;
     let errorsCounter: ErrorsCounter;
-    let safariVersion: SafariVersion;
 
-    init(advancedBlockingEnabled: Bool, errorsCounter: ErrorsCounter, safariVersion: SafariVersion = .safari14) {
+    init(advancedBlockingEnabled: Bool, errorsCounter: ErrorsCounter) {
         self.advancedBlockingEnabled = advancedBlockingEnabled;
         self.errorsCounter = errorsCounter;
-        self.safariVersion = safariVersion;
     }
 
     /**
@@ -246,14 +244,17 @@ class BlockerEntryFactory {
         if (rule.hasContentType(contentType: NetworkRule.ContentType.FONT)) {
             types.append("font");
         }
-        if (rule.hasContentType(contentType: NetworkRule.ContentType.DOCUMENT) || (rule.hasContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT) && self.safariVersion.isDefaultSafariVersion()))  {
+        if (rule.hasContentType(contentType: NetworkRule.ContentType.DOCUMENT) || (rule.hasContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT) && SafariService.current.version.isDefaultSafariVersion()))  {
             types.append("document");
         }
-        if (rule.hasContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT) && !self.safariVersion.isDefaultSafariVersion()) {
+        if (rule.hasContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT) && !SafariService.current.version.isDefaultSafariVersion()) {
              types.append("iframe-document");
         }
-        if (rule.hasRestrictedContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT) && !self.safariVersion.isDefaultSafariVersion()) {
+        if (rule.hasRestrictedContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT) && !SafariService.current.version.isDefaultSafariVersion()) {
             types.append("top-document");
+        }
+        if (rule.hasContentType(contentType: NetworkRule.ContentType.PING) && !SafariService.current.version.isDefaultSafariVersion()) {
+            types.append("ping");
         }
 
         if (rule.isBlockPopups) {

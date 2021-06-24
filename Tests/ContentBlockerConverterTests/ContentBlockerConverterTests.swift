@@ -289,7 +289,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
         XCTAssertEqual(entry.trigger.ifDomain, ["*example.com"]);
         XCTAssertEqual(entry.trigger.unlessDomain, nil);
-        XCTAssertEqual(entry.trigger.resourceType, ["image", "style-sheet", "script", "media", "raw", "font", "document", "top-document"]);
+        XCTAssertEqual(entry.trigger.resourceType, ["image", "style-sheet", "script", "media", "raw", "font", "document", "top-document", "ping"]);
         XCTAssertEqual(entry.action.type, "block");
     }
 
@@ -1186,6 +1186,46 @@ final class ContentBlockerConverterTests: XCTestCase {
         decoded = try! parseJsonString(json: result!.converted);
         XCTAssertEqual(decoded.count, 1);
         XCTAssertTrue(decoded[0].trigger.urlFilter!.contains(".com\\\\\\/mm\\\\\\/yksdk"));
+    }
+    
+    func testPingModifierRules() {
+        var rules = ["||example.org^$ping"];
+        var result = converter.convertArray(rules: rules);
+        XCTAssertEqual(result?.convertedCount, 0);
+        XCTAssertEqual(result?.totalConvertedCount, 0);
+        XCTAssertEqual(result?.errorsCount, 1);
+        
+        rules = ["||example.org^$~ping,domain=test.com"];
+        result = converter.convertArray(rules: rules);
+        XCTAssertEqual(result?.convertedCount, 0);
+        XCTAssertEqual(result?.totalConvertedCount, 0);
+        XCTAssertEqual(result?.errorsCount, 1);
+        
+        rules = ["||example.org^$ping"];
+        result = converter.convertArray(rules: rules, safariVersion: SafariVersion.safari15);
+        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result?.totalConvertedCount, 1);
+
+        var decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        var entry = decoded[0];
+        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "example\\.org" + URL_FILTER_REGEXP_END_SEPARATOR);
+        XCTAssertNil(entry.trigger.ifDomain);
+        XCTAssertNil(entry.trigger.unlessDomain);
+        XCTAssertEqual(entry.trigger.resourceType, ["ping"]);
+        
+        rules = ["||example.org^$~ping,domain=test.com"];
+        result = converter.convertArray(rules: rules, safariVersion: SafariVersion.safari15);
+        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result?.totalConvertedCount, 1);
+
+        decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        entry = decoded[0];
+        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "example\\.org" + URL_FILTER_REGEXP_END_SEPARATOR);
+        XCTAssertEqual(entry.trigger.ifDomain, ["*test.com"]);
+        XCTAssertNil(entry.trigger.unlessDomain);
+        XCTAssertEqual(entry.trigger.resourceType, ["image", "style-sheet", "script", "media", "raw", "font", "document", "iframe-document"]);
     }
 
     func testCssExceptions() {

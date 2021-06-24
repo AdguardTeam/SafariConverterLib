@@ -13,6 +13,8 @@ public class ContentBlockerConverter {
      * Converts filter rules in AdGuard format to the format supported by Safari.
      */
     public func convertArray(rules: [String], safariVersion: SafariVersion = .safari14, optimize: Bool = false, advancedBlocking: Bool = false) -> ConversionResult? {
+        
+        SafariService.current.version = safariVersion;
 
         let rulesLimit = safariVersion.rulesLimit;
         
@@ -28,8 +30,7 @@ public class ContentBlockerConverter {
             var compilationResult = Compiler(
                 optimize: optimize,
                 advancedBlocking: advancedBlocking,
-                errorsCounter: errorsCounter,
-                safariVersion: safariVersion
+                errorsCounter: errorsCounter
             ).compileRules(rules: parsedRules);
 
             compilationResult.errorsCount = errorsCounter.getCount();
