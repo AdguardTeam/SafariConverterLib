@@ -30,10 +30,7 @@ public enum SafariVersion: Int {
 
 class SafariService {
     var version: SafariVersion = .safari14;
-    
-    static let current: SafariService = {
-        return SafariService();
-    }();
+    static let current: SafariService = SafariService();
 }
 
 public enum SafariVersionError: Error {
