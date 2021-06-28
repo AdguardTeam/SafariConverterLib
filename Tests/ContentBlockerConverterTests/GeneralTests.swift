@@ -133,13 +133,13 @@ final class GeneralTests: XCTestCase {
                     "third-party"
                 ],
                 "resource-type" : [
-                    "image",
-                    "style-sheet",
-                    "script",
-                    "media",
-                    "raw",
-                    "font",
-                    "document"
+                      "document",
+                      "font",
+                      "image",
+                      "media",
+                      "raw",
+                      "script",
+                      "style-sheet"
                 ]
             },
             "action" : {

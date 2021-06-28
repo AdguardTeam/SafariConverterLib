@@ -214,9 +214,24 @@ class BlockerEntryFactory {
             action.type = "ignore-previous-rules";
         }
     }
+    
+    /**
+     * Appends type depending on current Safari version:
+     * `type` is for default Safari version
+     * `alternativeType` is for Safari version starting from 15
+     */
+    private func appendType(types: inout Set<String>, type: String?, alternativeType: String? = nil) -> Void {
+        if SafariService.current.version.isDefaultSafariVersion() {
+            guard let type = type else { return }
+            types.insert(type);
+        } else {
+            guard let alternativeType = alternativeType ?? type else { return }
+            types.insert(alternativeType);
+        }
+    }
 
     private func addResourceType(rule: NetworkRule, trigger: inout BlockerEntry.Trigger) throws -> Void {
-        var types = [String]();
+        var types = Set<String>();
 
         if (rule.isContentType(contentType:NetworkRule.ContentType.ALL) && rule.restrictedContentType.count == 0) {
             // Safari does not support all other default content types, like subdocument etc.
@@ -224,46 +239,41 @@ class BlockerEntryFactory {
             return;
         }
 
-        if (rule.hasContentType(contentType: NetworkRule.ContentType.IMAGE)) {
-            types.append("image");
+        if rule.hasContentType(contentType: NetworkRule.ContentType.IMAGE) {
+            appendType(types: &types, type: "image");
         }
-        if (rule.hasContentType(contentType: NetworkRule.ContentType.STYLESHEET)) {
-            types.append("style-sheet");
+        if rule.hasContentType(contentType: NetworkRule.ContentType.STYLESHEET) {
+            appendType(types: &types, type: "style-sheet");
         }
-        if (rule.hasContentType(contentType: NetworkRule.ContentType.SCRIPT)) {
-            types.append("script");
+        if rule.hasContentType(contentType: NetworkRule.ContentType.SCRIPT) {
+            appendType(types: &types, type: "script");
         }
-        if (rule.hasContentType(contentType: NetworkRule.ContentType.MEDIA)) {
-            types.append("media");
+        if rule.hasContentType(contentType: NetworkRule.ContentType.MEDIA) {
+            appendType(types: &types, type: "media");
         }
-        if (rule.hasContentType(contentType: NetworkRule.ContentType.XMLHTTPREQUEST) ||
-            rule.hasContentType(contentType: NetworkRule.ContentType.OTHER) ||
-            rule.hasContentType(contentType: NetworkRule.ContentType.WEBSOCKET)) && SafariService.current.version.isDefaultSafariVersion() {
-            types.append("raw");
+        if rule.hasContentType(contentType: NetworkRule.ContentType.XMLHTTPREQUEST) {
+            appendType(types: &types, type: "raw", alternativeType: "fetch");
         }
-        if (rule.hasContentType(contentType: NetworkRule.ContentType.XMLHTTPREQUEST) && !SafariService.current.version.isDefaultSafariVersion()) {
-            types.append("fetch");
+        if rule.hasContentType(contentType: NetworkRule.ContentType.OTHER) {
+            appendType(types: &types, type: "raw", alternativeType: "other");
         }
-        if (rule.hasContentType(contentType: NetworkRule.ContentType.OTHER) && !SafariService.current.version.isDefaultSafariVersion()) {
-            types.append("other");
+        if rule.hasContentType(contentType: NetworkRule.ContentType.WEBSOCKET) {
+            appendType(types: &types, type: "raw", alternativeType: "websocket");
         }
-        if (rule.hasContentType(contentType: NetworkRule.ContentType.WEBSOCKET) && !SafariService.current.version.isDefaultSafariVersion()) {
-            types.append("websocket");
+        if rule.hasContentType(contentType: NetworkRule.ContentType.FONT) {
+            appendType(types: &types, type: "font");
         }
-        if (rule.hasContentType(contentType: NetworkRule.ContentType.FONT)) {
-            types.append("font");
+        if rule.hasContentType(contentType: NetworkRule.ContentType.DOCUMENT)  {
+            appendType(types: &types, type: "document");
         }
-        if (rule.hasContentType(contentType: NetworkRule.ContentType.DOCUMENT) || (rule.hasContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT) && SafariService.current.version.isDefaultSafariVersion()))  {
-            types.append("document");
+        if rule.hasContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT) {
+            appendType(types: &types, type: "document", alternativeType: "iframe-document");
         }
-        if (rule.hasContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT) && !SafariService.current.version.isDefaultSafariVersion()) {
-             types.append("iframe-document");
+        if rule.hasRestrictedContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT) {
+            appendType(types: &types, type: nil, alternativeType: "top-document");
         }
-        if (rule.hasRestrictedContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT) && !SafariService.current.version.isDefaultSafariVersion()) {
-            types.append("top-document");
-        }
-        if (rule.hasContentType(contentType: NetworkRule.ContentType.PING) && !SafariService.current.version.isDefaultSafariVersion()) {
-            types.append("ping");
+        if rule.hasContentType(contentType: NetworkRule.ContentType.PING) {
+            appendType(types: &types, type: nil, alternativeType: "ping");
         }
 
         if (rule.isBlockPopups) {
@@ -285,7 +295,7 @@ class BlockerEntryFactory {
         }
 
         if (types.count > 0) {
-            trigger.resourceType = types;
+            trigger.resourceType = Array(types.sorted());
         }
     }
 
