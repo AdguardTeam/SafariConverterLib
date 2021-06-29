@@ -394,7 +394,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
         rule.permittedContentType = [NetworkRule.ContentType.IMAGE, NetworkRule.ContentType.FONT];
         rule.restrictedContentType = [];
         result = converter.createBlockerEntry(rule: rule);
-        XCTAssertEqual(result!.trigger.resourceType, ["font", "image"]);
+        XCTAssertEqual(result!.trigger.resourceType, ["image", "font"]);
 
         rule.permittedContentType = [NetworkRule.ContentType.IMAGE, NetworkRule.ContentType.FONT];
         rule.restrictedContentType = [NetworkRule.ContentType.FONT];

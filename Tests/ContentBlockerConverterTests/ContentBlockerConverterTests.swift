@@ -252,7 +252,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(entry.trigger.ifDomain, ["*example.org"]);
         XCTAssertEqual(entry.trigger.unlessDomain, nil);
         XCTAssertEqual(entry.trigger.loadType, nil);
-        XCTAssertEqual(entry.trigger.resourceType, ["document", "fetch", "font", "iframe-document", "image", "media", "other", "ping", "script", "style-sheet"]);
+        XCTAssertEqual(entry.trigger.resourceType, ["image", "style-sheet", "script", "media", "fetch", "other", "font", "document", "iframe-document", "ping"]);
     }
 
     func testConvertScriptRestrictRules() {
@@ -265,7 +265,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
         XCTAssertEqual(entry.trigger.ifDomain, ["*example.com"]);
         XCTAssertEqual(entry.trigger.unlessDomain, nil);
-        XCTAssertEqual(entry.trigger.resourceType, ["document", "font", "image", "media", "raw", "style-sheet"]);
+        XCTAssertEqual(entry.trigger.resourceType, ["image", "style-sheet", "media", "raw", "font", "document"]);
 
         let regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!);
         XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://test.com"));
@@ -315,7 +315,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
         XCTAssertEqual(entry.trigger.ifDomain, ["*example.com"]);
         XCTAssertEqual(entry.trigger.unlessDomain, nil);
-        XCTAssertEqual(entry.trigger.resourceType, ["document", "fetch", "font", "image", "media", "other", "ping", "script", "style-sheet", "top-document", "websocket"]);
+        XCTAssertEqual(entry.trigger.resourceType, ["image", "style-sheet", "script", "media", "fetch", "other", "websocket", "font", "document", "top-document", "ping"]);
         XCTAssertEqual(entry.action.type, "block");
     }
 
@@ -1251,7 +1251,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "example\\.org" + URL_FILTER_REGEXP_END_SEPARATOR);
         XCTAssertEqual(entry.trigger.ifDomain, ["*test.com"]);
         XCTAssertNil(entry.trigger.unlessDomain);
-        XCTAssertEqual(entry.trigger.resourceType, ["document", "fetch", "font", "iframe-document", "image", "media", "other", "script", "style-sheet", "websocket"]);
+        XCTAssertEqual(entry.trigger.resourceType, ["image", "style-sheet", "script", "media", "fetch", "other", "websocket", "font", "document", "iframe-document"]);
     }
     
     func testOtherModifierRules() {
@@ -1287,7 +1287,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(entry.trigger.ifDomain, ["*example.org"]);
         XCTAssertEqual(entry.trigger.unlessDomain, nil);
         XCTAssertEqual(entry.trigger.loadType, nil);
-        XCTAssertEqual(entry.trigger.resourceType, ["document", "font", "image", "media", "raw", "script", "style-sheet"]);
+        XCTAssertEqual(entry.trigger.resourceType, ["image", "style-sheet", "script", "media", "raw", "font", "document"]);
         
         result = converter.convertArray(rules: ["||test.com^$other"], safariVersion: SafariVersion.safari15);
         
@@ -1315,7 +1315,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(entry.trigger.ifDomain, ["*example.org"]);
         XCTAssertEqual(entry.trigger.unlessDomain, nil);
         XCTAssertEqual(entry.trigger.loadType, nil);
-        XCTAssertEqual(entry.trigger.resourceType, ["document", "fetch", "font", "iframe-document", "image", "media", "ping", "script", "style-sheet", "websocket"]);
+        XCTAssertEqual(entry.trigger.resourceType, ["image", "style-sheet", "script", "media", "fetch", "websocket", "font", "document", "iframe-document", "ping"]);
     }
     
     func testXmlhttprequestModifierRules() {
@@ -1350,7 +1350,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(entry.trigger.ifDomain, ["*example.org"]);
         XCTAssertEqual(entry.trigger.unlessDomain, nil);
         XCTAssertEqual(entry.trigger.loadType, nil);
-        XCTAssertEqual(entry.trigger.resourceType, ["document", "font", "image", "media", "raw", "script", "style-sheet"]);
+        XCTAssertEqual(entry.trigger.resourceType, ["image", "style-sheet", "script", "media", "raw", "font", "document"]);
         
         result = converter.convertArray(rules: ["||test.com^$xmlhttprequest"], safariVersion: SafariVersion.safari15);
         XCTAssertEqual(result?.convertedCount, 1);
@@ -1376,20 +1376,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(entry.trigger.ifDomain, ["*example.org"]);
         XCTAssertEqual(entry.trigger.unlessDomain, nil);
         XCTAssertEqual(entry.trigger.loadType, nil);
-        XCTAssertEqual(entry.trigger.resourceType, ["document", "font", "iframe-document", "image", "media", "other", "ping", "script", "style-sheet", "websocket"]);
-        
-        result = converter.convertArray(rules: ["||test.com^$~xmlhttprequest,domain=example.org"], safariVersion: SafariVersion.safari15);
-        XCTAssertEqual(result?.convertedCount, 1);
-        XCTAssertEqual(result?.errorsCount, 0);
-
-        decoded = try! parseJsonString(json: result!.converted);
-        XCTAssertEqual(decoded.count, 1);
-        entry = decoded[0];
-        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
-        XCTAssertEqual(entry.trigger.ifDomain, ["*example.org"]);
-        XCTAssertEqual(entry.trigger.unlessDomain, nil);
-        XCTAssertEqual(entry.trigger.loadType, nil);
-        XCTAssertEqual(entry.trigger.resourceType, ["document", "font", "iframe-document", "image", "media", "other", "ping", "script", "style-sheet", "websocket"]);
+        XCTAssertEqual(entry.trigger.resourceType, ["image", "style-sheet", "script", "media", "other", "websocket", "font", "document", "iframe-document", "ping"]);
     }
 
     func testCssExceptions() {
