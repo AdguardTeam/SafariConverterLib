@@ -23,13 +23,13 @@ public enum SafariVersion: Int {
         }
     }
     
-    func isDefaultSafariVersion() -> Bool {
-        return self.rawValue <= SafariVersion.safari14.rawValue;
+    func isSafari15() -> Bool {
+        return self == SafariVersion.safari15;
     }
 }
 
 class SafariService {
-    var version: SafariVersion = .safari14;
+    var version: SafariVersion = .safari13;
     static let current: SafariService = SafariService();
 }
 
