@@ -216,7 +216,7 @@ class BlockerEntryFactory {
     }
 
     private func addResourceType(rule: NetworkRule, trigger: inout BlockerEntry.Trigger) throws -> Void {
-        var types = [String]();
+        var types = NSMutableOrderedSet();
 
         if (rule.isContentType(contentType:NetworkRule.ContentType.ALL) && rule.restrictedContentType.count == 0) {
             // Safari does not support all other default content types, like subdocument etc.
@@ -225,51 +225,66 @@ class BlockerEntryFactory {
         }
 
         if rule.hasContentType(contentType: NetworkRule.ContentType.IMAGE) {
-            types.append("image");
+            types.add("image");
         }
         if rule.hasContentType(contentType: NetworkRule.ContentType.STYLESHEET) {
-            types.append("style-sheet");
+            types.add("style-sheet");
         }
         if rule.hasContentType(contentType: NetworkRule.ContentType.SCRIPT) {
-            types.append("script");
+            types.add("script");
         }
         if rule.hasContentType(contentType: NetworkRule.ContentType.MEDIA) {
-            types.append("media");
+            types.add("media");
         }
-        if (rule.hasContentType(contentType: NetworkRule.ContentType.XMLHTTPREQUEST) ||
-            rule.hasContentType(contentType: NetworkRule.ContentType.OTHER) ||
-            rule.hasContentType(contentType: NetworkRule.ContentType.WEBSOCKET)) && !SafariService.current.version.isSafari15() {
-            types.append("raw");
+        if rule.hasContentType(contentType: NetworkRule.ContentType.XMLHTTPREQUEST) {
+            // `fetch` resource type is supported since Safari 15
+            if SafariService.current.version.isSafari15() {
+                    types.add("fetch");
+                } else {
+                    types.add("raw");
+                }
         }
-        // `fetch` resource type is supported since Safari 15
-        if rule.hasContentType(contentType: NetworkRule.ContentType.XMLHTTPREQUEST) && SafariService.current.version.isSafari15() {
-            types.append("fetch");
+        if rule.hasContentType(contentType: NetworkRule.ContentType.OTHER) {
+            // `other` resource type is supported since Safari 15
+            if SafariService.current.version.isSafari15() {
+                    types.add("other");
+                } else {
+                    types.add("raw");
+                }
         }
-        // `other` resource type is supported since Safari 15
-        if rule.hasContentType(contentType: NetworkRule.ContentType.OTHER) && SafariService.current.version.isSafari15() {
-            types.append("other");
-        }
-        // `websocket` resource type is supported since Safari 15
-        if rule.hasContentType(contentType: NetworkRule.ContentType.WEBSOCKET) && SafariService.current.version.isSafari15() {
-            types.append("websocket");
+        if rule.hasContentType(contentType: NetworkRule.ContentType.WEBSOCKET) {
+            // `websocket` resource type is supported since Safari 15
+            if SafariService.current.version.isSafari15() {
+                    types.add("websocket");
+                } else {
+                    types.add("raw");
+                }
         }
         if rule.hasContentType(contentType: NetworkRule.ContentType.FONT) {
-            types.append("font");
+            types.add("font");
         }
-        if rule.hasContentType(contentType: NetworkRule.ContentType.DOCUMENT) || (rule.hasContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT) && !SafariService.current.version.isSafari15())  {
-            types.append("document");
+        if rule.hasContentType(contentType: NetworkRule.ContentType.DOCUMENT) {
+            types.add("document");
         }
-        // `iframe-document` resource type is supported since Safari 15
-        if rule.hasContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT) && SafariService.current.version.isSafari15() {
-             types.append("iframe-document");
+        if rule.hasContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT) {
+            // `iframe-document` resource type is supported since Safari 15
+            if SafariService.current.version.isSafari15() {
+                    types.add("iframe-document");
+                } else {
+                    types.add("document");
+                }
         }
-        // `top-document` resource type is supported since Safari 15
-        if rule.hasRestrictedContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT) && SafariService.current.version.isSafari15() {
-            types.append("top-document");
+        if rule.hasRestrictedContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT) {
+            // `top-document` resource type is supported since Safari 15
+            if SafariService.current.version.isSafari15() {
+                    types.add("top-document");
+                }
         }
-        // `ping` resource type is supported since Safari 14
-        if rule.hasContentType(contentType: NetworkRule.ContentType.PING) && SafariService.current.version.rawValue >= SafariVersion.safari14.rawValue {
-            types.append("ping");
+        if rule.hasContentType(contentType: NetworkRule.ContentType.PING) {
+            // `ping` resource type is supported since Safari 14
+            if SafariService.current.version.rawValue >= SafariVersion.safari14.rawValue {
+                types.add("ping");
+            }
         }
 
         if (rule.isBlockPopups) {
@@ -291,7 +306,7 @@ class BlockerEntryFactory {
         }
 
         if (types.count > 0) {
-            trigger.resourceType = types;
+            trigger.resourceType = Array(types) as? [String];
         }
     }
 
