@@ -1,4 +1,5 @@
 import Foundation
+import Cocoa
 
 public enum SafariVersion: Int {
     // AdGuard for iOS supports Safari from 11 version
@@ -31,6 +32,18 @@ public enum SafariVersion: Int {
 class SafariService {
     var version: SafariVersion = .safari13;
     static let current: SafariService = SafariService();
+    
+    init() {
+        let bundleURL = NSWorkspace.shared.urlForApplication(withBundleIdentifier: "com.apple.Safari")!;
+        let bundle = Bundle(url: bundleURL)!;
+        let safariVersionString = bundle.infoDictionary?["CFBundleShortVersionString"] as? String;
+        let safariVersion = safariVersionString!.prefix(2);
+        self.version = SafariVersion(rawValue: Int(safariVersion)!)!;
+    }
+    
+    init (version: SafariVersion) {
+        self.version = version;
+    }
 }
 
 public enum SafariVersionError: Error {

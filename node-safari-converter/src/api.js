@@ -5,14 +5,6 @@ const { version } = require('../../package.json');
 const CONVERTER_TOOL_PATH = path.resolve(__dirname, '../../bin/ConverterTool');
 
 module.exports = (function () {
-    const safariVersions = Object.freeze({
-        safari11: 11,
-        safari12: 12,
-        safari13: 13,
-        safari14: 14,
-        safari15: 15,
-    });
-
     /**
      * Runs shell script
      *
@@ -50,15 +42,12 @@ module.exports = (function () {
      *
      * @param rules array of rules
      * @param advancedBlocking if we need advanced blocking content
-     * @param safariVersion
      * @param converterToolPath - optional path to converter resolved by Electron
      */
-    const jsonFromRules = async (rules, advancedBlocking, safariVersion, converterToolPath) => {
-        let currentSafariVersion = Object.values(safariVersions).includes(safariVersion) ? safariVersion : safariVersions.safari13;
+    const jsonFromRules = async (rules, advancedBlocking, converterToolPath) => {
 
         return new Promise((resolve, reject) => {
             const child = runScript(converterToolPath || CONVERTER_TOOL_PATH, [
-                `-safariVersion=${currentSafariVersion}`,
                 '-optimize=false',
                 `-advancedBlocking=${advancedBlocking}`,
             ], (code, stdout, stderr) => {
@@ -91,6 +80,5 @@ module.exports = (function () {
     return {
         jsonFromRules,
         getConverterVersion,
-        safariVersions,
     };
 })();

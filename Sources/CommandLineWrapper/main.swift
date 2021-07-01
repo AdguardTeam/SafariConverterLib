@@ -4,7 +4,7 @@ import ContentBlockerConverter
 /**
  * Command line wrapper
  * Usage:
- * ./CommandLineWrapper -safariVersion=14 -optimize=true -advancedBlocking=false
+ * ./CommandLineWrapper -optimize=true -advancedBlocking=false
  */
 
 func writeToStdError(str: String) {
@@ -36,27 +36,14 @@ do {
     
     let arguments: [String] = CommandLine.arguments;
     if (arguments.count < 4) {
-        writeToStdError(str: "AG: Invalid arguments: Usage: ./CommandLineWrapper -safariVersion=14 -optimize=false -advancedBlocking)");
+        writeToStdError(str: "AG: Invalid arguments: Usage: ./CommandLineWrapper -optimize=false -advancedBlocking)");
         exit(EXIT_FAILURE);
     }
     
-    let safariVersionIndex = String.Index(utf16Offset: 15, in: arguments[1]);
-    let safariVersionStr = arguments[1][safariVersionIndex...];
-    
-    guard let safariVersionNum = Int(safariVersionStr) else {
-        throw SafariVersionError.invalidSafariVersion();
-    };
-    
-    guard let safariVersion = SafariVersion(rawValue: safariVersionNum) else {
-        throw SafariVersionError.unsupportedSafariVersion();
-    };
-    
-    Logger.log("AG: Safari version: \(safariVersion)");
-    
-    let optimize = arguments[2] == "-optimize=true";
+    let optimize = arguments[1] == "-optimize=true";
     Logger.log("AG: Optimize: \(optimize)");
     
-    let advancedBlocking = arguments[3] == "-advancedBlocking=true";
+    let advancedBlocking = arguments[2] == "-advancedBlocking=true";
     Logger.log("AG: AdvancedBlocking: \(advancedBlocking)");
     
     var rules = [String]();
@@ -73,7 +60,7 @@ do {
     Logger.log("AG: Rules to convert: \(rules.count)");
     
     let result: ConversionResult? = ContentBlockerConverter().convertArray(
-        rules: rules, safariVersion: safariVersion, optimize: optimize, advancedBlocking: advancedBlocking
+        rules: rules, optimize: optimize, advancedBlocking: advancedBlocking
     );
 
     Logger.log("AG: Conversion done");

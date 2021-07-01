@@ -219,6 +219,9 @@ final class NetworkRuleTests: XCTestCase {
     }
     
     func testPingModifier() {
+        // Convert for default Safari version
+        SafariService.current.version = SafariVersion.safari13;
+        
         var rule = "||example.com^$ping" as NSString;
         XCTAssertThrowsError(try NetworkRule(ruleText: rule));
         

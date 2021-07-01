@@ -230,7 +230,9 @@ final class ContentBlockerConverterTests: XCTestCase {
     }
     
     func testWebsocketRulesProperConversion() {
-        var result = converter.convertArray(rules: ["||test.com^$websocket"], safariVersion: SafariVersion.safari15);
+        // Convert for Safari 15
+        SafariService.current.version = SafariVersion.safari15;
+        var result = converter.convertArray(rules: ["||test.com^$websocket"]);
         XCTAssertEqual(result?.convertedCount, 1);
 
         var decoded = try! parseJsonString(json: result!.converted);
@@ -242,7 +244,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(entry.trigger.loadType, nil);
         XCTAssertEqual(entry.trigger.resourceType, ["websocket"]);
         
-        result = converter.convertArray(rules: ["||test.com^$~websocket,domain=example.org"], safariVersion: SafariVersion.safari15);
+        result = converter.convertArray(rules: ["||test.com^$~websocket,domain=example.org"]);
         XCTAssertEqual(result?.convertedCount, 1);
 
         decoded = try! parseJsonString(json: result!.converted);
@@ -256,6 +258,8 @@ final class ContentBlockerConverterTests: XCTestCase {
     }
 
     func testConvertScriptRestrictRules() {
+        // Convert for default Safari version
+        SafariService.current.version = SafariVersion.safari13;
         let result = converter.convertArray(rules: ["||test.com^$~script,domain=example.com"]);
         XCTAssertEqual(result?.convertedCount, 1);
 
@@ -294,7 +298,9 @@ final class ContentBlockerConverterTests: XCTestCase {
     }
     
     func testSubdocumentRuleProperConversion() {
-        var result = converter.convertArray(rules: ["||test.com^$subdocument,domain=example.com"], safariVersion: SafariVersion.safari15);
+        // Convert for Safari 15
+        SafariService.current.version = SafariVersion.safari15;
+        var result = converter.convertArray(rules: ["||test.com^$subdocument,domain=example.com"]);
         XCTAssertEqual(result?.convertedCount, 1);
 
         var decoded = try! parseJsonString(json: result!.converted);
@@ -306,7 +312,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(entry.trigger.resourceType, ["iframe-document"]);
         XCTAssertEqual(entry.action.type, "block");
         
-        result = converter.convertArray(rules: ["||test.com^$~subdocument,domain=example.com"], safariVersion: SafariVersion.safari15);
+        result = converter.convertArray(rules: ["||test.com^$~subdocument,domain=example.com"]);
         XCTAssertEqual(result?.convertedCount, 1);
 
         decoded = try! parseJsonString(json: result!.converted);
@@ -320,6 +326,8 @@ final class ContentBlockerConverterTests: XCTestCase {
     }
 
     func testAddUnlessDomainsForThirdParty() {
+        // Convert for default Safari version
+        SafariService.current.version = SafariVersion.safari13;
         var result = converter.convertArray(rules: ["||test.com^$third-party"]);
         XCTAssertEqual(result?.convertedCount, 1);
 
@@ -1215,6 +1223,8 @@ final class ContentBlockerConverterTests: XCTestCase {
     }
     
     func testPingModifierRules() {
+        // Convert for default Safari version
+        SafariService.current.version = SafariVersion.safari13;
         var rules = ["||example.org^$ping"];
         var result = converter.convertArray(rules: rules);
         XCTAssertEqual(result?.convertedCount, 0);
@@ -1228,7 +1238,11 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result?.errorsCount, 1);
         
         rules = ["||example.org^$ping"];
-        result = converter.convertArray(rules: rules, safariVersion: SafariVersion.safari15);
+        
+        // Convert for Safari 15
+        SafariService.current.version = SafariVersion.safari15;
+        result = converter.convertArray(rules: rules);
+        
         XCTAssertEqual(result?.convertedCount, 1);
         XCTAssertEqual(result?.totalConvertedCount, 1);
 
@@ -1241,7 +1255,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(entry.trigger.resourceType, ["ping"]);
         
         rules = ["||example.org^$~ping,domain=test.com"];
-        result = converter.convertArray(rules: rules, safariVersion: SafariVersion.safari15);
+        result = converter.convertArray(rules: rules);
         XCTAssertEqual(result?.convertedCount, 1);
         XCTAssertEqual(result?.totalConvertedCount, 1);
 
@@ -1255,6 +1269,8 @@ final class ContentBlockerConverterTests: XCTestCase {
     }
     
     func testOtherModifierRules() {
+        // Convert for default Safari version
+        SafariService.current.version = SafariVersion.safari13;
         var rules = ["||test.com^$other"];
         var result = converter.convertArray(rules: rules);
         
@@ -1289,7 +1305,9 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(entry.trigger.loadType, nil);
         XCTAssertEqual(entry.trigger.resourceType, ["image", "style-sheet", "script", "media", "raw", "font", "document"]);
         
-        result = converter.convertArray(rules: ["||test.com^$other"], safariVersion: SafariVersion.safari15);
+        // Convert for Safari 15
+        SafariService.current.version = SafariVersion.safari15;
+        result = converter.convertArray(rules: ["||test.com^$other"]);
         
         XCTAssertEqual(result?.convertedCount, 1);
         XCTAssertEqual(result?.errorsCount, 0);
@@ -1303,7 +1321,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(entry.trigger.loadType, nil);
         XCTAssertEqual(entry.trigger.resourceType, ["other"]);
         
-        result = converter.convertArray(rules: ["||test.com^$~other,domain=example.org"], safariVersion: SafariVersion.safari15);
+        result = converter.convertArray(rules: ["||test.com^$~other,domain=example.org"]);
         
         XCTAssertEqual(result?.convertedCount, 1);
         XCTAssertEqual(result?.errorsCount, 0);
@@ -1319,6 +1337,8 @@ final class ContentBlockerConverterTests: XCTestCase {
     }
     
     func testXmlhttprequestModifierRules() {
+        // Convert for default Safari version
+        SafariService.current.version = SafariVersion.safari13;
         var rules = ["||test.com^$xmlhttprequest"];
         var result = converter.convertArray(rules: rules);
         XCTAssertEqual(result?.convertedCount, 1);
@@ -1352,7 +1372,9 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(entry.trigger.loadType, nil);
         XCTAssertEqual(entry.trigger.resourceType, ["image", "style-sheet", "script", "media", "raw", "font", "document"]);
         
-        result = converter.convertArray(rules: ["||test.com^$xmlhttprequest"], safariVersion: SafariVersion.safari15);
+        // Convert for Safari 15
+        SafariService.current.version = SafariVersion.safari15;
+        result = converter.convertArray(rules: ["||test.com^$xmlhttprequest"]);
         XCTAssertEqual(result?.convertedCount, 1);
         XCTAssertEqual(result?.errorsCount, 0);
 
@@ -1365,7 +1387,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(entry.trigger.loadType, nil);
         XCTAssertEqual(entry.trigger.resourceType, ["fetch"]);
         
-        result = converter.convertArray(rules: ["||test.com^$~xmlhttprequest,domain=example.org"], safariVersion: SafariVersion.safari15);
+        result = converter.convertArray(rules: ["||test.com^$~xmlhttprequest,domain=example.org"]);
         XCTAssertEqual(result?.convertedCount, 1);
         XCTAssertEqual(result?.errorsCount, 0);
 
@@ -1380,6 +1402,8 @@ final class ContentBlockerConverterTests: XCTestCase {
     }
 
     func testCssExceptions() {
+        // Convert for default Safari version
+        SafariService.current.version = SafariVersion.safari13;
         var rules = ["test.com,example.com##.ad-banner", "test.com#@#.ad-banner"]
         var result = ContentBlockerConverter().convertArray(rules: rules);
 

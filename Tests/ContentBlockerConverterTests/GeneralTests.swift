@@ -311,6 +311,9 @@ final class GeneralTests: XCTestCase {
     """;
     
     func testGeneral() {
+        // Convert for default Safari version
+        SafariService.current.version = SafariVersion.safari13;
+        
         let conversionResult = ContentBlockerConverter().convertArray(rules: rules);
         
         XCTAssertEqual(conversionResult?.totalConvertedCount, 22);
@@ -332,6 +335,9 @@ final class GeneralTests: XCTestCase {
     }
     
     func testPerformance() {
+        // Convert for default Safari version
+        SafariService.current.version = SafariVersion.safari13;
+        
         let thisSourceFile = URL(fileURLWithPath: #file);
         let thisDirectory = thisSourceFile.deletingLastPathComponent();
         let resourceURL = thisDirectory.appendingPathComponent("Resources/test-rules.txt");
