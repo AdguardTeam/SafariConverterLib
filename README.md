@@ -24,10 +24,11 @@ Converts filter rules in AdGuard format to the format supported by Safari.
 
 ```
     let result: ConversionResult? = ContentBlockerConverter.convertArray(
-        rules: [String], safariVersion: SafariVersions = .DEFAULT, optimize: Bool = false, advancedBlocking: Bool = false
+        rules: [String], safariVersion: SafariVersions? = nil, optimize: Bool = false, advancedBlocking: Bool = false
     );
 ```
-Please note, that `safariVersion` must be an instance of enum SafariVersions.
+Please note, that `safariVersion` is optional argument and if presented must be an instance of enum SafariVersions. If `safariVersion` not provided,
+it will be detected automatically.
 
 The result contains following properties:
 - totalConvertedCount: length of content blocker
@@ -40,7 +41,7 @@ The result contains following properties:
 ### How to use converter from command line:
 
 ```
-    ./ConverterTool -safariVersion=14 -optimize=true -advancedBlocking=false <<STDIN -o other --options
+    ./ConverterTool -optimize=true -advancedBlocking=false -safariVersion=14 <<STDIN -o other --options
     test_rule_one
     test_rule_two
     STDIN

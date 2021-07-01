@@ -5,6 +5,14 @@ const { version } = require('../../package.json');
 const CONVERTER_TOOL_PATH = path.resolve(__dirname, '../../bin/ConverterTool');
 
 module.exports = (function () {
+    const safariVersions = Object.freeze({
+        safari11: 11,
+        safari12: 12,
+        safari13: 13,
+        safari14: 14,
+        safari15: 15,
+    });
+
     /**
      * Runs shell script
      *
@@ -42,22 +50,31 @@ module.exports = (function () {
      *
      * @param rules array of rules
      * @param advancedBlocking if we need advanced blocking content
+     * @param safariVersion is optional
      * @param converterToolPath - optional path to converter resolved by Electron
      */
-    const jsonFromRules = async (rules, advancedBlocking, converterToolPath) => {
+    const jsonFromRules = async (rules, advancedBlocking, safariVersion, converterToolPath) => {
+
+        const args = [
+            '-optimize=false',
+            `-advancedBlocking=${advancedBlocking}`,
+        ];
+
+        if (safariVersion && Object.values(safariVersions).includes(safariVersion)) {
+            args.push(`-safariVersion=${safariVersion}`);
+        }
 
         return new Promise((resolve, reject) => {
-            const child = runScript(converterToolPath || CONVERTER_TOOL_PATH, [
-                '-optimize=false',
-                `-advancedBlocking=${advancedBlocking}`,
-            ], (code, stdout, stderr) => {
-                if (code !== 0) {
-                    reject(new Error(stderr));
-                    return;
-                }
-                const result = JSON.parse(stdout);
+            const child = runScript(converterToolPath || CONVERTER_TOOL_PATH,
+                args,
+                (code, stdout, stderr) => {
+                    if (code !== 0) {
+                        reject(new Error(stderr));
+                        return;
+                    }
+                    const result = JSON.parse(stdout);
 
-                resolve(result);
+                    resolve(result);
             });
 
             child.stdin.setEncoding('utf8');
@@ -80,5 +97,6 @@ module.exports = (function () {
     return {
         jsonFromRules,
         getConverterVersion,
+        safariVersions,
     };
 })();
