@@ -1,4 +1,9 @@
 import Foundation
+
+#if !os(macOS)
+import UIKit
+#endif
+
 import Cocoa
 
 public enum SafariVersion: Int {
@@ -34,11 +39,19 @@ class SafariService {
     static let current: SafariService = SafariService();
     
     init() {
-        let bundleURL = NSWorkspace.shared.urlForApplication(withBundleIdentifier: "com.apple.Safari")!;
-        let bundle = Bundle(url: bundleURL)!;
-        let safariVersionString = bundle.infoDictionary?["CFBundleShortVersionString"] as? String;
-        let safariVersion = safariVersionString!.prefix(2);
-        self.version = SafariVersion(rawValue: Int(safariVersion)!)!;
+        var safariVersion: SafariVersion;
+        
+        #if os(macOS)
+            let bundleURL = NSWorkspace.shared.urlForApplication(withBundleIdentifier: "com.apple.Safari")!;
+            let bundle = Bundle(url: bundleURL)!;
+            let safariVersionString = bundle.infoDictionary?["CFBundleShortVersionString"] as? String;
+            safariVersion = SafariVersion(rawValue: Int(safariVersionString!.prefix(2))!)!;
+        #else
+            let systemVersion = UIDevice.current.systemVersion as? String;
+            safariVersion = SafariVersion(rawValue: Int(systemVersion.prefix(2))!)!;
+        #endif
+        
+        self.version = safariVersion;
     }
     
     init (version: SafariVersion) {
