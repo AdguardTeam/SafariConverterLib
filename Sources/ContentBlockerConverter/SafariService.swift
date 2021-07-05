@@ -48,7 +48,7 @@ class SafariService {
             safariVersion = SafariVersion(rawValue: Int(safariVersionString!.prefix(2))!)!;
         #else
             let systemVersion = UIDevice.current.systemVersion as? String;
-            safariVersion = SafariVersion(rawValue: Int(systemVersion.prefix(2))!)!;
+            safariVersion = SafariVersion(rawValue: Int(systemVersion!.prefix(2))!)!;
         #endif
         
         self.version = safariVersion;
