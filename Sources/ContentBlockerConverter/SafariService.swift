@@ -42,11 +42,13 @@ public class SafariService {
         var safariVersion: SafariVersion;
         
         #if os(macOS)
+            // get Safari version from infoDictionary of Safari bundle
             let bundleURL = NSWorkspace.shared.urlForApplication(withBundleIdentifier: "com.apple.Safari")!;
             let bundle = Bundle(url: bundleURL)!;
             let safariVersionString = bundle.infoDictionary?["CFBundleShortVersionString"] as? String;
             safariVersion = SafariVersion(rawValue: Int(safariVersionString!.prefix(2))!)!;
         #else
+            // Safari version is similar to iOS version
             let iosVersion = ProcessInfo().operatingSystemVersion.majorVersion;
             safariVersion = SafariVersion(rawValue: iosVersion)!;
         #endif

@@ -46,7 +46,7 @@ do {
     let advancedBlocking = arguments[2] == "-advancedBlocking=true";
     Logger.log("AG: AdvancedBlocking: \(advancedBlocking)");
     
-    var safariVersion: SafariVersion? = nil;
+    var safariVersion: SafariVersion = SafariService.current.version;
     
     if arguments.count == 4 {
         let safariVersionNum = Int(arguments[3].suffix(2));
@@ -75,7 +75,7 @@ do {
     Logger.log("AG: Rules to convert: \(rules.count)");
     
     let result: ConversionResult? = ContentBlockerConverter().convertArray(
-        rules: rules, safariVersion: safariVersion!, optimize: optimize, advancedBlocking: advancedBlocking
+        rules: rules, safariVersion: safariVersion, optimize: optimize, advancedBlocking: advancedBlocking
     );
 
     Logger.log("AG: Conversion done");
