@@ -2,9 +2,9 @@ import Foundation
 
 #if !os(macOS)
 import UIKit
-#endif
-
+#else
 import Cocoa
+#endif
 
 public enum SafariVersion: Int {
     // AdGuard for iOS supports Safari from 11 version
@@ -47,8 +47,8 @@ public class SafariService {
             let safariVersionString = bundle.infoDictionary?["CFBundleShortVersionString"] as? String;
             safariVersion = SafariVersion(rawValue: Int(safariVersionString!.prefix(2))!)!;
         #else
-            let systemVersion = UIDevice.current.systemVersion as? String;
-            safariVersion = SafariVersion(rawValue: Int(systemVersion!.prefix(2))!)!;
+            let iosVersion = ProcessInfo().operatingSystemVersion.majorVersion;
+            safariVersion = SafariVersion(rawValue: iosVersion)!;
         #endif
         
         self.version = safariVersion;
