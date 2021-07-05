@@ -23,12 +23,17 @@ public enum SafariVersion: Int {
         }
     }
     
-    func isDefaultSafariVersion() -> Bool {
-        return self.rawValue <= SafariVersion.safari14.rawValue;
+    func isSafari15() -> Bool {
+        return self == SafariVersion.safari15;
     }
 }
 
+class SafariService {
+    var version: SafariVersion = .safari13;
+    static let current: SafariService = SafariService();
+}
+
 public enum SafariVersionError: Error {
-    case invalidSafariVersion(message: String)
-    case unsupportedSafariVersion(message: String)
+    case invalidSafariVersion(message: String = "Invalid Safari version value")
+    case unsupportedSafariVersion(message: String = "The provided Safari version is not supported")
 }

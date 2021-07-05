@@ -408,12 +408,20 @@ class NetworkRule: Rule {
                 setRequestType(contentType: ContentType.OBJECT_SUBREQUEST, enabled: false);
                 break;
             case "ping":
-                // https://github.com/AdguardTeam/SafariConverterLib/issues/14
-                throw SyntaxError.invalidRule(message: "$ping option is not supported");
+                // `ping` resource type is supported since Safari 14
+                if SafariService.current.version.rawValue >= SafariVersion.safari14.rawValue {
+                    setRequestType(contentType: ContentType.PING, enabled: true);
+                } else {
+                    throw SyntaxError.invalidRule(message: "$ping option is not supported");
+                }
                 break;
             case "~ping":
-                // https://github.com/AdguardTeam/SafariConverterLib/issues/14
-                throw SyntaxError.invalidRule(message: "$~ping option is not supported");
+                // `ping` resource type is supported since Safari 14
+                if SafariService.current.version.rawValue >= SafariVersion.safari14.rawValue {
+                    setRequestType(contentType: ContentType.PING, enabled: false);
+                } else {
+                    throw SyntaxError.invalidRule(message: "$~ping option is not supported");
+                }
                 break;
             case "webrtc":
                 setRequestType(contentType: ContentType.WEBRTC, enabled: true);
@@ -479,6 +487,7 @@ class NetworkRule: Rule {
         case OBJECT
         case OBJECT_SUBREQUEST
         case WEBRTC
+        case PING
     }
     
     enum NetworkRuleOption {

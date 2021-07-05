@@ -228,6 +228,32 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(entry.trigger.loadType, ["third-party"]);
         XCTAssertEqual(entry.trigger.resourceType, ["raw"]);
     }
+    
+    func testWebsocketRulesProperConversion() {
+        var result = converter.convertArray(rules: ["||test.com^$websocket"], safariVersion: SafariVersion.safari15);
+        XCTAssertEqual(result?.convertedCount, 1);
+
+        var decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        var entry = decoded[0];
+        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
+        XCTAssertEqual(entry.trigger.ifDomain, nil);
+        XCTAssertEqual(entry.trigger.unlessDomain, nil);
+        XCTAssertEqual(entry.trigger.loadType, nil);
+        XCTAssertEqual(entry.trigger.resourceType, ["websocket"]);
+        
+        result = converter.convertArray(rules: ["||test.com^$~websocket,domain=example.org"], safariVersion: SafariVersion.safari15);
+        XCTAssertEqual(result?.convertedCount, 1);
+
+        decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        entry = decoded[0];
+        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
+        XCTAssertEqual(entry.trigger.ifDomain, ["*example.org"]);
+        XCTAssertEqual(entry.trigger.unlessDomain, nil);
+        XCTAssertEqual(entry.trigger.loadType, nil);
+        XCTAssertEqual(entry.trigger.resourceType, ["image", "style-sheet", "script", "media", "fetch", "other", "font", "document", "iframe-document", "ping"]);
+    }
 
     func testConvertScriptRestrictRules() {
         let result = converter.convertArray(rules: ["||test.com^$~script,domain=example.com"]);
@@ -289,7 +315,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
         XCTAssertEqual(entry.trigger.ifDomain, ["*example.com"]);
         XCTAssertEqual(entry.trigger.unlessDomain, nil);
-        XCTAssertEqual(entry.trigger.resourceType, ["image", "style-sheet", "script", "media", "raw", "font", "document", "top-document"]);
+        XCTAssertEqual(entry.trigger.resourceType, ["image", "style-sheet", "script", "media", "fetch", "other", "websocket", "font", "document", "top-document", "ping"]);
         XCTAssertEqual(entry.action.type, "block");
     }
 
@@ -1187,6 +1213,171 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded.count, 1);
         XCTAssertTrue(decoded[0].trigger.urlFilter!.contains(".com\\\\\\/mm\\\\\\/yksdk"));
     }
+    
+    func testPingModifierRules() {
+        var rules = ["||example.org^$ping"];
+        var result = converter.convertArray(rules: rules);
+        XCTAssertEqual(result?.convertedCount, 0);
+        XCTAssertEqual(result?.totalConvertedCount, 0);
+        XCTAssertEqual(result?.errorsCount, 1);
+        
+        rules = ["||example.org^$~ping,domain=test.com"];
+        result = converter.convertArray(rules: rules);
+        XCTAssertEqual(result?.convertedCount, 0);
+        XCTAssertEqual(result?.totalConvertedCount, 0);
+        XCTAssertEqual(result?.errorsCount, 1);
+        
+        rules = ["||example.org^$ping"];
+        result = converter.convertArray(rules: rules, safariVersion: SafariVersion.safari15);
+        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result?.totalConvertedCount, 1);
+
+        var decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        var entry = decoded[0];
+        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "example\\.org" + URL_FILTER_REGEXP_END_SEPARATOR);
+        XCTAssertNil(entry.trigger.ifDomain);
+        XCTAssertNil(entry.trigger.unlessDomain);
+        XCTAssertEqual(entry.trigger.resourceType, ["ping"]);
+        
+        rules = ["||example.org^$~ping,domain=test.com"];
+        result = converter.convertArray(rules: rules, safariVersion: SafariVersion.safari15);
+        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result?.totalConvertedCount, 1);
+
+        decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        entry = decoded[0];
+        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "example\\.org" + URL_FILTER_REGEXP_END_SEPARATOR);
+        XCTAssertEqual(entry.trigger.ifDomain, ["*test.com"]);
+        XCTAssertNil(entry.trigger.unlessDomain);
+        XCTAssertEqual(entry.trigger.resourceType, ["image", "style-sheet", "script", "media", "fetch", "other", "websocket", "font", "document", "iframe-document"]);
+    }
+    
+    func testOtherModifierRules() {
+        var rules = ["||test.com^$other"];
+        var result = converter.convertArray(rules: rules);
+        
+        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result?.totalConvertedCount, 1);
+        XCTAssertEqual(result?.errorsCount, 0);
+        
+        var decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        XCTAssertEqual(decoded.count, 1);
+        var entry = decoded[0];
+        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
+        XCTAssertEqual(entry.trigger.ifDomain, nil);
+        XCTAssertEqual(entry.trigger.unlessDomain, nil);
+        XCTAssertEqual(entry.trigger.loadType, nil);
+        XCTAssertEqual(entry.trigger.resourceType, ["raw"]);
+        
+        rules = ["||test.com^$~other,domain=example.org"];
+        result = converter.convertArray(rules: rules);
+        
+        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result?.totalConvertedCount, 1);
+        XCTAssertEqual(result?.errorsCount, 0);
+        
+        decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        XCTAssertEqual(decoded.count, 1);
+        entry = decoded[0];
+        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
+        XCTAssertEqual(entry.trigger.ifDomain, ["*example.org"]);
+        XCTAssertEqual(entry.trigger.unlessDomain, nil);
+        XCTAssertEqual(entry.trigger.loadType, nil);
+        XCTAssertEqual(entry.trigger.resourceType, ["image", "style-sheet", "script", "media", "raw", "font", "document"]);
+        
+        result = converter.convertArray(rules: ["||test.com^$other"], safariVersion: SafariVersion.safari15);
+        
+        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result?.errorsCount, 0);
+
+        decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        entry = decoded[0];
+        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
+        XCTAssertEqual(entry.trigger.ifDomain, nil);
+        XCTAssertEqual(entry.trigger.unlessDomain, nil);
+        XCTAssertEqual(entry.trigger.loadType, nil);
+        XCTAssertEqual(entry.trigger.resourceType, ["other"]);
+        
+        result = converter.convertArray(rules: ["||test.com^$~other,domain=example.org"], safariVersion: SafariVersion.safari15);
+        
+        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result?.errorsCount, 0);
+
+        decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        entry = decoded[0];
+        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
+        XCTAssertEqual(entry.trigger.ifDomain, ["*example.org"]);
+        XCTAssertEqual(entry.trigger.unlessDomain, nil);
+        XCTAssertEqual(entry.trigger.loadType, nil);
+        XCTAssertEqual(entry.trigger.resourceType, ["image", "style-sheet", "script", "media", "fetch", "websocket", "font", "document", "iframe-document", "ping"]);
+    }
+    
+    func testXmlhttprequestModifierRules() {
+        var rules = ["||test.com^$xmlhttprequest"];
+        var result = converter.convertArray(rules: rules);
+        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result?.totalConvertedCount, 1);
+        XCTAssertEqual(result?.errorsCount, 0);
+        
+        var decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        XCTAssertEqual(decoded.count, 1);
+        var entry = decoded[0];
+        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
+        XCTAssertEqual(entry.trigger.ifDomain, nil);
+        XCTAssertEqual(entry.trigger.unlessDomain, nil);
+        XCTAssertEqual(entry.trigger.loadType, nil);
+        XCTAssertEqual(entry.trigger.resourceType, ["raw"]);
+        
+        rules = ["||test.com^$~xmlhttprequest,domain=example.org"];
+        result = converter.convertArray(rules: rules);
+        
+        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result?.totalConvertedCount, 1);
+        XCTAssertEqual(result?.errorsCount, 0);
+        
+        decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        XCTAssertEqual(decoded.count, 1);
+        entry = decoded[0];
+        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
+        XCTAssertEqual(entry.trigger.ifDomain, ["*example.org"]);
+        XCTAssertEqual(entry.trigger.unlessDomain, nil);
+        XCTAssertEqual(entry.trigger.loadType, nil);
+        XCTAssertEqual(entry.trigger.resourceType, ["image", "style-sheet", "script", "media", "raw", "font", "document"]);
+        
+        result = converter.convertArray(rules: ["||test.com^$xmlhttprequest"], safariVersion: SafariVersion.safari15);
+        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result?.errorsCount, 0);
+
+        decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        entry = decoded[0];
+        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
+        XCTAssertEqual(entry.trigger.ifDomain, nil);
+        XCTAssertEqual(entry.trigger.unlessDomain, nil);
+        XCTAssertEqual(entry.trigger.loadType, nil);
+        XCTAssertEqual(entry.trigger.resourceType, ["fetch"]);
+        
+        result = converter.convertArray(rules: ["||test.com^$~xmlhttprequest,domain=example.org"], safariVersion: SafariVersion.safari15);
+        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result?.errorsCount, 0);
+
+        decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(decoded.count, 1);
+        entry = decoded[0];
+        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
+        XCTAssertEqual(entry.trigger.ifDomain, ["*example.org"]);
+        XCTAssertEqual(entry.trigger.unlessDomain, nil);
+        XCTAssertEqual(entry.trigger.loadType, nil);
+        XCTAssertEqual(entry.trigger.resourceType, ["image", "style-sheet", "script", "media", "other", "websocket", "font", "document", "iframe-document", "ping"]);
+    }
 
     func testCssExceptions() {
         var rules = ["test.com,example.com##.ad-banner", "test.com#@#.ad-banner"]
@@ -1421,6 +1612,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         ("testPopupRules", testPopupRules),
         ("testConvertFirstPartyRule", testConvertFirstPartyRule),
         ("testConvertWebsocketRules", testConvertWebsocketRules),
+        ("testWebsocketRulesProperConversion", testWebsocketRulesProperConversion),
         ("testConvertScriptRestrictRules", testConvertScriptRestrictRules),
         ("testConvertSubdocumentFirstParty", testConvertSubdocumentFirstParty),
         ("testConvertSubdocumentThirdParty", testConvertSubdocumentThirdParty),
@@ -1453,6 +1645,9 @@ final class ContentBlockerConverterTests: XCTestCase {
         ("testCssInjectWithMultiSelectors", testCssInjectWithMultiSelectors),
         ("testSpecialCharactersEscape", testSpecialCharactersEscape),
         ("testSpecifichide", testSpecifichide),
+        ("testPingModifierRules", testPingModifierRules),
+        ("testOtherModifierRules", testOtherModifierRules),
+        ("testXmlhttprequestModifierRules", testXmlhttprequestModifierRules),
         ("testEscapeBackslash", testEscapeBackslash),
         ("testCssExceptions", testCssExceptions),
         ("testAdvancedBlockingExceptions", testAdvancedBlockingExceptions),

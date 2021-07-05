@@ -54,7 +54,7 @@ module.exports = (function () {
      * @param converterToolPath - optional path to converter resolved by Electron
      */
     const jsonFromRules = async (rules, advancedBlocking, safariVersion, converterToolPath) => {
-        let currentSafariVersion = Object.values(safariVersions).includes(safariVersion) ? safariVersion : safariVersions.safari14;
+        let currentSafariVersion = Object.values(safariVersions).includes(safariVersion) ? safariVersion : safariVersions.safari13;
 
         return new Promise((resolve, reject) => {
             const child = runScript(converterToolPath || CONVERTER_TOOL_PATH, [
