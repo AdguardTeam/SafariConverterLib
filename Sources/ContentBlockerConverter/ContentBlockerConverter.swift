@@ -14,10 +14,9 @@ public class ContentBlockerConverter {
      */
     public func convertArray(rules: [String], safariVersion: SafariVersion = SafariService.current.version, optimize: Bool = false, advancedBlocking: Bool = false) -> ConversionResult? {
         
-        let currentSafariVersion: SafariVersion = safariVersion;
-        SafariService.current.version = currentSafariVersion;
+        SafariService.current.version = safariVersion;
         
-        let rulesLimit = currentSafariVersion.rulesLimit;
+        let rulesLimit = safariVersionΩ.rulesLimit;
 
         do {
             if rules.count == 0 || (rules.count == 1 && rules[0].isEmpty) {

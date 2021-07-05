@@ -58,7 +58,7 @@ do {
         
         safariVersion = safariVersionEnum;
         
-        Logger.log("AG: Safari version: \(safariVersion)");
+        Logger.log("AG: Safari version: \(safariVersion?)");
     }
     
     var rules = [String]();
