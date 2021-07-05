@@ -34,9 +34,9 @@ public enum SafariVersion: Int {
     }
 }
 
-class SafariService {
-    var version: SafariVersion = .safari13;
-    static let current: SafariService = SafariService();
+public class SafariService {
+    public var version: SafariVersion = .safari13;
+    public static let current: SafariService = SafariService();
     
     init() {
         var safariVersion: SafariVersion;
