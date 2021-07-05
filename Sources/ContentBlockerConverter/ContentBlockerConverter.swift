@@ -16,7 +16,7 @@ public class ContentBlockerConverter {
         
         SafariService.current.version = safariVersion;
         
-        let rulesLimit = safariVersionΩ.rulesLimit;
+        let rulesLimit = safariVersion.rulesLimit;
 
         do {
             if rules.count == 0 || (rules.count == 1 && rules[0].isEmpty) {
