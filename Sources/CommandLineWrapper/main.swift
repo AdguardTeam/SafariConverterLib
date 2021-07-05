@@ -58,7 +58,7 @@ do {
         
         safariVersion = safariVersionEnum;
         
-        Logger.log("AG: Safari version: \(safariVersion?)");
+        Logger.log("AG: Safari version: \(safariVersion)");
     }
     
     var rules = [String]();
@@ -75,7 +75,7 @@ do {
     Logger.log("AG: Rules to convert: \(rules.count)");
     
     let result: ConversionResult? = ContentBlockerConverter().convertArray(
-        rules: rules, safariVersion: safariVersion, optimize: optimize, advancedBlocking: advancedBlocking
+        rules: rules, safariVersion: safariVersion!, optimize: optimize, advancedBlocking: advancedBlocking
     );
 
     Logger.log("AG: Conversion done");
