@@ -36,6 +36,41 @@ final class ConverterServiceTests: XCTestCase {
         XCTAssertEqual(decoded.count, 1);
         XCTAssertEqual(decoded[0].trigger.ifDomain, ["domain.com"]);
         XCTAssertEqual(decoded[0].action.type, "ignore-previous-rules");
+        
+        ruleText = [
+            "example1.org##.banner",
+            "@@||test.com$document",
+            "@@||example.com$document",
+            "||example2.org",
+        ];
+        conversionResult = converter.convertArray(rules: ruleText);
+        XCTAssertEqual(conversionResult?.totalConvertedCount, 4);
+        XCTAssertEqual(conversionResult?.errorsCount, 0);
+        
+        result = try! ConverterService().removeAllowlistRule(withText: "@@||test.com$document", conversionResult: conversionResult!);
+        
+        decoded = try! ContentBlockerConverterTests().parseJsonString(json: result.converted);
+        XCTAssertEqual(decoded.count, 3);
+        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*example1.org"]);
+        XCTAssertEqual(decoded[0].action.type, "css-display-none");
+        XCTAssertEqual(decoded[0].action.selector, ".banner");
+        
+        XCTAssertEqual(decoded[1].trigger.urlFilter, START_URL_UNESCAPED + "example2\\.org");
+        XCTAssertEqual(decoded[1].action.type, "block");
+        
+        XCTAssertEqual(decoded[2].trigger.ifDomain, ["*example.com"]);
+        XCTAssertEqual(decoded[2].action.type, "ignore-previous-rules");
+        
+        result = try! ConverterService().removeAllowlistRule(withText: "@@||example.com$document", conversionResult: result);
+        
+        decoded = try! ContentBlockerConverterTests().parseJsonString(json: result.converted);
+        XCTAssertEqual(decoded.count, 2);
+        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*example1.org"]);
+        XCTAssertEqual(decoded[0].action.type, "css-display-none");
+        XCTAssertEqual(decoded[0].action.selector, ".banner");
+        
+        XCTAssertEqual(decoded[1].trigger.urlFilter, START_URL_UNESCAPED + "example2\\.org");
+        XCTAssertEqual(decoded[1].action.type, "block");
     }
     
     func testAddAllowlistRule() {

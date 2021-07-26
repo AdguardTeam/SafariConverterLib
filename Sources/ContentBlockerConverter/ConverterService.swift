@@ -46,6 +46,8 @@ public class ConverterService {
             result.converted = result.converted.replace(target: "[,{", withString: "[{");
         } else if result.converted.hasSuffix("},]") {
             result.converted = result.converted.replace(target: "},]", withString: "}]");
+        } else if result.converted.contains(",,") {
+            result.converted = result.converted.replace(target: ",,", withString: ",");
         }
         // handle empty result
         if result.converted == "[]" {
