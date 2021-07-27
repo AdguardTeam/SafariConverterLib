@@ -1,6 +1,12 @@
 import Foundation
 
-public class QuickAllowlistClipper {
+protocol QuickAllowlistClipperProtocol {
+    func convertAllowlistRule(ruleText: String) throws -> String
+    func addAllowlistRule(withText ruleText: String, conversionResult: ConversionResult) throws -> ConversionResult
+    func removeAllowlistRule(withText ruleText: String, conversionResult: ConversionResult) throws -> ConversionResult
+}
+
+public class QuickAllowlistClipper: QuickAllowlistClipperProtocol {
     let converter = ContentBlockerConverter();
     
     /**
