@@ -1,17 +1,16 @@
 import Foundation
 
-public class ConverterService {
+public class QuickAllowlistClipper {
     let converter = ContentBlockerConverter();
     
     /**
      * Converts provided allowlist rule to json format and returns as string
      */
-    func convertAllowlistRule(ruleText: String) throws -> String {
-        let conversionResult = converter.convertArray(rules: [ruleText]);
-        if conversionResult == nil {
-            throw ConverterServiceError.invalidAllowlistRule();
+    public func convertAllowlistRule(ruleText: String) throws -> String {
+        guard let conversionResult = converter.convertArray(rules: [ruleText]) else {
+            throw QuickAllowlistClipperError.invalidAllowlistRule();
         }
-        let allowlistRule = conversionResult!.converted.dropFirst(1).dropLast(1);
+        let allowlistRule = conversionResult.converted.dropFirst(1).dropLast(1);
         return String(allowlistRule);
     }
     
@@ -35,7 +34,7 @@ public class ConverterService {
         let allowlistRule = try convertAllowlistRule(ruleText: ruleText);
         
         if !conversionResult.converted.contains(allowlistRule) {
-            throw ConverterServiceError.errorRemovingAllowlistRule();
+            throw QuickAllowlistClipperError.errorRemovingAllowlistRule();
         }
         
         var result = conversionResult;
@@ -58,7 +57,7 @@ public class ConverterService {
     }
 }
 
-public enum ConverterServiceError: Error {
-    case invalidAllowlistRule(message: String = "Invalid allowlist rule")
-    case errorRemovingAllowlistRule(message: String = "Conversion result doesn't contain provided allowlist rule")
+public enum QuickAllowlistClipperError: Error {
+    case invalidAllowlistRule(debugDescription: String = "Invalid allowlist rule")
+    case errorRemovingAllowlistRule(debugDescription: String = "Conversion result doesn't contain provided allowlist rule")
 }

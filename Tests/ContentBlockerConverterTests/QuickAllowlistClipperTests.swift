@@ -1,7 +1,7 @@
 import XCTest
 @testable import ContentBlockerConverter
 
-final class ConverterServiceTests: XCTestCase {
+final class QuickAllowlistClipperTests: XCTestCase {
     let START_URL_UNESCAPED = "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?";
     let converter = ContentBlockerConverter();
     
@@ -16,7 +16,7 @@ final class ConverterServiceTests: XCTestCase {
         XCTAssertEqual(conversionResult?.totalConvertedCount, 2);
         XCTAssertEqual(conversionResult?.errorsCount, 0);
 
-        var result = try! ConverterService().removeAllowlistRule(withText: "@@||test.com$document", conversionResult: conversionResult!);
+        var result = try! QuickAllowlistClipper().removeAllowlistRule(withText: "@@||test.com$document", conversionResult: conversionResult!);
         
         var decoded = try! ContentBlockerConverterTests().parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
@@ -29,7 +29,7 @@ final class ConverterServiceTests: XCTestCase {
         XCTAssertEqual(conversionResult?.totalConvertedCount, 1);
         XCTAssertEqual(conversionResult?.errorsCount, 0);
         
-        result = try! ConverterService().removeAllowlistRule(withText: "@@||example.org$document", conversionResult: conversionResult!);
+        result = try! QuickAllowlistClipper().removeAllowlistRule(withText: "@@||example.org$document", conversionResult: conversionResult!);
         
         // check empty conversion result
         decoded = try! ContentBlockerConverterTests().parseJsonString(json: result.converted);
@@ -47,7 +47,7 @@ final class ConverterServiceTests: XCTestCase {
         XCTAssertEqual(conversionResult?.totalConvertedCount, 4);
         XCTAssertEqual(conversionResult?.errorsCount, 0);
         
-        result = try! ConverterService().removeAllowlistRule(withText: "@@||test.com$document", conversionResult: conversionResult!);
+        result = try! QuickAllowlistClipper().removeAllowlistRule(withText: "@@||test.com$document", conversionResult: conversionResult!);
         
         decoded = try! ContentBlockerConverterTests().parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 3);
@@ -61,7 +61,7 @@ final class ConverterServiceTests: XCTestCase {
         XCTAssertEqual(decoded[2].trigger.ifDomain, ["*example.com"]);
         XCTAssertEqual(decoded[2].action.type, "ignore-previous-rules");
         
-        result = try! ConverterService().removeAllowlistRule(withText: "@@||example.com$document", conversionResult: result);
+        result = try! QuickAllowlistClipper().removeAllowlistRule(withText: "@@||example.com$document", conversionResult: result);
         
         decoded = try! ContentBlockerConverterTests().parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 2);
@@ -84,7 +84,7 @@ final class ConverterServiceTests: XCTestCase {
         XCTAssertEqual(conversionResult?.totalConvertedCount, 2);
         XCTAssertEqual(conversionResult?.errorsCount, 0);
 
-        let result = try! ConverterService().addAllowlistRule(withText: "@@||example.org$document", conversionResult: conversionResult!);
+        let result = try! QuickAllowlistClipper().addAllowlistRule(withText: "@@||example.org$document", conversionResult: conversionResult!);
         
         let decoded = try! ContentBlockerConverterTests().parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 3);
