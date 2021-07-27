@@ -6,6 +6,10 @@ protocol QuickAllowlistClipperProtocol {
     func removeAllowlistRule(withText ruleText: String, conversionResult: ConversionResult) throws -> ConversionResult
 }
 
+/**
+ * Special service for managing allowlist rules:
+ * quickly add/remove allowlist rules without filters recompilation
+ */
 public class QuickAllowlistClipper: QuickAllowlistClipperProtocol {
     let converter = ContentBlockerConverter();
     
