@@ -23,6 +23,8 @@ public class QuickAllowlistClipper {
         var result = conversionResult;
         result.converted = String(result.converted.dropLast(1));
         result.converted += ",\(allowlistRule)]"
+        result.convertedCount += 1;
+        result.totalConvertedCount += 1;
         
         return result;
     }
@@ -52,6 +54,9 @@ public class QuickAllowlistClipper {
         if result.converted == "[]" {
             return try ConversionResult.createEmptyResult();
         }
+        
+        result.convertedCount -= 1;
+        result.totalConvertedCount -= 1;
         
         return result;
     }

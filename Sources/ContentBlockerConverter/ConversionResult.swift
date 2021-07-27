@@ -6,12 +6,12 @@ public struct ConversionResult: Encodable {
     /**
      * Total entries count in result
      */
-    public let totalConvertedCount: Int;
+    public var totalConvertedCount: Int;
     
     /**
      * Entries count in result after reducing to limit if provided
      */
-    public let convertedCount: Int;
+    public var convertedCount: Int;
     
     /**
      * Count of errors handled

@@ -17,6 +17,8 @@ final class QuickAllowlistClipperTests: XCTestCase {
         XCTAssertEqual(conversionResult?.errorsCount, 0);
 
         var result = try! QuickAllowlistClipper().removeAllowlistRule(withText: "@@||test.com$document", conversionResult: conversionResult!);
+        XCTAssertEqual(result.convertedCount, 1);
+        XCTAssertEqual(result.totalConvertedCount, 1);
         
         var decoded = try! ContentBlockerConverterTests().parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
@@ -30,6 +32,8 @@ final class QuickAllowlistClipperTests: XCTestCase {
         XCTAssertEqual(conversionResult?.errorsCount, 0);
         
         result = try! QuickAllowlistClipper().removeAllowlistRule(withText: "@@||example.org$document", conversionResult: conversionResult!);
+        XCTAssertEqual(result.convertedCount, 0);
+        XCTAssertEqual(result.totalConvertedCount, 0);
         
         // check empty conversion result
         decoded = try! ContentBlockerConverterTests().parseJsonString(json: result.converted);
@@ -48,6 +52,8 @@ final class QuickAllowlistClipperTests: XCTestCase {
         XCTAssertEqual(conversionResult?.errorsCount, 0);
         
         result = try! QuickAllowlistClipper().removeAllowlistRule(withText: "@@||test.com$document", conversionResult: conversionResult!);
+        XCTAssertEqual(result.convertedCount, 3);
+        XCTAssertEqual(result.totalConvertedCount, 3);
         
         decoded = try! ContentBlockerConverterTests().parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 3);
@@ -62,6 +68,8 @@ final class QuickAllowlistClipperTests: XCTestCase {
         XCTAssertEqual(decoded[2].action.type, "ignore-previous-rules");
         
         result = try! QuickAllowlistClipper().removeAllowlistRule(withText: "@@||example.com$document", conversionResult: result);
+        XCTAssertEqual(result.convertedCount, 2);
+        XCTAssertEqual(result.totalConvertedCount, 2);
         
         decoded = try! ContentBlockerConverterTests().parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 2);
@@ -85,6 +93,8 @@ final class QuickAllowlistClipperTests: XCTestCase {
         XCTAssertEqual(conversionResult?.errorsCount, 0);
 
         let result = try! QuickAllowlistClipper().addAllowlistRule(withText: "@@||example.org$document", conversionResult: conversionResult!);
+        XCTAssertEqual(result.convertedCount, 3);
+        XCTAssertEqual(result.totalConvertedCount, 3);
         
         let decoded = try! ContentBlockerConverterTests().parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 3);
