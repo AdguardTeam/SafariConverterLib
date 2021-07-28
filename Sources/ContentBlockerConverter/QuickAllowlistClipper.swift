@@ -18,7 +18,7 @@ public class QuickAllowlistClipper: QuickAllowlistClipperProtocol {
      */
     public func convertAllowlistRule(ruleText: String) throws -> String {
         guard let conversionResult = converter.convertArray(rules: [ruleText]) else {
-            throw QuickAllowlistClipperError.invalidAllowlistRule();
+            throw QuickAllowlistClipperError.invalidAllowlistRule;
         }
         let allowlistRule = conversionResult.converted.dropFirst(1).dropLast(1);
         return String(allowlistRule);
@@ -46,7 +46,7 @@ public class QuickAllowlistClipper: QuickAllowlistClipperProtocol {
         let allowlistRule = try convertAllowlistRule(ruleText: ruleText);
         
         if !conversionResult.converted.contains(allowlistRule) {
-            throw QuickAllowlistClipperError.errorRemovingAllowlistRule();
+            throw QuickAllowlistClipperError.errorRemovingAllowlistRule;
         }
         
         var result = conversionResult;
@@ -72,7 +72,14 @@ public class QuickAllowlistClipper: QuickAllowlistClipperProtocol {
     }
 }
 
-public enum QuickAllowlistClipperError: Error {
-    case invalidAllowlistRule(debugDescription: String = "Invalid allowlist rule")
-    case errorRemovingAllowlistRule(debugDescription: String = "Conversion result doesn't contain provided allowlist rule")
+public enum QuickAllowlistClipperError: Error, CustomDebugStringConvertible {
+    case invalidAllowlistRule
+    case errorRemovingAllowlistRule
+    
+    public var debugDescription: String {
+        switch self {
+            case .invalidAllowlistRule: return "Invalid allowlist rule"
+            case .errorRemovingAllowlistRule: return "Conversion result doesn't contain provided allowlist rule"
+        }
+    }
 }
