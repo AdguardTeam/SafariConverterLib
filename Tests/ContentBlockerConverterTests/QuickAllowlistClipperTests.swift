@@ -110,9 +110,63 @@ final class QuickAllowlistClipperTests: XCTestCase {
         XCTAssertEqual(decoded[2].action.type, "ignore-previous-rules");
         
     }
+    
+    func testAddInvertedAllowlistRule() {
+        let ruleText: [String] = [
+            "test1.com##.banner",
+            "||test2.com",
+        ];
+
+        let conversionResult = converter.convertArray(rules: ruleText);
+
+        XCTAssertEqual(conversionResult?.totalConvertedCount, 2);
+        XCTAssertEqual(conversionResult?.errorsCount, 0);
+
+        let result = try! QuickAllowlistClipper().addAllowlistRule(withText: "@@||*$document,domain=~example.org", conversionResult: conversionResult!);
+        XCTAssertEqual(result.convertedCount, 3);
+        XCTAssertEqual(result.totalConvertedCount, 3);
+        
+        let decoded = try! ContentBlockerConverterTests().parseJsonString(json: result.converted);
+        XCTAssertEqual(decoded.count, 3);
+        
+        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*test1.com"]);
+        XCTAssertEqual(decoded[0].action.type, "css-display-none");
+        XCTAssertEqual(decoded[0].action.selector, ".banner");
+        
+        XCTAssertEqual(decoded[1].trigger.urlFilter, START_URL_UNESCAPED + "test2\\.com");
+        XCTAssertEqual(decoded[1].action.type, "block");
+        
+        XCTAssertNil(decoded[2].trigger.ifDomain);
+        XCTAssertEqual(decoded[2].trigger.unlessDomain, ["*example.org"]);
+        XCTAssertEqual(decoded[2].action.type, "ignore-previous-rules");
+    }
+    
+    func testRemoveInvertedAllowlistRule() {
+        let ruleText: [String] = [
+            "example.org##.banner",
+            "@@||*$document,domain=~test.com",
+        ];
+
+        let conversionResult = converter.convertArray(rules: ruleText);
+
+        XCTAssertEqual(conversionResult?.totalConvertedCount, 2);
+        XCTAssertEqual(conversionResult?.errorsCount, 0);
+
+        let result = try! QuickAllowlistClipper().removeAllowlistRule(withText: "@@||*$document,domain=~test.com", conversionResult: conversionResult!);
+        XCTAssertEqual(result.convertedCount, 1);
+        XCTAssertEqual(result.totalConvertedCount, 1);
+        
+        let decoded = try! ContentBlockerConverterTests().parseJsonString(json: result.converted);
+        XCTAssertEqual(decoded.count, 1);
+        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*example.org"]);
+        XCTAssertEqual(decoded[0].action.type, "css-display-none");
+        XCTAssertEqual(decoded[0].action.selector, ".banner");
+    }
 
     static var allTests = [
         ("testRemoveAllowlistRule", testRemoveAllowlistRule),
         ("testAddAllowlistRule", testAddAllowlistRule),
+        ("testAddInvertedAllowlistRule", testAddInvertedAllowlistRule),
+        ("testRemoveInvertedAllowlistRule", testRemoveInvertedAllowlistRule),
     ]
 }
