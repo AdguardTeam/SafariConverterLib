@@ -2,10 +2,11 @@ import Foundation
 
 protocol QuickAllowlistClipperProtocol {
     func convertRuleToJsonString(ruleText: String) throws -> String
-    func add(rule ruleText: String, to conversionResult: ConversionResult) throws -> ConversionResult
+    func add(rule: String, to conversionResult: ConversionResult) throws -> ConversionResult
+    func remove(rule: String, from conversionResult: ConversionResult) throws -> ConversionResult
+    func replace(rule: String, with newRule: String, in conversionResult: ConversionResult) throws -> ConversionResult
     func addAllowlistRule(by domain: String, to conversionResult: ConversionResult) throws -> ConversionResult
     func addInvertedAllowlistRule(by domain: String, to conversionResult: ConversionResult) throws -> ConversionResult
-    func remove(rule ruleText: String, from conversionResult: ConversionResult) throws -> ConversionResult
     func removeAllowlistRule(by domain: String, from conversionResult: ConversionResult) throws -> ConversionResult
     func removeInvertedAllowlistRule(by domain: String, from conversionResult: ConversionResult) throws -> ConversionResult
 }
@@ -72,6 +73,15 @@ public class QuickAllowlistClipper: QuickAllowlistClipperProtocol {
         result.convertedCount -= 1;
         result.totalConvertedCount -= 1;
         
+        return result;
+    }
+    
+    /**
+     * Replaces rule in conversion result with provided rule
+     */
+    public func replace(rule: String, with newRule: String, in conversionResult: ConversionResult) throws -> ConversionResult {
+        var result = try remove(rule: rule, from: conversionResult);
+        result = try add(rule: newRule, to: result);
         return result;
     }
     

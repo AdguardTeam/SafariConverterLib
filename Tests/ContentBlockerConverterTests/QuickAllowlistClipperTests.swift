@@ -162,11 +162,52 @@ final class QuickAllowlistClipperTests: XCTestCase {
         XCTAssertEqual(decoded[0].action.type, "css-display-none");
         XCTAssertEqual(decoded[0].action.selector, ".banner");
     }
+    
+    func testReplaceRuleMethod() {
+        var ruleText: [String] = [
+            "example.org##.banner",
+            "@@||*$document,domain=~test.com",
+        ];
+
+        var conversionResult = converter.convertArray(rules: ruleText);
+
+        XCTAssertEqual(conversionResult?.totalConvertedCount, 2);
+        XCTAssertEqual(conversionResult?.errorsCount, 0);
+
+        let result = try! QuickAllowlistClipper().replace(rule: "@@||*$document,domain=~test.com", with: "@@||*$document,domain=~example.com", in: conversionResult!);
+        XCTAssertEqual(result.convertedCount, 2);
+        XCTAssertEqual(result.totalConvertedCount, 2);
+        
+        let decoded = try! ContentBlockerConverterTests().parseJsonString(json: result.converted);
+        XCTAssertEqual(decoded.count, 2);
+        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*example.org"]);
+        XCTAssertEqual(decoded[0].action.type, "css-display-none");
+        XCTAssertEqual(decoded[0].action.selector, ".banner");
+        
+        XCTAssertNil(decoded[1].trigger.ifDomain);
+        XCTAssertEqual(decoded[1].trigger.unlessDomain, ["*example.com"]);
+        XCTAssertEqual(decoded[1].action.type, "ignore-previous-rules");
+        
+        ruleText = [
+            "example.org##.banner",
+            "@@||*$document,domain=~test.com",
+        ];
+
+        conversionResult = converter.convertArray(rules: ruleText);
+
+        XCTAssertEqual(conversionResult?.totalConvertedCount, 2);
+        XCTAssertEqual(conversionResult?.errorsCount, 0);
+
+        // conversion result doesn't contain rule for replace
+        XCTAssertThrowsError(try QuickAllowlistClipper().replace(rule: "@@||*$document,domain=~example.com", with: "@@||*$document,domain=~test.com", in: conversionResult!));
+        
+    }
 
     static var allTests = [
         ("testRemoveAllowlistRule", testRemoveAllowlistRule),
         ("testAddAllowlistRule", testAddAllowlistRule),
         ("testAddInvertedAllowlistRule", testAddInvertedAllowlistRule),
         ("testRemoveInvertedAllowlistRule", testRemoveInvertedAllowlistRule),
+        ("testReplaceRuleMethod", testReplaceRuleMethod),
     ]
 }
