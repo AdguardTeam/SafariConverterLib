@@ -96,7 +96,7 @@ public class QuickAllowlistClipper: QuickAllowlistClipperProtocol {
      * Creates inverted allowlist rule for provided domain
      */
     func createInvertedAllowlistRule(by domain: String) -> String {
-        return "@@||*$document,domain=~\(domain)";
+        return "@@||*$domain=~\(domain)";
     }
     
     /**
