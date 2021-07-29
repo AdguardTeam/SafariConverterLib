@@ -14,7 +14,7 @@ final class ContentBlockerConverterTests: XCTestCase {
 
     let converter = ContentBlockerConverter();
 
-    public func parseJsonString(json: String) throws -> [BlockerEntry] {
+    func parseJsonString(json: String) throws -> [BlockerEntry] {
         let data = json.data(using: String.Encoding.utf8, allowLossyConversion: false)!
 
         let decoder = JSONDecoder();
