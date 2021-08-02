@@ -44,11 +44,11 @@ do {
     let safariVersionStr = arguments[1][safariVersionIndex...];
     
     guard let safariVersionNum = Int(safariVersionStr) else {
-        throw SafariVersionError.invalidSafariVersion;
+        throw SafariVersionError.invalidSafariVersion(version: String(safariVersionStr));
     };
     
     guard let safariVersion = SafariVersion(rawValue: safariVersionNum) else {
-        throw SafariVersionError.unsupportedSafariVersion;
+        throw SafariVersionError.unsupportedSafariVersion(version: safariVersionNum);
     };
     
     Logger.log("AG: Safari version: \(safariVersion)");
