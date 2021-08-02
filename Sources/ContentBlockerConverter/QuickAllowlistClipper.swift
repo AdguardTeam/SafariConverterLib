@@ -32,7 +32,7 @@ public class QuickAllowlistClipper: QuickAllowlistClipperProtocol {
     /**
      * Appends provided rule to conversion result
      */
-    public func add(rule: String, to conversionResult: ConversionResult) throws -> ConversionResult {
+    func add(rule: String, to conversionResult: ConversionResult) throws -> ConversionResult {
         let convertedRule = try convertRuleToJsonString(ruleText: rule);
         
         if conversionResult.converted.contains(convertedRule) {
@@ -51,14 +51,14 @@ public class QuickAllowlistClipper: QuickAllowlistClipperProtocol {
     /**
      * Removes provided rule from conversion result
      */
-    public func remove(rule: String, from conversionResult: ConversionResult) throws -> ConversionResult {
+    func remove(rule: String, from conversionResult: ConversionResult) throws -> ConversionResult {
         let convertedRule = try convertRuleToJsonString(ruleText: rule);
         
         if !conversionResult.converted.contains(convertedRule) {
             throw QuickAllowlistClipperError.noRuleInConversionResult;
         }
         
-        // amount of rules in conversion result to remove
+        // amount of rules to remove in conversion result
         let delta = conversionResult.converted.components(separatedBy: convertedRule).count - 1;
         
         var result = conversionResult;

@@ -33,7 +33,7 @@ class SafariService {
     static let current: SafariService = SafariService();
 }
 
-public enum SafariVersionError: Error {
+public enum SafariVersionError: Error, CustomDebugStringConvertible {
     case invalidSafariVersion(version: String)
     case unsupportedSafariVersion(version: Int)
     
