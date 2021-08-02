@@ -36,7 +36,7 @@ public class QuickAllowlistClipper: QuickAllowlistClipperProtocol {
         let convertedRule = try convertRuleToJsonString(ruleText: rule);
         
         if conversionResult.converted.contains(convertedRule) {
-            throw QuickAllowlistClipperError.noRuleInConversionResult;
+            throw QuickAllowlistClipperError.errorAddingRule;
         }
         
         var result = conversionResult;
@@ -58,24 +58,29 @@ public class QuickAllowlistClipper: QuickAllowlistClipperProtocol {
             throw QuickAllowlistClipperError.noRuleInConversionResult;
         }
         
+        // amount of rules in conversion result to remove
+        let delta = conversionResult.converted.components(separatedBy: convertedRule).count - 1;
+        
         var result = conversionResult;
-        result.converted = result.converted.replace(target: convertedRule, withString: "");
+        result.converted = result.converted.replacingOccurrences(of: convertedRule, with: "");
         
         // remove redundant commas
         if result.converted.hasPrefix("[,{") {
-            result.converted = result.converted.replace(target: "[,{", withString: "[{");
-        } else if result.converted.hasSuffix("},]") {
-            result.converted = result.converted.replace(target: "},]", withString: "}]");
-        } else if result.converted.contains(",,") {
-            result.converted = result.converted.replace(target: ",,", withString: ",");
+            result.converted = result.converted.replacingOccurrences(of: "[,{", with: "[{");
+        }
+        if result.converted.hasSuffix("},]") {
+            result.converted = result.converted.replacingOccurrences(of: "},]", with: "}]");
+        }
+        while result.converted.contains(",,") {
+            result.converted = result.converted.replacingOccurrences(of: ",,", with: ",");
         }
         // handle empty result
         if result.converted == "[]" {
             return try ConversionResult.createEmptyResult();
         }
         
-        result.convertedCount -= 1;
-        result.totalConvertedCount -= 1;
+        result.convertedCount -= delta;
+        result.totalConvertedCount -= delta;
         
         return result;
     }

@@ -76,9 +76,38 @@ final class QuickAllowlistClipperTests: XCTestCase {
         XCTAssertEqual(decoded[0].trigger.ifDomain, ["*example1.org"]);
         XCTAssertEqual(decoded[0].action.type, "css-display-none");
         XCTAssertEqual(decoded[0].action.selector, ".banner");
+
+        XCTAssertEqual(decoded[1].trigger.urlFilter, START_URL_UNESCAPED + "example2\\.org");
+        XCTAssertEqual(decoded[1].action.type, "block");
+        
+        ruleText = [
+            "@@||test.com$document",
+            "example1.org##.banner",
+            "@@||test.com$document",
+            "@@||example.com$document",
+            "@@||test.com$document",
+            "||example2.org",
+        ];
+          
+        conversionResult = converter.convertArray(rules: ruleText);
+        XCTAssertEqual(conversionResult?.totalConvertedCount, 6);
+        XCTAssertEqual(conversionResult?.errorsCount, 0);
+        
+        result = try! QuickAllowlistClipper().remove(rule: "@@||test.com$document", from: conversionResult!);
+        XCTAssertEqual(result.convertedCount, 3);
+        XCTAssertEqual(result.totalConvertedCount, 3);
+        
+        decoded = try! ContentBlockerConverterTests().parseJsonString(json: result.converted);
+        XCTAssertEqual(decoded.count, 3);
+        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*example1.org"]);
+        XCTAssertEqual(decoded[0].action.type, "css-display-none");
+        XCTAssertEqual(decoded[0].action.selector, ".banner");
         
         XCTAssertEqual(decoded[1].trigger.urlFilter, START_URL_UNESCAPED + "example2\\.org");
         XCTAssertEqual(decoded[1].action.type, "block");
+        
+        XCTAssertEqual(decoded[2].trigger.ifDomain, ["*example.com"]);
+        XCTAssertEqual(decoded[2].action.type, "ignore-previous-rules");
     }
     
     func testAddAllowlistRule() {
