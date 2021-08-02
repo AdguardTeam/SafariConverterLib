@@ -19,7 +19,7 @@ describe('API test', () => {
         const rules = ['example.com##.ads-banner'];
 
         await expect(jsonFromRules(rules, false, safariVersions.safari12))
-            .rejects.toThrow('AG: ContentBlockerConverter: Unexpected error: unsupportedSafariVersion(message: "The provided Safari version is not supported")');
+            .rejects.toThrow('AG: ContentBlockerConverter: Unexpected error: unsupportedSafariVersion(version: 12)');
     });
 
     it('getConverterVersion test', () => {
