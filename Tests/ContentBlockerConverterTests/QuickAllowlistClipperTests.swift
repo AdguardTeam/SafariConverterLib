@@ -82,12 +82,12 @@ final class QuickAllowlistClipperTests: XCTestCase {
     }
     
     func testAddAllowlistRule() {
-        let ruleText: [String] = [
+        var ruleText: [String] = [
             "test1.com##.banner",
             "||test2.com",
         ];
 
-        let conversionResult = converter.convertArray(rules: ruleText);
+        var conversionResult = converter.convertArray(rules: ruleText);
 
         XCTAssertEqual(conversionResult?.totalConvertedCount, 2);
         XCTAssertEqual(conversionResult?.errorsCount, 0);
@@ -109,15 +109,28 @@ final class QuickAllowlistClipperTests: XCTestCase {
         XCTAssertEqual(decoded[2].trigger.ifDomain, ["*example.org"]);
         XCTAssertEqual(decoded[2].action.type, "ignore-previous-rules");
         
+        ruleText = [
+            "test1.com##.banner",
+            "@@||example.org$document",
+            "||test2.com",
+        ];
+
+        conversionResult = converter.convertArray(rules: ruleText);
+
+        XCTAssertEqual(conversionResult?.totalConvertedCount, 3);
+        XCTAssertEqual(conversionResult?.errorsCount, 0);
+        
+        // try to add existing rule
+        XCTAssertThrowsError(try QuickAllowlistClipper().addAllowlistRule(by: "example.org", to: conversionResult!));
     }
     
     func testAddInvertedAllowlistRule() {
-        let ruleText: [String] = [
+        var ruleText: [String] = [
             "test1.com##.banner",
             "||test2.com",
         ];
 
-        let conversionResult = converter.convertArray(rules: ruleText);
+        var conversionResult = converter.convertArray(rules: ruleText);
 
         XCTAssertEqual(conversionResult?.totalConvertedCount, 2);
         XCTAssertEqual(conversionResult?.errorsCount, 0);
@@ -139,6 +152,20 @@ final class QuickAllowlistClipperTests: XCTestCase {
         XCTAssertNil(decoded[2].trigger.ifDomain);
         XCTAssertEqual(decoded[2].trigger.unlessDomain, ["*example.org"]);
         XCTAssertEqual(decoded[2].action.type, "ignore-previous-rules");
+        
+        ruleText = [
+            "test1.com##.banner",
+            "@@||*$document,domain=~example.org",
+            "||test2.com",
+        ];
+
+        conversionResult = converter.convertArray(rules: ruleText);
+
+        XCTAssertEqual(conversionResult?.totalConvertedCount, 3);
+        XCTAssertEqual(conversionResult?.errorsCount, 0);
+        
+        // try to add existing rule
+        XCTAssertThrowsError(try QuickAllowlistClipper().addInvertedAllowlistRule(by: "example.org", to: conversionResult!));
     }
     
     func testRemoveInvertedAllowlistRule() {
@@ -174,11 +201,11 @@ final class QuickAllowlistClipperTests: XCTestCase {
         XCTAssertEqual(conversionResult?.totalConvertedCount, 2);
         XCTAssertEqual(conversionResult?.errorsCount, 0);
 
-        let result = try! QuickAllowlistClipper().replace(rule: "@@||*$document,domain=~test.com", with: "@@||*$document,domain=~example.com", in: conversionResult!);
+        var result = try! QuickAllowlistClipper().replace(rule: "@@||*$document,domain=~test.com", with: "@@||*$document,domain=~example.com", in: conversionResult!);
         XCTAssertEqual(result.convertedCount, 2);
         XCTAssertEqual(result.totalConvertedCount, 2);
         
-        let decoded = try! ContentBlockerConverterTests().parseJsonString(json: result.converted);
+        var decoded = try! ContentBlockerConverterTests().parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 2);
         XCTAssertEqual(decoded[0].trigger.ifDomain, ["*example.org"]);
         XCTAssertEqual(decoded[0].action.type, "css-display-none");
@@ -200,6 +227,35 @@ final class QuickAllowlistClipperTests: XCTestCase {
 
         // conversion result doesn't contain rule for replace
         XCTAssertThrowsError(try QuickAllowlistClipper().replace(rule: "@@||*$document,domain=~example.com", with: "@@||*$document,domain=~test.com", in: conversionResult!));
+        
+        ruleText = [
+            "@@||*$document,domain=~test.com",
+            "@@||*$document,domain=~test.com",
+            "example.org##.banner",
+        ];
+
+        conversionResult = converter.convertArray(rules: ruleText);
+
+        XCTAssertEqual(conversionResult?.totalConvertedCount, 3);
+        XCTAssertEqual(conversionResult?.errorsCount, 0);
+
+        result = try! QuickAllowlistClipper().replace(rule: "@@||*$document,domain=~test.com", with: "@@||*$document,domain=~example.com", in: conversionResult!);
+        XCTAssertEqual(result.convertedCount, 3);
+        XCTAssertEqual(result.totalConvertedCount, 3);
+        
+        decoded = try! ContentBlockerConverterTests().parseJsonString(json: result.converted);
+        XCTAssertEqual(decoded.count, 3);
+        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*example.org"]);
+        XCTAssertEqual(decoded[0].action.type, "css-display-none");
+        XCTAssertEqual(decoded[0].action.selector, ".banner");
+        
+        XCTAssertNil(decoded[1].trigger.ifDomain);
+        XCTAssertEqual(decoded[1].trigger.unlessDomain, ["*example.com"]);
+        XCTAssertEqual(decoded[1].action.type, "ignore-previous-rules");
+        
+        XCTAssertNil(decoded[2].trigger.ifDomain);
+        XCTAssertEqual(decoded[2].trigger.unlessDomain, ["*example.com"]);
+        XCTAssertEqual(decoded[2].action.type, "ignore-previous-rules");
         
     }
 

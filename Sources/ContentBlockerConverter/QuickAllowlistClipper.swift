@@ -35,6 +35,10 @@ public class QuickAllowlistClipper: QuickAllowlistClipperProtocol {
     public func add(rule: String, to conversionResult: ConversionResult) throws -> ConversionResult {
         let convertedRule = try convertRuleToJsonString(ruleText: rule);
         
+        if conversionResult.converted.contains(convertedRule) {
+            throw QuickAllowlistClipperError.noRuleInConversionResult;
+        }
+        
         var result = conversionResult;
         result.converted = String(result.converted.dropLast(1));
         result.converted += ",\(convertedRule)]"
@@ -51,7 +55,7 @@ public class QuickAllowlistClipper: QuickAllowlistClipperProtocol {
         let convertedRule = try convertRuleToJsonString(ruleText: rule);
         
         if !conversionResult.converted.contains(convertedRule) {
-            throw QuickAllowlistClipperError.errorRemovingRule;
+            throw QuickAllowlistClipperError.noRuleInConversionResult;
         }
         
         var result = conversionResult;
@@ -80,8 +84,16 @@ public class QuickAllowlistClipper: QuickAllowlistClipperProtocol {
      * Replaces rule in conversion result with provided rule
      */
     public func replace(rule: String, with newRule: String, in conversionResult: ConversionResult) throws -> ConversionResult {
-        var result = try remove(rule: rule, from: conversionResult);
-        result = try add(rule: newRule, to: result);
+        var result = conversionResult;
+        let ruleJsonString = try convertRuleToJsonString(ruleText: rule);
+        
+        if !result.converted.contains(ruleJsonString) {
+            throw QuickAllowlistClipperError.noRuleInConversionResult;
+        }
+        
+        let newRuleJsonString = try convertRuleToJsonString(ruleText: newRule);
+        
+        result.converted = result.converted.replacingOccurrences(of: ruleJsonString, with: newRuleJsonString);
         return result;
     }
     
@@ -134,12 +146,14 @@ public class QuickAllowlistClipper: QuickAllowlistClipperProtocol {
 
 public enum QuickAllowlistClipperError: Error, CustomDebugStringConvertible {
     case errorConvertingRule
-    case errorRemovingRule
+    case noRuleInConversionResult
+    case errorAddingRule
     
     public var debugDescription: String {
         switch self {
             case .errorConvertingRule: return "A rule conversion error has occurred"
-            case .errorRemovingRule: return "Conversion result doesn't contain provided rule"
+            case .noRuleInConversionResult: return "Conversion result doesn't contain provided rule"
+            case .errorAddingRule: return "The provided rule is already in conversion result"
         }
     }
 }

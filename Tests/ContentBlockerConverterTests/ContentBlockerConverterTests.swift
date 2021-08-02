@@ -1719,5 +1719,6 @@ final class ContentBlockerConverterTests: XCTestCase {
         ("testEscapeBackslash", testEscapeBackslash),
         ("testCssExceptions", testCssExceptions),
         ("testAdvancedBlockingExceptions", testAdvancedBlockingExceptions),
+        ("testOptimizeRules", testOptimizeRules),
     ]
 }
