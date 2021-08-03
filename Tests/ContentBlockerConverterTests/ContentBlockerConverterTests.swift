@@ -408,7 +408,7 @@ final class ContentBlockerConverterTests: XCTestCase {
     }
 
     func testConvertInvertedWhitelistRule() {
-        let result = converter.convertArray(rules: ["@@||*$domain=~whitelisted.domain.com|~whitelisted.domain2.com"]);
+        let result = converter.convertArray(rules: ["@@||*$document,domain=~whitelisted.domain.com|~whitelisted.domain2.com"]);
         XCTAssertEqual(result?.convertedCount, 1);
 
         let decoded = try! parseJsonString(json: result!.converted);
@@ -1662,11 +1662,11 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result?.convertedCount, 5);
         
         result = converter.convertArray(rules: [
-            "@@||*$domain=~example.org",
-            "@@||*$domain=~example.org",
-            "@@||*$domain=~example.org",
-            "@@||*$domain=~example.org",
-            "@@||*$domain=~example.org",
+            "@@||*$document,domain=~example.org",
+            "@@||*$document,domain=~example.org",
+            "@@||*$document,domain=~example.org",
+            "@@||*$document,domain=~example.org",
+            "@@||*$document,domain=~example.org",
         ], safariVersion: SafariVersion.safari14, optimize: true, advancedBlocking: false);
         
         // similar inverted allowlist rules didn't optimized

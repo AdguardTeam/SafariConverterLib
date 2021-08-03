@@ -28,42 +28,42 @@ public class QuickAllowlistClipper: QuickAllowlistClipperProtocol {
         let convertedRule = conversionResult.converted.dropFirst(1).dropLast(1);
         return String(convertedRule);
     }
-    
+
     /**
      * Appends provided rule to conversion result
      */
     func add(rule: String, to conversionResult: ConversionResult) throws -> ConversionResult {
         let convertedRule = try convertRuleToJsonString(ruleText: rule);
-        
+
         if conversionResult.converted.contains(convertedRule) {
             throw QuickAllowlistClipperError.errorAddingRule;
         }
-        
+
         var result = conversionResult;
         result.converted = String(result.converted.dropLast(1));
         result.converted += ",\(convertedRule)]"
         result.convertedCount += 1;
         result.totalConvertedCount += 1;
-        
+
         return result;
     }
-    
+
     /**
      * Removes provided rule from conversion result
      */
     func remove(rule: String, from conversionResult: ConversionResult) throws -> ConversionResult {
         let convertedRule = try convertRuleToJsonString(ruleText: rule);
-        
+
         if !conversionResult.converted.contains(convertedRule) {
             throw QuickAllowlistClipperError.noRuleInConversionResult;
         }
-        
+
         // amount of rules to remove in conversion result
         let delta = conversionResult.converted.components(separatedBy: convertedRule).count - 1;
-        
+
         var result = conversionResult;
         result.converted = result.converted.replacingOccurrences(of: convertedRule, with: "");
-        
+
         // remove redundant commas
         if result.converted.hasPrefix("[,{") {
             result.converted = result.converted.replacingOccurrences(of: "[,{", with: "[{");
@@ -78,44 +78,44 @@ public class QuickAllowlistClipper: QuickAllowlistClipperProtocol {
         if result.converted == "[]" {
             return try ConversionResult.createEmptyResult();
         }
-        
+
         result.convertedCount -= delta;
         result.totalConvertedCount -= delta;
-        
+
         return result;
     }
-    
+
     /**
      * Replaces rule in conversion result with provided rule
      */
     public func replace(rule: String, with newRule: String, in conversionResult: ConversionResult) throws -> ConversionResult {
         var result = conversionResult;
         let ruleJsonString = try convertRuleToJsonString(ruleText: rule);
-        
+
         if !result.converted.contains(ruleJsonString) {
             throw QuickAllowlistClipperError.noRuleInConversionResult;
         }
-        
+
         let newRuleJsonString = try convertRuleToJsonString(ruleText: newRule);
-        
+
         result.converted = result.converted.replacingOccurrences(of: ruleJsonString, with: newRuleJsonString);
         return result;
     }
-    
+
     /**
      * Creates allowlist rule for provided domain
      */
     func createAllowlistRule(by domain: String) -> String {
         return "@@||\(domain)$document";
     }
-    
+
     /**
      * Creates inverted allowlist rule for provided domain
      */
     func createInvertedAllowlistRule(by domain: String) -> String {
-        return "@@||*$domain=~\(domain)";
+        return "@@||*$document,domain=~\(domain)";
     }
-    
+
     /**
      * Appends allowlist rule for provided domain to conversion result
      */
@@ -123,7 +123,7 @@ public class QuickAllowlistClipper: QuickAllowlistClipperProtocol {
         let allowlistRule = createAllowlistRule(by: domain);
         return try add(rule: allowlistRule, to: conversionResult);
     }
-    
+
     /**
      * Appends inverted allowlist rule for provided domain to conversion result
      */
@@ -131,7 +131,7 @@ public class QuickAllowlistClipper: QuickAllowlistClipperProtocol {
         let invertedAllowlistRule = createInvertedAllowlistRule(by: domain);
         return try add(rule: invertedAllowlistRule, to: conversionResult);
     }
-    
+
     /**
      * Removes allowlist rule for provided domain from conversion result
      */
@@ -139,7 +139,7 @@ public class QuickAllowlistClipper: QuickAllowlistClipperProtocol {
         let allowlistRule = createAllowlistRule(by: domain);
         return try remove(rule: allowlistRule, from: conversionResult);
     }
-    
+
     /**
      * Removes inverted allowlist rule for provided domain from conversion result
      */
@@ -153,7 +153,7 @@ public enum QuickAllowlistClipperError: Error, CustomDebugStringConvertible {
     case errorConvertingRule
     case noRuleInConversionResult
     case errorAddingRule
-    
+
     public var debugDescription: String {
         switch self {
             case .errorConvertingRule: return "A rule conversion error has occurred"
