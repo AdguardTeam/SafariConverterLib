@@ -103,24 +103,10 @@ public class QuickAllowlistClipper: QuickAllowlistClipperProtocol {
     }
 
     /**
-     * Creates allowlist rule for provided domain
-     */
-    func createAllowlistRule(by domain: String) -> String {
-        return "@@||\(domain)$document";
-    }
-
-    /**
-     * Creates inverted allowlist rule for provided domain
-     */
-    func createInvertedAllowlistRule(by domain: String) -> String {
-        return "@@||*$document,domain=~\(domain)";
-    }
-
-    /**
      * Appends allowlist rule for provided domain to conversion result
      */
     public func addAllowlistRule(by domain: String, to conversionResult: ConversionResult) throws -> ConversionResult {
-        let allowlistRule = createAllowlistRule(by: domain);
+        let allowlistRule = ContentBlockerConverter.createAllowlistRule(by: domain);
         return try add(rule: allowlistRule, to: conversionResult);
     }
 
@@ -128,7 +114,7 @@ public class QuickAllowlistClipper: QuickAllowlistClipperProtocol {
      * Appends inverted allowlist rule for provided domain to conversion result
      */
     public func addInvertedAllowlistRule(by domain: String, to conversionResult: ConversionResult) throws -> ConversionResult {
-        let invertedAllowlistRule = createInvertedAllowlistRule(by: domain);
+        let invertedAllowlistRule = ContentBlockerConverter.createInvertedAllowlistRule(by: domain);
         return try add(rule: invertedAllowlistRule, to: conversionResult);
     }
 
@@ -136,7 +122,7 @@ public class QuickAllowlistClipper: QuickAllowlistClipperProtocol {
      * Removes allowlist rule for provided domain from conversion result
      */
     public func removeAllowlistRule(by domain: String, from conversionResult: ConversionResult) throws -> ConversionResult {
-        let allowlistRule = createAllowlistRule(by: domain);
+        let allowlistRule = ContentBlockerConverter.createAllowlistRule(by: domain);
         return try remove(rule: allowlistRule, from: conversionResult);
     }
 
@@ -144,7 +130,7 @@ public class QuickAllowlistClipper: QuickAllowlistClipperProtocol {
      * Removes inverted allowlist rule for provided domain from conversion result
      */
     public func removeInvertedAllowlistRule(by domain: String, from conversionResult: ConversionResult) throws -> ConversionResult {
-        let invertedAllowlistRule = createInvertedAllowlistRule(by: domain);
+        let invertedAllowlistRule = ContentBlockerConverter.createInvertedAllowlistRule(by: domain);
         return try remove(rule: invertedAllowlistRule, from: conversionResult);
     }
 }
