@@ -1,4 +1,6 @@
 import Foundation
+import Shared
+
 /**
  * Conversion result wrapper class
  */

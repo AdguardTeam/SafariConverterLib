@@ -1,4 +1,5 @@
 import Foundation
+import Shared
 
 /**
  * Rule factory creates rules from source texts

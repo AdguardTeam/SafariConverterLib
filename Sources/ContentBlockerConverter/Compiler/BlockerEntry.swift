@@ -3,14 +3,14 @@ import Foundation
 /**
  * Blocker entry object description
  */
-struct BlockerEntry: Codable {
-    var trigger: Trigger
-    let action: Action
+public struct BlockerEntry: Codable {
+    public var trigger: Trigger
+    public let action: Action
     
-    struct Trigger : Codable {
-        var ifDomain: [String]?
-        var urlFilter: String?
-        var unlessDomain: [String]?
+    public struct Trigger : Codable {
+        public var ifDomain: [String]?
+        public var urlFilter: String?
+        public var unlessDomain: [String]?
         
         var shortcut: String?
         var regex: NSRegularExpression?
@@ -46,12 +46,12 @@ struct BlockerEntry: Codable {
         }
     }
     
-    struct Action : Codable {
-        var type: String
+    public struct Action : Codable {
+        public var type: String
         var selector: String?
-        var css: String?
-        var script: String?
-        var scriptlet: String?
-        var scriptletParam: String?
+        public var css: String?
+        public var script: String?
+        public var scriptlet: String?
+        public var scriptletParam: String?
     }
 }

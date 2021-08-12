@@ -1,5 +1,6 @@
 import Foundation
 import ContentBlockerConverter
+import Shared
 
 /**
  * Command line wrapper
