@@ -1,4 +1,5 @@
 import Foundation
+import Shared
 
 /**
  * Blocker entries factory class

@@ -1,6 +1,7 @@
 import XCTest
 
 import ContentBlockerConverterTests
+import ContentBlockerEngineTests
 
 var tests = [XCTestCaseEntry]()
 tests += RuleConverterTests.allTests()
@@ -18,4 +19,6 @@ tests += ContentBlockerConverterTests.allTests()
 tests += AdvancedBlockingTests.allTests()
 tests += GeneralTests.allTests()
 tests += QuickAllowlistClipperTests.allTests()
+tests += ContentBlockerContainerTests.allTests()
+tests += ContentBlockerEngineTests.allTests()
 XCTMain(tests)

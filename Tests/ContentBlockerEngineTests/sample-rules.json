@@ -1,0 +1,20 @@
+[
+  {
+    "trigger": {
+      "url-filter": "example.org"
+    },
+    "action": {
+      "type": "script",
+      "script": "included-script"
+    }
+  },
+  {
+    "trigger": {
+      "url-filter": "not-example.org"
+    },
+    "action": {
+      "type": "css-extended",
+      "css": "#excluded-css:has(div) { height: 5px; }"
+    }
+  }
+]
