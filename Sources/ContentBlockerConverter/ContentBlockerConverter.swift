@@ -26,7 +26,7 @@ public class ContentBlockerConverter {
         var result = VettedRules()
 
         for rule in rules {
-            var isAdvanced = rule.isScript || rule.isScript
+            var isAdvanced = rule.isScript
             if let rule = rule as? CosmeticRule {
                 isAdvanced = isAdvanced || rule.isExtendedCss || rule.isInjectCss
             }
