@@ -13,12 +13,12 @@ struct CompilationResult {
      * Errors count
      */
     var errorsCount = 0;
-    
+
     /**
      * Log message
      */
     var message = "";
-    
+
     // Elemhide rules (##) - wide generic rules
     var cssBlockingWide: [BlockerEntry] = [];
     // Elemhide rules (##) - generic domain sensitive
@@ -39,9 +39,9 @@ struct CompilationResult {
     var importantExceptions: [BlockerEntry] = [];
     // Document url blocking exceptions
     var documentExceptions: [BlockerEntry] = [];
-    
+
     // Advanced blocking entries
-    
+
     // Script rules (#%#)
     var script: [BlockerEntry] = [];
     // Scriptlet rules (#%#//scriptlet)
@@ -56,7 +56,10 @@ struct CompilationResult {
     var extendedCssBlockingGenericDomainSensitive: [BlockerEntry] = [];
     // Elemhide rules (##) with domain restrictions
     var extendedCssBlockingDomainSensitive: [BlockerEntry] = [];
-    
+
+    // Advanced rules, used to return advanced rules in the text format
+    var advancedRulesTexts: [String] = [];
+
     /**
      * Adds type: block entry
      */
@@ -67,7 +70,7 @@ struct CompilationResult {
             urlBlocking.append(entry);
         }
     }
-    
+
     /**
     * Adds type: ignore-previous-rules entry
     */
@@ -85,7 +88,7 @@ struct CompilationResult {
                 return;
             }
         }
-        
+
         // other exceptions
         if (source.isImportant) {
             importantExceptions.append(entry);
