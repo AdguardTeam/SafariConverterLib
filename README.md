@@ -24,7 +24,11 @@ Converts filter rules in AdGuard format to the format supported by Safari.
 
 ```
     let result: ConversionResult? = ContentBlockerConverter.convertArray(
-        rules: [String], safariVersion: SafariVersions = .DEFAULT, optimize: Bool = false, advancedBlocking: Bool = false
+        rules: [String],
+        safariVersion: SafariVersions = .DEFAULT,
+        optimize: Bool = false,
+        advancedBlocking: Bool = false
+        advancedBlockingFormat: AdvancedBlockingFormat = .json
     );
 ```
 Please note, that `safariVersion` must be an instance of enum SafariVersions.
@@ -36,11 +40,12 @@ The result contains following properties:
 - overLimit: is limit exceeded flag (the limit depends on provided Safari version)
 - converted: json string of content blocker rules
 - advancedBlocking: json string of advanced blocking rules
+- advancedBlockingText: txt string of advanced blocking rules
 
 ### How to use converter from command line:
 
 ```
-    ./ConverterTool -safariVersion=14 -optimize=true -advancedBlocking=false <<STDIN -o other --options
+    ./ConverterTool -safariVersion=14 -optimize=true -advancedBlocking=false -advancedBlockingFormat=json <<STDIN -o other --options
     test_rule_one
     test_rule_two
     STDIN
@@ -48,7 +53,7 @@ The result contains following properties:
 
 The tool then reads stdin line by line for rule until an empty line.
 
-### How to release on Github
+### How to release on GitHub
 
 Push a new tag in `v*.*.*` format, then provided github action is intended to build and publish new release with an asset binary.
 
@@ -65,7 +70,7 @@ Push a new tag in `v*.*.*` format, then provided github action is intended to bu
 
 - Script rules (#%#)
 - Script rules exceptions
-- Extended css elemhide rules (##)
+- Extended css elemhide rules (#?#)
 - Scriptlet rules (#%#//scriptlet)
 - Scriptlet rules exceptions
 
@@ -83,9 +88,10 @@ After installation the build process occurs and binary file will be copied to bi
 
 #### API
 
-`jsonFromRules(rules, advancedBlocking, safariVersion, converterToolPath)` - method to convert rules into JSON
+`jsonFromRules(rules, advancedBlocking, safariVersion, converterToolPath, advancedBlockingFormat)` - method to convert rules into JSON
 * rules - array of rules
 * advancedBlocking - if we need advanced blocking content (boolean)
+* advancedBlockingFormat - Advanced blocking rules in text or json format
 * safariVersion
 * converterToolPath - path to ConverterTool binary
 
