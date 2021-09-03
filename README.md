@@ -38,17 +38,17 @@ The result contains following properties:
 - advancedBlocking: json string of advanced blocking rules
 
 ### How to use converter from command line:
-
 ```
-    ./ConverterTool -safariVersion=14 -optimize=true -advancedBlocking=false <<STDIN -o other --options
-    test_rule_one
-    test_rule_two
-    STDIN
+    ConverterTool [--safari-version <safari-version>] [--optimize <optimize>] [--advanced-blocking <advanced-blocking>] [<rules>]
+```
+e.g.
+```
+    cat rules.txt | ./ConverterTool --safari-version 13 --optimize false --advanced-blocking false
 ```
 
 The tool then reads stdin line by line for rule until an empty line.
 
-### How to release on Github
+### How to release on GitHub
 
 Push a new tag in `v*.*.*` format, then provided github action is intended to build and publish new release with an asset binary.
 
