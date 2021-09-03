@@ -44,11 +44,11 @@ The result contains following properties:
 
 ### How to use converter from command line:
 ```
-    ConverterTool [--safari-version <safari-version>] [--optimize <optimize>] [--advanced-blocking <advanced-blocking>] [<rules>]
+    ConverterTool [--safari-version <safari-version>] [--optimize <optimize>] [--advanced-blocking <advanced-blocking>] [--advanced-blocking-format <advanced-blocking-format>] [<rules>]
 ```
 e.g.
 ```
-    cat rules.txt | ./ConverterTool --safari-version 13 --optimize false --advanced-blocking false
+    cat rules.txt | ./ConverterTool --safari-version 13 --optimize false --advanced-blocking true --advanced-blocking-format txt
 ```
 
 The tool then reads stdin line by line for rule until an empty line.

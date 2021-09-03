@@ -1,6 +1,10 @@
 import Foundation
 
 public enum AdvancedBlockingFormat: String {
-    case json = "json"
-    case txt = "txt"
+    case json
+    case txt
+}
+
+public enum AdvancedBlockingFormatError: Error {
+    case unsupportedFormat(message: String = "Provided format is not supported")
 }
