@@ -88,10 +88,9 @@ After installation the build process occurs and binary file will be copied to bi
 
 #### API
 
-`jsonFromRules(rules, advancedBlocking, safariVersion, converterToolPath, advancedBlockingFormat)` - method to convert rules into JSON
+`jsonFromRules(rules, advancedBlocking, safariVersion, converterToolPath)` - method to convert rules into JSON
 * rules - array of rules
 * advancedBlocking - if we need advanced blocking content (boolean)
-* advancedBlockingFormat - Advanced blocking rules in text or json format
 * safariVersion
 * converterToolPath - path to ConverterTool binary
 
