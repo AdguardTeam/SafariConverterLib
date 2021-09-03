@@ -1,4 +1,0 @@
-||example.org^
-example.org##h1
-example.org#$#h1 { background:none!important; }
-example.com#$?#h3:contains(cookies) { display: none!important; }
