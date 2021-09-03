@@ -43,12 +43,12 @@ The result contains following properties:
 - advancedBlockingText: txt string of advanced blocking rules
 
 ### How to use converter from command line:
-
 ```
-    ./ConverterTool -safariVersion=14 -optimize=true -advancedBlocking=false -advancedBlockingFormat=json <<STDIN -o other --options
-    test_rule_one
-    test_rule_two
-    STDIN
+    ConverterTool [--safari-version <safari-version>] [--optimize <optimize>] [--advanced-blocking <advanced-blocking>] [<rules>]
+```
+e.g.
+```
+    cat rules.txt | ./ConverterTool --safari-version 13 --optimize false --advanced-blocking false
 ```
 
 The tool then reads stdin line by line for rule until an empty line.
