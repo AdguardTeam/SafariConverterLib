@@ -79,12 +79,12 @@ struct ConverterTool: ParsableCommand {
 
         Logger.log("Conversion done.")
 
-        guard let result = result else {
+        guard let unwrappedResult = result else {
             writeToStdError(str: "ContentBlockerConverter: Empty result.")
             Foundation.exit(EXIT_FAILURE)
         }
 
-        let encoded = try encodeJson(result)
+        let encoded = try encodeJson(unwrappedResult)
 
         writeToStdOut(str: "\(encoded)")
     }
