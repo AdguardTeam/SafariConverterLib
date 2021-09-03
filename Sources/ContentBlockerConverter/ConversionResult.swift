@@ -57,8 +57,7 @@ public struct ConversionResult: Encodable {
             advBlockingEntries: [BlockerEntry] = [],
             limit: Int,
             errorsCount: Int,
-            message: String,
-            advancedRules: [String]
+            message: String
     ) throws {
         self.totalConvertedCount = entries.count + advBlockingEntries.count;
 
@@ -80,10 +79,6 @@ public struct ConversionResult: Encodable {
             self.advancedBlocking = try ConversionResult.createJSONString(entries: advBlockingEntries);
         }
 
-        if (advancedRules.count > 0) {
-            self.advancedBlockingText = advancedRules.joined(separator: "\n");
-        }
-
         self.message = message;
     }
 
@@ -98,8 +93,7 @@ public struct ConversionResult: Encodable {
             advBlockingEntries: [],
             limit: 0,
             errorsCount: 0,
-            message: "",
-            advancedRules: []
+            message: ""
         );
 
         result.converted = self.EMPTY_RESULT_JSON;

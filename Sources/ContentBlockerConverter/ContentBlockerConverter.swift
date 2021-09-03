@@ -27,8 +27,9 @@ public class ContentBlockerConverter {
 
         for rule in rules {
             var isAdvanced = rule.isScript
-            if let rule = rule as? CosmeticRule {
-                isAdvanced = isAdvanced || rule.isExtendedCss || rule.isInjectCss
+
+            if !isAdvanced, let rule = rule as? CosmeticRule {
+                isAdvanced = rule.isExtendedCss || rule.isInjectCss
             }
 
             if (isAdvanced) {
@@ -73,14 +74,15 @@ public class ContentBlockerConverter {
             )
 
             var compilationResult: CompilationResult;
+            var advancedRulesTexts: String? = nil;
 
-            if (advancedBlockingFormat == .txt) {
+            if advancedBlocking && advancedBlockingFormat == .txt {
                 let vettedRules = vetRules(parsedRules);
                 let advancedRules = vettedRules.advancedRules;
                 let simpleRules = vettedRules.simpleRules;
 
                 compilationResult = compiler.compileRules(rules: simpleRules);
-                compilationResult.advancedRulesTexts = advancedRules.map { $0.ruleText as String }
+                advancedRulesTexts = advancedRules.map { $0.ruleText as String }.joined(separator: "\n")
              } else {
                 // by default for .json format
                 compilationResult = compiler.compileRules(rules: parsedRules);
@@ -92,8 +94,12 @@ public class ContentBlockerConverter {
             Logger.log("AG: ContentBlockerConverter: " + message);
             compilationResult.message = message;
 
-            return try Distributor(limit: rulesLimit, advancedBlocking: advancedBlocking)
+            var conversionResult = try Distributor(limit: rulesLimit, advancedBlocking: advancedBlocking)
                     .createConversionResult(data: compilationResult);
+
+            conversionResult.advancedBlockingText = advancedRulesTexts;
+
+            return conversionResult;
         } catch {
             Logger.log("AG: ContentBlockerConverter: Unexpected error: \(error)");
         }
@@ -120,7 +126,6 @@ public class ContentBlockerConverter {
         message += "\nExceptions (document): \(String(describing: compilationResult.documentExceptions.count))";
         message += "\nExceptions (jsinject): \(String(describing: compilationResult.scriptJsInjectExceptions.count))";
         message += "\nExceptions (other): \(String(describing: compilationResult.other.count))";
-        message += "\nAdvanced rules (other): \(String(describing: compilationResult.advancedRulesTexts.count))";
 
         return message;
     }

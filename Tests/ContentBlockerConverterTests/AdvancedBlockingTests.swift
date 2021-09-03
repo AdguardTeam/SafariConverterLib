@@ -304,14 +304,17 @@ final class AdvancedBlockingTests: XCTestCase {
 
     func testAdvancedBlockingFormatParam() {
         let result = converter.convertArray(
-                rules: ["filmitorrent.xyz#$#.content { margin-top: 0!important; }"],
+                rules: ["example.org#$#.content { margin-top: 0!important; }"],
+                advancedBlocking: true,
                 advancedBlockingFormat: AdvancedBlockingFormat.json
         )!;
         XCTAssertEqual(result.convertedCount, 0);
         XCTAssertEqual(result.errorsCount, 0);
-        XCTAssertEqual(result.advancedBlocking, nil);
-        XCTAssertEqual(result.advancedBlockingConvertedCount, 0);
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 1);
         XCTAssertEqual(result.advancedBlockingText, nil);
+
+        let decoded = try! parseJsonString(json: result.advancedBlocking!);
+        XCTAssertEqual(decoded.count, 1);
     }
 
     func testAdvancedBlockingText() {
@@ -338,12 +341,41 @@ final class AdvancedBlockingTests: XCTestCase {
 
         let rules = simpleRules + advancedRules
 
-        let result = converter.convertArray(rules: rules, advancedBlockingFormat: AdvancedBlockingFormat.txt)!;
+        let result = converter.convertArray(
+                rules: rules,
+                advancedBlocking: true,
+                advancedBlockingFormat: AdvancedBlockingFormat.txt
+        )!;
         XCTAssertEqual(result.convertedCount, simpleRules.count);
         XCTAssertEqual(result.errorsCount, 0);
         XCTAssertEqual(result.advancedBlocking, nil);
         XCTAssertEqual(result.advancedBlockingConvertedCount, 0);
         XCTAssertEqual(result.advancedBlockingText, advancedRules.joined(separator: "\n"));
+    }
+
+    func testAdvancedBlockingParamFalse() {
+        var result = converter.convertArray(
+                rules: ["example.org#$#.content { margin-top: 0!important; }"],
+                advancedBlocking: false,
+                advancedBlockingFormat: AdvancedBlockingFormat.json
+        )!;
+        XCTAssertEqual(result.convertedCount, 0);
+        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 0);
+        XCTAssertEqual(result.advancedBlocking, nil);
+        XCTAssertEqual(result.advancedBlockingText, nil);
+
+        result = converter.convertArray(
+                rules: ["example.org#$#.content { margin-top: 0!important; }"],
+                advancedBlocking: false,
+                advancedBlockingFormat: AdvancedBlockingFormat.txt
+        )!;
+
+        XCTAssertEqual(result.convertedCount, 0);
+        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 0);
+        XCTAssertEqual(result.advancedBlocking, nil);
+        XCTAssertEqual(result.advancedBlockingText, nil);
     }
 
     static var allTests = [

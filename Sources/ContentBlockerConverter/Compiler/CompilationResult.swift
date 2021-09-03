@@ -57,9 +57,6 @@ struct CompilationResult {
     // Elemhide rules (##) with domain restrictions
     var extendedCssBlockingDomainSensitive: [BlockerEntry] = [];
 
-    // Advanced rules, used to return advanced rules in the text format
-    var advancedRulesTexts: [String] = [];
-
     /**
      * Adds type: block entry
      */

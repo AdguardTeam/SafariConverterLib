@@ -62,8 +62,7 @@ class Distributor {
             advBlockingEntries: advBlockingEntries,
             limit: self.limit,
             errorsCount: errorsCount,
-            message: data.message,
-            advancedRules: data.advancedRulesTexts
+            message: data.message
         );
     }
 
