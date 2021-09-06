@@ -7,7 +7,7 @@ protocol ContentBlockerEngineProtocol {
     func getData(url: URL) throws -> String
 }
 
-public class ContentBlockerEngine: ContentBlockerEngineProtocol {
+final public class ContentBlockerEngine: ContentBlockerEngineProtocol {
     private var contentBlockerContainer: ContentBlockerContainer
     private var blockerDataCache = NSCache<NSString, NSString>()
     private var version = "1"

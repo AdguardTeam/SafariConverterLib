@@ -1,7 +1,7 @@
 import Foundation
 
 // Wrapper result class
-final class BlockerData {
+final class BlockerData: Codable {
     var scripts: [String] = []
     var cssExtended: [String] = []
     var cssInject: [String] = []
@@ -42,5 +42,3 @@ final class BlockerData {
         scriptlets = []
     }
 }
-
-extension BlockerData: Codable {}
