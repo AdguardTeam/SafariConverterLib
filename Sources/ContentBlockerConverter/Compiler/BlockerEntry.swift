@@ -4,6 +4,11 @@ import Foundation
  * Blocker entry object description
  */
 public struct BlockerEntry {
+    public init(trigger: BlockerEntry.Trigger, action: BlockerEntry.Action) {
+        self.trigger = trigger
+        self.action = action
+    }
+    
     public var trigger: Trigger
     public let action: Action
     
