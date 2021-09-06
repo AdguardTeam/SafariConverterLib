@@ -288,19 +288,95 @@ final class AdvancedBlockingTests: XCTestCase {
             XCTAssertEqual(result.сssInjects[0].action.css, ".banner { top: -9999px!important; }");
         }
 
-        func testCompileExtendedCssRule() {
-            let compiler = Compiler(optimize: false, advancedBlocking: true, errorsCounter: ErrorsCounter());
-            let rule = try! CosmeticRule(ruleText: "test.com##.content:has(> .test_selector)");
-            let result = compiler.compileRules(rules: [rule as Rule]);
+    func testCompileExtendedCssRule() {
+        let compiler = Compiler(optimize: false, advancedBlocking: true, errorsCounter: ErrorsCounter());
+        let rule = try! CosmeticRule(ruleText: "test.com##.content:has(> .test_selector)");
+        let result = compiler.compileRules(rules: [rule as Rule]);
 
-            XCTAssertNotNil(result);
-            XCTAssertEqual(result.errorsCount, 0);
-            XCTAssertEqual(result.rulesCount, 1);
-            XCTAssertNotNil(result.extendedCssBlockingDomainSensitive);
-            XCTAssertEqual(result.extendedCssBlockingDomainSensitive[0].action.type, "css-extended");
-            XCTAssertEqual(result.extendedCssBlockingDomainSensitive[0].trigger.ifDomain, ["test.com"]);
-            XCTAssertEqual(result.extendedCssBlockingDomainSensitive[0].action.css, ".content:has(> .test_selector)");
-        }
+        XCTAssertNotNil(result);
+        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.rulesCount, 1);
+        XCTAssertNotNil(result.extendedCssBlockingDomainSensitive);
+        XCTAssertEqual(result.extendedCssBlockingDomainSensitive[0].action.type, "css-extended");
+        XCTAssertEqual(result.extendedCssBlockingDomainSensitive[0].trigger.ifDomain, ["test.com"]);
+        XCTAssertEqual(result.extendedCssBlockingDomainSensitive[0].action.css, ".content:has(> .test_selector)");
+    }
+
+    func testAdvancedBlockingFormatParam() {
+        let result = converter.convertArray(
+                rules: ["example.org#$#.content { margin-top: 0!important; }"],
+                advancedBlocking: true,
+                advancedBlockingFormat: AdvancedBlockingFormat.json
+        )!;
+        XCTAssertEqual(result.convertedCount, 0);
+        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 1);
+        XCTAssertEqual(result.advancedBlockingText, nil);
+
+        let decoded = try! parseJsonString(json: result.advancedBlocking!);
+        XCTAssertEqual(decoded.count, 1);
+    }
+
+    func testAdvancedBlockingText() {
+        let networkRule = "||example.org^"
+        let cssRule = "example.com##div.textad";
+        let injectCssRule = "example.org#$#.div { background:none!important; }";
+        let extendedCssRule = "example.org#?#div:has(> a[target=\"_blank\"][rel=\"nofollow\"])"
+        let extendedInjectCssRule = "example.com#$?#h3:contains(cookies) { display: none!important; }"
+        let scriptRule = "example.org#%#window.__gaq = undefined;"
+        let scriptletRule = "example.org#%#//scriptlet(\"abort-on-property-read\", \"alert\")"
+
+        let simpleRules = [
+            cssRule,
+            networkRule,
+        ]
+
+        let advancedRules = [
+            injectCssRule,
+            extendedCssRule,
+            extendedInjectCssRule,
+            scriptRule,
+            scriptletRule
+        ]
+
+        let rules = simpleRules + advancedRules
+
+        let result = converter.convertArray(
+                rules: rules,
+                advancedBlocking: true,
+                advancedBlockingFormat: AdvancedBlockingFormat.txt
+        )!;
+        XCTAssertEqual(result.convertedCount, simpleRules.count);
+        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.advancedBlocking, nil);
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 0);
+        XCTAssertEqual(result.advancedBlockingText, advancedRules.joined(separator: "\n"));
+    }
+
+    func testAdvancedBlockingParamFalse() {
+        var result = converter.convertArray(
+                rules: ["example.org#$#.content { margin-top: 0!important; }"],
+                advancedBlocking: false,
+                advancedBlockingFormat: AdvancedBlockingFormat.json
+        )!;
+        XCTAssertEqual(result.convertedCount, 0);
+        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 0);
+        XCTAssertEqual(result.advancedBlocking, nil);
+        XCTAssertEqual(result.advancedBlockingText, nil);
+
+        result = converter.convertArray(
+                rules: ["example.org#$#.content { margin-top: 0!important; }"],
+                advancedBlocking: false,
+                advancedBlockingFormat: AdvancedBlockingFormat.txt
+        )!;
+
+        XCTAssertEqual(result.convertedCount, 0);
+        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 0);
+        XCTAssertEqual(result.advancedBlocking, nil);
+        XCTAssertEqual(result.advancedBlockingText, nil);
+    }
 
     static var allTests = [
         ("testAdvancedBlockingParam", testAdvancedBlockingParam),

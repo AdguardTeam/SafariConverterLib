@@ -151,7 +151,7 @@ class BlockerEntryFactory {
 
     /**
     * Creates blocker entry object from source Cosmetic script rule.
-    * In case the rule selector contatins extended css or rule is an inject-style rule, then the result entry could be used in advanced blocking json only.
+    * In case the rule selector contains extended css or rule is an inject-style rule, then the result entry could be used in advanced blocking json only.
     */
     private func convertCssRule(rule: CosmeticRule) throws -> BlockerEntry? {
         var trigger = BlockerEntry.Trigger(urlFilter: BlockerEntryFactory.URL_FILTER_CSS_RULES);
@@ -332,7 +332,7 @@ class BlockerEntryFactory {
 
         try writeDomainOptions(included: included, excluded: excluded, trigger: &trigger);
     }
-    
+
     /**
      * Adds domain to unless-domains for third-party rules
      * https://github.com/AdguardTeam/AdGuardForSafari/issues/104
@@ -341,7 +341,7 @@ class BlockerEntryFactory {
         if !(rule is NetworkRule) {
             return;
         }
-        
+
         let networkRule = rule as! NetworkRule;
         if (networkRule.isThirdParty) {
             if (networkRule.permittedDomains.count == 0) {
@@ -493,7 +493,7 @@ class BlockerEntryFactory {
         if (entry.action.type != "css-extended" && entry.action.type != "css-inject") {
             return;
         }
-        
+
         if (entry.action.css!.indexOf(target: "url(") >= 0) {
             throw ConversionError.dangerousCss(message: "Urls are not allowed in css styles");
         }

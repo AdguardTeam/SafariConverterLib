@@ -50,7 +50,12 @@ public struct ConversionResult {
      * Json string of advanced content blocker rules
      */
     public var advancedBlocking: String? = nil;
-    
+
+    /**
+     * Text of advanced content blocker rules
+     */
+    public var advancedBlockingText: String? = nil;
+
     /**
      * Result message
      */

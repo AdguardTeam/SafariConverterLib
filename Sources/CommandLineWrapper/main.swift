@@ -30,7 +30,7 @@ func encodeJson(_ result: ConversionResult) throws -> String {
 /**
  * Converter tool
  * Usage:
- *  "cat rules.txt | ./ConverterTool -safariVersion=14 -optimize=true -advancedBlocking=false"
+ *  "cat rules.txt | ./ConverterTool --safari-version 14 --optimize true --advanced-blocking true --advanced-blocking-format txt"
  */
 struct ConverterTool: ParsableCommand {
     static let configuration = CommandConfiguration(commandName: "ConverterTool")
@@ -44,6 +44,9 @@ struct ConverterTool: ParsableCommand {
     @Option(name: .shortAndLong, help: "Advanced blocking.")
     var advancedBlocking = false
 
+    @Option(name: [.customShort("f"), .long], help: "Advanced blocking output format.")
+    var advancedBlockingFormat = "json"
+
     @Argument(help: "Reads rules from standard input.")
     var rules: String?
 
@@ -52,9 +55,14 @@ struct ConverterTool: ParsableCommand {
             throw SafariVersionError.unsupportedSafariVersion(version: safariVersion)
         }
 
+        guard let advancedBlockingFormat = AdvancedBlockingFormat(rawValue: advancedBlockingFormat) else {
+            throw AdvancedBlockingFormatError.unsupportedFormat()
+        }
+
         Logger.log("Safari version - \(safariVersionResolved)")
         Logger.log("Optimize - \(optimize)")
         Logger.log("Advanced blocking - \(advancedBlocking)")
+        Logger.log("Advanced blocking format - \(advancedBlockingFormat)")
 
         var rules: [String] = []
         var line: String?
@@ -74,7 +82,8 @@ struct ConverterTool: ParsableCommand {
                 rules: rules,
                 safariVersion: safariVersionResolved,
                 optimize: optimize,
-                advancedBlocking: advancedBlocking
+                advancedBlocking: advancedBlocking,
+                advancedBlockingFormat: advancedBlockingFormat
             )
 
         Logger.log("Conversion done.")
