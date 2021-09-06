@@ -54,9 +54,8 @@ public struct BlockerEntry {
         public var scriptlet: String?
         public var scriptletParam: String?
     }
-    
-    extension Trigger: Codable {}
-    extension Action: Codable {}
 }
 
 extension BlockerEntry: Codable {}
+extension BlockerEntry.Trigger: Codable {}
+extension BlockerEntry.Action: Codable {}
