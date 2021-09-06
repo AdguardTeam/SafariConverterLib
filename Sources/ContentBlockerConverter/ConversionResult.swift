@@ -5,17 +5,6 @@ import Shared
  * Conversion result wrapper class
  */
 public struct ConversionResult {
-    public init(totalConvertedCount: Int, convertedCount: Int, errorsCount: Int, overLimit: Bool, converted: String, advancedBlockingConvertedCount: Int = 0, advancedBlocking: String? = nil, message: String) {
-        self.totalConvertedCount = totalConvertedCount
-        self.convertedCount = convertedCount
-        self.errorsCount = errorsCount
-        self.overLimit = overLimit
-        self.converted = converted
-        self.advancedBlockingConvertedCount = advancedBlockingConvertedCount
-        self.advancedBlocking = advancedBlocking
-        self.message = message
-    }
-    
     /**
      * Total entries count in result
      */

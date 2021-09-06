@@ -13,6 +13,17 @@ public struct BlockerEntry {
     public let action: Action
     
     public struct Trigger {
+        public init(ifDomain: [String]? = nil, urlFilter: String? = nil, unlessDomain: [String]? = nil, shortcut: String? = nil, regex: NSRegularExpression? = nil, loadType: [String]? = nil, resourceType: [String]? = nil, caseSensitive: Bool? = nil) {
+            self.ifDomain = ifDomain
+            self.urlFilter = urlFilter
+            self.unlessDomain = unlessDomain
+            self.shortcut = shortcut
+            self.regex = regex
+            self.loadType = loadType
+            self.resourceType = resourceType
+            self.caseSensitive = caseSensitive
+        }
+        
         public var ifDomain: [String]?
         public var urlFilter: String?
         public var unlessDomain: [String]?
@@ -52,6 +63,15 @@ public struct BlockerEntry {
     }
     
     public struct Action {
+        public init(type: String, selector: String? = nil, css: String? = nil, script: String? = nil, scriptlet: String? = nil, scriptletParam: String? = nil) {
+            self.type = type
+            self.selector = selector
+            self.css = css
+            self.script = script
+            self.scriptlet = scriptlet
+            self.scriptletParam = scriptletParam
+        }
+        
         public var type: String
         var selector: String?
         public var css: String?
