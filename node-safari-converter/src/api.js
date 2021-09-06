@@ -58,9 +58,9 @@ module.exports = (function () {
 
         return new Promise((resolve, reject) => {
             const child = runScript(converterToolPath || CONVERTER_TOOL_PATH, [
-                `-safariVersion=${currentSafariVersion}`,
-                '-optimize=false',
-                `-advancedBlocking=${advancedBlocking}`,
+                `--safari-version=${currentSafariVersion}`,
+                '--optimize=false',
+                `--advanced-blocking=${advancedBlocking}`,
             ], (code, stdout, stderr) => {
                 if (code !== 0) {
                     reject(new Error(stderr));
