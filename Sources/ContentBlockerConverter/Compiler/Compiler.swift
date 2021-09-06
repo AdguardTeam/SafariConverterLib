@@ -147,7 +147,7 @@ class Compiler {
             exceptionDomains = exceptionTrigger.unlessDomain;
             domainsList = ruleTrigger.unlessDomain;
         }
-        
+
         // generic exception case
         if (exceptionDomains == nil) {
             exceptionDomains = [];

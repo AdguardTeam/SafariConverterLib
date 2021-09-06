@@ -1,6 +1,13 @@
 import Foundation
 import Shared
 
+struct VettedRules {
+    // extcss, script, scriptlet, css inject
+    var advancedRules: [Rule] = []
+    // network, css, other
+    var simpleRules: [Rule] = []
+}
+
 /**
  * Entry point
  */
@@ -11,28 +18,75 @@ public class ContentBlockerConverter {
     }
 
     /**
+     * Creates two lists with
+     *  - advanced rules (extcss, script, scriptlet, css inject)
+     *  - simple rules (network, css, other)
+     */
+    func vetRules(_ rules: [Rule]) -> VettedRules {
+        var result = VettedRules()
+
+        for rule in rules {
+            var isAdvanced = rule.isScript
+
+            if !isAdvanced, let rule = rule as? CosmeticRule {
+                isAdvanced = rule.isExtendedCss || rule.isInjectCss
+            }
+
+            if (isAdvanced) {
+                result.advancedRules.append(rule)
+            } else {
+                result.simpleRules.append(rule)
+            }
+        }
+
+        return result
+    }
+
+    /**
      * Converts filter rules in AdGuard format to the format supported by Safari.
      */
-    public func convertArray(rules: [String], safariVersion: SafariVersion = .safari13, optimize: Bool = false, advancedBlocking: Bool = false) -> ConversionResult? {
-        
+    public func convertArray(
+            rules: [String],
+            safariVersion: SafariVersion = .safari13,
+            optimize: Bool = false,
+            advancedBlocking: Bool = false,
+            advancedBlockingFormat: AdvancedBlockingFormat = .json
+    ) -> ConversionResult? {
+
         SafariService.current.version = safariVersion;
 
         let rulesLimit = safariVersion.rulesLimit;
-        
+
         do {
             if rules.count == 0 || (rules.count == 1 && rules[0].isEmpty) {
                 Logger.log("AG: ContentBlockerConverter: No rules passed");
                 return try ConversionResult.createEmptyResult();
             }
-            
+
             let errorsCounter = ErrorsCounter();
 
             let parsedRules = RuleFactory(errorsCounter: errorsCounter).createRules(lines: rules);
-            var compilationResult = Compiler(
-                optimize: optimize,
-                advancedBlocking: advancedBlocking,
-                errorsCounter: errorsCounter
-            ).compileRules(rules: parsedRules);
+
+            let compiler = Compiler(
+                    optimize: optimize,
+                    advancedBlocking: advancedBlocking,
+                    errorsCounter: errorsCounter
+            )
+
+            var compilationResult: CompilationResult;
+            var advancedRulesTexts: String? = nil;
+
+            if advancedBlocking && advancedBlockingFormat == .txt {
+                let vettedRules = vetRules(parsedRules);
+                let advancedRules = vettedRules.advancedRules;
+                let simpleRules = vettedRules.simpleRules;
+
+                compilationResult = compiler.compileRules(rules: simpleRules);
+                advancedRulesTexts = advancedRules.map { $0.ruleText as String }.joined(separator: "\n")
+             } else {
+                // by default for .json format
+                compilationResult = compiler.compileRules(rules: parsedRules);
+            }
 
             compilationResult.errorsCount = errorsCounter.getCount();
 
@@ -40,7 +94,12 @@ public class ContentBlockerConverter {
             Logger.log("AG: ContentBlockerConverter: " + message);
             compilationResult.message = message;
 
-            return try Distributor(limit: rulesLimit, advancedBlocking: advancedBlocking).createConversionResult(data: compilationResult);
+            var conversionResult = try Distributor(limit: rulesLimit, advancedBlocking: advancedBlocking)
+                    .createConversionResult(data: compilationResult);
+
+            conversionResult.advancedBlockingText = advancedRulesTexts;
+
+            return conversionResult;
         } catch {
             Logger.log("AG: ContentBlockerConverter: Unexpected error: \(error)");
         }
