@@ -4,7 +4,7 @@ import Shared
 /**
  * Conversion result wrapper class
  */
-public struct ConversionResult: Encodable {
+public struct ConversionResult {
     /**
      * Total entries count in result
      */
@@ -89,3 +89,5 @@ public struct ConversionResult: Encodable {
         return result;
     }
 }
+
+extension ConversionResult: Encodable {}

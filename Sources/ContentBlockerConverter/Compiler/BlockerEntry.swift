@@ -3,11 +3,11 @@ import Foundation
 /**
  * Blocker entry object description
  */
-public struct BlockerEntry: Codable {
+public struct BlockerEntry {
     public var trigger: Trigger
     public let action: Action
     
-    public struct Trigger : Codable {
+    public struct Trigger {
         public var ifDomain: [String]?
         public var urlFilter: String?
         public var unlessDomain: [String]?
@@ -46,7 +46,7 @@ public struct BlockerEntry: Codable {
         }
     }
     
-    public struct Action : Codable {
+    public struct Action {
         public var type: String
         var selector: String?
         public var css: String?
@@ -54,4 +54,9 @@ public struct BlockerEntry: Codable {
         public var scriptlet: String?
         public var scriptletParam: String?
     }
+    
+    extension Trigger: Codable {}
+    extension Action: Codable {}
 }
+
+extension BlockerEntry: Codable {}
