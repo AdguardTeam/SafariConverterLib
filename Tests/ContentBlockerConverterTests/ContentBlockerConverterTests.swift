@@ -14,7 +14,7 @@ final class ContentBlockerConverterTests: XCTestCase {
 
     let converter = ContentBlockerConverter();
 
-    private func parseJsonString(json: String) throws -> [BlockerEntry] {
+    func parseJsonString(json: String) throws -> [BlockerEntry] {
         let data = json.data(using: String.Encoding.utf8, allowLossyConversion: false)!
 
         let decoder = JSONDecoder();
@@ -408,7 +408,7 @@ final class ContentBlockerConverterTests: XCTestCase {
     }
 
     func testConvertInvertedWhitelistRule() {
-        let result = converter.convertArray(rules: ["@@||*$domain=~whitelisted.domain.com|~whitelisted.domain2.com"]);
+        let result = converter.convertArray(rules: ["@@||*$document,domain=~whitelisted.domain.com|~whitelisted.domain2.com"]);
         XCTAssertEqual(result?.convertedCount, 1);
 
         let decoded = try! parseJsonString(json: result!.converted);
@@ -1604,6 +1604,74 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded[0].action.type, "scriptlet");
         XCTAssertEqual(decoded[0].action.scriptlet, "abort-on-property-read");
     }
+    
+    func testOptimizeRules() {
+        var result = converter.convertArray(rules: [
+            "example.org##.banner1",
+            "example.org##.banner2",
+            "example.org##.banner3",
+            "example.org##.banner4",
+            "example.org##.banner5",
+        ], safariVersion: SafariVersion.safari14, optimize: true, advancedBlocking: false);
+        
+        // 5 cosmetic rules with same domain optimized in 1 rule
+        XCTAssertEqual(result?.convertedCount, 1);
+        
+        result = converter.convertArray(rules: [
+            "example.org##.banner",
+            "example.org##.banner",
+            "example.org##.banner",
+            "example.org##.banner",
+            "example.org##.banner",
+        ], safariVersion: SafariVersion.safari14, optimize: true, advancedBlocking: false);
+        
+        // 5 similar cosmetic rules domain optimized in 1 rule (removed duplicates)
+        XCTAssertEqual(result?.convertedCount, 1);
+        
+        result = converter.convertArray(rules: [
+            "example1.org##.banner",
+            "example2.org##.banner",
+            "example3.org##.banner",
+            "example4.org##.banner",
+            "example5.org##.banner",
+        ], safariVersion: SafariVersion.safari14, optimize: true, advancedBlocking: false);
+        
+        // cosmetic rules with different domain but same selector didn't optimized
+        XCTAssertEqual(result?.convertedCount, 5);
+        
+        result = converter.convertArray(rules: [
+            "||example1.org",
+            "||example2.org",
+            "||example3.org",
+            "||example4.org",
+            "||example5.org",
+        ], safariVersion: SafariVersion.safari14, optimize: true, advancedBlocking: false);
+        
+        // blocking rules didn't optimized
+        XCTAssertEqual(result?.convertedCount, 5);
+        
+        result = converter.convertArray(rules: [
+            "||example.org",
+            "||example.org",
+            "||example.org",
+            "||example.org",
+            "||example.org",
+        ], safariVersion: SafariVersion.safari14, optimize: true, advancedBlocking: false);
+        
+        // similar blocking rules didn't optimized
+        XCTAssertEqual(result?.convertedCount, 5);
+        
+        result = converter.convertArray(rules: [
+            "@@||*$document,domain=~example.org",
+            "@@||*$document,domain=~example.org",
+            "@@||*$document,domain=~example.org",
+            "@@||*$document,domain=~example.org",
+            "@@||*$document,domain=~example.org",
+        ], safariVersion: SafariVersion.safari14, optimize: true, advancedBlocking: false);
+        
+        // similar inverted allowlist rules didn't optimized
+        XCTAssertEqual(result?.convertedCount, 5);
+    }
 
     static var allTests = [
         ("testEmpty", testEmpty),
@@ -1651,5 +1719,6 @@ final class ContentBlockerConverterTests: XCTestCase {
         ("testEscapeBackslash", testEscapeBackslash),
         ("testCssExceptions", testCssExceptions),
         ("testAdvancedBlockingExceptions", testAdvancedBlockingExceptions),
+        ("testOptimizeRules", testOptimizeRules),
     ]
 }

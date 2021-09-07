@@ -106,6 +106,20 @@ public class ContentBlockerConverter {
 
         return nil;
     }
+    
+    /**
+     * Creates allowlist rule for provided domain
+     */
+    public static func createAllowlistRule(by domain: String) -> String {
+        return "@@||\(domain)$document";
+    }
+
+    /**
+     * Creates inverted allowlist rule for provided domain
+     */
+    public static func createInvertedAllowlistRule(by domain: String) -> String {
+        return "@@||*$document,domain=~\(domain)";
+    }
 
     private func createLogMessage(compilationResult: CompilationResult) -> String {
         var message = "Rules converted:  \(compilationResult.rulesCount) (\(compilationResult.errorsCount) errors)";

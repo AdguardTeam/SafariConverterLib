@@ -3,11 +3,27 @@ import Foundation
 /**
  * Blocker entry object description
  */
-public struct BlockerEntry: Codable {
+public struct BlockerEntry {
+    public init(trigger: BlockerEntry.Trigger, action: BlockerEntry.Action) {
+        self.trigger = trigger
+        self.action = action
+    }
+    
     public var trigger: Trigger
     public let action: Action
     
-    public struct Trigger : Codable {
+    public struct Trigger {
+        public init(ifDomain: [String]? = nil, urlFilter: String? = nil, unlessDomain: [String]? = nil, shortcut: String? = nil, regex: NSRegularExpression? = nil, loadType: [String]? = nil, resourceType: [String]? = nil, caseSensitive: Bool? = nil) {
+            self.ifDomain = ifDomain
+            self.urlFilter = urlFilter
+            self.unlessDomain = unlessDomain
+            self.shortcut = shortcut
+            self.regex = regex
+            self.loadType = loadType
+            self.resourceType = resourceType
+            self.caseSensitive = caseSensitive
+        }
+        
         public var ifDomain: [String]?
         public var urlFilter: String?
         public var unlessDomain: [String]?
@@ -46,7 +62,16 @@ public struct BlockerEntry: Codable {
         }
     }
     
-    public struct Action : Codable {
+    public struct Action {
+        public init(type: String, selector: String? = nil, css: String? = nil, script: String? = nil, scriptlet: String? = nil, scriptletParam: String? = nil) {
+            self.type = type
+            self.selector = selector
+            self.css = css
+            self.script = script
+            self.scriptlet = scriptlet
+            self.scriptletParam = scriptletParam
+        }
+        
         public var type: String
         var selector: String?
         public var css: String?
@@ -55,3 +80,7 @@ public struct BlockerEntry: Codable {
         public var scriptletParam: String?
     }
 }
+
+extension BlockerEntry: Codable {}
+extension BlockerEntry.Trigger: Codable {}
+extension BlockerEntry.Action: Codable {}

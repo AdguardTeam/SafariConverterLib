@@ -51,15 +51,15 @@ struct ConverterTool: ParsableCommand {
     var rules: String?
 
     mutating func run() throws {
-        guard let safariVersion = SafariVersion(rawValue: safariVersion) else {
-            throw SafariVersionError.unsupportedSafariVersion()
+        guard let safariVersionResolved = SafariVersion(rawValue: safariVersion) else {
+            throw SafariVersionError.unsupportedSafariVersion(version: safariVersion)
         }
 
         guard let advancedBlockingFormat = AdvancedBlockingFormat(rawValue: advancedBlockingFormat) else {
             throw AdvancedBlockingFormatError.unsupportedFormat()
         }
 
-        Logger.log("Safari version - \(safariVersion)")
+        Logger.log("Safari version - \(safariVersionResolved)")
         Logger.log("Optimize - \(optimize)")
         Logger.log("Advanced blocking - \(advancedBlocking)")
         Logger.log("Advanced blocking format - \(advancedBlockingFormat)")
@@ -80,7 +80,7 @@ struct ConverterTool: ParsableCommand {
         let result: ConversionResult? = ContentBlockerConverter()
             .convertArray(
                 rules: rules,
-                safariVersion: safariVersion,
+                safariVersion: safariVersionResolved,
                 optimize: optimize,
                 advancedBlocking: advancedBlocking,
                 advancedBlockingFormat: advancedBlockingFormat
