@@ -3,7 +3,7 @@ import Foundation
 /**
  * Provides methods to manage allowlist and inverted allowlist rules without conversion
  */
-public protocol QuickAllowlistClipperProtocol {    
+public protocol QuickAllowlistClipperProtocol {
     // Replaces rule in conversion result with provided rule
     func replace(rule: String, with newRule: String, in conversionResult: ConversionResult) throws -> ConversionResult
     
@@ -25,6 +25,8 @@ public protocol QuickAllowlistClipperProtocol {
  * quickly add/remove allowlist rules without filters recompilation
  */
 public class QuickAllowlistClipper: QuickAllowlistClipperProtocol {
+    public init() {}
+    
     let converter = ContentBlockerConverter();
 
     /**
