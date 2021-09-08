@@ -7,7 +7,7 @@ final class DistributorTests: XCTestCase {
     func testEmpty() {
         let builder = Distributor(limit: 0, advancedBlocking: true);
         
-        let result = try! builder.createConversionResult(data: CompilationResult());
+        let result = builder.createConversionResult(data: CompilationResult());
         
         XCTAssertNotNil(result);
         XCTAssertEqual(result.totalConvertedCount, 0);

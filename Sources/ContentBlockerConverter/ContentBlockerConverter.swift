@@ -51,60 +51,54 @@ public class ContentBlockerConverter {
             optimize: Bool = false,
             advancedBlocking: Bool = false,
             advancedBlockingFormat: AdvancedBlockingFormat = .json
-    ) -> ConversionResult? {
+    ) -> ConversionResult {
 
         SafariService.current.version = safariVersion;
 
         let rulesLimit = safariVersion.rulesLimit;
 
-        do {
-            if rules.count == 0 || (rules.count == 1 && rules[0].isEmpty) {
-                Logger.log("AG: ContentBlockerConverter: No rules passed");
-                return try ConversionResult.createEmptyResult();
-            }
-
-            let errorsCounter = ErrorsCounter();
-
-            let parsedRules = RuleFactory(errorsCounter: errorsCounter).createRules(lines: rules);
-
-            let compiler = Compiler(
-                    optimize: optimize,
-                    advancedBlocking: advancedBlocking,
-                    errorsCounter: errorsCounter
-            )
-
-            var compilationResult: CompilationResult;
-            var advancedRulesTexts: String? = nil;
-
-            if advancedBlocking && advancedBlockingFormat == .txt {
-                let vettedRules = vetRules(parsedRules);
-                let advancedRules = vettedRules.advancedRules;
-                let simpleRules = vettedRules.simpleRules;
-
-                compilationResult = compiler.compileRules(rules: simpleRules);
-                advancedRulesTexts = advancedRules.map { $0.ruleText as String }.joined(separator: "\n")
-             } else {
-                // by default for .json format
-                compilationResult = compiler.compileRules(rules: parsedRules);
-            }
-
-            compilationResult.errorsCount = errorsCounter.getCount();
-
-            let message = createLogMessage(compilationResult: compilationResult);
-            Logger.log("AG: ContentBlockerConverter: " + message);
-            compilationResult.message = message;
-
-            var conversionResult = try Distributor(limit: rulesLimit, advancedBlocking: advancedBlocking)
-                    .createConversionResult(data: compilationResult);
-
-            conversionResult.advancedBlockingText = advancedRulesTexts;
-
-            return conversionResult;
-        } catch {
-            Logger.log("AG: ContentBlockerConverter: Unexpected error: \(error)");
+        if rules.count == 0 || (rules.count == 1 && rules[0].isEmpty) {
+            Logger.log("AG: ContentBlockerConverter: No rules passed");
+            return ConversionResult.createEmptyResult();
         }
 
-        return nil;
+        let errorsCounter = ErrorsCounter();
+
+        let parsedRules = RuleFactory(errorsCounter: errorsCounter).createRules(lines: rules);
+
+        let compiler = Compiler(
+                optimize: optimize,
+                advancedBlocking: advancedBlocking,
+                errorsCounter: errorsCounter
+        )
+
+        var compilationResult: CompilationResult;
+        var advancedRulesTexts: String? = nil;
+
+        if advancedBlocking && advancedBlockingFormat == .txt {
+            let vettedRules = vetRules(parsedRules);
+            let advancedRules = vettedRules.advancedRules;
+            let simpleRules = vettedRules.simpleRules;
+
+            compilationResult = compiler.compileRules(rules: simpleRules);
+            advancedRulesTexts = advancedRules.map { $0.ruleText as String }.joined(separator: "\n")
+         } else {
+            // by default for .json format
+            compilationResult = compiler.compileRules(rules: parsedRules);
+        }
+
+        compilationResult.errorsCount = errorsCounter.getCount();
+
+        let message = createLogMessage(compilationResult: compilationResult);
+        Logger.log("AG: ContentBlockerConverter: " + message);
+        compilationResult.message = message;
+
+        var conversionResult = Distributor(limit: rulesLimit, advancedBlocking: advancedBlocking)
+                .createConversionResult(data: compilationResult);
+
+        conversionResult.advancedBlockingText = advancedRulesTexts;
+
+        return conversionResult;
     }
     
     /**

@@ -77,7 +77,7 @@ struct ConverterTool: ParsableCommand {
 
         Logger.log("Rules to convert: \(rules.count)")
 
-        let result: ConversionResult? = ContentBlockerConverter()
+        let result: ConversionResult = ContentBlockerConverter()
             .convertArray(
                 rules: rules,
                 safariVersion: safariVersionResolved,
@@ -88,12 +88,7 @@ struct ConverterTool: ParsableCommand {
 
         Logger.log("Conversion done.")
 
-        guard let unwrappedResult = result else {
-            writeToStdError(str: "ContentBlockerConverter: Empty result.")
-            Foundation.exit(EXIT_FAILURE)
-        }
-
-        let encoded = try encodeJson(unwrappedResult)
+        let encoded = try encodeJson(result)
 
         writeToStdOut(str: "\(encoded)")
     }

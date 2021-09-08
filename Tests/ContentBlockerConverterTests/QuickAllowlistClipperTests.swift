@@ -13,10 +13,10 @@ final class QuickAllowlistClipperTests: XCTestCase {
 
         var conversionResult = converter.convertArray(rules: ruleText);
 
-        XCTAssertEqual(conversionResult?.totalConvertedCount, 2);
-        XCTAssertEqual(conversionResult?.errorsCount, 0);
+        XCTAssertEqual(conversionResult.totalConvertedCount, 2);
+        XCTAssertEqual(conversionResult.errorsCount, 0);
 
-        var result = try! QuickAllowlistClipper().remove(rule: "@@||test.com$document", from: conversionResult!);
+        var result = try! QuickAllowlistClipper().remove(rule: "@@||test.com$document", from: conversionResult);
         XCTAssertEqual(result.convertedCount, 1);
         XCTAssertEqual(result.totalConvertedCount, 1);
 
@@ -28,10 +28,10 @@ final class QuickAllowlistClipperTests: XCTestCase {
 
         ruleText = ["@@||example.org$document"];
         conversionResult = converter.convertArray(rules: ruleText);
-        XCTAssertEqual(conversionResult?.totalConvertedCount, 1);
-        XCTAssertEqual(conversionResult?.errorsCount, 0);
+        XCTAssertEqual(conversionResult.totalConvertedCount, 1);
+        XCTAssertEqual(conversionResult.errorsCount, 0);
 
-        result = try! QuickAllowlistClipper().remove(rule: "@@||example.org$document", from: conversionResult!);
+        result = try! QuickAllowlistClipper().remove(rule: "@@||example.org$document", from: conversionResult);
         XCTAssertEqual(result.convertedCount, 0);
         XCTAssertEqual(result.totalConvertedCount, 0);
 
@@ -48,10 +48,10 @@ final class QuickAllowlistClipperTests: XCTestCase {
             "||example2.org",
         ];
         conversionResult = converter.convertArray(rules: ruleText);
-        XCTAssertEqual(conversionResult?.totalConvertedCount, 4);
-        XCTAssertEqual(conversionResult?.errorsCount, 0);
+        XCTAssertEqual(conversionResult.totalConvertedCount, 4);
+        XCTAssertEqual(conversionResult.errorsCount, 0);
 
-        result = try! QuickAllowlistClipper().remove(rule: "@@||test.com$document", from: conversionResult!);
+        result = try! QuickAllowlistClipper().remove(rule: "@@||test.com$document", from: conversionResult);
         XCTAssertEqual(result.convertedCount, 3);
         XCTAssertEqual(result.totalConvertedCount, 3);
 
@@ -90,10 +90,10 @@ final class QuickAllowlistClipperTests: XCTestCase {
         ];
 
         conversionResult = converter.convertArray(rules: ruleText);
-        XCTAssertEqual(conversionResult?.totalConvertedCount, 6);
-        XCTAssertEqual(conversionResult?.errorsCount, 0);
+        XCTAssertEqual(conversionResult.totalConvertedCount, 6);
+        XCTAssertEqual(conversionResult.errorsCount, 0);
 
-        result = try! QuickAllowlistClipper().remove(rule: "@@||test.com$document", from: conversionResult!);
+        result = try! QuickAllowlistClipper().remove(rule: "@@||test.com$document", from: conversionResult);
         XCTAssertEqual(result.convertedCount, 3);
         XCTAssertEqual(result.totalConvertedCount, 3);
 
@@ -118,10 +118,10 @@ final class QuickAllowlistClipperTests: XCTestCase {
 
         var conversionResult = converter.convertArray(rules: ruleText);
 
-        XCTAssertEqual(conversionResult?.totalConvertedCount, 2);
-        XCTAssertEqual(conversionResult?.errorsCount, 0);
+        XCTAssertEqual(conversionResult.totalConvertedCount, 2);
+        XCTAssertEqual(conversionResult.errorsCount, 0);
 
-        let result = try! QuickAllowlistClipper().addAllowlistRule(by: "example.org", to: conversionResult!);
+        let result = try! QuickAllowlistClipper().addAllowlistRule(by: "example.org", to: conversionResult);
         XCTAssertEqual(result.convertedCount, 3);
         XCTAssertEqual(result.totalConvertedCount, 3);
 
@@ -146,11 +146,11 @@ final class QuickAllowlistClipperTests: XCTestCase {
 
         conversionResult = converter.convertArray(rules: ruleText);
 
-        XCTAssertEqual(conversionResult?.totalConvertedCount, 3);
-        XCTAssertEqual(conversionResult?.errorsCount, 0);
+        XCTAssertEqual(conversionResult.totalConvertedCount, 3);
+        XCTAssertEqual(conversionResult.errorsCount, 0);
 
         // try to add existing rule
-        XCTAssertThrowsError(try QuickAllowlistClipper().addAllowlistRule(by: "example.org", to: conversionResult!));
+        XCTAssertThrowsError(try QuickAllowlistClipper().addAllowlistRule(by: "example.org", to: conversionResult));
     }
 
     func testAddInvertedAllowlistRule() {
@@ -161,10 +161,10 @@ final class QuickAllowlistClipperTests: XCTestCase {
 
         var conversionResult = converter.convertArray(rules: ruleText);
 
-        XCTAssertEqual(conversionResult?.totalConvertedCount, 2);
-        XCTAssertEqual(conversionResult?.errorsCount, 0);
+        XCTAssertEqual(conversionResult.totalConvertedCount, 2);
+        XCTAssertEqual(conversionResult.errorsCount, 0);
 
-        let result = try! QuickAllowlistClipper().addInvertedAllowlistRule(by: "example.org", to: conversionResult!);
+        let result = try! QuickAllowlistClipper().addInvertedAllowlistRule(by: "example.org", to: conversionResult);
         XCTAssertEqual(result.convertedCount, 3);
         XCTAssertEqual(result.totalConvertedCount, 3);
 
@@ -190,11 +190,11 @@ final class QuickAllowlistClipperTests: XCTestCase {
 
         conversionResult = converter.convertArray(rules: ruleText);
 
-        XCTAssertEqual(conversionResult?.totalConvertedCount, 3);
-        XCTAssertEqual(conversionResult?.errorsCount, 0);
+        XCTAssertEqual(conversionResult.totalConvertedCount, 3);
+        XCTAssertEqual(conversionResult.errorsCount, 0);
 
         // try to add existing rule
-        XCTAssertThrowsError(try QuickAllowlistClipper().addInvertedAllowlistRule(by: "example.org", to: conversionResult!));
+        XCTAssertThrowsError(try QuickAllowlistClipper().addInvertedAllowlistRule(by: "example.org", to: conversionResult));
     }
 
     func testRemoveInvertedAllowlistRule() {
@@ -205,10 +205,10 @@ final class QuickAllowlistClipperTests: XCTestCase {
 
         let conversionResult = converter.convertArray(rules: ruleText);
 
-        XCTAssertEqual(conversionResult?.totalConvertedCount, 2);
-        XCTAssertEqual(conversionResult?.errorsCount, 0);
+        XCTAssertEqual(conversionResult.totalConvertedCount, 2);
+        XCTAssertEqual(conversionResult.errorsCount, 0);
 
-        let result = try! QuickAllowlistClipper().removeInvertedAllowlistRule(by: "test.com", from: conversionResult!);
+        let result = try! QuickAllowlistClipper().removeInvertedAllowlistRule(by: "test.com", from: conversionResult);
         XCTAssertEqual(result.convertedCount, 1);
         XCTAssertEqual(result.totalConvertedCount, 1);
 
@@ -227,10 +227,10 @@ final class QuickAllowlistClipperTests: XCTestCase {
 
         var conversionResult = converter.convertArray(rules: ruleText);
 
-        XCTAssertEqual(conversionResult?.totalConvertedCount, 2);
-        XCTAssertEqual(conversionResult?.errorsCount, 0);
+        XCTAssertEqual(conversionResult.totalConvertedCount, 2);
+        XCTAssertEqual(conversionResult.errorsCount, 0);
 
-        var result = try! QuickAllowlistClipper().replace(rule: "@@||*$document,domain=~test.com", with: "@@||*$document,domain=~example.com", in: conversionResult!);
+        var result = try! QuickAllowlistClipper().replace(rule: "@@||*$document,domain=~test.com", with: "@@||*$document,domain=~example.com", in: conversionResult);
         XCTAssertEqual(result.convertedCount, 2);
         XCTAssertEqual(result.totalConvertedCount, 2);
 
@@ -251,11 +251,11 @@ final class QuickAllowlistClipperTests: XCTestCase {
 
         conversionResult = converter.convertArray(rules: ruleText);
 
-        XCTAssertEqual(conversionResult?.totalConvertedCount, 2);
-        XCTAssertEqual(conversionResult?.errorsCount, 0);
+        XCTAssertEqual(conversionResult.totalConvertedCount, 2);
+        XCTAssertEqual(conversionResult.errorsCount, 0);
 
         // conversion result doesn't contain rule for replace
-        XCTAssertThrowsError(try QuickAllowlistClipper().replace(rule: "@@||*$document,domain=~example.com", with: "@@||*$document,domain=~test.com", in: conversionResult!));
+        XCTAssertThrowsError(try QuickAllowlistClipper().replace(rule: "@@||*$document,domain=~example.com", with: "@@||*$document,domain=~test.com", in: conversionResult));
 
         ruleText = [
             "@@||*$document,domain=~test.com",
@@ -265,10 +265,10 @@ final class QuickAllowlistClipperTests: XCTestCase {
 
         conversionResult = converter.convertArray(rules: ruleText);
 
-        XCTAssertEqual(conversionResult?.totalConvertedCount, 3);
-        XCTAssertEqual(conversionResult?.errorsCount, 0);
+        XCTAssertEqual(conversionResult.totalConvertedCount, 3);
+        XCTAssertEqual(conversionResult.errorsCount, 0);
 
-        result = try! QuickAllowlistClipper().replace(rule: "@@||*$document,domain=~test.com", with: "@@||*$document,domain=~example.com", in: conversionResult!);
+        result = try! QuickAllowlistClipper().replace(rule: "@@||*$document,domain=~test.com", with: "@@||*$document,domain=~example.com", in: conversionResult);
         XCTAssertEqual(result.convertedCount, 3);
         XCTAssertEqual(result.totalConvertedCount, 3);
 

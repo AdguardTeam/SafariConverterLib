@@ -313,14 +313,14 @@ final class GeneralTests: XCTestCase {
     func testGeneral() {
         let conversionResult = ContentBlockerConverter().convertArray(rules: rules);
         
-        XCTAssertEqual(conversionResult?.totalConvertedCount, 22);
-        XCTAssertEqual(conversionResult?.convertedCount, 22);
-        XCTAssertEqual(conversionResult?.errorsCount, 3);
-        XCTAssertEqual(conversionResult?.overLimit, false);
+        XCTAssertEqual(conversionResult.totalConvertedCount, 22);
+        XCTAssertEqual(conversionResult.convertedCount, 22);
+        XCTAssertEqual(conversionResult.errorsCount, 3);
+        XCTAssertEqual(conversionResult.overLimit, false);
         
-        print(conversionResult!.converted);
+        print(conversionResult.converted);
         
-        let decoded = try! parseJsonString(json: conversionResult!.converted);
+        let decoded = try! parseJsonString(json: conversionResult.converted);
         let correct = try! parseJsonString(json: safariCorrectRulesJson.replacingOccurrences(of: "\\", with: "\\\\"));
         
         XCTAssertEqual(decoded.count, correct.count);
@@ -341,12 +341,12 @@ final class GeneralTests: XCTestCase {
         
         self.measure {
             let conversionResult = ContentBlockerConverter().convertArray(rules: rules);
-            NSLog(conversionResult!.message);
+            NSLog(conversionResult.message);
             
-            XCTAssertEqual(conversionResult?.totalConvertedCount, 22914);
-            XCTAssertEqual(conversionResult?.convertedCount, 22914);
-            XCTAssertEqual(conversionResult?.errorsCount, 143);
-            XCTAssertEqual(conversionResult?.overLimit, false);
+            XCTAssertEqual(conversionResult.totalConvertedCount, 22914);
+            XCTAssertEqual(conversionResult.convertedCount, 22914);
+            XCTAssertEqual(conversionResult.errorsCount, 143);
+            XCTAssertEqual(conversionResult.overLimit, false);
         }
         
     }
@@ -363,12 +363,12 @@ final class GeneralTests: XCTestCase {
         self.measure {
             // expected about 0.25s in Time Profiler for 100 rule pairs and 3s for 1000 rule pairs
             let conversionResult = ContentBlockerConverter().convertArray(rules: rules);
-            NSLog(conversionResult!.message);
+            NSLog(conversionResult.message);
 
-            XCTAssertEqual(conversionResult?.totalConvertedCount, rulePairsCount);
-            XCTAssertEqual(conversionResult?.convertedCount, rulePairsCount);
-            XCTAssertEqual(conversionResult?.errorsCount, 0);
-            XCTAssertEqual(conversionResult?.overLimit, false);
+            XCTAssertEqual(conversionResult.totalConvertedCount, rulePairsCount);
+            XCTAssertEqual(conversionResult.convertedCount, rulePairsCount);
+            XCTAssertEqual(conversionResult.errorsCount, 0);
+            XCTAssertEqual(conversionResult.overLimit, false);
         }
     }
     
