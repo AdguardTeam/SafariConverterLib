@@ -93,7 +93,7 @@ public struct ConversionResult {
         return encoder.encode(entries: entries);
     }
     
-    static func createEmptyResult() throws -> ConversionResult {
+    static func createEmptyResult() -> ConversionResult {
         var result = ConversionResult(
             entries: [BlockerEntry](),
             advBlockingEntries: [],

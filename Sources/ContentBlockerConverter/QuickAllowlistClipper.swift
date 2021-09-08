@@ -94,7 +94,7 @@ public class QuickAllowlistClipper: QuickAllowlistClipperProtocol {
         }
         // handle empty result
         if result.converted == "[]" {
-            return try ConversionResult.createEmptyResult();
+            return ConversionResult.createEmptyResult();
         }
 
         result.convertedCount -= delta;
