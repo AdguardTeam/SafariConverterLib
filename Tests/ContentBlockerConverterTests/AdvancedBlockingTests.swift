@@ -24,10 +24,10 @@ final class AdvancedBlockingTests: XCTestCase {
 
     func testAdvancedBlockingParam() {
         let result = converter.convertArray(rules: ["filmitorrent.xyz#$#.content { margin-top: 0!important; }"], advancedBlocking: false);
-        XCTAssertEqual(result?.convertedCount, 0);
-        XCTAssertEqual(result?.errorsCount, 0);
-        XCTAssertEqual(result?.advancedBlocking, nil);
-        XCTAssertEqual(result?.advancedBlockingConvertedCount, 0);
+        XCTAssertEqual(result.convertedCount, 0);
+        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.advancedBlocking, nil);
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 0);
     }
 
     func testAdvancedBlockingScriptRules() {
@@ -36,11 +36,11 @@ final class AdvancedBlockingTests: XCTestCase {
             "~test.com#%#alert(2);"
         ], advancedBlocking: true);
 
-        XCTAssertEqual(result?.convertedCount, 0);
-        XCTAssertEqual(result?.errorsCount, 0);
-        XCTAssertEqual(result?.advancedBlockingConvertedCount, 2);
+        XCTAssertEqual(result.convertedCount, 0);
+        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 2);
 
-        let decoded = try! parseJsonString(json: result!.advancedBlocking!);
+        let decoded = try! parseJsonString(json: result.advancedBlocking!);
         XCTAssertEqual(decoded.count, 2);
         XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
         XCTAssertEqual(decoded[0].trigger.ifDomain?[0], "*example.org");
@@ -62,11 +62,11 @@ final class AdvancedBlockingTests: XCTestCase {
             "example.com#@%#window.__gaq = undefined;"
         ], advancedBlocking: true);
 
-        XCTAssertEqual(result?.convertedCount, 0);
-        XCTAssertEqual(result?.errorsCount, 0);
-        XCTAssertEqual(result?.advancedBlockingConvertedCount, 1);
+        XCTAssertEqual(result.convertedCount, 0);
+        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 1);
 
-        let decoded = try! parseJsonString(json: result!.advancedBlocking!);
+        let decoded = try! parseJsonString(json: result.advancedBlocking!);
         XCTAssertEqual(decoded.count, 1);
         XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
         XCTAssertEqual(decoded[0].trigger.unlessDomain, ["*example.com"]);
@@ -80,11 +80,11 @@ final class AdvancedBlockingTests: XCTestCase {
             "@@||example.com^$jsinject"
         ], advancedBlocking: true);
 
-        XCTAssertEqual(result?.convertedCount, 0);
-        XCTAssertEqual(result?.errorsCount, 0);
-        XCTAssertEqual(result?.advancedBlockingConvertedCount, 2);
+        XCTAssertEqual(result.convertedCount, 0);
+        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 2);
 
-        let decoded = try! parseJsonString(json: result!.advancedBlocking!);
+        let decoded = try! parseJsonString(json: result.advancedBlocking!);
         XCTAssertEqual(decoded.count, 2);
         XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
         XCTAssertEqual(decoded[0].trigger.ifDomain, ["*example.com"]);
@@ -102,11 +102,11 @@ final class AdvancedBlockingTests: XCTestCase {
             "@@||example.com^$document"
         ], advancedBlocking: true);
 
-        XCTAssertEqual(result?.convertedCount, 1);
-        XCTAssertEqual(result?.errorsCount, 0);
-        XCTAssertEqual(result?.advancedBlockingConvertedCount, 2);
+        XCTAssertEqual(result.convertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 2);
 
-        let decoded = try! parseJsonString(json: result!.advancedBlocking!);
+        let decoded = try! parseJsonString(json: result.advancedBlocking!);
         XCTAssertEqual(decoded.count, 2);
         XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
         XCTAssertEqual(decoded[0].trigger.ifDomain, ["*example.com"]);
@@ -125,11 +125,11 @@ final class AdvancedBlockingTests: XCTestCase {
             #"yelp.com#?#li[class^="domtags--li"]:-abp-has(a[href^="/adredir?"])"#
         ], advancedBlocking: true);
 
-        XCTAssertEqual(result?.convertedCount, 0);
-        XCTAssertEqual(result?.errorsCount, 0);
-        XCTAssertEqual(result?.advancedBlockingConvertedCount, 2);
+        XCTAssertEqual(result.convertedCount, 0);
+        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 2);
 
-        let decoded = try! parseJsonString(json: result!.advancedBlocking!);
+        let decoded = try! parseJsonString(json: result.advancedBlocking!);
         XCTAssertEqual(decoded.count, 2);
         XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
         XCTAssertEqual(decoded[0].trigger.ifDomain, ["*ksl.com"]);
@@ -148,11 +148,11 @@ final class AdvancedBlockingTests: XCTestCase {
             "@@||ksl.com^$elemhide"
         ], advancedBlocking: true);
 
-        XCTAssertEqual(result?.convertedCount, 1);
-        XCTAssertEqual(result?.errorsCount, 0);
-        XCTAssertEqual(result?.advancedBlockingConvertedCount, 2);
+        XCTAssertEqual(result.convertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 2);
 
-        let decoded = try! parseJsonString(json: result!.advancedBlocking!);
+        let decoded = try! parseJsonString(json: result.advancedBlocking!);
         XCTAssertEqual(decoded.count, 2);
         XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
         XCTAssertEqual(decoded[0].trigger.ifDomain, ["*ksl.com"]);
@@ -171,11 +171,11 @@ final class AdvancedBlockingTests: XCTestCase {
             "@@||ksl.com^$document"
         ], advancedBlocking: true);
 
-        XCTAssertEqual(result?.convertedCount, 1);
-        XCTAssertEqual(result?.errorsCount, 0);
-        XCTAssertEqual(result?.advancedBlockingConvertedCount, 2);
+        XCTAssertEqual(result.convertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 2);
 
-        let decoded = try! parseJsonString(json: result!.advancedBlocking!);
+        let decoded = try! parseJsonString(json: result.advancedBlocking!);
         XCTAssertEqual(decoded.count, 2);
         XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
         XCTAssertEqual(decoded[0].trigger.ifDomain, ["*ksl.com"]);
@@ -193,11 +193,11 @@ final class AdvancedBlockingTests: XCTestCase {
             "filmitorrent.xyz#$#.content { margin-top: 0!important; }"
         ], advancedBlocking: true);
 
-        XCTAssertEqual(result?.convertedCount, 0);
-        XCTAssertEqual(result?.errorsCount, 0);
-        XCTAssertEqual(result?.advancedBlockingConvertedCount, 1);
+        XCTAssertEqual(result.convertedCount, 0);
+        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 1);
 
-        let decoded = try! parseJsonString(json: result!.advancedBlocking!);
+        let decoded = try! parseJsonString(json: result.advancedBlocking!);
         XCTAssertEqual(decoded.count, 1);
         XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
         XCTAssertEqual(decoded[0].trigger.ifDomain, ["*filmitorrent.xyz"]);
@@ -210,9 +210,9 @@ final class AdvancedBlockingTests: XCTestCase {
             #"filmitorrent.xyz#$#.content { url("http://example.com/style.css") }"#
         ], advancedBlocking: true);
 
-        XCTAssertEqual(result?.convertedCount, 0);
-        XCTAssertEqual(result?.errorsCount, 1);
-        XCTAssertEqual(result?.advancedBlockingConvertedCount, 0);
+        XCTAssertEqual(result.convertedCount, 0);
+        XCTAssertEqual(result.errorsCount, 1);
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 0);
     }
 
     func testCosmeticCssRulesExceptions() {
@@ -221,18 +221,18 @@ final class AdvancedBlockingTests: XCTestCase {
             "example.com#@$#div { max-height: 2px !important; }"
         ], advancedBlocking: true);
 
-        XCTAssertEqual(result?.convertedCount, 1);
-        XCTAssertEqual(result?.errorsCount, 0);
-        XCTAssertEqual(result?.advancedBlockingConvertedCount, 0);
+        XCTAssertEqual(result.convertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 0);
 
         result = converter.convertArray(rules: [
             "example.com#$#div { max-height: 2px !important; }",
             "example.com#@$#div { max-height: 2px !important; }"
         ], advancedBlocking: true);
 
-        XCTAssertEqual(result?.convertedCount, 0);
-        XCTAssertEqual(result?.errorsCount, 0);
-        XCTAssertEqual(result?.advancedBlockingConvertedCount, 0);
+        XCTAssertEqual(result.convertedCount, 0);
+        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 0);
 
         result = converter.convertArray(rules: [
             "example.com##h1",
@@ -240,9 +240,9 @@ final class AdvancedBlockingTests: XCTestCase {
             "example.com#@$#div { max-height: 2px !important; }"
         ], advancedBlocking: true);
 
-        XCTAssertEqual(result?.convertedCount, 1);
-        XCTAssertEqual(result?.errorsCount, 0);
-        XCTAssertEqual(result?.advancedBlockingConvertedCount, 0);
+        XCTAssertEqual(result.convertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 0);
     }
 
     func testScriptletRules() {
@@ -250,11 +250,11 @@ final class AdvancedBlockingTests: XCTestCase {
             "example.org#%#//scriptlet('abort-on-property-read', 'I10C')"
         ], advancedBlocking: true);
 
-        XCTAssertEqual(result?.convertedCount, 0);
-        XCTAssertEqual(result?.errorsCount, 0);
-        XCTAssertEqual(result?.advancedBlockingConvertedCount, 1);
+        XCTAssertEqual(result.convertedCount, 0);
+        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 1);
 
-        let decoded = try! parseJsonString(json: result!.advancedBlocking!);
+        let decoded = try! parseJsonString(json: result.advancedBlocking!);
         XCTAssertEqual(decoded.count, 1);
         XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
         XCTAssertEqual(decoded[0].trigger.ifDomain, ["*example.org"]);
@@ -269,9 +269,9 @@ final class AdvancedBlockingTests: XCTestCase {
             "example.org#@%#//scriptlet('abort-on-property-read', 'I10C')"
         ], advancedBlocking: true);
 
-        XCTAssertEqual(result?.convertedCount, 0);
-        XCTAssertEqual(result?.errorsCount, 0);
-        XCTAssertEqual(result?.advancedBlockingConvertedCount, 0);
+        XCTAssertEqual(result.convertedCount, 0);
+        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 0);
     }
 
     func testCompileCssInjectRule() {
@@ -307,7 +307,7 @@ final class AdvancedBlockingTests: XCTestCase {
                 rules: ["example.org#$#.content { margin-top: 0!important; }"],
                 advancedBlocking: true,
                 advancedBlockingFormat: AdvancedBlockingFormat.json
-        )!;
+        );
         XCTAssertEqual(result.convertedCount, 0);
         XCTAssertEqual(result.errorsCount, 0);
         XCTAssertEqual(result.advancedBlockingConvertedCount, 1);
@@ -345,7 +345,7 @@ final class AdvancedBlockingTests: XCTestCase {
                 rules: rules,
                 advancedBlocking: true,
                 advancedBlockingFormat: AdvancedBlockingFormat.txt
-        )!;
+        );
         XCTAssertEqual(result.convertedCount, simpleRules.count);
         XCTAssertEqual(result.errorsCount, 0);
         XCTAssertEqual(result.advancedBlocking, nil);
@@ -358,7 +358,7 @@ final class AdvancedBlockingTests: XCTestCase {
                 rules: ["example.org#$#.content { margin-top: 0!important; }"],
                 advancedBlocking: false,
                 advancedBlockingFormat: AdvancedBlockingFormat.json
-        )!;
+        );
         XCTAssertEqual(result.convertedCount, 0);
         XCTAssertEqual(result.errorsCount, 0);
         XCTAssertEqual(result.advancedBlockingConvertedCount, 0);
@@ -369,7 +369,7 @@ final class AdvancedBlockingTests: XCTestCase {
                 rules: ["example.org#$#.content { margin-top: 0!important; }"],
                 advancedBlocking: false,
                 advancedBlockingFormat: AdvancedBlockingFormat.txt
-        )!;
+        );
 
         XCTAssertEqual(result.convertedCount, 0);
         XCTAssertEqual(result.errorsCount, 0);

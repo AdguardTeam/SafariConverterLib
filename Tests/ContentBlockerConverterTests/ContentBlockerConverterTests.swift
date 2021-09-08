@@ -58,11 +58,11 @@ final class ContentBlockerConverterTests: XCTestCase {
     func testConvertNetworkRule() {
         let result = converter.convertArray(rules: ["127.0.0.1$network"]);
 
-        XCTAssertEqual(result?.totalConvertedCount, 0);
-        XCTAssertEqual(result?.convertedCount, 0);
-        // XCTAssertEqual(result?.errorsCount, 1);
-        XCTAssertEqual(result?.overLimit, false);
-        XCTAssertEqual(result?.converted, "[]");
+        XCTAssertEqual(result.totalConvertedCount, 0);
+        XCTAssertEqual(result.convertedCount, 0);
+        // XCTAssertEqual(result.errorsCount, 1);
+        XCTAssertEqual(result.overLimit, false);
+        XCTAssertEqual(result.converted, "[]");
     }
 
     func testPopupRules() {
@@ -74,11 +74,11 @@ final class ContentBlockerConverterTests: XCTestCase {
 
         var result = converter.convertArray(rules: ruleText);
 
-        XCTAssertEqual(result?.totalConvertedCount, 3);
-        XCTAssertEqual(result?.convertedCount, 3);
-        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result.totalConvertedCount, 3);
+        XCTAssertEqual(result.convertedCount, 3);
+        XCTAssertEqual(result.errorsCount, 0);
 
-        var decoded = try! parseJsonString(json: result!.converted);
+        var decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 3);
 
         XCTAssertEqual(decoded[0].trigger.urlFilter, START_URL_UNESCAPED + "example1\\.com");
@@ -107,11 +107,11 @@ final class ContentBlockerConverterTests: XCTestCase {
         ruleText = ["||example.com$document"];
         result = converter.convertArray(rules: ruleText);
 
-        XCTAssertEqual(result?.totalConvertedCount, 1);
-        XCTAssertEqual(result?.convertedCount, 1);
-        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result.totalConvertedCount, 1);
+        XCTAssertEqual(result.convertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
 
-        decoded = try! parseJsonString(json: result!.converted);
+        decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded[0].trigger.urlFilter, "\(START_URL_UNESCAPED)example\\.com");
         XCTAssertEqual(decoded[0].trigger.resourceType, ["document"]);
         XCTAssertEqual(decoded[0].action.type, "block");
@@ -124,11 +124,11 @@ final class ContentBlockerConverterTests: XCTestCase {
         ruleText = ["||test.com$document,popup"];
         result = converter.convertArray(rules: ruleText);
 
-        XCTAssertEqual(result?.totalConvertedCount, 1);
-        XCTAssertEqual(result?.convertedCount, 1);
-        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result.totalConvertedCount, 1);
+        XCTAssertEqual(result.convertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
 
-        decoded = try! parseJsonString(json: result!.converted);
+        decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded[0].trigger.urlFilter, "\(START_URL_UNESCAPED)test\\.com");
         XCTAssertEqual(decoded[0].trigger.resourceType, ["document"]);
         XCTAssertEqual(decoded[0].action.type, "block");
@@ -141,11 +141,11 @@ final class ContentBlockerConverterTests: XCTestCase {
         ruleText = ["||example.com^$popup"];
         result = converter.convertArray(rules: ruleText);
 
-        XCTAssertEqual(result?.totalConvertedCount, 1);
-        XCTAssertEqual(result?.convertedCount, 1);
-        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result.totalConvertedCount, 1);
+        XCTAssertEqual(result.convertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
 
-        decoded = try! parseJsonString(json: result!.converted);
+        decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded[0].trigger.urlFilter, "\(START_URL_UNESCAPED)example\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
         XCTAssertEqual(decoded[0].trigger.resourceType, ["document"]);
         XCTAssertEqual(decoded[0].action.type, "block");
@@ -158,11 +158,11 @@ final class ContentBlockerConverterTests: XCTestCase {
         ruleText = ["||getsecuredfiles.com^$popup,third-party"];
         result = converter.convertArray(rules: ruleText);
 
-        XCTAssertEqual(result?.totalConvertedCount, 1);
-        XCTAssertEqual(result?.convertedCount, 1);
-        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result.totalConvertedCount, 1);
+        XCTAssertEqual(result.convertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
 
-        decoded = try! parseJsonString(json: result!.converted);
+        decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded[0].trigger.urlFilter, "\(START_URL_UNESCAPED)getsecuredfiles\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
         XCTAssertEqual(decoded[0].trigger.resourceType, ["document"]);
         XCTAssertEqual(decoded[0].trigger.loadType, ["third-party"]);
@@ -176,12 +176,12 @@ final class ContentBlockerConverterTests: XCTestCase {
     func testConvertFirstPartyRule() {
         let result = converter.convertArray(rules: ["@@||adriver.ru^$~third-party"]);
 
-        XCTAssertEqual(result?.totalConvertedCount, 1);
-        XCTAssertEqual(result?.convertedCount, 1);
-        XCTAssertEqual(result?.errorsCount, 0);
-        XCTAssertEqual(result?.overLimit, false);
+        XCTAssertEqual(result.totalConvertedCount, 1);
+        XCTAssertEqual(result.convertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.overLimit, false);
 
-        let decoded = try! parseJsonString(json: result!.converted);
+        let decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded[0].trigger.urlFilter, "\(START_URL_UNESCAPED)adriver\\.ru" + URL_FILTER_REGEXP_END_SEPARATOR);
         XCTAssertEqual(decoded[0].trigger.loadType, ["first-party"]);
         XCTAssertEqual(decoded[0].action.type, "ignore-previous-rules");
@@ -192,9 +192,9 @@ final class ContentBlockerConverterTests: XCTestCase {
 
     func testConvertWebsocketRules() {
         var result = converter.convertArray(rules: ["||test.com^$websocket"]);
-        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result.convertedCount, 1);
 
-        var decoded = try! parseJsonString(json: result!.converted);
+        var decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         var entry = decoded[0];
         XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
@@ -207,9 +207,9 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://test.com"));
 
         result = converter.convertArray(rules: ["$websocket,domain=123movies.is"]);
-        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result.convertedCount, 1);
 
-        decoded = try! parseJsonString(json: result!.converted);
+        decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         entry = decoded[0];
         XCTAssertEqual(entry.trigger.urlFilter, URL_FILTER_WS_ANY_URL_UNESCAPED);
@@ -217,9 +217,9 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(entry.trigger.resourceType, ["raw"]);
 
         result = converter.convertArray(rules: [".rocks^$third-party,websocket"]);
-        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result.convertedCount, 1);
 
-        decoded = try! parseJsonString(json: result!.converted);
+        decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         entry = decoded[0];
         XCTAssertEqual(entry.trigger.urlFilter, URL_FILTER_WS_ANY_URL_UNESCAPED + ".*\\.rocks" + URL_FILTER_REGEXP_END_SEPARATOR);
@@ -231,9 +231,9 @@ final class ContentBlockerConverterTests: XCTestCase {
 
     func testWebsocketRulesProperConversion() {
         var result = converter.convertArray(rules: ["||test.com^$websocket"], safariVersion: SafariVersion.safari15);
-        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result.convertedCount, 1);
 
-        var decoded = try! parseJsonString(json: result!.converted);
+        var decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         var entry = decoded[0];
         XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
@@ -243,9 +243,9 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(entry.trigger.resourceType, ["websocket"]);
 
         result = converter.convertArray(rules: ["||test.com^$~websocket,domain=example.org"], safariVersion: SafariVersion.safari15);
-        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result.convertedCount, 1);
 
-        decoded = try! parseJsonString(json: result!.converted);
+        decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         entry = decoded[0];
         XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
@@ -257,9 +257,9 @@ final class ContentBlockerConverterTests: XCTestCase {
 
     func testConvertScriptRestrictRules() {
         let result = converter.convertArray(rules: ["||test.com^$~script,domain=example.com"]);
-        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result.convertedCount, 1);
 
-        let decoded = try! parseJsonString(json: result!.converted);
+        let decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         let entry = decoded[0];
         XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
@@ -273,14 +273,14 @@ final class ContentBlockerConverterTests: XCTestCase {
 
     func testConvertSubdocumentFirstParty() {
         let result = converter.convertArray(rules: ["||test.com^$subdocument,~third-party"]);
-        XCTAssertEqual(result?.convertedCount, 0);
+        XCTAssertEqual(result.convertedCount, 0);
     }
 
     func testConvertSubdocumentThirdParty() {
         let result = converter.convertArray(rules: ["||test.com^$subdocument,domain=example.com"]);
-        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result.convertedCount, 1);
 
-        let decoded = try! parseJsonString(json: result!.converted);
+        let decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         let entry = decoded[0];
         XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
@@ -295,9 +295,9 @@ final class ContentBlockerConverterTests: XCTestCase {
 
     func testSubdocumentRuleProperConversion() {
         var result = converter.convertArray(rules: ["||test.com^$subdocument,domain=example.com"], safariVersion: SafariVersion.safari15);
-        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result.convertedCount, 1);
 
-        var decoded = try! parseJsonString(json: result!.converted);
+        var decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         var entry = decoded[0];
         XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
@@ -307,9 +307,9 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(entry.action.type, "block");
 
         result = converter.convertArray(rules: ["||test.com^$~subdocument,domain=example.com"], safariVersion: SafariVersion.safari15);
-        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result.convertedCount, 1);
 
-        decoded = try! parseJsonString(json: result!.converted);
+        decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         entry = decoded[0];
         XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
@@ -321,9 +321,9 @@ final class ContentBlockerConverterTests: XCTestCase {
 
     func testAddUnlessDomainsForThirdParty() {
         var result = converter.convertArray(rules: ["||test.com^$third-party"]);
-        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result.convertedCount, 1);
 
-        var decoded = try! parseJsonString(json: result!.converted);
+        var decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         var entry = decoded[0];
         XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
@@ -335,9 +335,9 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://test.com"));
 
         result = converter.convertArray(rules: ["||test.com$third-party,domain=~example.com"]);
-        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result.convertedCount, 1);
 
-        decoded = try! parseJsonString(json: result!.converted);
+        decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         entry = decoded[0];
         XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com");
@@ -351,9 +351,9 @@ final class ContentBlockerConverterTests: XCTestCase {
 
         // Only for third-party rules
         result = converter.convertArray(rules: ["||test.com^$important"]);
-        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result.convertedCount, 1);
 
-        decoded = try! parseJsonString(json: result!.converted);
+        decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         entry = decoded[0];
         XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
@@ -366,9 +366,9 @@ final class ContentBlockerConverterTests: XCTestCase {
 
         // Add domains only
         result = converter.convertArray(rules: ["not-a-domain$third-party"]);
-        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result.convertedCount, 1);
 
-        decoded = try! parseJsonString(json: result!.converted);
+        decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         entry = decoded[0];
         XCTAssertEqual(entry.trigger.urlFilter, "not-a-domain");
@@ -379,9 +379,9 @@ final class ContentBlockerConverterTests: XCTestCase {
 
         // Skip rules with permitted domains
         result = converter.convertArray(rules: ["||test.com^$third-party,domain=example.com"]);
-        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result.convertedCount, 1);
 
-        decoded = try! parseJsonString(json: result!.converted);
+        decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         entry = decoded[0];
         XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
@@ -395,9 +395,9 @@ final class ContentBlockerConverterTests: XCTestCase {
 
     func testConvertEmptyRegex() {
         let result = converter.convertArray(rules: ["@@$image,domain=moonwalk.cc"]);
-        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result.convertedCount, 1);
 
-        let decoded = try! parseJsonString(json: result!.converted);
+        let decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         let entry = decoded[0];
         XCTAssertEqual(entry.trigger.urlFilter, URL_FILTER_ANY_URL);
@@ -409,9 +409,9 @@ final class ContentBlockerConverterTests: XCTestCase {
 
     func testConvertInvertedWhitelistRule() {
         let result = converter.convertArray(rules: ["@@||*$document,domain=~whitelisted.domain.com|~whitelisted.domain2.com"]);
-        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result.convertedCount, 1);
 
-        let decoded = try! parseJsonString(json: result!.converted);
+        let decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         let entry = decoded[0];
         XCTAssertEqual(entry.trigger.urlFilter, URL_FILTER_ANY_URL);
@@ -422,9 +422,9 @@ final class ContentBlockerConverterTests: XCTestCase {
 
     func testConvertGenerichide() {
         var result = converter.convertArray(rules: ["@@||hulu.com/page$generichide"]);
-        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result.convertedCount, 1);
 
-        var decoded = try! parseJsonString(json: result!.converted);
+        var decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         let entry = decoded[0];
         XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "hulu\\.com\\/page");
@@ -440,11 +440,11 @@ final class ContentBlockerConverterTests: XCTestCase {
         ]
         result = ContentBlockerConverter().convertArray(rules: rules);
 
-        XCTAssertEqual(result?.totalConvertedCount, 3);
-        XCTAssertEqual(result?.convertedCount, 3);
-        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result.totalConvertedCount, 3);
+        XCTAssertEqual(result.convertedCount, 3);
+        XCTAssertEqual(result.errorsCount, 0);
 
-        decoded = try! parseJsonString(json: result!.converted);
+        decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 3);
 
         XCTAssertNil(decoded[0].trigger.ifDomain);
@@ -468,9 +468,9 @@ final class ContentBlockerConverterTests: XCTestCase {
 
     func testConvertGenericDomainSensitive() {
         let result = converter.convertArray(rules: ["~google.com##banner"]);
-        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result.convertedCount, 1);
 
-        let decoded = try! parseJsonString(json: result!.converted);
+        let decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         let entry = decoded[0];
         XCTAssertEqual(entry.trigger.urlFilter, URL_FILTER_CSS_RULES);
@@ -480,9 +480,9 @@ final class ContentBlockerConverterTests: XCTestCase {
 
     func testConvertGenericDomainSensitiveSortingOrder() {
         let result = converter.convertArray(rules: ["~example.org##generic", "##wide1", "##specific", "@@||example.org^$generichide"]);
-        XCTAssertEqual(result?.convertedCount, 3);
+        XCTAssertEqual(result.convertedCount, 3);
 
-        let decoded = try! parseJsonString(json: result!.converted);
+        let decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 3);
 
         XCTAssertEqual(decoded[0].trigger.urlFilter, URL_FILTER_CSS_RULES);
@@ -501,9 +501,9 @@ final class ContentBlockerConverterTests: XCTestCase {
 
     func testConvertGenericDomainSensitiveSortingOrderGenerichide() {
         let result = converter.convertArray(rules: ["###generic", "@@||example.org^$generichide"]);
-        XCTAssertEqual(result?.convertedCount, 2);
+        XCTAssertEqual(result.convertedCount, 2);
 
-        let decoded = try! parseJsonString(json: result!.converted);
+        let decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 2);
 
         XCTAssertEqual(decoded[0].trigger.urlFilter, URL_FILTER_CSS_RULES);
@@ -517,9 +517,9 @@ final class ContentBlockerConverterTests: XCTestCase {
 
     func testConvertGenericDomainSensitiveSortingOrderElemhide() {
         let result = converter.convertArray(rules: ["example.org###generic", "@@||example.org^$elemhide"]);
-        XCTAssertEqual(result?.convertedCount, 2);
+        XCTAssertEqual(result.convertedCount, 2);
 
-        let decoded = try! parseJsonString(json: result!.converted);
+        let decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 2);
 
         XCTAssertEqual(decoded[0].trigger.urlFilter, URL_FILTER_CSS_RULES);
@@ -538,9 +538,9 @@ final class ContentBlockerConverterTests: XCTestCase {
             "example.org###selector-two",
             "example.org###selector-three"
         ]);
-        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result.convertedCount, 1);
 
-        let decoded = try! parseJsonString(json: result!.converted);
+        let decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
 
         XCTAssertEqual(decoded[0].trigger.urlFilter, URL_FILTER_CSS_RULES);
@@ -551,9 +551,9 @@ final class ContentBlockerConverterTests: XCTestCase {
 
     func testCyrillicRules() {
         let result = converter.convertArray(rules: ["меил.рф", "||меил.рф"]);
-        XCTAssertEqual(result?.convertedCount, 2);
+        XCTAssertEqual(result.convertedCount, 2);
 
-        let decoded = try! parseJsonString(json: result!.converted);
+        let decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 2);
 
         XCTAssertEqual(decoded[0].trigger.urlFilter, "xn--e1agjb\\.xn--p1ai");
@@ -570,23 +570,23 @@ final class ContentBlockerConverterTests: XCTestCase {
     func testRegexRules() {
         var ruleText = #"/^https?://(?!static\.)([^.]+\.)+?fastpic\.ru[:/]/$script,domain=fastpic.ru"#;
         var result = converter.convertArray(rules: [ruleText]);
-        XCTAssertEqual(result?.convertedCount, 0);
-        XCTAssertEqual(result?.errorsCount, 1);
+        XCTAssertEqual(result.convertedCount, 0);
+        XCTAssertEqual(result.errorsCount, 1);
 
         ruleText = #"@@/:\/\/.*[.]wp[.]pl\/[a-z0-9_]{30,50}[.][a-z]{2,5}([\/:&\?].*)?$/"#;
         result = converter.convertArray(rules: [ruleText]);
-        XCTAssertEqual(result?.convertedCount, 0);
-        XCTAssertEqual(result?.errorsCount, 1);
+        XCTAssertEqual(result.convertedCount, 0);
+        XCTAssertEqual(result.errorsCount, 1);
 
         ruleText = #"@@/:\/\/.*[.]wp[.]pl\/[a-z0-9_]+[.][a-z]+\b/"#;
         result = converter.convertArray(rules: [ruleText]);
-        XCTAssertEqual(result?.convertedCount, 0);
-        XCTAssertEqual(result?.errorsCount, 1);
+        XCTAssertEqual(result.convertedCount, 0);
+        XCTAssertEqual(result.errorsCount, 1);
 
         ruleText = #"/example{/"#;
         result = converter.convertArray(rules: [ruleText]);
-        XCTAssertEqual(result?.convertedCount, 1);
-        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result.convertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
     }
 
     func testCssPseudoClasses() {
@@ -597,15 +597,15 @@ final class ContentBlockerConverterTests: XCTestCase {
                 "w3schools4.com##.todaystripe::after"
             ]
         );
-        XCTAssertEqual(result?.convertedCount, 4);
-        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result.convertedCount, 4);
+        XCTAssertEqual(result.errorsCount, 0);
     }
 
     func testUpperCaseDomains() {
         let result = converter.convertArray(rules: ["@@||UpperCase.test^$genericblock"]);
-        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result.convertedCount, 1);
 
-        let decoded = try! parseJsonString(json: result!.converted);
+        let decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         XCTAssertEqual(decoded[0].trigger.ifDomain, ["*uppercase.test"]);
 
@@ -615,7 +615,7 @@ final class ContentBlockerConverterTests: XCTestCase {
 
     func testCspRules() {
         let result = converter.convertArray(rules: ["|blob:$script,domain=pornhub.com|xhamster.com|youporn.com"]);
-        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result.convertedCount, 1);
     }
 
     func testElemhideRules() {
@@ -625,9 +625,9 @@ final class ContentBlockerConverterTests: XCTestCase {
             "@@||lenta.ru^$elemhide",
             "@@||lenta.ru^$elemhide,genericblock"
         ]);
-        XCTAssertEqual(result?.convertedCount, 4);
+        XCTAssertEqual(result.convertedCount, 4);
 
-        let decoded = try! parseJsonString(json: result!.converted);
+        let decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 4);
 
         XCTAssertEqual(decoded[0].action.type, "css-display-none");
@@ -655,9 +655,9 @@ final class ContentBlockerConverterTests: XCTestCase {
             "@@||example-url-block-exception-important.org^$important",
             "@@||example-url-block-exception-document.org^$document"
         ]);
-        XCTAssertEqual(result?.convertedCount, 5);
+        XCTAssertEqual(result.convertedCount, 5);
 
-        let decoded = try! parseJsonString(json: result!.converted);
+        let decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 5);
 
         XCTAssertEqual(decoded[0].action.type, "block");
@@ -695,9 +695,9 @@ final class ContentBlockerConverterTests: XCTestCase {
             "||test.org^",
             "||example.org^$badfilter,image"
         ]);
-        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result.convertedCount, 1);
 
-        let decoded = try! parseJsonString(json: result!.converted);
+        let decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
 
         XCTAssertEqual(decoded[0].trigger.urlFilter, START_URL_UNESCAPED + "test\\.org" + URL_FILTER_REGEXP_END_SEPARATOR);
@@ -708,9 +708,9 @@ final class ContentBlockerConverterTests: XCTestCase {
 
     func testTldWildcardRules() {
         var result = converter.convertArray(rules: ["surge.*,testcases.adguard.*###case-5-wildcard-for-tld > .test-banner"]);
-        XCTAssertEqual(result?.convertedCount, 2);
+        XCTAssertEqual(result.convertedCount, 2);
 
-        var decoded = try! parseJsonString(json: result!.converted);
+        var decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 2);
         XCTAssertEqual(decoded[0].trigger.urlFilter, URL_FILTER_CSS_RULES);
         XCTAssertEqual(decoded[0].trigger.ifDomain?[0], "*surge.com");
@@ -724,9 +724,9 @@ final class ContentBlockerConverterTests: XCTestCase {
 
 
         result = converter.convertArray(rules: ["||*/test-files/adguard.png$domain=surge.*|testcases.adguard.*"]);
-        XCTAssertEqual(result?.convertedCount, 2);
+        XCTAssertEqual(result.convertedCount, 2);
 
-        decoded = try! parseJsonString(json: result!.converted);
+        decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 2);
         XCTAssertEqual(decoded[0].trigger.urlFilter, START_URL_UNESCAPED + ".*\\/test-files\\/adguard\\.png");
         XCTAssertEqual(decoded[0].trigger.ifDomain?[0], "*surge.com");
@@ -745,9 +745,9 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://test.com/test-files/adguard.png"));
 
         result = converter.convertArray(rules: ["|http$script,domain=forbes.*"]);
-        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result.convertedCount, 1);
 
-        decoded = try! parseJsonString(json: result!.converted);
+        decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         XCTAssertEqual(decoded[0].action.type, "block");
         XCTAssertEqual(decoded[0].trigger.urlFilter, "^http");
@@ -766,9 +766,9 @@ final class ContentBlockerConverterTests: XCTestCase {
         ];
 
         let result = converter.convertArray(rules: ruleText, advancedBlocking: true);
-        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result.errorsCount, 0);
 
-        let decoded = try! parseJsonString(json: result!.advancedBlocking!);
+        let decoded = try! parseJsonString(json: result.advancedBlocking!);
         XCTAssertEqual(decoded.count, 2);
 
         XCTAssertEqual(decoded[0].trigger.ifDomain?[0], "*example.org");
@@ -788,8 +788,8 @@ final class ContentBlockerConverterTests: XCTestCase {
         ];
 
         let result = converter.convertArray(rules: ruleText);
-        XCTAssertEqual(result?.errorsCount, 1);
-        XCTAssertEqual(result?.convertedCount, 0);
+        XCTAssertEqual(result.errorsCount, 1);
+        XCTAssertEqual(result.convertedCount, 0);
     }
 
     func testCollisionCssAndScriptRules() {
@@ -799,10 +799,10 @@ final class ContentBlockerConverterTests: XCTestCase {
         ];
 
         let result = converter.convertArray(rules: ruleText);
-        XCTAssertEqual(result?.errorsCount, 0);
-        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.convertedCount, 1);
 
-        let decoded = try! parseJsonString(json: result!.converted);
+        let decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         XCTAssertEqual(decoded[0].action.type, "css-display-none");
         XCTAssertEqual(decoded[0].action.selector, "body");
@@ -817,10 +817,10 @@ final class ContentBlockerConverterTests: XCTestCase {
         ];
 
         let result = converter.convertArray(rules: ruleText);
-        XCTAssertEqual(result?.errorsCount, 0);
-        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.convertedCount, 1);
 
-        let decoded = try! parseJsonString(json: result!.converted);
+        let decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         XCTAssertEqual(decoded[0].action.type, "css-display-none");
         XCTAssertEqual(decoded[0].action.selector, "body");
@@ -835,17 +835,17 @@ final class ContentBlockerConverterTests: XCTestCase {
         ];
 
         let result = converter.convertArray(rules: ruleText, advancedBlocking: true);
-        XCTAssertEqual(result?.errorsCount, 0);
-        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.convertedCount, 1);
 
-        let decoded = try! parseJsonString(json: result!.converted);
+        let decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         XCTAssertEqual(decoded[0].action.type, "css-display-none");
         XCTAssertEqual(decoded[0].action.selector, "body");
         XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
         XCTAssertEqual(decoded[0].trigger.ifDomain?[0], "*example.org");
 
-        let decodedAdvBlocking = try! parseJsonString(json: result!.advancedBlocking!);
+        let decodedAdvBlocking = try! parseJsonString(json: result.advancedBlocking!);
         XCTAssertEqual(decodedAdvBlocking.count, 1);
 
         XCTAssertEqual(decodedAdvBlocking[0].trigger.ifDomain?[0], "*example.org");
@@ -860,17 +860,17 @@ final class ContentBlockerConverterTests: XCTestCase {
         ];
 
         let result = converter.convertArray(rules: ruleText, advancedBlocking: true);
-        XCTAssertEqual(result?.errorsCount, 0);
-        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.convertedCount, 1);
 
-        let decoded = try! parseJsonString(json: result!.converted);
+        let decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         XCTAssertEqual(decoded[0].action.type, "css-display-none");
         XCTAssertEqual(decoded[0].action.selector, "body");
         XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
         XCTAssertEqual(decoded[0].trigger.ifDomain?[0], "*example.org");
 
-        let decodedAdvBlocking = try! parseJsonString(json: result!.advancedBlocking!);
+        let decodedAdvBlocking = try! parseJsonString(json: result.advancedBlocking!);
         XCTAssertEqual(decodedAdvBlocking.count, 1);
 
         XCTAssertEqual(decodedAdvBlocking[0].trigger.ifDomain?[0], "*example.org");
@@ -884,9 +884,9 @@ final class ContentBlockerConverterTests: XCTestCase {
         ];
 
         let result = converter.convertArray(rules: ruleText, advancedBlocking: true);
-        XCTAssertEqual(result?.errorsCount, 0);
-        XCTAssertEqual(result?.convertedCount, 0);
-        XCTAssertEqual(result?.advancedBlockingConvertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.convertedCount, 0);
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 1);
     }
 
     func testCssInjectWithMultiSelectors() {
@@ -894,11 +894,11 @@ final class ContentBlockerConverterTests: XCTestCase {
             "google.com#$##js-header, #searchform, .O-j-k, .header:not(.column-section):not(.viewed):not(.ng-star-inserted):not([class*=\"_ngcontent\"]), .js-header.chr-header, .mobile-action-bar, body > .ng-scope, #flt-nav, .gws-flights__scrollbar-padding.gws-flights__selection-bar, .gws-flights__selection-bar-shadow-mask { position: absolute !important; }",
         ];
         let result = converter.convertArray(rules: ruleText, advancedBlocking: true);
-        XCTAssertEqual(result?.errorsCount, 0);
-        XCTAssertEqual(result?.convertedCount, 0);
-        XCTAssertEqual(result?.advancedBlockingConvertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.convertedCount, 0);
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 1);
 
-        let decoded = try! parseJsonString(json: result!.advancedBlocking!);
+        let decoded = try! parseJsonString(json: result.advancedBlocking!);
         XCTAssertEqual(decoded.count, 1);
 
         XCTAssertEqual(decoded[0].trigger.ifDomain, ["*google.com"]);
@@ -914,10 +914,10 @@ final class ContentBlockerConverterTests: XCTestCase {
         ];
 
         var result = converter.convertArray(rules: ruleText);
-        XCTAssertEqual(result?.errorsCount, 0);
-        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.convertedCount, 1);
 
-        var decoded = try! parseJsonString(json: result!.converted);
+        var decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         XCTAssertEqual(decoded[0].action.type, "block");
         XCTAssertEqual(decoded[0].trigger.urlFilter, "\\+Popunder\\+");
@@ -927,10 +927,10 @@ final class ContentBlockerConverterTests: XCTestCase {
         ];
 
         result = converter.convertArray(rules: ruleText);
-        XCTAssertEqual(result?.errorsCount, 0);
-        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.convertedCount, 1);
 
-        decoded = try! parseJsonString(json: result!.converted);
+        decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         XCTAssertEqual(decoded[0].action.type, "block");
         XCTAssertEqual(decoded[0].trigger.urlFilter, START_URL_UNESCAPED + "calabriareportage\\.it[/:&?]?\\+-Banner-");
@@ -940,10 +940,10 @@ final class ContentBlockerConverterTests: XCTestCase {
         ];
 
         result = converter.convertArray(rules: ruleText);
-        XCTAssertEqual(result?.errorsCount, 0);
-        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.convertedCount, 1);
 
-        decoded = try! parseJsonString(json: result!.converted);
+        decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         XCTAssertEqual(decoded[0].action.type, "ignore-previous-rules");
         XCTAssertEqual(decoded[0].trigger.urlFilter, ":\\/\\/.*[.]wp[.]pl\\/[a-z0-9_]+[.][a-z]+\\\\");
@@ -953,10 +953,10 @@ final class ContentBlockerConverterTests: XCTestCase {
         ];
 
         result = converter.convertArray(rules: ruleText);
-        XCTAssertEqual(result?.errorsCount, 0);
-        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.convertedCount, 1);
 
-        decoded = try! parseJsonString(json: result!.converted);
+        decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         XCTAssertEqual(decoded[0].action.type, "block");
         XCTAssertEqual(decoded[0].trigger.urlFilter, "\\\\");
@@ -974,11 +974,11 @@ final class ContentBlockerConverterTests: XCTestCase {
 
         var result = converter.convertArray(rules: ruleText);
 
-        XCTAssertEqual(result?.totalConvertedCount, 2);
-        XCTAssertEqual(result?.convertedCount, 2);
-        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result.totalConvertedCount, 2);
+        XCTAssertEqual(result.convertedCount, 2);
+        XCTAssertEqual(result.errorsCount, 0);
 
-        var decoded = try! parseJsonString(json: result!.converted);
+        var decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 2);
 
         XCTAssertNil(decoded[0].trigger.ifDomain);
@@ -1003,11 +1003,11 @@ final class ContentBlockerConverterTests: XCTestCase {
 
         result = converter.convertArray(rules: ruleText);
 
-        XCTAssertEqual(result?.totalConvertedCount, 1);
-        XCTAssertEqual(result?.convertedCount, 1);
-        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result.totalConvertedCount, 1);
+        XCTAssertEqual(result.convertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
 
-        decoded = try! parseJsonString(json: result!.converted);
+        decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
 
         XCTAssertNil(decoded[0].trigger.ifDomain);
@@ -1026,12 +1026,12 @@ final class ContentBlockerConverterTests: XCTestCase {
 
         result = converter.convertArray(rules: ruleText, advancedBlocking: true);
 
-        XCTAssertEqual(result?.totalConvertedCount, 2);
-        XCTAssertEqual(result?.convertedCount, 1);
-        XCTAssertEqual(result?.advancedBlockingConvertedCount, 1);
-        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result.totalConvertedCount, 2);
+        XCTAssertEqual(result.convertedCount, 1);
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
 
-        decoded = try! parseJsonString(json: result!.converted);
+        decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
 
         XCTAssertNil(decoded[0].trigger.ifDomain);
@@ -1040,7 +1040,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded[0].action.type, "css-display-none");
         XCTAssertEqual(decoded[0].action.selector, ".banner");
 
-        var decodedAdvBlocking = try! parseJsonString(json: result!.advancedBlocking!);
+        var decodedAdvBlocking = try! parseJsonString(json: result.advancedBlocking!);
         XCTAssertEqual(decodedAdvBlocking.count, 1);
 
         XCTAssertEqual(decodedAdvBlocking[0].trigger.ifDomain, ["*test.com"]);
@@ -1060,12 +1060,12 @@ final class ContentBlockerConverterTests: XCTestCase {
 
         result = converter.convertArray(rules: ruleText, advancedBlocking: true);
 
-        XCTAssertEqual(result?.totalConvertedCount, 2);
-        XCTAssertEqual(result?.convertedCount, 1);
-        XCTAssertEqual(result?.advancedBlockingConvertedCount, 1);
-        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result.totalConvertedCount, 2);
+        XCTAssertEqual(result.convertedCount, 1);
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
 
-        decoded = try! parseJsonString(json: result!.converted);
+        decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
 
         XCTAssertNil(decoded[0].trigger.ifDomain);
@@ -1074,7 +1074,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded[0].action.type, "css-display-none");
         XCTAssertEqual(decoded[0].action.selector, ".banner");
 
-        decodedAdvBlocking = try! parseJsonString(json: result!.advancedBlocking!);
+        decodedAdvBlocking = try! parseJsonString(json: result.advancedBlocking!);
         XCTAssertEqual(decodedAdvBlocking.count, 1);
 
         XCTAssertEqual(decodedAdvBlocking[0].trigger.ifDomain, ["*test.com"]);
@@ -1094,11 +1094,11 @@ final class ContentBlockerConverterTests: XCTestCase {
 
         result = converter.convertArray(rules: ruleText);
 
-        XCTAssertEqual(result?.totalConvertedCount, 3);
-        XCTAssertEqual(result?.convertedCount, 3);
-        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result.totalConvertedCount, 3);
+        XCTAssertEqual(result.convertedCount, 3);
+        XCTAssertEqual(result.errorsCount, 0);
 
-        decoded = try! parseJsonString(json: result!.converted);
+        decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 3);
 
         XCTAssertTrue(checkEntriesByCondition(
@@ -1144,11 +1144,11 @@ final class ContentBlockerConverterTests: XCTestCase {
 
         result = converter.convertArray(rules: ruleText);
 
-        XCTAssertEqual(result?.totalConvertedCount, 1);
-        XCTAssertEqual(result?.convertedCount, 1);
-        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result.totalConvertedCount, 1);
+        XCTAssertEqual(result.convertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
 
-        decoded = try! parseJsonString(json: result!.converted);
+        decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
 
         XCTAssertEqual(decoded[0].trigger.ifDomain, ["*example3.org"]);
@@ -1166,12 +1166,12 @@ final class ContentBlockerConverterTests: XCTestCase {
 
         result = converter.convertArray(rules: ruleText, advancedBlocking: true);
 
-        XCTAssertEqual(result?.totalConvertedCount, 1);
-        XCTAssertEqual(result?.convertedCount, 0);
-        XCTAssertEqual(result?.errorsCount, 0);
-        XCTAssertEqual(result?.advancedBlockingConvertedCount, 1);
+        XCTAssertEqual(result.totalConvertedCount, 1);
+        XCTAssertEqual(result.convertedCount, 0);
+        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 1);
 
-        decoded = try! parseJsonString(json: result!.advancedBlocking!);
+        decoded = try! parseJsonString(json: result.advancedBlocking!);
         XCTAssertEqual(decoded.count, 1);
 
         XCTAssertNil(decoded[0].trigger.ifDomain);
@@ -1186,9 +1186,9 @@ final class ContentBlockerConverterTests: XCTestCase {
             "||gamer.no/?module=Tumedia\\DFProxy\\Modules^",
         ];
         var result = converter.convertArray(rules: ruleText);
-        XCTAssertEqual(result?.errorsCount, 0);
-        XCTAssertEqual(result?.convertedCount, 1);
-        var decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.convertedCount, 1);
+        var decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         XCTAssertTrue(decoded[0].trigger.urlFilter!.contains("Tumedia\\\\DFProxy\\\\Modules"));
 
@@ -1197,9 +1197,9 @@ final class ContentBlockerConverterTests: XCTestCase {
         ];
 
         result = converter.convertArray(rules: ruleText);
-        XCTAssertEqual(result?.errorsCount, 0);
-        XCTAssertEqual(result?.convertedCount, 1);
-        decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.convertedCount, 1);
+        decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         XCTAssertTrue(decoded[0].trigger.urlFilter!.contains("^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?xyz" + URL_FILTER_REGEXP_END_SEPARATOR));
 
@@ -1207,9 +1207,9 @@ final class ContentBlockerConverterTests: XCTestCase {
             "/g\\.alicdn\\.com\\/mm\\/yksdk\\/0\\.2\\.\\d+\\/playersdk\\.js/>>>1111.51xiaolu.com/playersdk.js>>>>keyword=playersdk",
         ];
         result = converter.convertArray(rules: ruleText);
-        XCTAssertEqual(result?.errorsCount, 0);
-        XCTAssertEqual(result?.convertedCount, 1);
-        decoded = try! parseJsonString(json: result!.converted);
+        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.convertedCount, 1);
+        decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         XCTAssertTrue(decoded[0].trigger.urlFilter!.contains(".com\\\\\\/mm\\\\\\/yksdk"));
     }
@@ -1217,22 +1217,22 @@ final class ContentBlockerConverterTests: XCTestCase {
     func testPingModifierRules() {
         var rules = ["||example.org^$ping"];
         var result = converter.convertArray(rules: rules);
-        XCTAssertEqual(result?.convertedCount, 0);
-        XCTAssertEqual(result?.totalConvertedCount, 0);
-        XCTAssertEqual(result?.errorsCount, 1);
+        XCTAssertEqual(result.convertedCount, 0);
+        XCTAssertEqual(result.totalConvertedCount, 0);
+        XCTAssertEqual(result.errorsCount, 1);
 
         rules = ["||example.org^$~ping,domain=test.com"];
         result = converter.convertArray(rules: rules);
-        XCTAssertEqual(result?.convertedCount, 0);
-        XCTAssertEqual(result?.totalConvertedCount, 0);
-        XCTAssertEqual(result?.errorsCount, 1);
+        XCTAssertEqual(result.convertedCount, 0);
+        XCTAssertEqual(result.totalConvertedCount, 0);
+        XCTAssertEqual(result.errorsCount, 1);
 
         rules = ["||example.org^$ping"];
         result = converter.convertArray(rules: rules, safariVersion: SafariVersion.safari15);
-        XCTAssertEqual(result?.convertedCount, 1);
-        XCTAssertEqual(result?.totalConvertedCount, 1);
+        XCTAssertEqual(result.convertedCount, 1);
+        XCTAssertEqual(result.totalConvertedCount, 1);
 
-        var decoded = try! parseJsonString(json: result!.converted);
+        var decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         var entry = decoded[0];
         XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "example\\.org" + URL_FILTER_REGEXP_END_SEPARATOR);
@@ -1242,10 +1242,10 @@ final class ContentBlockerConverterTests: XCTestCase {
 
         rules = ["||example.org^$~ping,domain=test.com"];
         result = converter.convertArray(rules: rules, safariVersion: SafariVersion.safari15);
-        XCTAssertEqual(result?.convertedCount, 1);
-        XCTAssertEqual(result?.totalConvertedCount, 1);
+        XCTAssertEqual(result.convertedCount, 1);
+        XCTAssertEqual(result.totalConvertedCount, 1);
 
-        decoded = try! parseJsonString(json: result!.converted);
+        decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         entry = decoded[0];
         XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "example\\.org" + URL_FILTER_REGEXP_END_SEPARATOR);
@@ -1258,11 +1258,11 @@ final class ContentBlockerConverterTests: XCTestCase {
         var rules = ["||test.com^$other"];
         var result = converter.convertArray(rules: rules);
 
-        XCTAssertEqual(result?.convertedCount, 1);
-        XCTAssertEqual(result?.totalConvertedCount, 1);
-        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result.convertedCount, 1);
+        XCTAssertEqual(result.totalConvertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
 
-        var decoded = try! parseJsonString(json: result!.converted);
+        var decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         XCTAssertEqual(decoded.count, 1);
         var entry = decoded[0];
@@ -1275,11 +1275,11 @@ final class ContentBlockerConverterTests: XCTestCase {
         rules = ["||test.com^$~other,domain=example.org"];
         result = converter.convertArray(rules: rules);
 
-        XCTAssertEqual(result?.convertedCount, 1);
-        XCTAssertEqual(result?.totalConvertedCount, 1);
-        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result.convertedCount, 1);
+        XCTAssertEqual(result.totalConvertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
 
-        decoded = try! parseJsonString(json: result!.converted);
+        decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         XCTAssertEqual(decoded.count, 1);
         entry = decoded[0];
@@ -1291,10 +1291,10 @@ final class ContentBlockerConverterTests: XCTestCase {
 
         result = converter.convertArray(rules: ["||test.com^$other"], safariVersion: SafariVersion.safari15);
 
-        XCTAssertEqual(result?.convertedCount, 1);
-        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result.convertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
 
-        decoded = try! parseJsonString(json: result!.converted);
+        decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         entry = decoded[0];
         XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
@@ -1305,10 +1305,10 @@ final class ContentBlockerConverterTests: XCTestCase {
 
         result = converter.convertArray(rules: ["||test.com^$~other,domain=example.org"], safariVersion: SafariVersion.safari15);
 
-        XCTAssertEqual(result?.convertedCount, 1);
-        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result.convertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
 
-        decoded = try! parseJsonString(json: result!.converted);
+        decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         entry = decoded[0];
         XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
@@ -1321,11 +1321,11 @@ final class ContentBlockerConverterTests: XCTestCase {
     func testXmlhttprequestModifierRules() {
         var rules = ["||test.com^$xmlhttprequest"];
         var result = converter.convertArray(rules: rules);
-        XCTAssertEqual(result?.convertedCount, 1);
-        XCTAssertEqual(result?.totalConvertedCount, 1);
-        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result.convertedCount, 1);
+        XCTAssertEqual(result.totalConvertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
 
-        var decoded = try! parseJsonString(json: result!.converted);
+        var decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         XCTAssertEqual(decoded.count, 1);
         var entry = decoded[0];
@@ -1338,11 +1338,11 @@ final class ContentBlockerConverterTests: XCTestCase {
         rules = ["||test.com^$~xmlhttprequest,domain=example.org"];
         result = converter.convertArray(rules: rules);
 
-        XCTAssertEqual(result?.convertedCount, 1);
-        XCTAssertEqual(result?.totalConvertedCount, 1);
-        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result.convertedCount, 1);
+        XCTAssertEqual(result.totalConvertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
 
-        decoded = try! parseJsonString(json: result!.converted);
+        decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         XCTAssertEqual(decoded.count, 1);
         entry = decoded[0];
@@ -1353,10 +1353,10 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(entry.trigger.resourceType, ["image", "style-sheet", "script", "media", "raw", "font", "document"]);
 
         result = converter.convertArray(rules: ["||test.com^$xmlhttprequest"], safariVersion: SafariVersion.safari15);
-        XCTAssertEqual(result?.convertedCount, 1);
-        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result.convertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
 
-        decoded = try! parseJsonString(json: result!.converted);
+        decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         entry = decoded[0];
         XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
@@ -1366,10 +1366,10 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(entry.trigger.resourceType, ["fetch"]);
 
         result = converter.convertArray(rules: ["||test.com^$~xmlhttprequest,domain=example.org"], safariVersion: SafariVersion.safari15);
-        XCTAssertEqual(result?.convertedCount, 1);
-        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result.convertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
 
-        decoded = try! parseJsonString(json: result!.converted);
+        decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         entry = decoded[0];
         XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
@@ -1383,11 +1383,11 @@ final class ContentBlockerConverterTests: XCTestCase {
         var rules = ["test.com,example.com##.ad-banner", "test.com#@#.ad-banner"]
         var result = ContentBlockerConverter().convertArray(rules: rules);
 
-        XCTAssertEqual(result?.totalConvertedCount, 1);
-        XCTAssertEqual(result?.convertedCount, 1);
-        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result.totalConvertedCount, 1);
+        XCTAssertEqual(result.convertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
 
-        var decoded = try! parseJsonString(json: result!.converted);
+        var decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
 
         XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
@@ -1398,19 +1398,19 @@ final class ContentBlockerConverterTests: XCTestCase {
         rules = ["test.com##.ad-banner", "test.com#@#.ad-banner"]
         result = ContentBlockerConverter().convertArray(rules: rules);
 
-        XCTAssertEqual(result?.totalConvertedCount, 0);
-        XCTAssertEqual(result?.convertedCount, 0);
-        XCTAssertEqual(result?.errorsCount, 0);
-        XCTAssertEqual(result?.converted, "[]");
+        XCTAssertEqual(result.totalConvertedCount, 0);
+        XCTAssertEqual(result.convertedCount, 0);
+        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.converted, "[]");
 
         rules = ["##.ad-banner", "test.com#@#.ad-banner"]
         result = ContentBlockerConverter().convertArray(rules: rules);
 
-        XCTAssertEqual(result?.totalConvertedCount, 1);
-        XCTAssertEqual(result?.convertedCount, 1);
-        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result.totalConvertedCount, 1);
+        XCTAssertEqual(result.convertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
 
-        decoded = try! parseJsonString(json: result!.converted);
+        decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
 
         XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
@@ -1422,11 +1422,11 @@ final class ContentBlockerConverterTests: XCTestCase {
         rules = ["##.ad-banner", "test.com#@#.ad-banner", "test.com##.ad-banner"]
         result = ContentBlockerConverter().convertArray(rules: rules);
 
-        XCTAssertEqual(result?.totalConvertedCount, 1);
-        XCTAssertEqual(result?.convertedCount, 1);
-        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result.totalConvertedCount, 1);
+        XCTAssertEqual(result.convertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
 
-        decoded = try! parseJsonString(json: result!.converted);
+        decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
 
         XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
@@ -1438,11 +1438,11 @@ final class ContentBlockerConverterTests: XCTestCase {
         rules = ["test.com#@##banner", "example.org#@##banner", "###banner"]
         result = ContentBlockerConverter().convertArray(rules: rules);
 
-        XCTAssertEqual(result?.totalConvertedCount, 1);
-        XCTAssertEqual(result?.convertedCount, 1);
-        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result.totalConvertedCount, 1);
+        XCTAssertEqual(result.convertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
 
-        decoded = try! parseJsonString(json: result!.converted);
+        decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
 
         XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
@@ -1454,19 +1454,19 @@ final class ContentBlockerConverterTests: XCTestCase {
         rules = ["~test.com##.ad-banner", "~test.com#@#.ad-banner"]
         result = ContentBlockerConverter().convertArray(rules: rules);
 
-        XCTAssertEqual(result?.totalConvertedCount, 0);
-        XCTAssertEqual(result?.convertedCount, 0);
-        XCTAssertEqual(result?.errorsCount, 0);
-        XCTAssertEqual(result?.converted, "[]");
+        XCTAssertEqual(result.totalConvertedCount, 0);
+        XCTAssertEqual(result.convertedCount, 0);
+        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.converted, "[]");
 
         rules = ["subdomain.example.org##.ad-banner", "example.org#@#.ad-banner"]
         result = ContentBlockerConverter().convertArray(rules: rules);
 
-        XCTAssertEqual(result?.totalConvertedCount, 1);
-        XCTAssertEqual(result?.convertedCount, 1);
-        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result.totalConvertedCount, 1);
+        XCTAssertEqual(result.convertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
 
-        decoded = try! parseJsonString(json: result!.converted);
+        decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
 
         XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
@@ -1478,25 +1478,25 @@ final class ContentBlockerConverterTests: XCTestCase {
 
         result = ContentBlockerConverter().convertArray(rules: rules);
 
-        XCTAssertEqual(result?.totalConvertedCount, 0);
-        XCTAssertEqual(result?.convertedCount, 0);
-        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result.totalConvertedCount, 0);
+        XCTAssertEqual(result.convertedCount, 0);
+        XCTAssertEqual(result.errorsCount, 0);
 
         rules = ["~example.org###banner", "#@##banner"];
 
         result = ContentBlockerConverter().convertArray(rules: rules);
 
-        XCTAssertEqual(result?.totalConvertedCount, 0);
-        XCTAssertEqual(result?.convertedCount, 0);
-        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result.totalConvertedCount, 0);
+        XCTAssertEqual(result.convertedCount, 0);
+        XCTAssertEqual(result.errorsCount, 0);
 
         rules = ["example.org###banner", "*#@##banner"];
 
         result = ContentBlockerConverter().convertArray(rules: rules);
 
-        XCTAssertEqual(result?.totalConvertedCount, 0);
-        XCTAssertEqual(result?.convertedCount, 0);
-        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result.totalConvertedCount, 0);
+        XCTAssertEqual(result.convertedCount, 0);
+        XCTAssertEqual(result.errorsCount, 0);
 
         rules = [
             "example.org,test.com,ya.ru###banner",
@@ -1505,9 +1505,9 @@ final class ContentBlockerConverterTests: XCTestCase {
 
         result = ContentBlockerConverter().convertArray(rules: rules);
 
-        XCTAssertEqual(result?.totalConvertedCount, 0);
-        XCTAssertEqual(result?.convertedCount, 0);
-        XCTAssertEqual(result?.errorsCount, 0);
+        XCTAssertEqual(result.totalConvertedCount, 0);
+        XCTAssertEqual(result.convertedCount, 0);
+        XCTAssertEqual(result.errorsCount, 0);
     }
 
     func testAdvancedBlockingExceptions() {
@@ -1533,8 +1533,8 @@ final class ContentBlockerConverterTests: XCTestCase {
 
         var result = ContentBlockerConverter().convertArray(rules: rules, advancedBlocking: true);
 
-        XCTAssertEqual(result?.errorsCount, 0);
-        assertEmptyResult(result: result!);
+        XCTAssertEqual(result.errorsCount, 0);
+        assertEmptyResult(result: result);
 
         rules = [
             "~test.com#%#window.__testCase2 = true;",
@@ -1549,14 +1549,14 @@ final class ContentBlockerConverterTests: XCTestCase {
 
         result = ContentBlockerConverter().convertArray(rules: rules, advancedBlocking: true);
 
-        XCTAssertEqual(result?.errorsCount, 0);
-        assertEmptyResult(result: result!);
+        XCTAssertEqual(result.errorsCount, 0);
+        assertEmptyResult(result: result);
 
         // css-inject exception
         rules = ["test.com,example.org#$#.banner { display: none!important; }", "test.com#@$#.banner { display: none!important; }"]
         result = ContentBlockerConverter().convertArray(rules: rules, advancedBlocking: true);
 
-        var decoded = try! parseJsonString(json: result!.advancedBlocking!);
+        var decoded = try! parseJsonString(json: result.advancedBlocking!);
         XCTAssertEqual(decoded.count, 1);
 
         XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
@@ -1569,7 +1569,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         rules = ["test.com,example.org#?#div:has(> .banner)", "test.com#@?#div:has(> .banner)"]
         result = ContentBlockerConverter().convertArray(rules: rules, advancedBlocking: true);
 
-        decoded = try! parseJsonString(json: result!.advancedBlocking!);
+        decoded = try! parseJsonString(json: result.advancedBlocking!);
         XCTAssertEqual(decoded.count, 1);
 
         XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
@@ -1582,7 +1582,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         rules = ["test.com,example.org#%#alert(1)", "test.com#@%#alert(1)"]
         result = ContentBlockerConverter().convertArray(rules: rules, advancedBlocking: true);
 
-        decoded = try! parseJsonString(json: result!.advancedBlocking!);
+        decoded = try! parseJsonString(json: result.advancedBlocking!);
         XCTAssertEqual(decoded.count, 1);
 
         XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
@@ -1595,7 +1595,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         rules = ["test.com,example.org#%#//scriptlet('abort-on-property-read', 'abc')", "test.com#@%#//scriptlet('abort-on-property-read', 'abc')"]
         result = ContentBlockerConverter().convertArray(rules: rules, advancedBlocking: true);
 
-        decoded = try! parseJsonString(json: result!.advancedBlocking!);
+        decoded = try! parseJsonString(json: result.advancedBlocking!);
         XCTAssertEqual(decoded.count, 1);
 
         XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
@@ -1615,7 +1615,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         ], safariVersion: SafariVersion.safari14, optimize: true, advancedBlocking: false);
         
         // 5 cosmetic rules with same domain optimized in 1 rule
-        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result.convertedCount, 1);
         
         result = converter.convertArray(rules: [
             "example.org##.banner",
@@ -1626,7 +1626,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         ], safariVersion: SafariVersion.safari14, optimize: true, advancedBlocking: false);
         
         // 5 similar cosmetic rules domain optimized in 1 rule (removed duplicates)
-        XCTAssertEqual(result?.convertedCount, 1);
+        XCTAssertEqual(result.convertedCount, 1);
         
         result = converter.convertArray(rules: [
             "example1.org##.banner",
@@ -1637,7 +1637,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         ], safariVersion: SafariVersion.safari14, optimize: true, advancedBlocking: false);
         
         // cosmetic rules with different domain but same selector didn't optimized
-        XCTAssertEqual(result?.convertedCount, 5);
+        XCTAssertEqual(result.convertedCount, 5);
         
         result = converter.convertArray(rules: [
             "||example1.org",
@@ -1648,7 +1648,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         ], safariVersion: SafariVersion.safari14, optimize: true, advancedBlocking: false);
         
         // blocking rules didn't optimized
-        XCTAssertEqual(result?.convertedCount, 5);
+        XCTAssertEqual(result.convertedCount, 5);
         
         result = converter.convertArray(rules: [
             "||example.org",
@@ -1659,7 +1659,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         ], safariVersion: SafariVersion.safari14, optimize: true, advancedBlocking: false);
         
         // similar blocking rules didn't optimized
-        XCTAssertEqual(result?.convertedCount, 5);
+        XCTAssertEqual(result.convertedCount, 5);
         
         result = converter.convertArray(rules: [
             "@@||*$document,domain=~example.org",
@@ -1670,7 +1670,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         ], safariVersion: SafariVersion.safari14, optimize: true, advancedBlocking: false);
         
         // similar inverted allowlist rules didn't optimized
-        XCTAssertEqual(result?.convertedCount, 5);
+        XCTAssertEqual(result.convertedCount, 5);
     }
 
     static var allTests = [
