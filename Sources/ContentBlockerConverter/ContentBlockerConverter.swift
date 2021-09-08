@@ -94,7 +94,7 @@ public class ContentBlockerConverter {
             Logger.log("AG: ContentBlockerConverter: " + message);
             compilationResult.message = message;
 
-            var conversionResult = try Distributor(limit: rulesLimit, advancedBlocking: advancedBlocking)
+            var conversionResult = Distributor(limit: rulesLimit, advancedBlocking: advancedBlocking)
                     .createConversionResult(data: compilationResult);
 
             conversionResult.advancedBlockingText = advancedRulesTexts;

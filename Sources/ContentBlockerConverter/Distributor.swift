@@ -22,7 +22,7 @@ class Distributor {
     /**
      * Creates final conversion result from compilation result object
      */
-    func createConversionResult(data: CompilationResult) throws -> ConversionResult {
+    func createConversionResult(data: CompilationResult) -> ConversionResult {
         var entries = [BlockerEntry]();
         entries.append(contentsOf: data.cssBlockingWide);
         entries.append(contentsOf: data.cssBlockingGenericDomainSensitive);
@@ -57,7 +57,7 @@ class Distributor {
 
         let errorsCount = data.errorsCount;
 
-        return try ConversionResult(
+        return ConversionResult(
             entries: entries,
             advBlockingEntries: advBlockingEntries,
             limit: self.limit,

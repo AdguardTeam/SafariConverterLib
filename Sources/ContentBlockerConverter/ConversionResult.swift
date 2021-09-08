@@ -5,7 +5,7 @@ import Shared
  * Conversion result wrapper class
  */
 public struct ConversionResult {
-    public init(totalConvertedCount: Int, convertedCount: Int, errorsCount: Int, overLimit: Bool, converted: String, advancedBlockingConvertedCount: Int = 0, advancedBlocking: String? = nil, message: String) {
+    public init(totalConvertedCount: Int, convertedCount: Int, errorsCount: Int, overLimit: Bool, converted: String, advancedBlockingConvertedCount: Int = 0, advancedBlocking: String? = nil, advancedBlockingText: String? = nil, message: String) {
         self.totalConvertedCount = totalConvertedCount
         self.convertedCount = convertedCount
         self.errorsCount = errorsCount
@@ -13,6 +13,7 @@ public struct ConversionResult {
         self.converted = converted
         self.advancedBlockingConvertedCount = advancedBlockingConvertedCount
         self.advancedBlocking = advancedBlocking
+        self.advancedBlockingText = advancedBlockingText
         self.message = message
     }
     
@@ -63,7 +64,7 @@ public struct ConversionResult {
     
     public static let EMPTY_RESULT_JSON: String = "[{\"trigger\": {\"url-filter\": \".*\",\"if-domain\": [\"domain.com\"]},\"action\":{\"type\": \"ignore-previous-rules\"}}]";
     
-    public init(entries: [BlockerEntry], advBlockingEntries: [BlockerEntry] = [], limit: Int, errorsCount: Int, message: String) throws {
+    public init(entries: [BlockerEntry], advBlockingEntries: [BlockerEntry] = [], limit: Int, errorsCount: Int, message: String) {
         self.totalConvertedCount = entries.count + advBlockingEntries.count;
         
         self.overLimit = (limit > 0 && entries.count > limit);
@@ -77,23 +78,23 @@ public struct ConversionResult {
         }
         
         self.convertedCount = limitedEntries.count;
-        self.converted = try ConversionResult.createJSONString(entries: limitedEntries);
+        self.converted = ConversionResult.createJSONString(entries: limitedEntries);
         
         if advBlockingEntries.count > 0 {
             self.advancedBlockingConvertedCount = advBlockingEntries.count;
-            self.advancedBlocking = try ConversionResult.createJSONString(entries: advBlockingEntries);
+            self.advancedBlocking = ConversionResult.createJSONString(entries: advBlockingEntries);
         }
         
         self.message = message;
     }
     
-    private static func createJSONString(entries: [BlockerEntry]) throws -> String {
+    private static func createJSONString(entries: [BlockerEntry]) -> String {
         let encoder = BlockerEntryEncoder();
         return encoder.encode(entries: entries);
     }
     
     static func createEmptyResult() throws -> ConversionResult {
-        var result = try ConversionResult(
+        var result = ConversionResult(
             entries: [BlockerEntry](),
             advBlockingEntries: [],
             limit: 0,
