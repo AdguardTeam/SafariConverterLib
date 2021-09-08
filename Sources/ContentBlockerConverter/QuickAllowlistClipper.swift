@@ -3,16 +3,7 @@ import Foundation
 /**
  * Provides methods to manage allowlist and inverted allowlist rules without conversion
  */
-protocol QuickAllowlistClipperProtocol {
-    // Converts provided rule to json format and returns as string
-    func convertRuleToJsonString(ruleText: String) -> String
-    
-    // Appends rule to provided conversion result
-    func add(rule: String, to conversionResult: ConversionResult) throws -> ConversionResult
-    
-    // Removes rule from provided conversion result
-    func remove(rule: String, from conversionResult: ConversionResult) throws -> ConversionResult
-    
+public protocol QuickAllowlistClipperProtocol {    
     // Replaces rule in conversion result with provided rule
     func replace(rule: String, with newRule: String, in conversionResult: ConversionResult) throws -> ConversionResult
     
