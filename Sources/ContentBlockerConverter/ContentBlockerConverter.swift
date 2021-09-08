@@ -51,7 +51,7 @@ public class ContentBlockerConverter {
             optimize: Bool = false,
             advancedBlocking: Bool = false,
             advancedBlockingFormat: AdvancedBlockingFormat = .json
-    ) -> ConversionResult? {
+    ) -> ConversionResult {
 
         SafariService.current.version = safariVersion;
 

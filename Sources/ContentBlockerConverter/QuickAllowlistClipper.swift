@@ -5,7 +5,7 @@ import Foundation
  */
 protocol QuickAllowlistClipperProtocol {
     // Converts provided rule to json format and returns as string
-    func convertRuleToJsonString(ruleText: String) throws -> String
+    func convertRuleToJsonString(ruleText: String) -> String
     
     // Appends rule to provided conversion result
     func add(rule: String, to conversionResult: ConversionResult) throws -> ConversionResult
@@ -39,10 +39,8 @@ public class QuickAllowlistClipper: QuickAllowlistClipperProtocol {
     /**
      * Converts provided rule to json format and returns as string
      */
-    func convertRuleToJsonString(ruleText: String) throws -> String {
-        guard let conversionResult = converter.convertArray(rules: [ruleText]) else {
-            throw QuickAllowlistClipperError.errorConvertingRule;
-        }
+    func convertRuleToJsonString(ruleText: String) -> String {
+        let conversionResult = converter.convertArray(rules: [ruleText])
         let convertedRule = conversionResult.converted.dropFirst(1).dropLast(1);
         return String(convertedRule);
     }
@@ -51,7 +49,7 @@ public class QuickAllowlistClipper: QuickAllowlistClipperProtocol {
      * Appends provided rule to conversion result
      */
     func add(rule: String, to conversionResult: ConversionResult) throws -> ConversionResult {
-        let convertedRule = try convertRuleToJsonString(ruleText: rule);
+        let convertedRule = convertRuleToJsonString(ruleText: rule);
 
         if conversionResult.converted.contains(convertedRule) {
             throw QuickAllowlistClipperError.errorAddingRule;
@@ -70,7 +68,7 @@ public class QuickAllowlistClipper: QuickAllowlistClipperProtocol {
      * Removes provided rule from conversion result
      */
     func remove(rule: String, from conversionResult: ConversionResult) throws -> ConversionResult {
-        let convertedRule = try convertRuleToJsonString(ruleText: rule);
+        let convertedRule = convertRuleToJsonString(ruleText: rule);
 
         if !conversionResult.converted.contains(convertedRule) {
             throw QuickAllowlistClipperError.noRuleInConversionResult;
@@ -108,13 +106,13 @@ public class QuickAllowlistClipper: QuickAllowlistClipperProtocol {
      */
     public func replace(rule: String, with newRule: String, in conversionResult: ConversionResult) throws -> ConversionResult {
         var result = conversionResult;
-        let ruleJsonString = try convertRuleToJsonString(ruleText: rule);
+        let ruleJsonString = convertRuleToJsonString(ruleText: rule);
 
         if !result.converted.contains(ruleJsonString) {
             throw QuickAllowlistClipperError.noRuleInConversionResult;
         }
 
-        let newRuleJsonString = try convertRuleToJsonString(ruleText: newRule);
+        let newRuleJsonString = convertRuleToJsonString(ruleText: newRule);
 
         result.converted = result.converted.replacingOccurrences(of: ruleJsonString, with: newRuleJsonString);
         return result;

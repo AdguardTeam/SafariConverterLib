@@ -30,29 +30,29 @@ final class ContentBlockerConverterTests: XCTestCase {
     func testEmpty() {
         var result = converter.convertArray(rules: []);
 
-        XCTAssertEqual(result?.totalConvertedCount, 0);
-        XCTAssertEqual(result?.convertedCount, 0);
-        XCTAssertEqual(result?.errorsCount, 0);
-        XCTAssertEqual(result?.overLimit, false);
-        XCTAssertEqual(result?.converted, ConversionResult.EMPTY_RESULT_JSON);
+        XCTAssertEqual(result.totalConvertedCount, 0);
+        XCTAssertEqual(result.convertedCount, 0);
+        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.overLimit, false);
+        XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON);
 
         result = converter.convertArray(rules: [""]);
 
-        XCTAssertEqual(result?.totalConvertedCount, 0);
-        XCTAssertEqual(result?.convertedCount, 0);
-        XCTAssertEqual(result?.errorsCount, 0);
-        XCTAssertEqual(result?.overLimit, false);
-        XCTAssertEqual(result?.converted, ConversionResult.EMPTY_RESULT_JSON);
+        XCTAssertEqual(result.totalConvertedCount, 0);
+        XCTAssertEqual(result.convertedCount, 0);
+        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.overLimit, false);
+        XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON);
     }
 
     func testConvertComment() {
         let result = converter.convertArray(rules: ["! this is a comment"]);
 
-        XCTAssertEqual(result?.totalConvertedCount, 0);
-        XCTAssertEqual(result?.convertedCount, 0);
-        XCTAssertEqual(result?.errorsCount, 0);
-        XCTAssertEqual(result?.overLimit, false);
-        XCTAssertEqual(result?.converted, "[]");
+        XCTAssertEqual(result.totalConvertedCount, 0);
+        XCTAssertEqual(result.convertedCount, 0);
+        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.overLimit, false);
+        XCTAssertEqual(result.converted, "[]");
     }
 
     func testConvertNetworkRule() {
