@@ -18,6 +18,12 @@ public protocol QuickAllowlistClipperProtocol {
     
     // Public method to create inverted allowlist rule for provided domain and remove it from provided Ωconversion result
     func removeInvertedAllowlistRule(by domain: String, from conversionResult: ConversionResult) throws -> ConversionResult
+    
+    // Public method to check if allowlist rules contain allowlist rule for provided domain
+    func allowlistContains(domain: String, _ allowlistRules: [String]) -> Bool
+    
+    // Public method to check if inverted allowlist rules contain inverted allowlist rule for provided domain
+    func invertedAllowlistContains(domain: String, _ invertedAllowlistRules: [String]) -> Bool
 }
 
 /**
@@ -141,6 +147,23 @@ public class QuickAllowlistClipper: QuickAllowlistClipperProtocol {
     public func removeInvertedAllowlistRule(by domain: String, from conversionResult: ConversionResult) throws -> ConversionResult {
         let invertedAllowlistRule = ContentBlockerConverter.createInvertedAllowlistRule(by: domain);
         return try remove(rule: invertedAllowlistRule, from: conversionResult);
+    }
+    
+    /**
+     * Checks if allowlist rules contain allowlist rule for provided domain
+     */
+    public func allowlistContains(domain: String, _ allowlistRules: [String]) -> Bool {
+        let allowlistRuleToFind = ContentBlockerConverter.createAllowlistRule(by: domain)
+        let allowlistRuleWithSeparatorToFind = ContentBlockerConverter.createAllowlistRule(by: domain + "^")
+        return allowlistRules.contains { $0 == allowlistRuleToFind || $0 == allowlistRuleWithSeparatorToFind }
+    }
+    
+    /**
+     * Checks if inverted allowlist rules contain inverted allowlist rule for provided domain
+     */
+    public func invertedAllowlistContains(domain: String, _ invertedAllowlistRules: [String]) -> Bool {
+        let invertedAllowlistRuleToFind = ContentBlockerConverter.createInvertedAllowlistRule(by: domain)
+        return invertedAllowlistRules.contains { $0 == invertedAllowlistRuleToFind }
     }
 }
 

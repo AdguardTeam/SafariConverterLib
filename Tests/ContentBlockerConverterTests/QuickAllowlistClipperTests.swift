@@ -287,12 +287,99 @@ final class QuickAllowlistClipperTests: XCTestCase {
         XCTAssertEqual(decoded[2].action.type, "ignore-previous-rules");
 
     }
-
+    
+    func testAllowlistContains() {
+        var rulesText: [String] = [
+            "@@||example.org^$document",
+            "@@||test1.com^$document",
+            "@@||test2.com^$document",
+            "@@||test3.com^$document",
+        ];
+        
+        var result = QuickAllowlistClipper().allowlistContains(domain: "test2.com", rulesText);
+        XCTAssertTrue(result);
+        
+        rulesText = [
+            "@@||example.org^$document",
+            "@@||test1.com^$document",
+            "@@||test2.com^$document",
+            "! @@||test3.com^$document",
+        ];
+        
+        result = QuickAllowlistClipper().allowlistContains(domain: "test3.com", rulesText);
+        XCTAssertFalse(result);
+        
+        rulesText = [
+            "@@||example.org^$document",
+            "@@||test1.com$document",
+            "@@||test2.com^$document",
+            "@@||test3.com^$document",
+        ];
+        
+        result = QuickAllowlistClipper().allowlistContains(domain: "test1.com", rulesText);
+        XCTAssertTrue(result);
+        
+        rulesText = [
+            "test1.com##.banner",
+            "||test2.com",
+            "@@||*$document,domain=~test3.com",
+        ];
+        
+        let result1 = QuickAllowlistClipper().allowlistContains(domain: "test1.com", rulesText);
+        XCTAssertFalse(result1);
+        
+        let result2 = QuickAllowlistClipper().allowlistContains(domain: "test2.com", rulesText);
+        XCTAssertFalse(result2);
+        
+        let result3 = QuickAllowlistClipper().allowlistContains(domain: "test3.com", rulesText);
+        XCTAssertFalse(result3);
+    }
+    
+    func testInvertedAllowlistContains() {
+        var rulesText: [String] = [
+            "@@||*$document,domain=~test1.com",
+            "@@||*$document,domain=~test2.com",
+            "@@||*$document,domain=~test3.com",
+            "@@||*$document,domain=~test4.com",
+        ];
+        
+        var result = QuickAllowlistClipper().invertedAllowlistContains(domain: "test3.com", rulesText);
+        XCTAssertTrue(result);
+        
+        rulesText = [
+            "@@||*$document,domain=~test1.com",
+            "! @@||*$document,domain=~test2.com",
+            "@@||*$document,domain=~test3.com",
+            "@@||*$document,domain=~test4.com",
+        ];
+        
+        result = QuickAllowlistClipper().invertedAllowlistContains(domain: "test2.com", rulesText);
+        XCTAssertFalse(result);
+        
+        rulesText = [
+            "test1.com##.banner",
+            "||test2.com",
+            "@@||test3.com^$document",
+            "@@||*$document,domain=~test4.com",
+        ];
+        
+        let result1 = QuickAllowlistClipper().invertedAllowlistContains(domain: "test1.com", rulesText);
+        XCTAssertFalse(result1);
+        
+        let result2 = QuickAllowlistClipper().invertedAllowlistContains(domain: "test2.com", rulesText);
+        XCTAssertFalse(result2);
+        
+        let result3 = QuickAllowlistClipper().invertedAllowlistContains(domain: "test3.com", rulesText);
+        XCTAssertFalse(result3);
+    }
+    
     static var allTests = [
         ("testRemoveAllowlistRule", testRemoveAllowlistRule),
         ("testAddAllowlistRule", testAddAllowlistRule),
         ("testAddInvertedAllowlistRule", testAddInvertedAllowlistRule),
         ("testRemoveInvertedAllowlistRule", testRemoveInvertedAllowlistRule),
         ("testReplaceRuleMethod", testReplaceRuleMethod),
+        ("testAllowlistContains", testAllowlistContains),
+        ("testInvertedAllowlistContains", testInvertedAllowlistContains),
     ]
 }
