@@ -52,7 +52,59 @@ final class WebExtensionHelpersTests: XCTestCase {
         XCTAssertTrue(result);
     }
     
+    func testConvertDomainToAllowlistRule() {
+        let expected = "@@||example.org^$document";
+        var result = WebExtensionHelpers().convertDomainToAllowlistRule("example.org");
+        XCTAssertEqual(expected, result);
+        
+        result = WebExtensionHelpers().convertDomainToAllowlistRule("@@||example.org^$document");
+        XCTAssertEqual(expected, result);
+        
+        result = WebExtensionHelpers().convertDomainToAllowlistRule("@@||example.org");
+        XCTAssertEqual(expected, result);
+        
+        result = WebExtensionHelpers().convertDomainToAllowlistRule("example.org^$document");
+        XCTAssertEqual(expected, result);
+    }
+    
+    func testConvertAllowlistRuleToDomain() {
+        let expected = "example.org";
+        var result = WebExtensionHelpers().convertAllowlistRuleToDomain("@@||example.org^$document");
+        XCTAssertEqual(expected, result);
+        
+        result = WebExtensionHelpers().convertAllowlistRuleToDomain("@@||example.org");
+        XCTAssertEqual(expected, result);
+
+        result = WebExtensionHelpers().convertAllowlistRuleToDomain("example.org^$document");
+        XCTAssertEqual(expected, result);
+
+        result = WebExtensionHelpers().convertAllowlistRuleToDomain("example.org");
+        XCTAssertEqual(expected, result);
+    }
+    
+    func testConvertDomainToInvertedAllowlistRule() {
+        let expected = "@@||*$document,domain=~example.org";
+        var result = WebExtensionHelpers().convertDomainToInvertedAllowlistRule("example.org");
+        XCTAssertEqual(expected, result);
+        
+        result = WebExtensionHelpers().convertDomainToInvertedAllowlistRule("@@||*$document,domain=~example.org");
+        XCTAssertEqual(expected, result);
+    }
+    
+    func testConvertInvertedAllowlistRuleToDomain() {
+        let expected = "example.org";
+        var result = WebExtensionHelpers().convertInvertedAllowlistRuleToDomain("@@||*$document,domain=~example.org");
+        XCTAssertEqual(expected, result);
+        
+        result = WebExtensionHelpers().convertInvertedAllowlistRuleToDomain("example.org");
+        XCTAssertEqual(expected, result);
+    }
+    
     static var allTests = [
         ("testUserRuleIsAssociated", testUserRuleIsAssociated),
+        ("testConvertDomainToAllowlistRule", testConvertDomainToAllowlistRule),
+        ("testConvertAllowlistRuleToDomain", testConvertAllowlistRuleToDomain),
+        ("testConvertDomainToInvertedAllowlistRule", testConvertDomainToInvertedAllowlistRule),
+        ("testConvertInvertedAllowlistRuleToDomain", testConvertInvertedAllowlistRuleToDomain),
     ]
 }
