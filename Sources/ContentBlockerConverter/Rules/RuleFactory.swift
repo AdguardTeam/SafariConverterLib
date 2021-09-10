@@ -115,7 +115,7 @@ class RuleFactory {
     /**
      * Checks if the rule is cosmetic (CSS, JS) or not
      */
-    private static func isCosmetic(ruleText: NSString) -> Bool {
+    static func isCosmetic(ruleText: NSString) -> Bool {
         let markerInfo = CosmeticRuleMarker.findCosmeticRuleMarker(ruleText: ruleText);
         return markerInfo.index != -1;
     }
