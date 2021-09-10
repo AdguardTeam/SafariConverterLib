@@ -5,7 +5,10 @@ import XCTest
 
 final class DistributorTests: XCTestCase {
     func testEmpty() {
-        let builder = Distributor(limit: 0, advancedBlocking: true);
+        let builder = Distributor(
+            limit: 0,
+            advancedBlocking: true
+        );
         
         let result = builder.createConversionResult(data: CompilationResult());
         
@@ -19,7 +22,10 @@ final class DistributorTests: XCTestCase {
     
     func testApplyWildcards() {
         
-        let builder = Distributor(limit: 0, advancedBlocking: true);
+        let builder = Distributor(
+            limit: 0,
+            advancedBlocking: true
+        );
         
         let testTrigger = BlockerEntry.Trigger(
             ifDomain: ["test_if_domain", "*wildcarded_if_domain"],
@@ -51,7 +57,10 @@ final class DistributorTests: XCTestCase {
     }
 
     func testHandleIfDomainsLimit() {
-        let builder = Distributor(limit: 0, advancedBlocking: true);
+        let builder = Distributor(
+            limit: 0,
+            advancedBlocking: true
+        );
 
         var testTrigger = BlockerEntry.Trigger(
             ifDomain: [],
@@ -90,7 +99,10 @@ final class DistributorTests: XCTestCase {
     }
 
     func testHandleUnlessDomainsLimit() {
-        let builder = Distributor(limit: 0, advancedBlocking: true);
+        let builder = Distributor(
+            limit: 0,
+            advancedBlocking: true
+        );
 
         var testTrigger = BlockerEntry.Trigger(
             ifDomain: ["test_if_domain"],

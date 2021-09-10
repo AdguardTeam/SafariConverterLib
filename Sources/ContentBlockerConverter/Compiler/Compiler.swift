@@ -15,10 +15,14 @@ class Compiler {
 
     private static let COSMETIC_ACTIONS: [String] = ["css-display-none", "css-inject", "css-extended", "scriptlet", "script"];
 
-    init(optimize: Bool, advancedBlocking: Bool, errorsCounter: ErrorsCounter) {
-        self.optimize = optimize;
-        self.advancedBlockedEnabled = advancedBlocking;
-        self.blockerEntryFactory = BlockerEntryFactory(advancedBlockingEnabled: advancedBlocking, errorsCounter: errorsCounter);
+    init(
+        optimize: Bool,
+        advancedBlocking: Bool,
+        errorsCounter: ErrorsCounter
+    ) {
+        self.optimize = optimize
+        advancedBlockedEnabled = advancedBlocking
+        blockerEntryFactory = BlockerEntryFactory(advancedBlockingEnabled: advancedBlocking, errorsCounter: errorsCounter);
     }
 
     /**
@@ -96,7 +100,7 @@ class Compiler {
         // Apply specifichide exceptions
         compilationResult.cssBlockingDomainSensitive = Compiler.applySpecifichide(blockingItems: &compilationResult.cssBlockingDomainSensitive, specifichideExceptions: specifichideExceptionDomains);
 
-        if (self.advancedBlockedEnabled) {
+        if (advancedBlockedEnabled) {
             // Applying CSS exceptions for extended css rules
             extendedCssBlocking = Compiler.applyActionExceptions(
                 blockingItems: &extendedCssBlocking, exceptions: cssExceptions + cosmeticCssExceptions, actionValue: "css"

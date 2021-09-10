@@ -26,6 +26,20 @@ public class ContentBlockerConverter {
         var result = VettedRules()
 
         for rule in rules {
+            var isException = rule.isDocumentWhiteList;
+
+            if !isException, let rule = rule as? NetworkRule {
+                isException = rule.isCssExceptionRule || rule.isJsInject
+            }
+
+            // exception rules with $document, $elemhide, $generichide, $jsinject modifiers
+            // are required in the both lists
+            if (isException) {
+                result.advancedRules.append(rule)
+                result.simpleRules.append(rule)
+                continue;
+            }
+
             var isAdvanced = rule.isScript
 
             if !isAdvanced, let rule = rule as? CosmeticRule {
@@ -66,10 +80,12 @@ public class ContentBlockerConverter {
 
         let parsedRules = RuleFactory(errorsCounter: errorsCounter).createRules(lines: rules);
 
+        let advancedBlockingJson = advancedBlocking && advancedBlockingFormat == AdvancedBlockingFormat.json
+
         let compiler = Compiler(
-                optimize: optimize,
-                advancedBlocking: advancedBlocking,
-                errorsCounter: errorsCounter
+            optimize: optimize,
+            advancedBlocking: advancedBlockingJson,
+            errorsCounter: errorsCounter
         )
 
         var compilationResult: CompilationResult;
@@ -93,8 +109,11 @@ public class ContentBlockerConverter {
         Logger.log("AG: ContentBlockerConverter: " + message);
         compilationResult.message = message;
 
-        var conversionResult = Distributor(limit: rulesLimit, advancedBlocking: advancedBlocking)
-                .createConversionResult(data: compilationResult);
+        var conversionResult = Distributor(
+            limit: rulesLimit,
+            advancedBlocking: advancedBlockingJson
+        )
+            .createConversionResult(data: compilationResult);
 
         conversionResult.advancedBlockingText = advancedRulesTexts;
 

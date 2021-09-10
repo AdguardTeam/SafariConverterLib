@@ -14,9 +14,12 @@ class Distributor {
     private let limit: Int;
     private let advancedBlockedEnabled: Bool;
 
-    init(limit: Int, advancedBlocking: Bool) {
-        self.limit = limit;
-        self.advancedBlockedEnabled = advancedBlocking;
+    init(
+        limit: Int,
+        advancedBlocking: Bool
+    ) {
+        self.limit = limit
+        advancedBlockedEnabled = advancedBlocking
     }
 
     /**
@@ -38,7 +41,7 @@ class Distributor {
         entries = updateDomains(entries: entries);
 
         var advBlockingEntries = [BlockerEntry]();
-        if (self.advancedBlockedEnabled) {
+        if (advancedBlockedEnabled) {
             advBlockingEntries.append(contentsOf: data.script);
             advBlockingEntries.append(contentsOf: data.scriptlets);
             advBlockingEntries.append(contentsOf: data.scriptJsInjectExceptions);

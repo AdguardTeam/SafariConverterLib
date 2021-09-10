@@ -275,7 +275,11 @@ final class AdvancedBlockingTests: XCTestCase {
     }
 
     func testCompileCssInjectRule() {
-            let compiler = Compiler(optimize: false, advancedBlocking: true, errorsCounter: ErrorsCounter());
+            let compiler = Compiler(
+                optimize: false,
+                advancedBlocking: true,
+                errorsCounter: ErrorsCounter()
+            );
             let rule = try! CosmeticRule(ruleText: "test.com#$#.banner { top: -9999px!important; }");
             let result = compiler.compileRules(rules: [rule as Rule]);
 
@@ -289,7 +293,12 @@ final class AdvancedBlockingTests: XCTestCase {
         }
 
     func testCompileExtendedCssRule() {
-        let compiler = Compiler(optimize: false, advancedBlocking: true, errorsCounter: ErrorsCounter());
+        let compiler = Compiler(
+            optimize: false,
+            advancedBlocking: true,
+            errorsCounter: ErrorsCounter()
+        );
+
         let rule = try! CosmeticRule(ruleText: "test.com##.content:has(> .test_selector)");
         let result = compiler.compileRules(rules: [rule as Rule]);
 
@@ -378,6 +387,86 @@ final class AdvancedBlockingTests: XCTestCase {
         XCTAssertEqual(result.advancedBlockingText, nil);
     }
 
+    func testAdvancedBlockingTextWithAllowlistRules() {
+        let allowlistRule = "@@||example.org^$document"
+        let injectCssRule = "example.org#$#.div { background:none!important; }";
+        let injectCssRuleAllowlist = "example.org#@$#.div { background:none!important; }";
+        let extendedCssRule = "example.org#?#div:has(> a[target=\"_blank\"][rel=\"nofollow\"])"
+        let extendedCssRuleAllowlist = "example.org#@?#div:has(> a[target=\"_blank\"][rel=\"nofollow\"])"
+        let extendedInjectCssRule = "example.com#$?#h3:contains(cookies) { display: none!important; }"
+        let extendedInjectCssRuleAllowlist = "example.com#@$?#h3:contains(cookies) { display: none!important; }"
+        let scriptRule = "example.org#%#window.__gaq = undefined;"
+        let scriptRuleAllowlist = "example.org#@%#window.__gaq = undefined;"
+        let scriptletRule = "example.org#%#//scriptlet(\"abort-on-property-read\", \"alert\")"
+
+        let rules = [
+            injectCssRule,
+            injectCssRuleAllowlist,
+            extendedCssRule,
+            extendedCssRuleAllowlist,
+            extendedInjectCssRule,
+            extendedInjectCssRuleAllowlist,
+            scriptRule,
+            scriptRuleAllowlist,
+            scriptletRule
+        ]
+
+        let result = converter.convertArray(
+            // conjunct arrays in this way,
+            // because createRules method adds allowlist rules to the end of the list
+            rules: rules + [allowlistRule],
+            advancedBlocking: true,
+            advancedBlockingFormat: AdvancedBlockingFormat.txt
+        );
+
+        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.convertedCount, 1);
+        XCTAssertEqual(result.totalConvertedCount, 1);
+        XCTAssertEqual(result.advancedBlocking, nil);
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 0);
+        // conjunct arrays in this way,
+        // because createRules method adds allowlist rules to the end of the list
+        XCTAssertEqual(result.advancedBlockingText, (rules + [allowlistRule]).joined(separator: "\n"));
+    }
+
+    func testAdvancedBlockingTextWithExceptionModifiers() {
+        let injectCssRule = "example.org#$#.div { background:none!important; }";
+        let extendedCssRule = "example.org#?#div:has(> a[target=\"_blank\"][rel=\"nofollow\"])"
+        let extendedInjectCssRule = "example.com#$?#h3:contains(cookies) { display: none!important; }"
+        let scriptRule = "example.org#%#window.__gaq = undefined;"
+        let scriptletRule = "example.org#%#//scriptlet(\"abort-on-property-read\", \"alert\")"
+        // Rules with exception modifiers
+        let elemhideAllowlistRule = "@@||example.org^$elemhide";
+        let generichideAllowlistRule = "@@||example.org^$generichide";
+        let jsinjectAllowlistRule = "@@||example.org^$jsinject";
+
+        let rules = [
+            injectCssRule,
+            extendedCssRule,
+            extendedInjectCssRule,
+            scriptRule,
+            scriptletRule,
+            elemhideAllowlistRule,
+            generichideAllowlistRule,
+            jsinjectAllowlistRule,
+        ]
+
+        let result = converter.convertArray(
+            // conjunct arrays in this way,
+            // because createRules method adds allowlist rules to the end of the list
+            rules: rules,
+            advancedBlocking: true,
+            advancedBlockingFormat: AdvancedBlockingFormat.txt
+        );
+
+        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.advancedBlocking, nil);
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 0);
+        // conjunct arrays in this way,
+        // because createRules method adds allowlist rules to the end of the list
+        XCTAssertEqual(result.advancedBlockingText, (rules).joined(separator: "\n"));
+    }
+
     static var allTests = [
         ("testAdvancedBlockingParam", testAdvancedBlockingParam),
         ("testAdvancedBlockingScriptRules", testAdvancedBlockingScriptRules),
@@ -394,5 +483,9 @@ final class AdvancedBlockingTests: XCTestCase {
         ("testScriptletRulesExceptions", testScriptletRulesExceptions),
         ("testCompileCssInjectRule", testCompileCssInjectRule),
         ("testCompileExtendedCssRule", testCompileExtendedCssRule),
+        ("testAdvancedBlockingText", testAdvancedBlockingText),
+        ("testAdvancedBlockingParamFalse", testAdvancedBlockingParamFalse),
+        ("testAdvancedBlockingTextWithAllowlistRules", testAdvancedBlockingTextWithAllowlistRules),
+        ("testAdvancedBlockingTextWithExceptionModifiers", testAdvancedBlockingTextWithExceptionModifiers),
     ]
 }

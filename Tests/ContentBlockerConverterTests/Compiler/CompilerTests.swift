@@ -6,7 +6,11 @@ import XCTest
 final class CompilerTests: XCTestCase {
     func testEmpty() {
 
-        let compiler = Compiler(optimize: false, advancedBlocking: false, errorsCounter: ErrorsCounter());
+        let compiler = Compiler(
+            optimize: false,
+            advancedBlocking: false,
+            errorsCounter: ErrorsCounter()
+        );
         let result = compiler.compileRules(rules: [Rule]());
 
         XCTAssertNotNil(result);
@@ -169,7 +173,11 @@ final class CompilerTests: XCTestCase {
     }
 
     func testIfDomainAndUnlessDomain() {
-        let compiler = Compiler(optimize: false, advancedBlocking: false, errorsCounter: ErrorsCounter());
+        let compiler = Compiler(
+            optimize: false,
+            advancedBlocking: false,
+            errorsCounter: ErrorsCounter()
+        );
 
         func assertResultEmpty(result: CompilationResult) -> Void {
             XCTAssertEqual(result.cssBlockingWide.count, 0);
