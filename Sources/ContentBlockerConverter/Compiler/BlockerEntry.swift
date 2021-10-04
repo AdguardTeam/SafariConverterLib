@@ -13,7 +13,7 @@ public struct BlockerEntry {
     public let action: Action
     
     public struct Trigger {
-        public init(ifDomain: [String]? = nil, urlFilter: String? = nil, unlessDomain: [String]? = nil, shortcut: String? = nil, regex: NSRegularExpression? = nil, loadType: [String]? = nil, resourceType: [String]? = nil, caseSensitive: Bool? = nil) {
+        public init(ifDomain: [String]? = nil, urlFilter: String? = nil, unlessDomain: [String]? = nil, shortcut: String? = nil, regex: NSRegularExpression? = nil, loadType: [String]? = nil, resourceType: [String]? = nil, caseSensitive: Bool? = nil, loadContext: [String]? = nil) {
             self.ifDomain = ifDomain
             self.urlFilter = urlFilter
             self.unlessDomain = unlessDomain
@@ -22,6 +22,7 @@ public struct BlockerEntry {
             self.loadType = loadType
             self.resourceType = resourceType
             self.caseSensitive = caseSensitive
+            self.loadContext = loadContext
         }
         
         public var ifDomain: [String]?
@@ -34,6 +35,7 @@ public struct BlockerEntry {
         var loadType: [String]?
         var resourceType: [String]?
         var caseSensitive: Bool?
+        var loadContext: [String]?
         
         enum CodingKeys: String, CodingKey {
             case ifDomain = "if-domain"
@@ -43,6 +45,7 @@ public struct BlockerEntry {
             case loadType = "load-type"
             case resourceType = "resource-type"
             case caseSensitive = "url-filter-is-case-sensitive"
+            case loadContext = "load-context"
         }
         
         mutating func setShortcut(shortcutValue: String?) {
