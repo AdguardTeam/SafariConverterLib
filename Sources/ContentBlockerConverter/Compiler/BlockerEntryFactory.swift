@@ -268,17 +268,17 @@ class BlockerEntryFactory {
             types.add("document");
         }
         if rule.hasContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT) {
-            // `iframe-document` resource type is supported since Safari 15
+            // `child-frame` resource type is supported since Safari 15
             if SafariService.current.version.isSafari15() {
-                    types.add("iframe-document");
+                    types.add("child-frame");
                 } else {
                     types.add("document");
                 }
         }
         if rule.hasRestrictedContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT) {
-            // `top-document` resource type is supported since Safari 15
+            // `top-frame` resource type is supported since Safari 15
             if SafariService.current.version.isSafari15() {
-                    types.add("top-document");
+                    types.add("top-frame");
                 }
         }
         if rule.hasContentType(contentType: NetworkRule.ContentType.PING) {
