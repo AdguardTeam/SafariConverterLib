@@ -1736,5 +1736,6 @@ final class ContentBlockerConverterTests: XCTestCase {
         ("testCssExceptions", testCssExceptions),
         ("testAdvancedBlockingExceptions", testAdvancedBlockingExceptions),
         ("testOptimizeRules", testOptimizeRules),
+        ("testProblematicRule", testProblematicRule),
     ]
 }
