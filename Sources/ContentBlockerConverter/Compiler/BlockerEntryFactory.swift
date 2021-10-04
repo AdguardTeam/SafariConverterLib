@@ -274,12 +274,6 @@ class BlockerEntryFactory {
                     types.add("document");
                 }
         }
-        if rule.hasRestrictedContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT) {
-            // `top-frame` resource type is supported since Safari 15
-            if SafariService.current.version.isSafari15() {
-                    types.add("top-frame");
-                }
-        }
         if rule.hasContentType(contentType: NetworkRule.ContentType.PING) {
             // `ping` resource type is supported since Safari 14
             if SafariService.current.version.rawValue >= SafariVersion.safari14.rawValue {
