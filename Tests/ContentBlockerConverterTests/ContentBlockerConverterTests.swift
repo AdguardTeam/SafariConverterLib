@@ -1672,6 +1672,22 @@ final class ContentBlockerConverterTests: XCTestCase {
         // similar inverted allowlist rules didn't optimized
         XCTAssertEqual(result.convertedCount, 5);
     }
+    
+    func testProblematicRule() {
+        var result = converter.convertArray(rules: ["||miner.pr0gramm.com^$websocket"], safariVersion: SafariVersion.safari15);
+        XCTAssertEqual(result.convertedCount, 1);
+
+        var decoded = try! parseJsonString(json: result.converted);
+        XCTAssertEqual(decoded.count, 1);
+        XCTAssertEqual(decoded[0].trigger.resourceType, ["websocket"]);
+        
+        result = converter.convertArray(rules: ["||miner.pr0gramm.com^$websocket"], safariVersion: SafariVersion.safari14);
+        XCTAssertEqual(result.convertedCount, 1);
+
+        decoded = try! parseJsonString(json: result.converted);
+        XCTAssertEqual(decoded.count, 1);
+        XCTAssertEqual(decoded[0].trigger.resourceType, ["raw"]);
+    }
 
     static var allTests = [
         ("testEmpty", testEmpty),
