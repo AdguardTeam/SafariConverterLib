@@ -1673,15 +1673,49 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result.convertedCount, 5);
     }
     
-    func testProblematicRule() {
-        var result = converter.convertArray(rules: ["||miner.pr0gramm.com^$websocket"], safariVersion: SafariVersion.safari15);
+    func testResourceTypeForVariousSafariVersions() {
+        // Safari 15
+        var result = converter.convertArray(rules: ["||miner.pr0gramm.com^$websocket"], safariVersion: .safari15);
         XCTAssertEqual(result.convertedCount, 1);
 
         var decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         XCTAssertEqual(decoded[0].trigger.resourceType, ["websocket"]);
         
-        result = converter.convertArray(rules: ["||miner.pr0gramm.com^$websocket"], safariVersion: SafariVersion.safari14);
+        // Safari 14
+        result = converter.convertArray(rules: ["||miner.pr0gramm.com^$websocket"], safariVersion: .safari14);
+        XCTAssertEqual(result.convertedCount, 1);
+
+        decoded = try! parseJsonString(json: result.converted);
+        XCTAssertEqual(decoded.count, 1);
+        XCTAssertEqual(decoded[0].trigger.resourceType, ["raw"]);
+        
+        // test default safari version
+        result = converter.convertArray(rules: ["||miner.pr0gramm.com^$websocket"]);
+        XCTAssertEqual(result.convertedCount, 1);
+
+        decoded = try! parseJsonString(json: result.converted);
+        XCTAssertEqual(decoded.count, 1);
+        XCTAssertEqual(decoded[0].trigger.resourceType, ["raw"]);
+        
+        // Safari 15
+        result = converter.convertArray(rules: ["||miner.pr0gramm.com^$xmlhttprequest"], safariVersion: .safari15);
+        XCTAssertEqual(result.convertedCount, 1);
+
+        decoded = try! parseJsonString(json: result.converted);
+        XCTAssertEqual(decoded.count, 1);
+        XCTAssertEqual(decoded[0].trigger.resourceType, ["fetch"]);
+        
+        // Safari 14
+        result = converter.convertArray(rules: ["||miner.pr0gramm.com^$xmlhttprequest"], safariVersion: .safari14);
+        XCTAssertEqual(result.convertedCount, 1);
+
+        decoded = try! parseJsonString(json: result.converted);
+        XCTAssertEqual(decoded.count, 1);
+        XCTAssertEqual(decoded[0].trigger.resourceType, ["raw"]);
+        
+        // test default safari version
+        result = converter.convertArray(rules: ["||miner.pr0gramm.com^$xmlhttprequest"]);
         XCTAssertEqual(result.convertedCount, 1);
 
         decoded = try! parseJsonString(json: result.converted);
@@ -1736,6 +1770,6 @@ final class ContentBlockerConverterTests: XCTestCase {
         ("testCssExceptions", testCssExceptions),
         ("testAdvancedBlockingExceptions", testAdvancedBlockingExceptions),
         ("testOptimizeRules", testOptimizeRules),
-        ("testProblematicRule", testProblematicRule),
+        ("testResourceTypeForVariousSafariVersions", testResourceTypeForVariousSafariVersions),
     ]
 }
