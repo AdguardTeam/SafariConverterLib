@@ -269,7 +269,6 @@ class BlockerEntryFactory {
             types.add("document");
         }
         if rule.hasContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT) {
-            // `child-frame` resource type is supported since Safari 15
             if !SafariService.current.version.isSafari15() {
                     types.add("document");
                 }
@@ -306,17 +305,14 @@ class BlockerEntryFactory {
     
     private func addLoadContext(rule: NetworkRule, trigger: inout BlockerEntry.Trigger) -> Void {
         var context = [String]();
-        if rule.hasContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT) {
-            // `child-frame` resource type is supported since Safari 15
-            if SafariService.current.version.isSafari15() {
+        // `child-frame` and `top-frame` contexts are supported since Safari 15
+        if SafariService.current.version.isSafari15() {
+            if rule.hasContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT) {
                 context.append("child-frame");
-                }
-        }
-        if rule.hasRestrictedContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT) {
-            // `top-frame` resource type is supported since Safari 15
-            if SafariService.current.version.isSafari15() {
+            }
+            if rule.hasRestrictedContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT) {
                 context.append("top-frame");
-                }
+            }
         }
         if context.count > 0 {
             trigger.loadContext = context;
