@@ -112,6 +112,11 @@ class BlockerEntryEncoder {
             result.append(self.encodeStringArray(arr: trigger.resourceType!));
         }
         
+        if (trigger.loadContext != nil) {
+            result.append(",\"load-context\":");
+            result.append(self.encodeStringArray(arr: trigger.loadContext!));
+        }
+        
         if (trigger.ifDomain != nil) {
             result.append(",\"if-domain\":");
             result.append(self.encodeStringArray(arr: trigger.ifDomain!, escape: true));

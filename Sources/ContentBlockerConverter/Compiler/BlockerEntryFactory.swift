@@ -108,6 +108,7 @@ class BlockerEntryFactory {
 
         setWhiteList(rule: rule, action: &action);
         try addResourceType(rule: rule, trigger: &trigger);
+        addLoadContext(rule: rule, trigger: &trigger);
         addThirdParty(rule: rule, trigger: &trigger);
         addMatchCase(rule: rule, trigger: &trigger);
         try addDomainOptions(rule: rule, trigger: &trigger);
@@ -268,17 +269,8 @@ class BlockerEntryFactory {
             types.add("document");
         }
         if rule.hasContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT) {
-            // `iframe-document` resource type is supported since Safari 15
-            if SafariService.current.version.isSafari15() {
-                    types.add("iframe-document");
-                } else {
+            if !SafariService.current.version.isSafari15() {
                     types.add("document");
-                }
-        }
-        if rule.hasRestrictedContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT) {
-            // `top-document` resource type is supported since Safari 15
-            if SafariService.current.version.isSafari15() {
-                    types.add("top-document");
                 }
         }
         if rule.hasContentType(contentType: NetworkRule.ContentType.PING) {
@@ -310,6 +302,22 @@ class BlockerEntryFactory {
             trigger.resourceType = Array(types) as? [String];
         }
     }
+    
+    private func addLoadContext(rule: NetworkRule, trigger: inout BlockerEntry.Trigger) -> Void {
+        var context = [String]();
+        // `child-frame` and `top-frame` contexts are supported since Safari 15
+        if SafariService.current.version.isSafari15() {
+            if rule.hasContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT) {
+                context.append("child-frame");
+            }
+            if rule.hasRestrictedContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT) {
+                context.append("top-frame");
+            }
+        }
+        if context.count > 0 {
+            trigger.loadContext = context;
+        }
+    };
 
     private func addThirdParty(rule: NetworkRule, trigger: inout BlockerEntry.Trigger) -> Void {
         if (rule.isCheckThirdParty) {
