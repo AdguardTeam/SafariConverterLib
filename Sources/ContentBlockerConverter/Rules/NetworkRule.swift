@@ -158,6 +158,11 @@ class NetworkRule: Rule {
         if (pathEndIndex == -1) {
             pathEndIndex = urlRuleText.count;
         }
+        
+        // AG-10503 don't parse invalid rules
+        if symbolIndex >= pathEndIndex {
+            return nil;
+        }
 
         let domain = symbolIndex == -1 ? self.urlRuleText.subString(startIndex: startIndex) : self.urlRuleText.subString(startIndex: startIndex, toIndex: symbolIndex);
         let path = symbolIndex == -1 ? nil : self.urlRuleText.subString(startIndex: symbolIndex, toIndex: pathEndIndex);
