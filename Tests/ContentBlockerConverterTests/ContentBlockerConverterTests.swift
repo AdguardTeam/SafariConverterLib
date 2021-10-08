@@ -1764,17 +1764,6 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded.count, 1);
         XCTAssertEqual(decoded[0].trigger.resourceType, ["raw"]);
     }
-    
-    func testInvalidAllowlistRuleConversion() {
-        var result = converter.convertArray(rules: ["||test.com$document^"]);
-        XCTAssertEqual(result.convertedCount, 0);
-        
-        result = converter.convertArray(rules: ["@@||test.com$document^"]);
-        XCTAssertEqual(result.convertedCount, 0);
-        
-        result = converter.convertArray(rules: ["||test.com$document/"]);
-        XCTAssertEqual(result.convertedCount, 0);
-    }
 
     static var allTests = [
         ("testEmpty", testEmpty),
@@ -1825,6 +1814,5 @@ final class ContentBlockerConverterTests: XCTestCase {
         ("testOptimizeRules", testOptimizeRules),
         ("testLoadContext", testLoadContext),
         ("testResourceTypeForVariousSafariVersions", testResourceTypeForVariousSafariVersions),
-        ("testInvalidAllowlistRuleConversion", testInvalidAllowlistRuleConversion),
     ]
 }
