@@ -1764,6 +1764,32 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded.count, 1);
         XCTAssertEqual(decoded[0].trigger.resourceType, ["raw"]);
     }
+    
+    func testCreateInvertedAllowlistRule() {
+        var rules = ["test.com"];
+        var result = ContentBlockerConverter.createInvertedAllowlistRule(by: rules);
+        XCTAssertEqual(result, "@@||*$document,domain=~test.com");
+        
+        rules = ["test1.com", "test2.com", "test3.com"];
+        result = ContentBlockerConverter.createInvertedAllowlistRule(by: rules);
+        XCTAssertEqual(result, "@@||*$document,domain=~test1.com|test2.com|test3.com");
+        
+        rules = ["", "test1.com", "", "test2.com", ""];
+        result = ContentBlockerConverter.createInvertedAllowlistRule(by: rules);
+        XCTAssertEqual(result, "@@||*$document,domain=~test1.com|test2.com");
+        
+        rules = [""];
+        result = ContentBlockerConverter.createInvertedAllowlistRule(by: rules);
+        XCTAssertNil(result);
+        
+        rules = ["", "", ""];
+        result = ContentBlockerConverter.createInvertedAllowlistRule(by: rules);
+        XCTAssertNil(result);
+        
+        rules = [];
+        result = ContentBlockerConverter.createInvertedAllowlistRule(by: rules);
+        XCTAssertNil(result);
+    }
 
     static var allTests = [
         ("testEmpty", testEmpty),

@@ -128,10 +128,19 @@ public class ContentBlockerConverter {
     }
 
     /**
-     * Creates inverted allowlist rule for provided domain
+     * Creates inverted allowlist rule for provided domains
      */
-    public static func createInvertedAllowlistRule(by domain: String) -> String {
-        return "@@||*$document,domain=~\(domain)";
+    public static func createInvertedAllowlistRule(by domains: [String]) -> String? {
+        if domains.count == 0 {
+            return nil
+        }
+        var domainsString = String()
+        for domain in domains {
+            if domain.count > 0 {
+                domainsString += "\(domain)|"
+            }
+        }
+        return domainsString.count > 0 ? "@@||*$document,domain=~\(domainsString.dropLast())" : nil
     }
 
     private func createLogMessage(compilationResult: CompilationResult) -> String {
