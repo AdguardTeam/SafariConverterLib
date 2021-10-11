@@ -126,18 +126,30 @@ final class NetworkRuleTests: XCTestCase {
         rule.urlRuleText = "||invalid/path";
         result = rule.parseRuleDomain();
         XCTAssertNil(result);
-        
+
         rule.urlRuleText = "$third-party,domain=example.com";
         result = rule.parseRuleDomain();
         XCTAssertNotNil(result);
         XCTAssertEqual(result?.domain, "example.com");
         XCTAssertEqual(result?.path, nil);
-        
+
         rule.urlRuleText = "||example.com^$document";
         result = rule.parseRuleDomain();
         XCTAssertNotNil(result);
         XCTAssertEqual(result?.domain, "example.com");
         XCTAssertEqual(result?.path, "^");
+        
+        rule.urlRuleText = "||test.com$document^";
+        result = rule.parseRuleDomain();
+        XCTAssertNil(result);
+        
+        rule.urlRuleText = "@@||test.com^$document^";
+        result = rule.parseRuleDomain();
+        XCTAssertNil(result);
+        
+        rule.urlRuleText = "||test.com$document/";
+        result = rule.parseRuleDomain();
+        XCTAssertNil(result);
     }
     
     func testDomainWithSeparator() {

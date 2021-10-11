@@ -145,18 +145,18 @@ class NetworkRule: Rule {
             return nil;
         }
 
+        var pathEndIndex = self.urlRuleText.indexOf(target: "$");
+        if (pathEndIndex <= 0) {
+            pathEndIndex = urlRuleText.count;
+        }
+        
         var symbolIndex = -1;
         for containsPrefix in contains {
-            let index = self.urlRuleText.indexOf(target: containsPrefix, startIndex: startIndex);
+            let index = self.urlRuleText.subString(startIndex: 0, toIndex: pathEndIndex).indexOf(target: containsPrefix, startIndex: startIndex);
             if (index >= 0) {
                 symbolIndex = index;
                 break;
             }
-        }
-        
-        var pathEndIndex = self.urlRuleText.indexOf(target: "$");
-        if (pathEndIndex == -1) {
-            pathEndIndex = urlRuleText.count;
         }
 
         let domain = symbolIndex == -1 ? self.urlRuleText.subString(startIndex: startIndex) : self.urlRuleText.subString(startIndex: startIndex, toIndex: symbolIndex);
