@@ -1772,11 +1772,11 @@ final class ContentBlockerConverterTests: XCTestCase {
         
         rules = ["test1.com", "test2.com", "test3.com"];
         result = ContentBlockerConverter.createInvertedAllowlistRule(by: rules);
-        XCTAssertEqual(result, "@@||*$document,domain=~test1.com|test2.com|test3.com");
+        XCTAssertEqual(result, "@@||*$document,domain=~test1.com|~test2.com|~test3.com");
         
         rules = ["", "test1.com", "", "test2.com", ""];
         result = ContentBlockerConverter.createInvertedAllowlistRule(by: rules);
-        XCTAssertEqual(result, "@@||*$document,domain=~test1.com|test2.com");
+        XCTAssertEqual(result, "@@||*$document,domain=~test1.com|~test2.com");
         
         rules = [""];
         result = ContentBlockerConverter.createInvertedAllowlistRule(by: rules);
