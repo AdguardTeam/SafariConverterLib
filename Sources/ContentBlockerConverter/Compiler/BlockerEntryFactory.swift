@@ -307,7 +307,8 @@ class BlockerEntryFactory {
         var context = [String]();
         // `child-frame` and `top-frame` contexts are supported since Safari 15
         if SafariService.current.version.isSafari15() {
-            if rule.hasContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT) {
+            if rule.hasContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT)
+                && !rule.isContentType(contentType:NetworkRule.ContentType.ALL) {
                 context.append("child-frame");
             }
             if rule.hasRestrictedContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT) {
