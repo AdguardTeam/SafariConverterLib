@@ -1713,6 +1713,25 @@ final class ContentBlockerConverterTests: XCTestCase {
         decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         XCTAssertEqual(decoded[0].trigger.loadContext, ["child-frame"]);
+        
+        rules = [
+            "||ya.ru^",
+            "||ya.ru",
+            "@@||test.com",
+            "||example1.org^$domain=test.com",
+            "||example2.org^$domain=~test.com",
+            "||example3.org^$document",
+            "||example4.org^$image",
+            "||example5.org^$~image,third-party",
+            "@@||example.org^$document",
+            "test1.com###banner"
+        ];
+        result = converter.convertArray(rules: rules, safariVersion: .safari15);
+        XCTAssertEqual(result.convertedCount, 10);
+
+        decoded = try! parseJsonString(json: result.converted);
+        XCTAssertEqual(decoded.count, 10);
+        decoded.forEach { XCTAssertNil($0.trigger.loadContext) }
     }
 
     func testResourceTypeForVariousSafariVersions() {
