@@ -479,7 +479,8 @@ class BlockerEntryFactory {
     };
 
     private func validateUrlBlockingRule(rule: NetworkRule, entry: BlockerEntry) throws -> Void {
-        if (rule.hasContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT)) {
+        if rule.hasContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT)
+                && !rule.isContentType(contentType:NetworkRule.ContentType.ALL) {
             if (entry.action.type == "block" &&
                 entry.trigger.resourceType?.firstIndex(of: "document") != nil &&
                 entry.trigger.ifDomain == nil &&

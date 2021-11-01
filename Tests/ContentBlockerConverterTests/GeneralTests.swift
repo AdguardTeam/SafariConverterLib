@@ -343,9 +343,9 @@ final class GeneralTests: XCTestCase {
             let conversionResult = ContentBlockerConverter().convertArray(rules: rules);
             NSLog(conversionResult.message);
             
-            XCTAssertEqual(conversionResult.totalConvertedCount, 22914);
-            XCTAssertEqual(conversionResult.convertedCount, 22914);
-            XCTAssertEqual(conversionResult.errorsCount, 143);
+            XCTAssertEqual(conversionResult.totalConvertedCount, 22963);
+            XCTAssertEqual(conversionResult.convertedCount, 22963);
+            XCTAssertEqual(conversionResult.errorsCount, 94);
             XCTAssertEqual(conversionResult.overLimit, false);
         }
         

@@ -1809,6 +1809,50 @@ final class ContentBlockerConverterTests: XCTestCase {
         result = ContentBlockerConverter.createInvertedAllowlistRule(by: rules);
         XCTAssertNil(result);
     }
+    
+    func testBlockingRuleValidation() {
+        var result = converter.convertArray(rules: ["/cookie-law-$~script"], safariVersion: .safari15);
+        XCTAssertEqual(result.convertedCount, 1);
+        var decoded = try! parseJsonString(json: result.converted);
+        XCTAssertEqual(decoded.count, 1);
+        XCTAssertEqual(decoded[0].trigger.resourceType?.contains("script"), false);
+        
+        result = converter.convertArray(rules: ["/cookie-law-$script"]);
+        XCTAssertEqual(result.convertedCount, 1);
+        decoded = try! parseJsonString(json: result.converted);
+        XCTAssertEqual(decoded.count, 1);
+        XCTAssertEqual(decoded[0].trigger.resourceType?.contains("script"), true);
+        
+        result = converter.convertArray(rules: ["/cookie-law-$script,~third-party"]);
+        XCTAssertEqual(result.convertedCount, 1);
+        decoded = try! parseJsonString(json: result.converted);
+        XCTAssertEqual(decoded.count, 1);
+        XCTAssertEqual(decoded[0].trigger.resourceType?.contains("script"), true);
+        
+        result = converter.convertArray(rules: ["/cookie-law-$script,subdocument,~third-party,domain=test.com"]);
+        XCTAssertEqual(result.convertedCount, 1);
+        decoded = try! parseJsonString(json: result.converted);
+        XCTAssertEqual(decoded.count, 1);
+        XCTAssertEqual(decoded[0].trigger.resourceType?.contains("script"), true);
+        
+        result = converter.convertArray(rules: ["/cookie-law-$image"], safariVersion: .safari15);
+        XCTAssertEqual(result.convertedCount, 1);
+        decoded = try! parseJsonString(json: result.converted);
+        XCTAssertEqual(decoded.count, 1);
+        XCTAssertEqual(decoded[0].trigger.resourceType?.contains("image"), true);
+        
+        result = converter.convertArray(rules: ["/cookie-law-$image,domain=test.com"], safariVersion: .safari15);
+        XCTAssertEqual(result.convertedCount, 1);
+        decoded = try! parseJsonString(json: result.converted);
+        XCTAssertEqual(decoded.count, 1);
+        XCTAssertEqual(decoded[0].trigger.resourceType?.contains("image"), true);
+        
+        result = converter.convertArray(rules: ["/cookie-law-$~ping"], safariVersion: .safari15);
+        XCTAssertEqual(result.convertedCount, 1);
+        decoded = try! parseJsonString(json: result.converted);
+        XCTAssertEqual(decoded.count, 1);
+        XCTAssertEqual(decoded[0].trigger.resourceType?.contains("ping"), false);
+    }
 
     static var allTests = [
         ("testEmpty", testEmpty),
@@ -1859,5 +1903,6 @@ final class ContentBlockerConverterTests: XCTestCase {
         ("testOptimizeRules", testOptimizeRules),
         ("testLoadContext", testLoadContext),
         ("testResourceTypeForVariousSafariVersions", testResourceTypeForVariousSafariVersions),
+        ("testBlockingRuleValidation", testBlockingRuleValidation),
     ]
 }
