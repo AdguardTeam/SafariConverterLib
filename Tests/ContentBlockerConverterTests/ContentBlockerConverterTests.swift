@@ -52,7 +52,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result.convertedCount, 0);
         XCTAssertEqual(result.errorsCount, 0);
         XCTAssertEqual(result.overLimit, false);
-        XCTAssertEqual(result.converted, "[]");
+        XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON);
     }
 
     func testConvertNetworkRule() {
@@ -62,7 +62,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result.convertedCount, 0);
         // XCTAssertEqual(result.errorsCount, 1);
         XCTAssertEqual(result.overLimit, false);
-        XCTAssertEqual(result.converted, "[]");
+        XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON);
     }
 
     func testPopupRules() {
@@ -1402,7 +1402,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result.totalConvertedCount, 0);
         XCTAssertEqual(result.convertedCount, 0);
         XCTAssertEqual(result.errorsCount, 0);
-        XCTAssertEqual(result.converted, "[]");
+        XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON);
 
         rules = ["##.ad-banner", "test.com#@#.ad-banner"]
         result = ContentBlockerConverter().convertArray(rules: rules);
@@ -1458,7 +1458,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result.totalConvertedCount, 0);
         XCTAssertEqual(result.convertedCount, 0);
         XCTAssertEqual(result.errorsCount, 0);
-        XCTAssertEqual(result.converted, "[]");
+        XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON);
 
         rules = ["subdomain.example.org##.ad-banner", "example.org#@#.ad-banner"]
         result = ContentBlockerConverter().convertArray(rules: rules);
@@ -1517,7 +1517,7 @@ final class ContentBlockerConverterTests: XCTestCase {
             XCTAssertEqual(result.convertedCount, 0);
             XCTAssertEqual(result.advancedBlockingConvertedCount, 0);
             XCTAssertEqual(result.errorsCount, 0);
-            XCTAssertEqual(result.converted, "[]");
+            XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON);
             XCTAssertNil(result.advancedBlocking);
         }
 
@@ -1535,7 +1535,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         var result = ContentBlockerConverter().convertArray(rules: rules, advancedBlocking: true);
 
         XCTAssertEqual(result.errorsCount, 0);
-        assertEmptyResult(result: result);
+        XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON);
 
         rules = [
             "~test.com#%#window.__testCase2 = true;",
@@ -1852,6 +1852,43 @@ final class ContentBlockerConverterTests: XCTestCase {
         decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         XCTAssertEqual(decoded[0].trigger.resourceType?.contains("ping"), false);
+    }
+    
+    func testInvalidRules() {
+        var result = converter.convertArray(rules: ["zz"], safariVersion: .safari15);
+        XCTAssertEqual(result.convertedCount, 0);
+        XCTAssertEqual(result.errorsCount, 1);
+        XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON);
+        
+        result = converter.convertArray(rules: ["example.org##", "example.org#@#"], safariVersion: .safari15);
+        XCTAssertEqual(result.convertedCount, 0);
+        XCTAssertEqual(result.errorsCount, 2);
+        XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON);
+        
+        result = converter.convertArray(rules: ["example.org##.banner - disabled"], safariVersion: .safari15);
+        XCTAssertEqual(result.convertedCount, 0);
+        XCTAssertEqual(result.errorsCount, 1);
+        XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON);
+        
+        result = converter.convertArray(rules: ["", "", "", ""], safariVersion: .safari15);
+        XCTAssertEqual(result.convertedCount, 0);
+        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON);
+        
+        result = converter.convertArray(rules: [], safariVersion: .safari15);
+        XCTAssertEqual(result.convertedCount, 0);
+        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON);
+        
+        result = converter.convertArray(rules: ["test.com#%#", "test.com#@%#"], safariVersion: .safari15);
+        XCTAssertEqual(result.convertedCount, 0);
+        XCTAssertEqual(result.errorsCount, 2);
+        XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON);
+        
+        result = converter.convertArray(rules: ["example.org#%#//scriptlet()", "example.org#%#", "example.org#@%#"], safariVersion: .safari15);
+        XCTAssertEqual(result.convertedCount, 0);
+        XCTAssertEqual(result.errorsCount, 3);
+        XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON);
     }
 
     static var allTests = [

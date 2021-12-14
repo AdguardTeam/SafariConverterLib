@@ -92,12 +92,13 @@ class RuleFactory {
      */
     static func createRule(ruleText: NSString?) throws -> Rule? {
         do {
-            if (ruleText == nil || ruleText! == "" || ruleText!.hasPrefix("!") || ruleText!.hasPrefix(" ") || ruleText!.contains(" - ")) {
+            if (ruleText == nil || ruleText! == "" || ruleText!.hasPrefix("!")) {
                 return nil;
             }
             
-            if (ruleText!.length < 3) {
-                return nil;
+            // TODO add proper validation
+            if (ruleText!.length < 3 || ruleText!.hasPrefix(" ") || ruleText!.contains(" - ")) {
+                throw SyntaxError.invalidRule(message: "Invalid rule text");
             }
             
             if (RuleFactory.isCosmetic(ruleText: ruleText!)) {
