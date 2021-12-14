@@ -10,7 +10,7 @@ final class RuleFactoryTests: XCTestCase {
         XCTAssertNil(try! RuleFactory.createRule(ruleText: ""));
         XCTAssertThrowsError(try RuleFactory.createRule(ruleText: " test"));
         XCTAssertNil(try! RuleFactory.createRule(ruleText: "! test"));
-        XCTAssertThrowsErrorœ(try RuleFactory.createRule(ruleText: "test - test"));
+        XCTAssertThrowsError(try RuleFactory.createRule(ruleText: "test - test"));
         
         XCTAssertNil(try? RuleFactory.createRule(ruleText: "test$domain="));
     }
