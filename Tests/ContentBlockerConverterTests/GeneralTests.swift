@@ -4,24 +4,24 @@ import XCTest
 @testable import ContentBlockerConverter
 
 final class GeneralTests: XCTestCase {
-    
+
     private func parseJsonString(json: String) throws -> [BlockerEntry] {
         let data = json.data(using: String.Encoding.utf8, allowLossyConversion: false)!
-        
+
         let decoder = JSONDecoder();
         let parsedData = try decoder.decode([BlockerEntry].self, from: data);
-        
+
         return parsedData;
     }
-    
+
     private func encodeJson(item: BlockerEntry) -> String {
         let encoder = JSONEncoder();
         encoder.outputFormatting = .prettyPrinted
-        
+
         let json = try! encoder.encode(item);
         return String(data: json, encoding: .utf8)!.replacingOccurrences(of: "\\/", with: "/");
     }
-    
+
     let rules = [
         "||pics.rbc.ru/js/swf",
         "||tardangro.com^$third-party",
@@ -53,7 +53,7 @@ final class GeneralTests: XCTestCase {
         #"/\.filenuke\.com/.*[a-zA-Z0-9]{4}/$script"#,
         "##.banner"
     ];
-    
+
     let safariCorrectRulesJson = """
     [
         {
@@ -309,52 +309,52 @@ final class GeneralTests: XCTestCase {
     ]
 
     """;
-    
+
     func testGeneral() {
         let conversionResult = ContentBlockerConverter().convertArray(rules: rules);
-        
+
         XCTAssertEqual(conversionResult.totalConvertedCount, 22);
         XCTAssertEqual(conversionResult.convertedCount, 22);
         XCTAssertEqual(conversionResult.errorsCount, 3);
         XCTAssertEqual(conversionResult.overLimit, false);
-        
+
         print(conversionResult.converted);
-        
+
         let decoded = try! parseJsonString(json: conversionResult.converted);
         let correct = try! parseJsonString(json: safariCorrectRulesJson.replacingOccurrences(of: "\\", with: "\\\\"));
-        
+
         XCTAssertEqual(decoded.count, correct.count);
-        
+
         for (index, entry) in correct.enumerated() {
             let correspondingDecoded = decoded[index];
             XCTAssertEqual(encodeJson(item: correspondingDecoded), encodeJson(item: entry));
         }
     }
-    
+
     func testPerformance() {
         let thisSourceFile = URL(fileURLWithPath: #file);
         let thisDirectory = thisSourceFile.deletingLastPathComponent();
         let resourceURL = thisDirectory.appendingPathComponent("Resources/test-rules.txt");
-        
+
         let content = try! String(contentsOf: resourceURL, encoding: String.Encoding.utf8);
         let rules = content.components(separatedBy: "\n");
-        
+
         self.measure {
             let conversionResult = ContentBlockerConverter().convertArray(rules: rules);
             NSLog(conversionResult.message);
-            
+
             XCTAssertEqual(conversionResult.totalConvertedCount, 22963);
             XCTAssertEqual(conversionResult.convertedCount, 22963);
-            XCTAssertEqual(conversionResult.errorsCount, 94);
+            XCTAssertEqual(conversionResult.errorsCount, 131);
             XCTAssertEqual(conversionResult.overLimit, false);
         }
-        
+
     }
-    
+
     func testSpecifichidePerformance() {
         let rulePairsCount: Int = 1000;
         var rules = [String]();
-        
+
         for index in 1...rulePairsCount {
             rules.append("test\(index).com,example\(index).org##.banner");
             rules.append("@@||example\(index).org^$specifichide");
@@ -371,7 +371,7 @@ final class GeneralTests: XCTestCase {
             XCTAssertEqual(conversionResult.overLimit, false);
         }
     }
-    
+
     static var allTests = [
         ("testGeneral", testGeneral),
         ("testPerformance", testPerformance),
