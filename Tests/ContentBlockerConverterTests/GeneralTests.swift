@@ -345,7 +345,7 @@ final class GeneralTests: XCTestCase {
             
             XCTAssertEqual(conversionResult.totalConvertedCount, 20193);
             XCTAssertEqual(conversionResult.convertedCount, 20193);
-            XCTAssertEqual(conversionResult.errorsCount, 128);
+            XCTAssertEqual(conversionResult.errorsCount, 131);
             XCTAssertEqual(conversionResult.overLimit, false);
         }
         
