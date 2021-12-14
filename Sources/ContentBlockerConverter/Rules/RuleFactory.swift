@@ -97,7 +97,7 @@ class RuleFactory {
             }
             
             // TODO add proper validation
-            if (ruleText!.length < 3 || ruleText!.hasPrefix(" ") || ruleText!.contains(" - ")) {
+            if (ruleText!.length < 3 || ruleText!.contains(" - ")) {
                 throw SyntaxError.invalidRule(message: "Invalid rule text");
             }
             
