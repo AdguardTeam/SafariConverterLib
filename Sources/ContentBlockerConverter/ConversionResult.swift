@@ -89,6 +89,9 @@ public struct ConversionResult {
     }
     
     private static func createJSONString(entries: [BlockerEntry]) -> String {
+        if entries.isEmpty {
+            return self.EMPTY_RESULT_JSON;
+        }
         let encoder = BlockerEntryEncoder();
         return encoder.encode(entries: entries);
     }

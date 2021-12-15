@@ -69,7 +69,7 @@ class CosmeticRule: Rule {
         if (self.isScript) {
             if (self.content.hasPrefix("//scriptlet")) {
                 self.isScriptlet = true;
-                let scriptletInfo = try! ScriptletParser.parse(data:self.content);
+                let scriptletInfo = try ScriptletParser.parse(data:self.content);
                 self.scriptlet = scriptletInfo.name;
                 self.scriptletParam = scriptletInfo.json;
             }
