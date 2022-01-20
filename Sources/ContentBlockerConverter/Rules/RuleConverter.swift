@@ -117,11 +117,11 @@ class RuleConverter {
                 || ruleContent.hasPrefix(UBO_SCRIPTLET_MASK_2)
                 || ruleContent.hasPrefix(UBO_SCRIPTLET_EXCEPTION_MASK_1)
                 || ruleContent.hasPrefix(UBO_SCRIPTLET_EXCEPTION_MASK_2)
-        ) && SimpleRegex.isMatch(regex: RuleConverter.UBO_SCRIPTLET_MASK_REGEXP, target: ruleContent);
+        ) && SimpleRegex.isMatch(regex: RuleConverter.UBO_SCRIPTLET_MASK_REGEXP, target: ruleContent as NSString);
     }
     
     private func convertUboScriptletRule(rule: NSString) -> NSString {
-        let mask = SimpleRegex.matches(regex: RuleConverter.UBO_SCRIPTLET_MASK_REGEXP, target: rule as String)[0];
+        let mask = SimpleRegex.matches(regex: RuleConverter.UBO_SCRIPTLET_MASK_REGEXP, target: rule)[0];
         let maskIndex = rule.range(of: mask).lowerBound;
         let domains = rule.substring(to: maskIndex);
 
@@ -160,7 +160,7 @@ class RuleConverter {
         return (
             ruleContent.hasPrefix(ABP_SCRIPTLET_MASK) ||
                 ruleContent.hasPrefix(ABP_SCRIPTLET_EXCEPTION_MASK)) &&
-            !SimpleRegex.isMatch(regex: RuleConverter.ADG_CSS_MASK_REGEXP, target: rule as String);
+            !SimpleRegex.isMatch(regex: RuleConverter.ADG_CSS_MASK_REGEXP, target: rule);
     }
 
     /**
@@ -169,38 +169,37 @@ class RuleConverter {
     private func convertAbpSnippetRule(rule: NSString) -> [NSString] {
         let mask = rule.contains(ABP_SCRIPTLET_MASK)
             ? ABP_SCRIPTLET_MASK
-            : ABP_SCRIPTLET_EXCEPTION_MASK;
+            : ABP_SCRIPTLET_EXCEPTION_MASK
 
         let template = mask == ABP_SCRIPTLET_MASK
             ? ADGUARD_SCRIPTLET_MASK
-            : ADGUARD_SCRIPTLET_EXCEPTION_MASK;
+            : ADGUARD_SCRIPTLET_EXCEPTION_MASK
 
-        let maskIndex = rule.range(of: mask).lowerBound;
-        let domains = rule.substring(to: maskIndex);
-        let args = rule.substring(from: maskIndex + mask.count);
+        let maskIndex = rule.range(of: mask).lowerBound
+        let domains = rule.substring(to: maskIndex)
+        let args = rule.substring(from: maskIndex + mask.unicodeScalars.count)
 
-        let splitted = args.components(separatedBy: "; ");
+        let splitted = args.components(separatedBy: "; ")
 
-        var result = [NSString]();
+        var result = [NSString]()
 
         for s in splitted {
-
-            var sentences = [String]();
+            var sentences = [String]()
             let sen = getSentences(str: s);
             for part in sen {
                 if (part != "") {
-                    sentences.append(part);
+                    sentences.append(part)
                 }
             }
 
-            var wrapped = [String]();
+            var wrapped = [String]()
             for (index, sentence) in sentences.enumerated() {
-                let w = index == 0 ? "abp-" + sentence : sentence;
-                wrapped.append(wrapInDoubleQuotes(str: w));
+                let w = index == 0 ? "abp-" + sentence : sentence
+                wrapped.append(wrapInDoubleQuotes(str: w))
             }
 
             let converted = replacePlaceholders(str: template, domains: domains, args: wrapped.joined(separator: ", "))
-            result.append(converted as NSString);
+            result.append(converted as NSString)
         }
 
         return result;
@@ -317,29 +316,29 @@ class RuleConverter {
     ]
 
     private func convertOptions(rule: NSString) -> [NSString]? {
-        var pattern: String = "";
-        var options: String? = nil;
+        var pattern: String = ""
+        var options: String? = nil
         do {
-            let parseResult = try NetworkRuleParser.parseRuleText(ruleText: rule);
-            options = parseResult.options;
+            let parseResult = try NetworkRuleParser.parseRuleText(ruleText: rule)
+            options = parseResult.options
             if (options == nil || options == "") {
-                return nil;
+                return nil
             }
 
-            pattern = NetworkRuleParser.getAsciiDomainRule(pattern: parseResult.pattern) ?? "";
+            pattern = NetworkRuleParser.getAsciiDomainRule(pattern: parseResult.pattern) ?? ""
         } catch {
-            return [rule];
+            return [rule]
         }
 
-        let optionParts = options!.splitByDelimiterWithEscapeCharacter(delimeter: RuleConverter.delimeterChar, escapeChar: RuleConverter.escapeChar);
+        let optionParts = options!.splitByDelimiterWithEscapeCharacter(delimeter: RuleConverter.delimeterChar, escapeChar: RuleConverter.escapeChar)
 
-        var optionsConverted = false;
+        var optionsConverted = false
 
-        var updatedOptionsParts = [String]();
-        var cspOptions = [String]();
+        var updatedOptionsParts = [String]()
+        var cspOptions = [String]()
         for part in optionParts {
             var cursor = part;
-            var convertedOptionsPart = RuleConverter.conversionMap[part];
+            var convertedOptionsPart = RuleConverter.conversionMap[part]
 
             if (convertedOptionsPart != nil) {
                 // if option is $mp4, than it should go with $media option together
@@ -347,20 +346,20 @@ class RuleConverter {
                 if (part == RuleConverter.MP4_OPTION) {
                     // check if media is not already among options
                     if (optionParts.firstIndex(of: RuleConverter.MEDIA_OPTION) == nil) {
-                        convertedOptionsPart = convertedOptionsPart! + ",media";
+                        convertedOptionsPart = convertedOptionsPart! + ",media"
                     }
                 }
 
-                optionsConverted = true;
-                cursor = convertedOptionsPart!;
+                optionsConverted = true
+                cursor = convertedOptionsPart!
             }
 
             if (cursor.hasPrefix(RuleConverter.CSP_OPTION + "=")) {
-                cspOptions.append(cursor.subString(startIndex: RuleConverter.CSP_OPTION.count + 1));
-                continue;
+                cspOptions.append(cursor.subString(startIndex: RuleConverter.CSP_OPTION.unicodeScalars.count + 1))
+                continue
             }
 
-            updatedOptionsParts.append(cursor);
+            updatedOptionsParts.append(cursor)
         }
 
         if (cspOptions.count > 0) {
@@ -376,39 +375,39 @@ class RuleConverter {
                 RuleConverter.POPUP_OPTION,
                 RuleConverter.INLINE_SCRIPT_OPTION,
                 RuleConverter.INLINE_FONT_OPTION,
-            ];
+            ]
 
             var rules = [NSString]();
             for replacer in allOptionReplacers {
                 // remove replacer and all option from the list
-                var optionsButAllAndReplacer = [String]();
+                var optionsButAllAndReplacer = [String]()
                 for o in updatedOptionsParts {
                     if (o != replacer && o != RuleConverter.ALL_OPTION) {
-                        optionsButAllAndReplacer.append(o);
+                        optionsButAllAndReplacer.append(o)
                     }
                 }
 
                 // try get converted values, used for INLINE_SCRIPT_OPTION, INLINE_FONT_OPTION
-                let convertedReplacer = RuleConverter.conversionMap[replacer] ?? replacer;
+                let convertedReplacer = RuleConverter.conversionMap[replacer] ?? replacer
 
                 // add replacer to the list of options
                 optionsButAllAndReplacer.append(convertedReplacer)
-                let updatedOptionsString = optionsButAllAndReplacer.reversed().joined(separator: ",");
+                let updatedOptionsString = optionsButAllAndReplacer.reversed().joined(separator: ",")
 
                 // create a new rule
-                let newRule = pattern + "$" + updatedOptionsString;
-                rules.append(newRule as NSString);
+                let newRule = pattern + "$" + updatedOptionsString
+                rules.append(newRule as NSString)
             }
 
-            return rules;
+            return rules
         }
 
         if (optionsConverted) {
             let newRule = pattern + "$" + updatedOptionsParts.joined(separator: ",")
-            return [newRule as NSString];
+            return [newRule as NSString]
         }
 
-        return nil;
+        return nil
     }
 
     // Helpers
@@ -417,33 +416,33 @@ class RuleConverter {
      * Return array of strings separated by space which not in quotes
      */
     private func getSentences(str: String) -> [String] {
-        return SimpleRegex.matches(regex: RuleConverter.SENTENCES_REGEXP, target: str);
+        return SimpleRegex.matches(regex: RuleConverter.SENTENCES_REGEXP, target: str as NSString)
     }
 
     private func getStringInBraces(str: String) -> String {
-        let firstIndex = str.indexOf(target: "(");
-        let lastIndex = str.lastIndexOf(target: ")");
-        return str.subString(startIndex: firstIndex + 1, length: lastIndex - firstIndex - 1);
+        let firstIndex = str.indexOf(target: "(")
+        let lastIndex = str.lastIndexOf(target: ")")
+        return str.subString(startIndex: firstIndex + 1, length: lastIndex - firstIndex - 1)
     }
 
     private func wrapInDoubleQuotes(str: String) -> String {
-        var modified = str;
+        var modified = str
         if str.hasPrefix("\'") && str.hasSuffix("\'") {
-            modified = str.subString(startIndex: 1, length: str.count - 2);
+            modified = str.subString(startIndex: 1, length: str.unicodeScalars.count - 2)
             modified = modified.replace(target: "\"", withString: "\\\"");
         } else if str.hasPrefix("\"") && str.hasSuffix("\"") {
-            modified = str.subString(startIndex: 1, length: str.count - 1);
-            modified = modified.replace(target: "'", withString: "\'");
+            modified = str.subString(startIndex: 1, length: str.unicodeScalars.count - 1)
+            modified = modified.replace(target: "'", withString: "\'")
         }
 
-        return "\"" + modified + "\"";
+        return "\"" + modified + "\""
     }
 
     private func replacePlaceholders(str: String, domains: String, args: String) -> NSString {
-        var result = str.replace(target: "${domains}", withString: domains);
-        result = result.replace(target: "${args}", withString: args);
+        var result = str.replace(target: "${domains}", withString: domains)
+        result = result.replace(target: "${args}", withString: args)
         
-        return result as NSString;
+        return result as NSString
     }
     
     /**

@@ -302,13 +302,13 @@ final class AdvancedBlockingTests: XCTestCase {
         let rule = try! CosmeticRule(ruleText: "test.com##.content:has(> .test_selector)");
         let result = compiler.compileRules(rules: [rule as Rule]);
 
-        XCTAssertNotNil(result);
-        XCTAssertEqual(result.errorsCount, 0);
-        XCTAssertEqual(result.rulesCount, 1);
-        XCTAssertNotNil(result.extendedCssBlockingDomainSensitive);
-        XCTAssertEqual(result.extendedCssBlockingDomainSensitive[0].action.type, "css-extended");
-        XCTAssertEqual(result.extendedCssBlockingDomainSensitive[0].trigger.ifDomain, ["test.com"]);
-        XCTAssertEqual(result.extendedCssBlockingDomainSensitive[0].action.css, ".content:has(> .test_selector)");
+        XCTAssertNotNil(result)
+        XCTAssertEqual(result.errorsCount, 0)
+        XCTAssertEqual(result.rulesCount, 1)
+        XCTAssertNotNil(result.extendedCssBlockingDomainSensitive)
+        XCTAssertEqual(result.extendedCssBlockingDomainSensitive[0].action.type, "css-extended")
+        XCTAssertEqual(result.extendedCssBlockingDomainSensitive[0].trigger.ifDomain, ["test.com"])
+        XCTAssertEqual(result.extendedCssBlockingDomainSensitive[0].action.css, ".content:has(> .test_selector)")
     }
 
     func testAdvancedBlockingFormatParam() {

@@ -59,10 +59,10 @@ struct ConverterTool: ParsableCommand {
             throw AdvancedBlockingFormatError.unsupportedFormat()
         }
 
-        Logger.log("Safari version - \(safariVersionResolved)")
-        Logger.log("Optimize - \(optimize)")
-        Logger.log("Advanced blocking - \(advancedBlocking)")
-        Logger.log("Advanced blocking format - \(advancedBlockingFormat)")
+        Logger.log("(ConverterTool) - Safari version: \(safariVersionResolved)")
+        Logger.log("(ConverterTool) - Optimize: \(optimize)")
+        Logger.log("(ConverterTool) - Advanced blocking: \(advancedBlocking)")
+        Logger.log("(ConverterTool) - Advanced blocking format: \(advancedBlockingFormat)")
 
         var rules: [String] = []
         var line: String?
@@ -75,7 +75,7 @@ struct ConverterTool: ParsableCommand {
             rules.append(unwrappedLine)
         }
 
-        Logger.log("Rules to convert: \(rules.count)")
+        Logger.log("(ConverterTool) - Rules to convert: \(rules.count)")
 
         let result: ConversionResult = ContentBlockerConverter()
             .convertArray(
@@ -86,7 +86,7 @@ struct ConverterTool: ParsableCommand {
                 advancedBlockingFormat: advancedBlockingFormat
             )
 
-        Logger.log("Conversion done.")
+        Logger.log("(ConverterTool) - Conversion done.")
 
         let encoded = try encodeJson(result)
 

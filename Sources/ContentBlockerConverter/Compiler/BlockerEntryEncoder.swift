@@ -45,31 +45,31 @@ class BlockerEntryEncoder {
 
         if action.selector != nil {
             result.append(",\"selector\":\"");
-            result.append(self.escapeString(value: action.selector!));
+            result.append(action.selector!.escapeForJSON());
             result.append("\"");
         }
 
         if action.css != nil {
             result.append(",\"css\":\"");
-            result.append(self.escapeString(value: action.css!));
+            result.append(action.css!.escapeForJSON());
             result.append("\"");
         }
 
         if action.script != nil {
             result.append(",\"script\":\"");
-            result.append(self.escapeString(value: action.script!));
+            result.append(action.script!.escapeForJSON());
             result.append("\"");
         }
 
         if action.scriptlet != nil {
             result.append(",\"scriptlet\":\"");
-            result.append(self.escapeString(value: action.scriptlet!));
+            result.append(action.scriptlet!.escapeForJSON());
             result.append("\"");
         }
 
         if action.scriptletParam != nil {
             result.append(",\"scriptletParam\":\"");
-            result.append(self.escapeString(value: action.scriptletParam!));
+            result.append(action.scriptletParam!.escapeForJSON());
             result.append("\"");
         }
 
@@ -82,12 +82,12 @@ class BlockerEntryEncoder {
         var result = "{";
         
         result.append("\"url-filter\":\"");
-        result.append(self.escapeString(value: trigger.urlFilter!));
+        result.append(trigger.urlFilter!.escapeForJSON());
         result.append("\"");
         
         if trigger.shortcut != nil {
             result.append("\"url-shortcut\":\"");
-            result.append(self.escapeString(value: trigger.shortcut!));
+            result.append(trigger.shortcut!.escapeForJSON());
             result.append("\"");
         }
         
@@ -98,100 +98,36 @@ class BlockerEntryEncoder {
         
         if (trigger.regex != nil) {
             result.append(",\"regex\":\"");
-            result.append(self.escapeString(value: trigger.regex!.pattern));
+            result.append(trigger.regex!.pattern.escapeForJSON());
             result.append("\"");
         }
         
         if (trigger.loadType != nil) {
             result.append(",\"load-type\":");
-            result.append(self.encodeStringArray(arr: trigger.loadType!));
+            result.append(JsonUtils.encodeStringArray(arr: trigger.loadType!));
         }
         
         if (trigger.resourceType != nil) {
             result.append(",\"resource-type\":");
-            result.append(self.encodeStringArray(arr: trigger.resourceType!));
+            result.append(JsonUtils.encodeStringArray(arr: trigger.resourceType!));
         }
         
         if (trigger.loadContext != nil) {
             result.append(",\"load-context\":");
-            result.append(self.encodeStringArray(arr: trigger.loadContext!));
+            result.append(JsonUtils.encodeStringArray(arr: trigger.loadContext!));
         }
         
         if (trigger.ifDomain != nil) {
             result.append(",\"if-domain\":");
-            result.append(self.encodeStringArray(arr: trigger.ifDomain!, escape: true));
+            result.append(JsonUtils.encodeStringArray(arr: trigger.ifDomain!, escape: true));
         }
         
         if (trigger.unlessDomain != nil) {
             result.append(",\"unless-domain\":");
-            result.append(self.encodeStringArray(arr: trigger.unlessDomain!, escape: true));
+            result.append(JsonUtils.encodeStringArray(arr: trigger.unlessDomain!, escape: true));
         }
         
         result.append("}");
-        
-        return result;
-    }
-    
-    private func encodeStringArray(arr: [String], escape: Bool = false) -> String {
-        var result = "[";
-        
-        for index in 0..<arr.count {
-            if (index > 0) {
-                result.append(",");
-            }
-            
-            result.append("\"");
-            result.append(escape ? self.escapeString(value: arr[index]) : arr[index]);
-            result.append("\"");
-        }
-        
-        result.append("]");
-        
-        return result;
-    }
-    
-    /**
-     * Escapes specials in string value
-     */
-    func escapeString(value: String) -> String {
-        var result = "";
-        
-        let scalars = value.unicodeScalars
-        var start = scalars.startIndex
-        let end = scalars.endIndex
-        var idx = start
-        while idx < scalars.endIndex {
-            let s: String
-            let c = scalars[idx]
-            switch c {
-                case "\\": s = "\\\\"
-                case "\"": s = "\\\""
-                case "\n": s = "\\n"
-                case "\r": s = "\\r"
-                case "\t": s = "\\t"
-                case "\u{8}": s = "\\b"
-                case "\u{C}": s = "\\f"
-                case "\0"..<"\u{10}":
-                    s = "\\u000\(String(c.value, radix: 16, uppercase: true))"
-                case "\u{10}"..<" ":
-                    s = "\\u00\(String(c.value, radix: 16, uppercase: true))"
-                default:
-                    idx = scalars.index(after: idx)
-                    continue
-            }
-            
-            if idx != start {
-                result.append(String(scalars[start..<idx]));
-            }
-            result.append(s);
-            
-            idx = scalars.index(after: idx)
-            start = idx
-        }
-        
-        if start != end {
-            result.append(String(scalars[start..<end]));
-        }
         
         return result;
     }

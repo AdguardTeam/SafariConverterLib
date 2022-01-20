@@ -5,7 +5,6 @@ import XCTest
 
 final class ScriptletParserTests: XCTestCase {
     func testParse() {
-        
         var result = try? ScriptletParser.parse(data: "");
         XCTAssertNil(result);
         

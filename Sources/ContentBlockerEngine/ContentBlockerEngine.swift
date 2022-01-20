@@ -50,7 +50,7 @@ final public class ContentBlockerEngine: ContentBlockerEngineProtocol {
     public func getData(url: URL) throws -> String {
         let cacheKey = url.absoluteString as NSString
         if let cachedVersion = blockerDataCache.object(forKey: cacheKey) {
-            Logger.log("AG: AdvancedBlocking: Return cached version")
+            Logger.log("(ContentBlockerEngine) - AdvancedBlocking: Return cached version")
             return cachedVersion as String
         }
 

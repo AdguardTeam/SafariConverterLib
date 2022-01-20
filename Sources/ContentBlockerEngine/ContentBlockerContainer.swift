@@ -64,7 +64,7 @@ final class ContentBlockerContainer: Codable {
         }
 
         // shortcut needs to be at least longer than 1 character
-        if let shortcut = shortcut, shortcut.count > 1 {
+        if let shortcut = shortcut, shortcut.unicodeScalars.count > 1 {
             return shortcut
         } else {
             return nil
@@ -94,7 +94,7 @@ final class ContentBlockerContainer: Codable {
         mask = regex.stringByReplacingMatches(
             in: mask,
             options: [],
-            range: NSRange(location: 0, length: mask.count),
+            range: NSRange(location: 0, length: mask.unicodeScalars.count),
             withTemplate: specialCharacter
         )
 
@@ -102,7 +102,7 @@ final class ContentBlockerContainer: Codable {
         mask = regex.stringByReplacingMatches(
             in: mask,
             options: [],
-            range: NSRange(location: 0, length: mask.count),
+            range: NSRange(location: 0, length: mask.unicodeScalars.count),
             withTemplate: specialCharacter
         )
 
@@ -110,7 +110,7 @@ final class ContentBlockerContainer: Codable {
         mask = regex.stringByReplacingMatches(
             in: mask,
             options: [],
-            range: NSRange(location: 0, length: mask.count),
+            range: NSRange(location: 0, length: mask.unicodeScalars.count),
             withTemplate: specialCharacter
         )
 
@@ -119,7 +119,7 @@ final class ContentBlockerContainer: Codable {
         mask = regex.stringByReplacingMatches(
             in: mask,
             options: [],
-            range: NSRange(location: 0, length: mask.count),
+            range: NSRange(location: 0, length: mask.unicodeScalars.count),
             withTemplate: specialCharacter
         )
 
@@ -128,13 +128,13 @@ final class ContentBlockerContainer: Codable {
         mask = regex.stringByReplacingMatches(
             in: mask,
             options: [],
-            range: NSRange(location: 0, length: mask.count),
+            range: NSRange(location: 0, length: mask.unicodeScalars.count),
             withTemplate: "."
         )
 
         let parts = mask.components(separatedBy: ["*", "^", "|", "+", "?", "$", "[", "]", "(", ")", "{", "}"])
 
-        let longest = parts.max { $0.count < $1.count } ?? ""
+        let longest = parts.max { $0.unicodeScalars.count < $1.unicodeScalars.count } ?? ""
 
         return !longest.isEmpty ? longest.lowercased() : nil
     }
@@ -143,7 +143,7 @@ final class ContentBlockerContainer: Codable {
     // does not contain any special characters: *,^,|.
     private func findShortcut(pattern: String) -> String? {
         let parts = pattern.components(separatedBy: ["*", "^", "|"])
-        let longest = parts.max { $0.count < $1.count } ?? ""
+        let longest = parts.max { $0.unicodeScalars.count < $1.unicodeScalars.count } ?? ""
 
         return !longest.isEmpty ? longest.lowercased() : nil
     }

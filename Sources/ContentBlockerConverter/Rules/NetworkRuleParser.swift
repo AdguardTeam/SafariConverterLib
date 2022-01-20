@@ -11,39 +11,39 @@ class NetworkRuleParser {
      * Splits the rule text into multiple parts
      */
     static func parseRuleText(ruleText: NSString) throws -> BasicRuleParts {
-        var ruleParts = BasicRuleParts();
+        var ruleParts = BasicRuleParts()
 
-        var startIndex = 0;
+        var startIndex = 0
         if (ruleText.hasPrefix(MASK_WHITE_LIST)) {
-            ruleParts.whitelist = true;
-            startIndex = MASK_WHITE_LIST.count;
+            ruleParts.whitelist = true
+            startIndex = 2
         }
 
         if (ruleText.length <= startIndex) {
-            throw SyntaxError.invalidRule(message: "Rule is too short");
+            throw SyntaxError.invalidRule(message: "Rule is too short")
         }
 
         // Setting pattern to rule text (for the case of empty options)
-        ruleParts.pattern = ruleText.substring(from: startIndex);
+        ruleParts.pattern = ruleText.substring(from: startIndex)
 
         // Avoid parsing options inside of a regex rule
         if (ruleParts.pattern!.hasPrefix("/")
             && ruleParts.pattern!.hasSuffix("/")
             && (ruleParts.pattern?.indexOf(target: "$replace=") == -1)) {
-            return ruleParts;
+            return ruleParts
         }
 
-        let delimeterIndex = NetworkRuleParser.findOptionsDelimeterIndex(ruleText: ruleText);
+        let delimeterIndex = NetworkRuleParser.findOptionsDelimeterIndex(ruleText: ruleText)
         if (delimeterIndex == ruleText.length - 1) {
-            throw SyntaxError.invalidRule(message: "Invalid options");
+            throw SyntaxError.invalidRule(message: "Invalid options")
         }
 
         if (delimeterIndex >= 0) {
-            ruleParts.pattern = (ruleText.substring(to: delimeterIndex) as NSString).substring(from: startIndex);
-            ruleParts.options = ruleText.substring(from: delimeterIndex + 1);
+            ruleParts.pattern = (ruleText.substring(to: delimeterIndex) as NSString).substring(from: startIndex)
+            ruleParts.options = ruleText.substring(from: delimeterIndex + 1)
         }
 
-        return ruleParts;
+        return ruleParts
     }
 
     private static func findOptionsDelimeterIndex(ruleText: NSString) -> Int {
@@ -99,7 +99,7 @@ class NetworkRuleParser {
         var startIndex = 0;
         for start in starts {
             if (pattern.hasPrefix(start)) {
-                startIndex = start.count;
+                startIndex = start.unicodeScalars.count;
                 break;
             }
         }

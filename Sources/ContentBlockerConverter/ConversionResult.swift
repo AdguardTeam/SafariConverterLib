@@ -74,7 +74,7 @@ public struct ConversionResult {
         if self.overLimit {
             limitedEntries = Array(entries.prefix(limit));
             
-            Logger.log("AG: ContentBlockerConverter: The limit is reached. Overlimit rules will be ignored.");
+            Logger.log("(ConversionResult) - The limit is reached. Overlimit rules will be ignored.");
         }
         
         self.convertedCount = limitedEntries.count;

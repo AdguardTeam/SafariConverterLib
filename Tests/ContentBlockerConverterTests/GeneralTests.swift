@@ -330,7 +330,27 @@ final class GeneralTests: XCTestCase {
             XCTAssertEqual(encodeJson(item: correspondingDecoded), encodeJson(item: entry));
         }
     }
-    
+
+    /**
+     Single run of the rule converter so that it was easier to profile it.
+     */
+    func testPerformanceSingleRun() {
+        let thisSourceFile = URL(fileURLWithPath: #file);
+        let thisDirectory = thisSourceFile.deletingLastPathComponent();
+        let resourceURL = thisDirectory.appendingPathComponent("Resources/test-rules.txt");
+
+        let content = try! String(contentsOf: resourceURL, encoding: String.Encoding.utf8);
+        let rules = content.components(separatedBy: "\n");
+
+        let conversionResult = ContentBlockerConverter().convertArray(rules: rules);
+        NSLog(conversionResult.message);
+
+        XCTAssertEqual(conversionResult.totalConvertedCount, 20193);
+        XCTAssertEqual(conversionResult.convertedCount, 20193);
+        XCTAssertEqual(conversionResult.errorsCount, 131);
+        XCTAssertEqual(conversionResult.overLimit, false);
+    }
+
     func testPerformance() {
         let thisSourceFile = URL(fileURLWithPath: #file);
         let thisDirectory = thisSourceFile.deletingLastPathComponent();
@@ -338,17 +358,16 @@ final class GeneralTests: XCTestCase {
         
         let content = try! String(contentsOf: resourceURL, encoding: String.Encoding.utf8);
         let rules = content.components(separatedBy: "\n");
-        
+
         self.measure {
             let conversionResult = ContentBlockerConverter().convertArray(rules: rules);
             NSLog(conversionResult.message);
-            
+
             XCTAssertEqual(conversionResult.totalConvertedCount, 20193);
             XCTAssertEqual(conversionResult.convertedCount, 20193);
             XCTAssertEqual(conversionResult.errorsCount, 131);
             XCTAssertEqual(conversionResult.overLimit, false);
         }
-        
     }
     
     func testSpecifichidePerformance() {
@@ -374,6 +393,7 @@ final class GeneralTests: XCTestCase {
     
     static var allTests = [
         ("testGeneral", testGeneral),
+        ("testPerformanceSingleRun", testPerformanceSingleRun),
         ("testPerformance", testPerformance),
         ("testSpecifichidePerformance", testSpecifichidePerformance),
     ]

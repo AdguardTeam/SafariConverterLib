@@ -16,7 +16,7 @@ class NetworkRule: Rule {
     var isCssExceptionRule = false;
     var isJsInject = false;
     
-    var urlRuleText = "";
+    var urlRuleText: NSString = "";
     
     var isCheckThirdParty = false;
     var isThirdParty = false;
@@ -32,9 +32,9 @@ class NetworkRule: Rule {
     var enabledOptions: [NetworkRuleOption] = [];
     var disabledOptions: [NetworkRuleOption] = [];
     
-    var urlRegExpSource: String? = nil;
+    var urlRegExpSource: NSString? = nil;
     
-    var badfilter: String? = nil;
+    var badfilter: NSString? = nil;
     
     override init() {
         super.init();
@@ -54,7 +54,7 @@ class NetworkRule: Rule {
             if (ruleParts.pattern! == "||"
                 || ruleParts.pattern! == "*"
                 || ruleParts.pattern! == ""
-                || ruleParts.pattern!.count < 3
+                || ruleParts.pattern!.unicodeScalars.count < 3
             ) {
                 if (self.permittedDomains.count < 1) {
                     // Rule matches too much and does not have any domain restriction
@@ -68,10 +68,10 @@ class NetworkRule: Rule {
             throw SyntaxError.invalidRule(message: "Specifichide modifier must be used for exception rules only");
         }
         
-        self.urlRuleText = NetworkRuleParser.getAsciiDomainRule(pattern: ruleParts.pattern)!;
+        self.urlRuleText = NetworkRuleParser.getAsciiDomainRule(pattern: ruleParts.pattern)! as NSString;
         
         if (self.isRegexRule()) {
-            self.urlRegExpSource = self.urlRuleText.subString(startIndex: 1, length: self.urlRuleText.count - 2);
+            self.urlRegExpSource = self.urlRuleText.substring(with: NSMakeRange(1, self.urlRuleText.length - 2)) as NSString
         } else {
             if (self.urlRuleText != "") {
                 self.urlRegExpSource = SimpleRegex.createRegexText(str: self.urlRuleText);
@@ -122,47 +122,56 @@ class NetworkRule: Rule {
      * Parses domain and path
      */
     func parseRuleDomain() -> DomainInfo? {
-        let startsWith = ["http://www.", "https://www.", "http://", "https://", "||", "//"];
-        let contains = ["/", "^"];
+        let startsWith = [
+            "http://www." as NSString,
+            "https://www." as NSString,
+            "http://" as NSString,
+            "https://" as NSString,
+            "||" as NSString,
+            "//" as NSString
+        ]
+        let contains = ["/", "^"]
         
         var startIndex = 0;
 
         for start in startsWith {
-            if (self.urlRuleText.hasPrefix(start)) {
-                startIndex = start.count;
-                break;
+            // hasPrefix is bridged with NSString so no problem using Swift's String here
+            if (self.urlRuleText.hasPrefix(start as String)) {
+                startIndex = start.length
+                break
             }
         }
 
         // Exclusive for domain
         let exceptRule = "domain=";
-        let domainIndex = self.urlRuleText.indexOf(target: exceptRule);
-        if (domainIndex > -1 && self.urlRuleText.indexOf(target: "$") > -1) {
-            startIndex = domainIndex + exceptRule.count;
+
+        let optionsRange = self.urlRuleText.range(of: "$")
+        let domainRange = self.urlRuleText.range(of: exceptRule)
+        if (domainRange.location != NSNotFound && optionsRange.location != NSNotFound) {
+            startIndex = domainRange.location + exceptRule.count
         }
 
-        if (startIndex == -1) {
-            return nil;
+        var pathEndIndex = optionsRange.location
+        if (pathEndIndex == 0 || pathEndIndex == NSNotFound) {
+            pathEndIndex = urlRuleText.length
         }
 
-        var pathEndIndex = self.urlRuleText.indexOf(target: "$");
-        if (pathEndIndex <= 0) {
-            pathEndIndex = urlRuleText.count;
-        }
-        
-        var symbolIndex = -1;
+        let candidateStr = self.urlRuleText.substring(with: NSMakeRange(0, pathEndIndex)) as NSString
+        var symbolIndex = NSNotFound;
         for containsPrefix in contains {
-            let index = self.urlRuleText.subString(startIndex: 0, toIndex: pathEndIndex).indexOf(target: containsPrefix, startIndex: startIndex);
-            if (index >= 0) {
+            let cntsRange = candidateStr.range(of: containsPrefix, options: NSString.CompareOptions.literal, range: NSMakeRange(startIndex, candidateStr.length - startIndex))
+            let index = cntsRange.location
+            if (index >= 0 && index != NSNotFound) {
                 symbolIndex = index;
                 break;
             }
         }
 
-        let domain = symbolIndex == -1 ? self.urlRuleText.subString(startIndex: startIndex) : self.urlRuleText.subString(startIndex: startIndex, toIndex: symbolIndex);
-        let path = symbolIndex == -1 ? nil : self.urlRuleText.subString(startIndex: symbolIndex, toIndex: pathEndIndex);
+        let domain = symbolIndex == NSNotFound ? self.urlRuleText.substring(from: startIndex) : self.urlRuleText.substring(with: NSMakeRange(startIndex, symbolIndex - startIndex))
 
-        if (!SimpleRegex.isMatch(regex: NetworkRule.DOMAIN_VALIDATION_REGEXP, target: domain)) {
+        let path = symbolIndex == NSNotFound ? nil : self.urlRuleText.substring(with: NSMakeRange(symbolIndex, pathEndIndex - symbolIndex))
+
+        if (!SimpleRegex.isMatch(regex: NetworkRule.DOMAIN_VALIDATION_REGEXP, target: domain as NSString)) {
             // Not a valid domain name, ignore it
             return nil;
         }
@@ -297,7 +306,7 @@ class NetworkRule: Rule {
             
             // Special modifiers
             case "badfilter":
-                self.badfilter = parseBadfilter();
+                self.badfilter = parseBadfilter() as NSString?;
                 break;
             case "csp":
                 self.isCspRule = true;
