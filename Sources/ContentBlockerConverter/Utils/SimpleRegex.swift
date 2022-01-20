@@ -15,10 +15,10 @@ class SimpleRegex {
     private static let  URL_FILTER_REGEXP_SEPARATOR = "[/:&?]?";
     
     // Constants
-    private static let maskStartUrl = "||";
-    private static let maskPipe = "|";
-    private static let maskSeparator = "^";
-    private static let maskAnySymbol = "*";
+    private static let maskStartUrl = "||" as NSString;
+    private static let maskPipe = "|" as NSString;
+    private static let maskSeparator = "^" as NSString;
+    private static let maskAnySymbol = "*" as NSString;
 
     private static let regexAnySymbol = ".*";
     private static let regexStartUrl = URL_FILTER_REGEXP_START_URL;
@@ -52,20 +52,19 @@ class SimpleRegex {
     /**
      * Creates regex
      */
-    public static func createRegexText(str: String) -> String? {
+    public static func createRegexText(str: NSString) -> NSString? {
         if (str == maskStartUrl ||
                 str == maskPipe ||
                 str == maskAnySymbol) {
-            return regexAnySymbol;
+            return regexAnySymbol as NSString;
         }
         
         var result = ""
-        let nstr = str as NSString
         
-        let maxIndex = nstr.length - 1
+        let maxIndex = str.length - 1
         var i = 0
         while i <= maxIndex {
-            let char = nstr.character(at: i)
+            let char = str.character(at: i)
 
             if CHARS_TO_ESCAPE.contains(char) {
                 result.append("\\")
@@ -74,7 +73,7 @@ class SimpleRegex {
                 switch char {
                 case charPipe:
                     if i == 0 {
-                        let nextChar = nstr.character(at: i+1)
+                        let nextChar = str.character(at: i+1)
                         if nextChar == charPipe {
                             result.append(regexStartUrl)
                             i += 1 // increment i as we processed next char already
@@ -103,24 +102,24 @@ class SimpleRegex {
             i += 1
         }
 
-        return result;
+        return result as NSString;
     }
 
     /**
      * Check if target string matches regex
      */
-    static func isMatch(regex: NSRegularExpression, target: String) -> Bool {
-        let matchCount = regex.numberOfMatches(in: target, options: [], range: NSMakeRange(0, target.count))
+    static func isMatch(regex: NSRegularExpression, target: NSString) -> Bool {
+        let matchCount = regex.numberOfMatches(in: target as String, options: [], range: NSMakeRange(0, target.length))
         return matchCount > 0;
     }
 
     /**
      * Returns target string matches
      */
-    static func matches(regex: NSRegularExpression, target: String) -> [String] {
-        let matches  = regex.matches(in: target, options: [], range: NSMakeRange(0, target.count))
+    static func matches(regex: NSRegularExpression, target: NSString) -> [String] {
+        let matches  = regex.matches(in: target as String, options: [], range: NSMakeRange(0, target.length))
         return matches.map { match in
-            return String(target[Range(match.range, in: target)!])
+            return target.substring(with: match.range)
         }
     }
 }

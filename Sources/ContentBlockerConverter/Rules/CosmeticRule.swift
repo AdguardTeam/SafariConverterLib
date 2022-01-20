@@ -36,16 +36,17 @@ class CosmeticRule: Rule {
     var isInjectCss = false;
     
     override init(ruleText: NSString) throws {
-        try super.init(ruleText: ruleText);
+        try super.init(ruleText: ruleText)
         
-        let markerInfo = CosmeticRuleMarker.findCosmeticRuleMarker(ruleText: ruleText);
+        let markerInfo = CosmeticRuleMarker.findCosmeticRuleMarker(ruleText: ruleText)
         if (markerInfo.index == -1) {
-            throw SyntaxError.invalidRule(message: "Not a cosmetic rule");
+            throw SyntaxError.invalidRule(message: "Not a cosmetic rule")
         }
 
-        self.content = ruleText.substring(from: markerInfo.index + markerInfo.marker!.rawValue.count);
+        let contentIndex = markerInfo.index + markerInfo.marker!.rawValue.unicodeScalars.count
+        self.content = ruleText.substring(from: contentIndex)
         if (self.content == "") {
-            throw SyntaxError.invalidRule(message: "Rule content is empty");
+            throw SyntaxError.invalidRule(message: "Rule content is empty")
         }
         
         switch (markerInfo.marker!) {
@@ -97,24 +98,26 @@ class CosmeticRule: Rule {
     }
     
     private static func searchCssPseudoIndicators(content: String) -> Bool {
-        let nsstring = content as NSString;
+        let nsContent = content as NSString;
         
         // Not enought for even minimal length pseudo
-        if (nsstring.length < 6) {
-            return false;
+        if (nsContent.length < 6) {
+            return false
         }
         
-        if (nsstring.contains(CosmeticRule.EXT_CSS_EXT_INDICATOR)) {
-            return true;
-        }
-        
-        if (!nsstring.contains(":")) {
-            return false;
-        }
-
-        for indicator in CosmeticRule.EXT_CSS_PSEUDO_INDICATORS {
-            if (nsstring.contains(indicator)) {
-                return true;
+        let maxIndex = nsContent.length - 1
+        for i in 0...maxIndex {
+            let c = nsContent.character(at: i)
+            if c == "[".utf16.first! {
+                if nsContent.substring(from: i).starts(with: CosmeticRule.EXT_CSS_EXT_INDICATOR) {
+                    return true
+                }
+            } else if c == ":".utf16.first! {
+                for indicator in CosmeticRule.EXT_CSS_PSEUDO_INDICATORS {
+                    if nsContent.substring(from: i).starts(with: indicator) {
+                        return true
+                    }
+                }
             }
         }
 

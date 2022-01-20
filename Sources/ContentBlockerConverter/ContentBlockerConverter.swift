@@ -72,7 +72,7 @@ public class ContentBlockerConverter {
         let rulesLimit = safariVersion.rulesLimit;
 
         if rules.count == 0 || (rules.count == 1 && rules[0].isEmpty) {
-            Logger.log("AG: ContentBlockerConverter: No rules passed");
+            Logger.log("(ContentBlockerConverter) - No rules passed");
             return ConversionResult.createEmptyResult();
         }
 
@@ -106,7 +106,7 @@ public class ContentBlockerConverter {
         compilationResult.errorsCount = errorsCounter.getCount();
 
         let message = createLogMessage(compilationResult: compilationResult);
-        Logger.log("AG: ContentBlockerConverter: " + message);
+        Logger.log("(ContentBlockerConverter) - Compilation result: " + message);
         compilationResult.message = message;
 
         var conversionResult = Distributor(

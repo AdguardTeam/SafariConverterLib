@@ -156,39 +156,39 @@ final class NetworkRuleTests: XCTestCase {
         let result = try! NetworkRule(ruleText: "||a.a^");
 
         let urlRegExpSource = result.urlRegExpSource;
-        XCTAssertEqual(urlRegExpSource, START_URL_UNESCAPED + "a\\.a" + URL_FILTER_REGEXP_END_SEPARATOR);
+        XCTAssertEqual(urlRegExpSource as String?, START_URL_UNESCAPED + "a\\.a" + URL_FILTER_REGEXP_END_SEPARATOR);
         
-        let regex = try! NSRegularExpression(pattern: urlRegExpSource!);
+        let regex = try! NSRegularExpression(pattern: urlRegExpSource! as String);
         XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://a.a/test"));
         XCTAssertFalse(SimpleRegex.isMatch(regex: regex, target: "https://a.allegroimg.com"));
     }
     
     func testVariousUrlRegex() {
         var result = try! NetworkRule(ruleText: "||example.com");
-        XCTAssertEqual(result.urlRegExpSource, START_URL_UNESCAPED + "example\\.com");
-        var regex = try! NSRegularExpression(pattern: result.urlRegExpSource!);
+        XCTAssertEqual(result.urlRegExpSource as String?, START_URL_UNESCAPED + "example\\.com");
+        var regex = try! NSRegularExpression(pattern: result.urlRegExpSource! as String);
         XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://example.com/path"));
         XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://example.com"));
         XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://example.com/"));
         XCTAssertFalse(SimpleRegex.isMatch(regex: regex, target: "https://example.org"));
         
         result = try! NetworkRule(ruleText: "||example.com^");
-        XCTAssertEqual(result.urlRegExpSource, START_URL_UNESCAPED + "example\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
-        regex = try! NSRegularExpression(pattern: result.urlRegExpSource!);
+        XCTAssertEqual(result.urlRegExpSource as String?, START_URL_UNESCAPED + "example\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
+        regex = try! NSRegularExpression(pattern: result.urlRegExpSource! as String);
         XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://example.com/path"));
         XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://example.com"));
         XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://example.com/"));
         XCTAssertFalse(SimpleRegex.isMatch(regex: regex, target: "https://example.org"));
         
         result = try! NetworkRule(ruleText: "||example.com/path");
-        XCTAssertEqual(result.urlRegExpSource, START_URL_UNESCAPED + "example\\.com\\/path");
-        regex = try! NSRegularExpression(pattern: result.urlRegExpSource!);
+        XCTAssertEqual(result.urlRegExpSource as String?, START_URL_UNESCAPED + "example\\.com\\/path");
+        regex = try! NSRegularExpression(pattern: result.urlRegExpSource! as String);
         XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://example.com/path"));
         XCTAssertFalse(SimpleRegex.isMatch(regex: regex, target: "https://example.com"));
         
         result = try! NetworkRule(ruleText: "||example.com^path");
-        XCTAssertEqual(result.urlRegExpSource, START_URL_UNESCAPED + "example\\.com[/:&?]?path");
-        regex = try! NSRegularExpression(pattern: result.urlRegExpSource!);
+        XCTAssertEqual(result.urlRegExpSource as String?, START_URL_UNESCAPED + "example\\.com[/:&?]?path");
+        regex = try! NSRegularExpression(pattern: result.urlRegExpSource! as String);
         XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://example.com/path"));
         XCTAssertFalse(SimpleRegex.isMatch(regex: regex, target: "https://example.com"));
     }

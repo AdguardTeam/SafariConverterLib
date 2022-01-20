@@ -16,6 +16,7 @@ public func allTests() -> [XCTestCaseEntry] {
         testCase(ContentBlockerConverterTests.allTests),
         testCase(AdvancedBlockingTests.allTests),
         testCase(GeneralTests.allTests),
+        testCase(StringExtensionTests.allTests),
     ]
 }
 #endif

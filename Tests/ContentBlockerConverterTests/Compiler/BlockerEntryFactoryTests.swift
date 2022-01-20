@@ -317,11 +317,13 @@ final class BlockerEntryFactoryTests: XCTestCase {
         let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter());
         let rule = createTestRule();
 
-        rule.permittedDomains = [".*"];
+        rule.permittedDomains = ["example.*"];
 
         let result = converter.createBlockerEntry(rule: rule);
         XCTAssertNotNil(result);
         XCTAssertTrue(result!.trigger.ifDomain!.count >= 100);
+        XCTAssertTrue(result!.trigger.ifDomain!.contains("example.com"))
+        XCTAssertTrue(result!.trigger.ifDomain!.contains("example.com.tr"))
     }
 
     func testDomainsRestrictions() {

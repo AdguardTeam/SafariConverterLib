@@ -11,30 +11,19 @@ final class BlockerEntryEncoderTests: XCTestCase {
         XCTAssertEqual(result, "[]");
     }
     
-    func testEscapeString() {
-        var result = "";
+    func testSimpleEntry() {
+        let converter = BlockerEntryFactory(advancedBlockingEnabled: false, errorsCounter: ErrorsCounter());
+        let rule = NetworkRule();
+        rule.ruleText = "||example.com/path$domain=test.com";
+        rule.permittedDomains = ["test.com"];
         
-        result = encoder.escapeString(value: "test");
-        XCTAssertEqual(result, "test");
-        
-        result = encoder.escapeString(value: #"test \ test"#);
-        XCTAssertEqual(result, #"test \\ test"#);
-        
-        result = encoder.escapeString(value: #"test " test"#);
-        XCTAssertEqual(result, #"test \" test"#);
-        
-        result = encoder.escapeString(value: "test \n test");
-        XCTAssertEqual(result, "test \\n test");
-        
-        result = encoder.escapeString(value: "test \r test");
-        XCTAssertEqual(result, "test \\r test");
-        
-        result = encoder.escapeString(value: "test \t test");
-        XCTAssertEqual(result, "test \\t test");
+        let entry = converter.createBlockerEntry(rule: rule);
+        let result = encoder.encode(entries: [entry!]);
+        XCTAssertEqual(result, "[{\"trigger\":{\"url-filter\":\"^[htpsw]+:\\\\/\\\\/\",\"if-domain\":[\"test.com\"]},\"action\":{\"type\":\"block\"}}]");
     }
     
     static var allTests = [
         ("testEmpty", testEmpty),
-        ("testEscapeString", testEscapeString),
+        ("testSimpleEntry", testSimpleEntry),
     ]
 }

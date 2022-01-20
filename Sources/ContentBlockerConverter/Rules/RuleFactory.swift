@@ -51,7 +51,7 @@ class RuleFactory {
      * Filters rules with badfilter exceptions
      */
     static func applyBadFilterExceptions(rules: [NetworkRule], badfilterRules: [NetworkRule]) -> [Rule] {
-        var badfilters = [String]();
+        var badfilters = [NSString]();
         for badFilter in badfilterRules {
             badfilters.append(badFilter.badfilter!);
         }
@@ -107,7 +107,7 @@ class RuleFactory {
 
             return try NetworkRule(ruleText: ruleText!);
         } catch {
-            Logger.log("AG: ContentBlockerConverter: Unexpected error: \(error) while creating rule from: \(String(describing: ruleText))");
+            Logger.log("(RuleFactory) - Unexpected error: \(error) while creating rule from: \(String(describing: ruleText))");
             throw error;
         }
     };

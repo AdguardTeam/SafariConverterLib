@@ -30,30 +30,30 @@ class Rule {
      */
     func setDomains(domains: String, sep: String) throws -> Void {
         if (domains == "") {
-            throw SyntaxError.invalidRule(message: "Modifier $domain cannot be empty");
+            throw SyntaxError.invalidRule(message: "Modifier $domain cannot be empty")
         }
         
-        let parts = domains.components(separatedBy: sep);
+        let parts = domains.components(separatedBy: sep)
         for var domain in parts {
             var restricted = false;
             if (domain.hasPrefix("~")) {
-                restricted = true;
-                domain = domain.subString(startIndex: 1);
+                restricted = true
+                domain = domain.subString(startIndex: 1)
             }
 
             if (domain == "") {
-                throw SyntaxError.invalidRule(message: "Empty domain specified");
+                throw SyntaxError.invalidRule(message: "Empty domain specified")
             }
 
-            var encoded = domain;
+            var encoded = domain
             if (!domain.isASCII()) {
-                encoded = domain.idnaEncoded!;
+                encoded = domain.idnaEncoded!
             }
-            
+
             if (restricted) {
-                self.restrictedDomains.append(domain);
+                self.restrictedDomains.append(domain)
             } else {
-                self.permittedDomains.append(encoded);
+                self.permittedDomains.append(encoded)
             }
         }
     }

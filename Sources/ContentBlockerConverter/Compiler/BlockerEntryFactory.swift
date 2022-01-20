@@ -87,7 +87,7 @@ class BlockerEntryFactory {
             }
         } catch {
             self.errorsCounter.add();
-            Logger.log("AG: ContentBlockerConverter: Unexpected error: \(error) while converting \(rule.ruleText)");
+            Logger.log("(BlockerEntryFactory) - Unexpected error: \(error) while converting \(rule.ruleText)");
         }
 
         return nil;
@@ -178,11 +178,16 @@ class BlockerEntryFactory {
     }
 
     private func createUrlFilterString(rule: NetworkRule) throws -> String {
-        let isWebSocket = rule.isWebSocket;
+        let isWebSocket = rule.isWebSocket
 
         // Use a single standard regex for rules that are supposed to match every URL
-        if (BlockerEntryFactory.ANY_URL_TEMPLATES.firstIndex(of: rule.urlRuleText) ?? -1 >= 0) {
-            return isWebSocket ? BlockerEntryFactory.URL_FILTER_WS_ANY_URL : BlockerEntryFactory.URL_FILTER_ANY_URL;
+        for anyUrlTmpl in BlockerEntryFactory.ANY_URL_TEMPLATES {
+            if rule.urlRuleText.compare(anyUrlTmpl, options: NSString.CompareOptions.literal) == ComparisonResult.orderedSame {
+                if isWebSocket {
+                    return BlockerEntryFactory.URL_FILTER_WS_ANY_URL
+                }
+                return BlockerEntryFactory.URL_FILTER_ANY_URL
+            }
         }
 
         let urlRegExpSource = rule.urlRegExpSource;
@@ -192,7 +197,7 @@ class BlockerEntryFactory {
         }
 
         // Safari doesn't support non-ASCII characters in regular expressions
-        if (!urlRegExpSource!.isASCII()) {
+        if (!(urlRegExpSource! as String).isASCII()) {
             throw ConversionError.unsupportedRegExp(message: "Safari doesn't support non-ASCII characters in regular expressions");
         }
 
@@ -205,10 +210,11 @@ class BlockerEntryFactory {
         // Prepending WebSocket protocol to resolve this:
         // https://github.com/AdguardTeam/AdguardBrowserExtension/issues/957
         if (isWebSocket && !urlRegExpSource!.hasPrefix("^") && !urlRegExpSource!.hasPrefix("ws")) {
-            return BlockerEntryFactory.URL_FILTER_WS_ANY_URL + ".*" + urlRegExpSource!;
+            // TODO: convert to NSString
+            return BlockerEntryFactory.URL_FILTER_WS_ANY_URL + ".*" + (urlRegExpSource! as String);
         }
 
-        return urlRegExpSource!;
+        return urlRegExpSource! as String;
     };
 
     private func setWhiteList(rule: Rule, action: inout BlockerEntry.Action) -> Void {
@@ -218,88 +224,101 @@ class BlockerEntryFactory {
     }
 
     private func addResourceType(rule: NetworkRule, trigger: inout BlockerEntry.Trigger) throws -> Void {
-        var types = NSMutableOrderedSet();
+        // Using String array instead of Set makes the code a bit more clunkier, but saves time.
+        var types: [String] = []
 
         if (rule.isContentType(contentType:NetworkRule.ContentType.ALL) && rule.restrictedContentType.count == 0) {
             // Safari does not support all other default content types, like subdocument etc.
             // So we can use default safari content types instead.
-            return;
+            return
         }
 
         if rule.hasContentType(contentType: NetworkRule.ContentType.IMAGE) {
-            types.add("image");
+            types.append("image")
         }
         if rule.hasContentType(contentType: NetworkRule.ContentType.STYLESHEET) {
-            types.add("style-sheet");
+            types.append("style-sheet")
         }
         if rule.hasContentType(contentType: NetworkRule.ContentType.SCRIPT) {
-            types.add("script");
+            types.append("script")
         }
         if rule.hasContentType(contentType: NetworkRule.ContentType.MEDIA) {
-            types.add("media");
+            types.append("media")
         }
+
+        var rawAdded = false
         if rule.hasContentType(contentType: NetworkRule.ContentType.XMLHTTPREQUEST) {
             // `fetch` resource type is supported since Safari 15
             if SafariService.current.version.isSafari15() {
-                    types.add("fetch");
-                } else {
-                    types.add("raw");
-                }
+                types.append("fetch")
+            } else if !rawAdded {
+                rawAdded = true
+                types.append("raw")
+            }
         }
+
         if rule.hasContentType(contentType: NetworkRule.ContentType.OTHER) {
             // `other` resource type is supported since Safari 15
             if SafariService.current.version.isSafari15() {
-                    types.add("other");
-                } else {
-                    types.add("raw");
-                }
+                types.append("other")
+            } else if !rawAdded {
+                rawAdded = true
+                types.append("raw")
+            }
         }
+
         if rule.hasContentType(contentType: NetworkRule.ContentType.WEBSOCKET) {
             // `websocket` resource type is supported since Safari 15
             if SafariService.current.version.isSafari15() {
-                    types.add("websocket");
-                } else {
-                    types.add("raw");
-                }
+                types.append("websocket")
+            } else if !rawAdded {
+                rawAdded = true
+                types.append("raw")
+            }
         }
+
         if rule.hasContentType(contentType: NetworkRule.ContentType.FONT) {
-            types.add("font");
-        }
-        if rule.hasContentType(contentType: NetworkRule.ContentType.DOCUMENT) {
-            types.add("document");
-        }
-        if rule.hasContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT) {
-            if !SafariService.current.version.isSafari15() {
-                    types.add("document");
-                }
+            types.append("font")
         }
         if rule.hasContentType(contentType: NetworkRule.ContentType.PING) {
             // `ping` resource type is supported since Safari 14
             if SafariService.current.version.rawValue >= SafariVersion.safari14.rawValue {
-                types.add("ping");
+                types.append("ping")
+            }
+        }
+
+        var documentAdded = false
+        if !documentAdded && rule.hasContentType(contentType: NetworkRule.ContentType.DOCUMENT) {
+            documentAdded = true
+            types.append("document")
+        }
+        if !documentAdded && rule.hasContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT) {
+            if !SafariService.current.version.isSafari15() {
+                documentAdded = true
+                types.append("document")
             }
         }
 
         if (rule.isBlockPopups) {
-            types = ["document"];
+            types = ["document"]
         }
 
         // Not supported modificators
         if (rule.isContentType(contentType: NetworkRule.ContentType.OBJECT)) {
-            throw ConversionError.unsupportedContentType(message: "$object content type is not yet supported");
+            throw ConversionError.unsupportedContentType(message: "$object content type is not yet supported")
         }
         if (rule.isContentType(contentType: NetworkRule.ContentType.OBJECT_SUBREQUEST)) {
-            throw ConversionError.unsupportedContentType(message: "$object_subrequest content type is not yet supported");
+            throw ConversionError.unsupportedContentType(message: "$object_subrequest content type is not yet supported")
         }
         if (rule.isContentType(contentType: NetworkRule.ContentType.WEBRTC)) {
-            throw ConversionError.unsupportedContentType(message: "$webrtc content type is not yet supported");
+            throw ConversionError.unsupportedContentType(message: "$webrtc content type is not yet supported")
         }
         if (rule.isReplace) {
-            throw ConversionError.unsupportedContentType(message: "$replace rules are ignored.");
+            throw ConversionError.unsupportedContentType(message: "$replace rules are ignored.")
         }
 
         if (types.count > 0) {
-            trigger.resourceType = Array(types) as? [String];
+            trigger.resourceType = types
         }
     }
     
@@ -394,7 +413,7 @@ class BlockerEntryFactory {
                 parseDomainResult!.path != nil &&
                 parseDomainResult!.path != "^" &&
                 parseDomainResult!.path != "/") {
-                // http://jira.performix.ru/browse/AG-8664
+                // https://jira.adguard.com/browse/AG-8664
                 return;
             }
 
@@ -409,7 +428,7 @@ class BlockerEntryFactory {
             trigger.urlFilter = BlockerEntryFactory.URL_FILTER_URL_RULES_EXCEPTIONS;
             trigger.resourceType = nil;
         }
-    };
+    }
 
     /**
      * As a limited solution to support wildcard in tld, as there is no support for wildcards in "if-domain" property in CB
@@ -419,22 +438,23 @@ class BlockerEntryFactory {
      * @param domains
      */
     private func resolveTopLevelDomainWildcards(domains: [String]) -> [String] {
-        var result = [String]();
+        var result = [String]()
 
         for domain in domains {
-            if (domain.hasSuffix(".*")) {
+            let nsDomain = domain as NSString
+            if (nsDomain.hasSuffix(".*")) {
                 for tld in BlockerEntryFactory.TOP_LEVEL_DOMAINS_LIST {
-                    var modified = String(domain.prefix(domain.count - 2));
-                    modified = modified + "." + tld;
-                    result.append(modified.lowercased());
+                    var modified = nsDomain.substring(to: nsDomain.length - 2)
+                    modified = modified + "." + tld
+                    result.append(modified.lowercased())
                 }
             } else {
-                result.append(domain.lowercased());
+                result.append(domain.lowercased())
             }
         }
 
-        return result;
-    };
+        return result
+    }
 
     /**
      * Safari doesn't support some regular expressions
@@ -448,7 +468,7 @@ class BlockerEntryFactory {
      * * - Matches the preceding character zero or more times.
      * ? - Matches the preceding character zero or one time.
      */
-    private func validateRegExp(urlRegExp: String) throws -> Void {
+    private func validateRegExp(urlRegExp: NSString) throws -> Void {
         // Safari doesn't support {digit} in regular expressions
         if (urlRegExp.contains("{")) {
             if (SimpleRegex.isMatch(regex: BlockerEntryFactory.VALIDATE_REGEXP_DIGITS, target: urlRegExp)) {
