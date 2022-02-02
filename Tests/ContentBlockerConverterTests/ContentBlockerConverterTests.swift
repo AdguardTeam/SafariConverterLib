@@ -1865,11 +1865,6 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result.errorsCount, 2);
         XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON);
         
-        result = converter.convertArray(rules: ["example.org##.banner - disabled"], safariVersion: .safari15);
-        XCTAssertEqual(result.convertedCount, 0);
-        XCTAssertEqual(result.errorsCount, 1);
-        XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON);
-        
         result = converter.convertArray(rules: ["", "", "", ""], safariVersion: .safari15);
         XCTAssertEqual(result.convertedCount, 0);
         XCTAssertEqual(result.errorsCount, 0);
@@ -1889,6 +1884,26 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result.convertedCount, 0);
         XCTAssertEqual(result.errorsCount, 3);
         XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON);
+    }
+    
+    func testProblematicRules() {
+        var rules = [
+            "facebook.com##div[role=\"feed\"] div[style=\"border-radius: max(0px, min(8px, ((100vw - 4px) - 100%) * 9999)) / 8px;\"] div[style=\"border-radius: max(0px, min(8px, ((100vw - 4px) - 100%) * 9999)) / 8px;\"]",
+            "hdpass.net#%#AG_onLoad(function() {setTimeout(function() {function clearify(url) {         var size = url.length;         if (size % 2 == 0) {             var halfIndex = size / 2;             var firstHalf = url.substring(0, halfIndex);             var secondHalf = url.substring(halfIndex, size);             var url = secondHalf + firstHalf;             var base = url.split(\"\").reverse().join(\"\");             var clearText = $.base64('decode', base);             return clearText         } else {             var lastChar = url[size - 1];             url[size - 1] = ' ';             url = $.trim(url);             var newSize = url.length;             var halfIndex = newSize / 2;             var firstHalf = url.substring(0, halfIndex);             var secondHalf = url.substring(halfIndex, newSize);             url = secondHalf + firstHalf;             var base = url.split(\"\").reverse().join(\"\");             base = base + lastChar;             var clearText = $.base64('decode', base);             return clearText         }     }  var urlEmbed = $('#urlEmbed').val(); urlEmbed = clearify(urlEmbed); var iframe = '<iframe width=\"100%\" height=\"100%\" src=\"' + urlEmbed + '\" frameborder=\"0\" scrolling=\"no\" allowfullscreen />'; $('#playerFront').html(iframe); }, 300); });",
+            "allegro.pl##div[data-box-name=\"banner - cmuid\"][data-prototype-id=\"allegro.advertisement.slot.banner\"]",
+            "msn.com#%#AG_onLoad(function() { setTimeout(function() { var el = document.querySelectorAll(\".todaystripe .swipenav > li\"); if(el) { for(i=0;i<el.length;i++) { el[i].setAttribute(\"data-aop\", \"slide\" + i + \">single\"); var data = el[i].getAttribute(\"data-id\"); el[i].setAttribute(\"data-m\", ' {\"i\":' + data + ',\"p\":115,\"n\":\"single\",\"y\":8,\"o\":' + i + '} ')}; var count = document.querySelectorAll(\".todaystripe .infopane-placeholder .slidecount span\"); var diff = count.length - el.length; while(diff > 0) { var count_length = count.length; count[count_length-1].remove(); var count = document.querySelectorAll(\".todaystripe .infopane-placeholder .slidecount span\"); var diff = count.length - el.length; } } }, 300); });",
+            "abplive.com#?#.articlepage > .center_block:has(> p:contains(- - Advertisement - -))",
+        ];
+        var result = converter.convertArray(rules: rules, safariVersion: .safari15, advancedBlocking: true);
+        XCTAssertEqual(result.totalConvertedCount, rules.count);
+        XCTAssertEqual(result.errorsCount, 0);
+        
+        rules = [
+            "facebook.com##div[role=\"region\"] + div[role=\"main\"] div[role=\"article\"] div[style=\"border-radius: max(0px, min(8px, ((100vw - 4px) - 100%) * 9999)) / 8px;\"] > div[class]:not([class*=\" \"])",
+        ];
+        result = converter.convertArray(rules: rules, safariVersion: .safari15, advancedBlocking: true);
+        XCTAssertEqual(result.totalConvertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
     }
 
     static var allTests = [
