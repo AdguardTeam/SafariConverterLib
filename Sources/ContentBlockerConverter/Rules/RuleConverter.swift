@@ -427,7 +427,7 @@ class RuleConverter {
 
     private func wrapInDoubleQuotes(str: String) -> String {
         var modified = str
-        if str.hasPrefix("\'") && str.hasSuffix("\'") {
+        if str.hasPrefix("\'") && str.hasSuffix("\'") && str.unicodeScalars.count > 1 {
             modified = str.subString(startIndex: 1, length: str.unicodeScalars.count - 2)
             modified = modified.replace(target: "\"", withString: "\\\"");
         } else if str.hasPrefix("\"") && str.hasSuffix("\"") {
