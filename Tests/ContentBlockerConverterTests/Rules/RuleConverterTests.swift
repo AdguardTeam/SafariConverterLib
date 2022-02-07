@@ -402,6 +402,11 @@ final class RuleConverterTests: XCTestCase {
         result = ruleConverter.convertRule(rule: rule);
         expect = ["example.org#%#//scriptlet(\"ubo-cookie-remover.js\", \"3'\")"];
         XCTAssertEqual(result, expect);
+        
+        rule = #"example.org#$#hide-if-contains ""# as NSString;
+        result = ruleConverter.convertRule(rule: rule);
+        expect = ["example.org#%#//scriptlet(\"abp-hide-if-contains\", \"\"\")"];
+        XCTAssertEqual(result, expect);
     }
     
     static var allTests = [
