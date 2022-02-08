@@ -132,15 +132,14 @@ class RuleConverter {
             template = ADGUARD_SCRIPTLET_MASK;
         }
 
-        let clean = getStringInBraces(str: rule as String);
-        if clean == nil {
+        guard let clean: String = getStringInBraces(str: rule as String) else {
             return nil
         }
 
-        var parsedArgs = clean!.components(separatedBy: ", ");
+        var parsedArgs = clean.components(separatedBy: ", ");
         if (parsedArgs.count == 1) {
             // Most probably this is not correct separator, in this case we use ','
-            parsedArgs = clean!.components(separatedBy: ",");
+            parsedArgs = clean.components(separatedBy: ",");
         }
 
         var args = [String]();
