@@ -414,6 +414,16 @@ final class RuleConverterTests: XCTestCase {
         XCTAssertEqual(result, expect);
     }
     
+    func testGetStringInBracesSpecialCases() {
+        var rule = "test.com##+js(aeld," as NSString;
+        var result = ruleConverter.convertRule(rule: rule);
+        XCTAssertEqual(result, [nil]);
+        
+        rule = "example.org#@#+js(setTimeout-defuser.js" as NSString;
+        result = ruleConverter.convertRule(rule: rule);
+        XCTAssertEqual(result, [nil]);
+    }
+    
     static var allTests = [
         ("testEmpty", testEmpty),
         ("testComment", testComment),
@@ -438,6 +448,7 @@ final class RuleConverterTests: XCTestCase {
         ("testDenyallowModifierForGenericRules", testDenyallowModifierForGenericRules),
         ("testDenyallowModifier", testDenyallowModifier),
         ("testWrapInDoubleQuotesSpecialCases", testWrapInDoubleQuotesSpecialCases),
+        ("testGetStringInBracesSpecialCases", testGetStringInBracesSpecialCases),
     ]
 }
 

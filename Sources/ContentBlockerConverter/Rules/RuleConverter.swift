@@ -51,7 +51,7 @@ class RuleConverter {
     /**
      * Converts text to AG supported rule format
      */
-    func convertRule(rule: NSString) -> [NSString] {
+    func convertRule(rule: NSString) -> [NSString?] {
         if (rule.length == 0 || isComment(rule: rule)) {
             return [rule];
         }
@@ -120,7 +120,7 @@ class RuleConverter {
         ) && SimpleRegex.isMatch(regex: RuleConverter.UBO_SCRIPTLET_MASK_REGEXP, target: ruleContent as NSString);
     }
     
-    private func convertUboScriptletRule(rule: NSString) -> NSString {
+    private func convertUboScriptletRule(rule: NSString) -> NSString? {
         let mask = SimpleRegex.matches(regex: RuleConverter.UBO_SCRIPTLET_MASK_REGEXP, target: rule)[0];
         let maskIndex = rule.range(of: mask).lowerBound;
         let domains = rule.substring(to: maskIndex);
@@ -133,10 +133,14 @@ class RuleConverter {
         }
 
         let clean = getStringInBraces(str: rule as String);
-        var parsedArgs = clean.components(separatedBy: ", ");
+        if clean == nil {
+            return nil
+        }
+
+        var parsedArgs = clean!.components(separatedBy: ", ");
         if (parsedArgs.count == 1) {
             // Most probably this is not correct separator, in this case we use ','
-            parsedArgs = clean.components(separatedBy: ",");
+            parsedArgs = clean!.components(separatedBy: ",");
         }
 
         var args = [String]();
@@ -419,9 +423,12 @@ class RuleConverter {
         return SimpleRegex.matches(regex: RuleConverter.SENTENCES_REGEXP, target: str as NSString)
     }
 
-    private func getStringInBraces(str: String) -> String {
+    private func getStringInBraces(str: String) -> String? {
         let firstIndex = str.indexOf(target: "(")
         let lastIndex = str.lastIndexOf(target: ")")
+        if firstIndex > lastIndex {
+            return nil
+        }
         return str.subString(startIndex: firstIndex + 1, length: lastIndex - firstIndex - 1)
     }
 
