@@ -1905,6 +1905,15 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result.totalConvertedCount, 1);
         XCTAssertEqual(result.errorsCount, 0);
     }
+    
+    func testCreateInvertedAllowlistRule11() {
+        var rules = ["example.*##+js(abort-on-stack-trace, Object.prototype.parallax, window.onload)"];
+        var result = converter.convertArray(rules: rules);
+//        XCTAssertEqual(result, ["example.*#%#//scriptlet(\"ubo-abort-on-stack-trace\", \"Object.prototype.parallax\", \"window.onload\")"]);
+        XCTAssertEqual(result.totalConvertedCount, 0);
+        XCTAssertEqual(result.convertedCount, 0);
+        XCTAssertEqual(result.errorsCount, 0);
+    }
 
     static var allTests = [
         ("testEmpty", testEmpty),

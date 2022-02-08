@@ -390,7 +390,7 @@ final class RuleConverterTests: XCTestCase {
     func testWrapInDoubleQuotesSpecialCases() {
         var rule = "example.org#$#hide-if-contains '" as NSString;
         var result = ruleConverter.convertRule(rule: rule);
-        var expect: [NSString] = ["example.org#%#//scriptlet(\"abp-hide-if-contains\", \"'\")"];
+        var expect: [NSString] = ["example.org#%#//scriptlet(\"abp-hide-if-contains\", \"\'\")"];
         XCTAssertEqual(result, expect);
         
         rule = "example.org#$#hide-if-contains 't" as NSString;
@@ -405,7 +405,12 @@ final class RuleConverterTests: XCTestCase {
         
         rule = #"example.org#$#hide-if-contains ""# as NSString;
         result = ruleConverter.convertRule(rule: rule);
-        expect = ["example.org#%#//scriptlet(\"abp-hide-if-contains\", \"\"\")"];
+        expect = ["example.org#%#//scriptlet(\"abp-hide-if-contains\", \"\\\"\")"];
+        XCTAssertEqual(result, expect);
+
+        rule = "example.org#$#hide-if-contains \"" as NSString;
+        result = ruleConverter.convertRule(rule: rule);
+        expect = ["example.org#%#//scriptlet(\"abp-hide-if-contains\", \"\\\"\")"];
         XCTAssertEqual(result, expect);
     }
     
