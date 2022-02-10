@@ -1905,6 +1905,22 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result.totalConvertedCount, 1);
         XCTAssertEqual(result.errorsCount, 0);
     }
+    
+    func testPathModifierRules() {
+        var rules = ["[$path=page.html]##.textad"];
+        var result = converter.convertArray(rules: rules);
+        XCTAssertEqual(result.convertedCount, 1);
+        XCTAssertEqual(result.totalConvertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.converted, "[{\"trigger\":{\"url-filter\":\"*page.html\"},\"action\":{\"type\":\"css-display-none\",\"selector\":\".textad\"}}]");
+        
+        rules = ["[$domain=example.com,path=/page.html]##.textad"];
+        result = converter.convertArray(rules: rules);
+        XCTAssertEqual(result.convertedCount, 1);
+        XCTAssertEqual(result.totalConvertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.converted, "[{\"trigger\":{\"url-filter\":\"*/page.html\",\"if-domain\":[\"*example.com\"]},\"action\":{\"type\":\"css-display-none\",\"selector\":\".textad\"}}]");
+    }
 
     static var allTests = [
         ("testEmpty", testEmpty),
@@ -1956,5 +1972,6 @@ final class ContentBlockerConverterTests: XCTestCase {
         ("testLoadContext", testLoadContext),
         ("testResourceTypeForVariousSafariVersions", testResourceTypeForVariousSafariVersions),
         ("testBlockingRuleValidation", testBlockingRuleValidation),
+        ("testPathModifierRules", testPathModifierRules),
     ]
 }
