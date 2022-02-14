@@ -6,6 +6,9 @@ import Foundation
 class ScriptletParser {
     private static let SCRIPTLET_MASK = "//scriptlet("
     private static let SCRIPTLET_MASK_LEN = SCRIPTLET_MASK.count
+    
+    private static let SEPARATOR_SINGLEQUOTES_PARAMS = ", '"
+    private static let SEPARATOR_DOUBLEQUOTES_PARAMS = ", \""
 
     /**
      * Parses and validates scriptlet rule
@@ -23,12 +26,17 @@ class ScriptletParser {
         
         repeat {
             cropped = cropped.subString(startIndex: separatorIndex)
-            if (cropped.hasPrefix(", ")) {
+            if cropped.hasPrefix(ScriptletParser.SEPARATOR_SINGLEQUOTES_PARAMS) || cropped.hasPrefix(ScriptletParser.SEPARATOR_DOUBLEQUOTES_PARAMS) {
                 cropped = cropped.subString(startIndex: 2)
             }
             
-            separatorIndex = cropped.indexOf(target: ", ")
-            if (separatorIndex == -1) {
+            separatorIndex = cropped.indexOf(target: ScriptletParser.SEPARATOR_SINGLEQUOTES_PARAMS)
+            
+            if separatorIndex == -1 {
+                separatorIndex = cropped.indexOf(target: ScriptletParser.SEPARATOR_DOUBLEQUOTES_PARAMS)
+            }
+
+            if separatorIndex == -1 {
                 separatorIndex = cropped.unicodeScalars.count
             }
         

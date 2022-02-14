@@ -1904,6 +1904,12 @@ final class ContentBlockerConverterTests: XCTestCase {
         result = converter.convertArray(rules: rules, safariVersion: .safari15, advancedBlocking: true);
         XCTAssertEqual(result.totalConvertedCount, 1);
         XCTAssertEqual(result.errorsCount, 0);
+        
+        rules = ["foxracingshox.de#%#//scriptlet('ubo-rc.js', 'cookie--not-set', ', stay')"];
+        result = converter.convertArray(rules: rules, safariVersion: .safari15, advancedBlocking: true);
+        XCTAssertEqual(result.totalConvertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.advancedBlocking, "[{\"trigger\":{\"url-filter\":\".*\",\"if-domain\":[\"*foxracingshox.de\"]},\"action\":{\"type\":\"scriptlet\",\"scriptlet\":\"ubo-rc.js\",\"scriptletParam\":\"{\\\"name\\\":\\\"ubo-rc.js\\\",\\\"args\\\":[\\\"cookie--not-set\\\",\\\", stay\\\"]}\"}}]")
     }
 
     static var allTests = [
@@ -1956,5 +1962,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         ("testLoadContext", testLoadContext),
         ("testResourceTypeForVariousSafariVersions", testResourceTypeForVariousSafariVersions),
         ("testBlockingRuleValidation", testBlockingRuleValidation),
+        ("testInvalidRules", testInvalidRules),
+        ("testProblematicRules", testProblematicRules),
     ]
 }
