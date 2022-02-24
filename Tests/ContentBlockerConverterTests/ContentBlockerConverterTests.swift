@@ -1905,6 +1905,38 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result.totalConvertedCount, 1);
         XCTAssertEqual(result.errorsCount, 0);
     }
+    
+    func testArgumentsWithComma() {
+        var rules = ["example.org#%#//scriptlet('ubo-rc.js', 'cookie--not-set', ', stay')"];
+        var result = converter.convertArray(rules: rules, safariVersion: .safari15, advancedBlocking: true);
+        XCTAssertEqual(result.totalConvertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
+        var decoded = try! parseJsonString(json: result.advancedBlocking!);
+        XCTAssertEqual(decoded.count, 1);
+        XCTAssertEqual(decoded[0].action.type, "scriptlet");
+        XCTAssertEqual(decoded[0].action.scriptlet, "ubo-rc.js");
+        XCTAssertEqual(decoded[0].action.scriptletParam, #"{"name":"ubo-rc.js","args":["cookie--not-set",", stay"]}"#);
+        
+        rules = [#"test.com#%#//scriptlet("ubo-rc.js", 'body, html', 'stay')"#];
+        result = converter.convertArray(rules: rules, safariVersion: .safari15, advancedBlocking: true);
+        XCTAssertEqual(result.totalConvertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
+        decoded = try! parseJsonString(json: result.advancedBlocking!);
+        XCTAssertEqual(decoded.count, 1);
+        XCTAssertEqual(decoded[0].action.type, "scriptlet");
+        XCTAssertEqual(decoded[0].action.scriptlet, "ubo-rc.js");
+        XCTAssertEqual(decoded[0].action.scriptletParam, #"{"name":"ubo-rc.js","args":["body, html","stay"]}"#);
+        
+        rules = [#"example.com#%#//scriptlet("remove-class", 'test', 'div[class^=\"inner\"]')"#];
+        result = converter.convertArray(rules: rules, safariVersion: .safari15, advancedBlocking: true);
+        XCTAssertEqual(result.totalConvertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
+        decoded = try! parseJsonString(json: result.advancedBlocking!);
+        XCTAssertEqual(decoded.count, 1);
+        XCTAssertEqual(decoded[0].action.type, "scriptlet");
+        XCTAssertEqual(decoded[0].action.scriptlet, "remove-class");
+        XCTAssertEqual(decoded[0].action.scriptletParam, #"{"name":"remove-class","args":["test","div[class^=\\\"inner\\\"]"]}"#);
+    }
 
     static var allTests = [
         ("testEmpty", testEmpty),

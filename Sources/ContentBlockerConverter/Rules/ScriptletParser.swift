@@ -6,6 +6,7 @@ import Foundation
 class ScriptletParser {
     private static let SCRIPTLET_MASK = "//scriptlet("
     private static let SCRIPTLET_MASK_LEN = SCRIPTLET_MASK.count
+    private static let PARAMETERS_REGEXP = try! NSRegularExpression(pattern: #"(["'])(?:(?=(\\?))\2.)*?\1"#, options: [.caseInsensitive])
 
     /**
      * Parses and validates scriptlet rule
@@ -16,24 +17,8 @@ class ScriptletParser {
         }
         
         let stripped = data.subString(startIndex: SCRIPTLET_MASK_LEN, toIndex: data.unicodeScalars.count - 1)
-
-        var params = [String]()
-        var cropped = stripped
-        var separatorIndex: Int = 0
         
-        repeat {
-            cropped = cropped.subString(startIndex: separatorIndex)
-            if (cropped.hasPrefix(", ")) {
-                cropped = cropped.subString(startIndex: 2)
-            }
-            
-            separatorIndex = cropped.indexOf(target: ", ")
-            if (separatorIndex == -1) {
-                separatorIndex = cropped.unicodeScalars.count
-            }
-        
-            params.append(cropped.subString(startIndex: 0, toIndex: separatorIndex))
-        } while (separatorIndex != cropped.unicodeScalars.count)
+        let params = SimpleRegex.matches(regex: PARAMETERS_REGEXP, target: stripped as NSString)
         
         var unquotedParams = ScriptletParser.unquoteStrings(items: params);
         if (unquotedParams.count < 1) {
