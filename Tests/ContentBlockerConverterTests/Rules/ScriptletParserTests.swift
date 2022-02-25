@@ -32,6 +32,11 @@ final class ScriptletParserTests: XCTestCase {
         XCTAssertNotNil(result);
         XCTAssertEqual(result?.name, "remove-class");
         XCTAssertEqual(result?.json, "{\"name\":\"remove-class\",\"args\":[\"test,comma\"]}");
+        
+        result = try? ScriptletParser.parse(data: "//scriptlet('ubo-rc.js', 'cookie--not-set', ', stay')");
+        XCTAssertNotNil(result);
+        XCTAssertEqual(result?.name, "ubo-rc.js");
+        XCTAssertEqual(result?.json, "{\"name\":\"ubo-rc.js\",\"args\":[\"cookie--not-set\",\", stay\"]}");
     }
 
     static var allTests = [
