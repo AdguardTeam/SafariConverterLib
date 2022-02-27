@@ -274,6 +274,24 @@ final class AdvancedBlockingTests: XCTestCase {
         XCTAssertEqual(result.advancedBlockingConvertedCount, 0);
     }
 
+    func testScriptletRulesArgumentWithComma() {
+        let result = converter.convertArray(rules: [
+            "foxracingshox.de#%#//scriptlet('ubo-rc.js', 'cookie--not-set', ', stay')"
+        ], advancedBlocking: true)
+
+        XCTAssertEqual(result.convertedCount, 0)
+        XCTAssertEqual(result.errorsCount, 0)
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 1)
+
+        let decoded = try! parseJsonString(json: result.advancedBlocking!)
+        XCTAssertEqual(decoded.count, 1)
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*")
+        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*foxracingshox.de"])
+        XCTAssertEqual(decoded[0].action.type, "scriptlet")
+        XCTAssertEqual(decoded[0].action.scriptlet, "ubo-rc.js")
+        XCTAssertEqual(decoded[0].action.scriptletParam, "{\"name\":\"ubo-rc.js\",\"args\":[\"cookie--not-set\",\", stay\"]}")
+    }
+
     func testCompileCssInjectRule() {
             let compiler = Compiler(
                 optimize: false,
@@ -481,6 +499,7 @@ final class AdvancedBlockingTests: XCTestCase {
         ("testCosmeticCssRulesExceptions", testCosmeticCssRulesExceptions),
         ("testScriptletRules", testScriptletRules),
         ("testScriptletRulesExceptions", testScriptletRulesExceptions),
+        ("testScriptletRulesArgumentWithComma", testScriptletRulesArgumentWithComma),
         ("testCompileCssInjectRule", testCompileCssInjectRule),
         ("testCompileExtendedCssRule", testCompileExtendedCssRule),
         ("testAdvancedBlockingText", testAdvancedBlockingText),

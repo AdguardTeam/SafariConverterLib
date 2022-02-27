@@ -237,7 +237,7 @@ class NetworkRule: Rule {
     }
     
     private func loadOptions(options: String) throws -> Void {
-        let optionParts = options.splitByDelimiterWithEscapeCharacter(delimeter: NetworkRule.delimeterChar, escapeChar: NetworkRule.escapeChar);
+        let optionParts = options.splitByDelimiterWithEscapeCharacter(delimiter: NetworkRule.delimeterChar, escapeChar: NetworkRule.escapeChar);
         
         for option in optionParts {
             var optionName = option;

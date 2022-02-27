@@ -333,7 +333,7 @@ class RuleConverter {
             return [rule]
         }
 
-        let optionParts = options!.splitByDelimiterWithEscapeCharacter(delimeter: RuleConverter.delimeterChar, escapeChar: RuleConverter.escapeChar)
+        let optionParts = options!.splitByDelimiterWithEscapeCharacter(delimiter: RuleConverter.delimeterChar, escapeChar: RuleConverter.escapeChar)
 
         var optionsConverted = false
 
