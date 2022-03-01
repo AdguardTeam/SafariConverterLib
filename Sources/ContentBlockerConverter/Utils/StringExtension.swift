@@ -92,8 +92,8 @@ extension String {
     }
 
     func subString(startIndex: Int, toIndex: Int) -> String {
-        let start = self.index(self.startIndex, offsetBy: startIndex);
-        let end = self.index(self.startIndex, offsetBy: toIndex);
+        let start = self.index(self.startIndex, offsetBy: startIndex)
+        let end = self.index(self.startIndex, offsetBy: toIndex)
         return String(self[start..<end])
     }
 
@@ -156,7 +156,7 @@ extension String {
     }
 
     func isASCII() -> Bool {
-        for scalar in self.unicodeScalars {
+        for scalar in unicodeScalars {
             if (!scalar.isASCII) {
                 return false;
             }

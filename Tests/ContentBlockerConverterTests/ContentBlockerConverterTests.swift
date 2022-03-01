@@ -23,8 +23,10 @@ final class ContentBlockerConverterTests: XCTestCase {
         return parsedData;
     }
 
-    private func checkEntriesByCondition(entries: [BlockerEntry], condition: (BlockerEntry)->Bool) -> Bool {
-        entries.contains{ condition($0) }
+    private func checkEntriesByCondition(entries: [BlockerEntry], condition: (BlockerEntry) -> Bool) -> Bool {
+        entries.contains {
+            condition($0)
+        }
     }
 
     func testEmpty() {
@@ -343,7 +345,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         entry = decoded[0];
         XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com");
         XCTAssertEqual(entry.trigger.ifDomain, nil);
-        XCTAssertEqual(entry.trigger.unlessDomain, ["*example.com","*test.com"]);
+        XCTAssertEqual(entry.trigger.unlessDomain, ["*example.com", "*test.com"]);
         XCTAssertEqual(entry.trigger.loadType, ["third-party"]);
 
         regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!);
@@ -592,11 +594,11 @@ final class ContentBlockerConverterTests: XCTestCase {
 
     func testCssPseudoClasses() {
         let result = converter.convertArray(rules: [
-                "w3schools1.com###main > table.w3-table-all.notranslate:first-child > tbody > tr:nth-child(17) > td.notranslate:nth-child(2)",
-                "w3schools2.com###:root div.ads",
-                "w3schools3.com###body div[attr='test']:first-child  div",
-                "w3schools4.com##.todaystripe::after"
-            ]
+            "w3schools1.com###main > table.w3-table-all.notranslate:first-child > tbody > tr:nth-child(17) > td.notranslate:nth-child(2)",
+            "w3schools2.com###:root div.ads",
+            "w3schools3.com###body div[attr='test']:first-child  div",
+            "w3schools4.com##.todaystripe::after"
+        ]
         );
         XCTAssertEqual(result.convertedCount, 4);
         XCTAssertEqual(result.errorsCount, 0);
@@ -1103,36 +1105,36 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded.count, 3);
 
         XCTAssertTrue(checkEntriesByCondition(
-                        entries: decoded,
-                        condition: {
-                            $0.trigger.ifDomain == nil &&
+                entries: decoded,
+                condition: {
+                    $0.trigger.ifDomain == nil &&
                             $0.trigger.unlessDomain == nil &&
                             $0.trigger.urlFilter == ".*" &&
                             $0.action.type == "css-display-none" &&
                             $0.action.selector == ".ad-banner"
 
-                        }));
+                }));
 
         XCTAssertTrue(checkEntriesByCondition(
-                        entries: decoded,
-                        condition: {
-                            $0.trigger.ifDomain == ["*test.subdomain.test.com"] &&
+                entries: decoded,
+                condition: {
+                    $0.trigger.ifDomain == ["*test.subdomain.test.com"] &&
                             $0.trigger.unlessDomain == nil &&
                             $0.trigger.urlFilter == ".*" &&
                             $0.action.type == "css-display-none" &&
                             $0.action.selector == ".banner"
 
-                        }));
+                }));
 
         XCTAssertTrue(checkEntriesByCondition(
-                        entries: decoded,
-                        condition: {
-                            $0.trigger.ifDomain == ["*test.com"] &&
+                entries: decoded,
+                condition: {
+                    $0.trigger.ifDomain == ["*test.com"] &&
                             $0.trigger.unlessDomain == nil &&
                             $0.trigger.urlFilter == ".*" &&
                             $0.action.type == "css-display-none" &&
                             $0.action.selector == ".headeads"
-                        }));
+                }));
 
 
         ruleText = [
@@ -1675,7 +1677,7 @@ final class ContentBlockerConverterTests: XCTestCase {
     }
 
     func testLoadContext() {
-        var  rules = ["||test.com^$subdocument,domain=example.com"];
+        var rules = ["||test.com^$subdocument,domain=example.com"];
         var result = converter.convertArray(rules: rules, safariVersion: .safari15);
         XCTAssertEqual(result.convertedCount, 1);
 
@@ -1713,7 +1715,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         XCTAssertEqual(decoded[0].trigger.loadContext, ["child-frame"]);
-        
+
         rules = [
             "||ya.ru^",
             "||ya.ru",
@@ -1731,7 +1733,9 @@ final class ContentBlockerConverterTests: XCTestCase {
 
         decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 10);
-        decoded.forEach { XCTAssertNil($0.trigger.loadContext) }
+        decoded.forEach {
+            XCTAssertNil($0.trigger.loadContext)
+        }
     }
 
     func testResourceTypeForVariousSafariVersions() {
@@ -1783,109 +1787,109 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded.count, 1);
         XCTAssertEqual(decoded[0].trigger.resourceType, ["raw"]);
     }
-    
+
     func testCreateInvertedAllowlistRule() {
         var rules = ["test.com"];
         var result = ContentBlockerConverter.createInvertedAllowlistRule(by: rules);
         XCTAssertEqual(result, "@@||*$document,domain=~test.com");
-        
+
         rules = ["test1.com", "test2.com", "test3.com"];
         result = ContentBlockerConverter.createInvertedAllowlistRule(by: rules);
         XCTAssertEqual(result, "@@||*$document,domain=~test1.com|~test2.com|~test3.com");
-        
+
         rules = ["", "test1.com", "", "test2.com", ""];
         result = ContentBlockerConverter.createInvertedAllowlistRule(by: rules);
         XCTAssertEqual(result, "@@||*$document,domain=~test1.com|~test2.com");
-        
+
         rules = [""];
         result = ContentBlockerConverter.createInvertedAllowlistRule(by: rules);
         XCTAssertNil(result);
-        
+
         rules = ["", "", ""];
         result = ContentBlockerConverter.createInvertedAllowlistRule(by: rules);
         XCTAssertNil(result);
-        
+
         rules = [];
         result = ContentBlockerConverter.createInvertedAllowlistRule(by: rules);
         XCTAssertNil(result);
     }
-    
+
     func testBlockingRuleValidation() {
         var result = converter.convertArray(rules: ["/cookie-law-$~script"], safariVersion: .safari15);
         XCTAssertEqual(result.convertedCount, 1);
         var decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         XCTAssertEqual(decoded[0].trigger.resourceType?.contains("script"), false);
-        
+
         result = converter.convertArray(rules: ["/cookie-law-$script"]);
         XCTAssertEqual(result.convertedCount, 1);
         decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         XCTAssertEqual(decoded[0].trigger.resourceType?.contains("script"), true);
-        
+
         result = converter.convertArray(rules: ["/cookie-law-$script,~third-party"]);
         XCTAssertEqual(result.convertedCount, 1);
         decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         XCTAssertEqual(decoded[0].trigger.resourceType?.contains("script"), true);
-        
+
         result = converter.convertArray(rules: ["/cookie-law-$script,subdocument,~third-party,domain=test.com"]);
         XCTAssertEqual(result.convertedCount, 1);
         decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         XCTAssertEqual(decoded[0].trigger.resourceType?.contains("script"), true);
-        
+
         result = converter.convertArray(rules: ["/cookie-law-$image"], safariVersion: .safari15);
         XCTAssertEqual(result.convertedCount, 1);
         decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         XCTAssertEqual(decoded[0].trigger.resourceType?.contains("image"), true);
-        
+
         result = converter.convertArray(rules: ["/cookie-law-$image,domain=test.com"], safariVersion: .safari15);
         XCTAssertEqual(result.convertedCount, 1);
         decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         XCTAssertEqual(decoded[0].trigger.resourceType?.contains("image"), true);
-        
+
         result = converter.convertArray(rules: ["/cookie-law-$~ping"], safariVersion: .safari15);
         XCTAssertEqual(result.convertedCount, 1);
         decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         XCTAssertEqual(decoded[0].trigger.resourceType?.contains("ping"), false);
     }
-    
+
     func testInvalidRules() {
         var result = converter.convertArray(rules: ["zz"], safariVersion: .safari15);
         XCTAssertEqual(result.convertedCount, 0);
         XCTAssertEqual(result.errorsCount, 1);
         XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON);
-        
+
         result = converter.convertArray(rules: ["example.org##", "example.org#@#"], safariVersion: .safari15);
         XCTAssertEqual(result.convertedCount, 0);
         XCTAssertEqual(result.errorsCount, 2);
         XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON);
-        
+
         result = converter.convertArray(rules: ["", "", "", ""], safariVersion: .safari15);
         XCTAssertEqual(result.convertedCount, 0);
         XCTAssertEqual(result.errorsCount, 0);
         XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON);
-        
+
         result = converter.convertArray(rules: [], safariVersion: .safari15);
         XCTAssertEqual(result.convertedCount, 0);
         XCTAssertEqual(result.errorsCount, 0);
         XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON);
-        
+
         result = converter.convertArray(rules: ["test.com#%#", "test.com#@%#"], safariVersion: .safari15);
         XCTAssertEqual(result.convertedCount, 0);
         XCTAssertEqual(result.errorsCount, 2);
         XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON);
-        
+
         result = converter.convertArray(rules: ["example.org#%#//scriptlet()", "example.org#%#", "example.org#@%#"], safariVersion: .safari15);
         XCTAssertEqual(result.convertedCount, 0);
         XCTAssertEqual(result.errorsCount, 3);
         XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON);
     }
-    
+
     func testProblematicRules() {
         var rules = [
             "facebook.com##div[role=\"feed\"] div[style=\"border-radius: max(0px, min(8px, ((100vw - 4px) - 100%) * 9999)) / 8px;\"] div[style=\"border-radius: max(0px, min(8px, ((100vw - 4px) - 100%) * 9999)) / 8px;\"]",
@@ -1897,13 +1901,25 @@ final class ContentBlockerConverterTests: XCTestCase {
         var result = converter.convertArray(rules: rules, safariVersion: .safari15, advancedBlocking: true);
         XCTAssertEqual(result.totalConvertedCount, rules.count);
         XCTAssertEqual(result.errorsCount, 0);
-        
+
         rules = [
             "facebook.com##div[role=\"region\"] + div[role=\"main\"] div[role=\"article\"] div[style=\"border-radius: max(0px, min(8px, ((100vw - 4px) - 100%) * 9999)) / 8px;\"] > div[class]:not([class*=\" \"])",
         ];
         result = converter.convertArray(rules: rules, safariVersion: .safari15, advancedBlocking: true);
         XCTAssertEqual(result.totalConvertedCount, 1);
         XCTAssertEqual(result.errorsCount, 0);
+    }
+
+    func testUnicodeRules() {
+        let rules = [
+            "example.org#$#simulate-event-poc click 'xpath(//*[text()=\"ได้รับการโปรโมท\"]')",
+            "||ได้รับการโปรโมท.com^",
+            "ได้รับการโปรโมท.com##banner",
+            "||example.org^$domain=ได้รับการโปรโมท.com"
+        ]
+        let result = converter.convertArray(rules: rules, safariVersion: .safari15, advancedBlocking: true)
+        XCTAssertEqual(result.totalConvertedCount, rules.count)
+        XCTAssertEqual(result.errorsCount, 0)
     }
 
     static var allTests = [
@@ -1956,5 +1972,8 @@ final class ContentBlockerConverterTests: XCTestCase {
         ("testLoadContext", testLoadContext),
         ("testResourceTypeForVariousSafariVersions", testResourceTypeForVariousSafariVersions),
         ("testBlockingRuleValidation", testBlockingRuleValidation),
+        ("testInvalidRules", testInvalidRules),
+        ("testProblematicRules", testProblematicRules),
+        ("testUnicodeRules", testUnicodeRules)
     ]
 }

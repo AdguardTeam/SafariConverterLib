@@ -28,8 +28,8 @@ class NetworkRuleParser {
 
         // Avoid parsing options inside of a regex rule
         if (ruleParts.pattern!.hasPrefix("/")
-            && ruleParts.pattern!.hasSuffix("/")
-            && (ruleParts.pattern?.indexOf(target: "$replace=") == -1)) {
+                && ruleParts.pattern!.hasSuffix("/")
+                && (ruleParts.pattern?.indexOf(target: "$replace=") == -1)) {
             return ruleParts
         }
 
@@ -47,29 +47,29 @@ class NetworkRuleParser {
     }
 
     private static func findOptionsDelimeterIndex(ruleText: NSString) -> Int {
-        let delim:unichar = "$".utf16.first!
-        let slash:unichar = "\\".utf16.first!
-        let bslash:unichar = "/".utf16.first!
+        let delim: unichar = "$".utf16.first!
+        let slash: unichar = "\\".utf16.first!
+        let bslash: unichar = "/".utf16.first!
 
         let maxIndex = ruleText.length - 1
         for i in 0...maxIndex {
             let index = maxIndex - i;
             let char = ruleText.character(at: index)
             switch char {
-                case delim:
-                    // ignore \$
-                    if (index > 0 && ruleText.character(at: index-1) == slash) {
-                        continue;
-                    }
+            case delim:
+                // ignore \$
+                if (index > 0 && ruleText.character(at: index - 1) == slash) {
+                    continue;
+                }
 
-                    // ignore $/
-                    if (index < maxIndex && ruleText.character(at: index+1)  == bslash) {
-                        continue;
-                    }
+                // ignore $/
+                if (index < maxIndex && ruleText.character(at: index + 1) == bslash) {
+                    continue;
+                }
 
-                    return index;
-                default:
-                    break;
+                return index;
+            default:
+                break;
             }
         }
 
@@ -80,40 +80,45 @@ class NetworkRuleParser {
     * Searches for domain name in rule text and transforms it to punycode if needed.
     */
     static func getAsciiDomainRule(pattern: String?) -> String? {
-        if (pattern == nil) {
+        if pattern == nil {
             return pattern;
         }
 
-        if (pattern!.isASCII()) {
+        if pattern!.isASCII() {
             return pattern;
         }
 
-        let domain = NetworkRuleParser.parseRuleDomain(pattern: pattern!);
+        let domain = NetworkRuleParser.parseRuleDomain(pattern: pattern! as NSString);
         return pattern!.replacingOccurrences(of: domain, with: domain.idnaEncoded!);
     }
 
-    static func parseRuleDomain(pattern: String) -> String {
-        let starts = ["http://www.", "https://www.", "http://", "https://", "||", "@@||", "//"];
-        let contains = ["/", "^"];
+    static func parseRuleDomain(pattern: NSString) -> String {
+        let starts = ["||", "@@||", "http://www.", "https://www.", "http://", "https://", "//"]
+        let contains = ["/", "^"]
 
-        var startIndex = 0;
+        var startIndex = 0
         for start in starts {
-            if (pattern.hasPrefix(start)) {
-                startIndex = start.unicodeScalars.count;
-                break;
+            if pattern.hasPrefix(start) {
+                startIndex = start.unicodeScalars.count
+                break
             }
         }
 
-        var endIndex = -1;
+        var endIndex = NSNotFound
         for end in contains {
-            let index = pattern.indexOf(target: end, startIndex: startIndex)
-            if (index > -1) {
+            let range = pattern.range(of: end, options: .literal, range: NSRange(location: startIndex, length: pattern.length - startIndex))
+            let index = range.location
+            if (index != NSNotFound) {
                 endIndex = index;
                 break;
             }
         }
 
-        return endIndex == -1 ? pattern.subString(startIndex: startIndex) : pattern.subString(startIndex: startIndex, toIndex: endIndex);
+        if endIndex == NSNotFound {
+            return pattern.substring(from: startIndex)
+        }
+
+        return pattern.substring(with: NSRange(location: startIndex, length: endIndex - startIndex))
     }
 
     struct BasicRuleParts {

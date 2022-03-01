@@ -18,9 +18,11 @@ class ScriptletParser {
             throw SyntaxError.invalidRule(message: "Invalid scriptlet")
         }
 
+        let str = data as NSString
+
         // Without the scriptlet prefix the string looks like:
         // "scriptletname", "arg1", "arg2", etc
-        let argumentsStr = data.subString(startIndex: SCRIPTLET_MASK_LEN, toIndex: data.unicodeScalars.count - 1)
+        let argumentsStr = str.substring(with: NSRange(location: SCRIPTLET_MASK_LEN, length: str.length - SCRIPTLET_MASK_LEN - 1)) as NSString
 
         // Now we just get an array of these arguments
         let params = ScriptletParser.splitByDelimiterNotQuoted(str: argumentsStr as NSString, delimiter: ",".utf16.first!)
@@ -121,10 +123,11 @@ class ScriptletParser {
     private static func unquoteStrings(items: [String]) throws -> [String] {
         var result = [String]()
         for item in items {
+            let str = item as NSString
             if item.hasPrefix("'") && item.hasSuffix("'") {
-                result.append(item.subString(startIndex: 1, toIndex: item.unicodeScalars.count - 1))
+                result.append(str.substring(with: NSRange(location: 1, length: str.length - 2)))
             } else if item.hasPrefix("\"") && item.hasSuffix("\"") {
-                result.append(item.subString(startIndex: 1, toIndex: item.unicodeScalars.count - 1))
+                result.append(str.substring(with: NSRange(location: 1, length: str.length - 2)))
             } else {
                 throw SyntaxError.invalidRule(message: "scriptlet argument not enclosed in quotes")
             }
