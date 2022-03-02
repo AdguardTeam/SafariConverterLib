@@ -203,8 +203,8 @@ class BlockerEntryFactory {
         }
 
         // Safari doesn't support non-ASCII characters in regular expressions
-        if (!(urlRegExpSource! as String).isASCII()) {
-            throw ConversionError.unsupportedRegExp(message: "Safari doesn't support non-ASCII characters in regular expressions");
+        if !urlRegExpSource!.canBeConverted(to: String.Encoding.ascii.rawValue) {
+            throw ConversionError.unsupportedRegExp(message: "Safari doesn't support non-ASCII characters in regular expressions")
         }
 
         // Regex that we generate for basic non-regex rules are okay
