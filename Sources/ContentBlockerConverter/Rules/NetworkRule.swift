@@ -242,6 +242,17 @@ class NetworkRule: Rule {
 
         return false;
     }
+    
+    /**
+     * Parses source string and sets up permitted and restricted domains fields
+     */
+    private func setNetworkRuleDomains(domains: String) throws -> Void {
+        if (domains == "") {
+            throw SyntaxError.invalidRule(message: "Modifier $domain cannot be empty")
+        }
+
+        try setDomains(domains: domains, separator: Rule.VERTICAL_SEPARATOR)
+    }
 
     private func loadOptions(options: String) throws -> Void {
         let optionParts = options.splitByDelimiterWithEscapeCharacter(delimiter: NetworkRule.delimeterChar, escapeChar: NetworkRule.escapeChar);
