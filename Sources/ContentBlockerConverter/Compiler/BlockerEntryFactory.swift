@@ -156,6 +156,12 @@ class BlockerEntryFactory {
     */
     private func convertCssRule(rule: CosmeticRule) throws -> BlockerEntry? {
         var trigger = BlockerEntry.Trigger(urlFilter: BlockerEntryFactory.URL_FILTER_CSS_RULES);
+
+        if rule.pathModifier != nil {
+            let pathRegex = SimpleRegex.createRegexText(str: rule.pathModifier! as NSString)! as String
+            trigger = BlockerEntry.Trigger(urlFilter: BlockerEntryFactory.URL_FILTER_CSS_RULES + pathRegex)
+        }
+
         var action = BlockerEntry.Action(type:"css-display-none");
 
         if (rule.isExtendedCss) {

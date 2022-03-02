@@ -83,7 +83,7 @@ class CosmeticRule: Rule {
             // suppport for *## for generic rules
             // https://github.com/AdguardTeam/SafariConverterLib/issues/11
             if (!(domains.count == 1 && domains.contains("*"))) {
-                try super.setDomains(domains: domains, sep: ",");
+                try super.setCosmeticRuleDomains(domains: domains);
             }
         }
 
