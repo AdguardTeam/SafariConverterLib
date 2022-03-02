@@ -18,7 +18,6 @@ class Rule {
     var restrictedDomains = [String]();
     
     var pathModifier: String?;
-    var domainModifier: String?;
     
     private static let OPEN_BRACKET = "["
     private static let CLOSE_BRACKET = "]"
