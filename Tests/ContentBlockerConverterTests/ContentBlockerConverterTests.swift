@@ -2009,6 +2009,38 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded[0].action.type, "css-display-none");
         XCTAssertEqual(decoded[0].action.selector, ".textad");
     }
+    
+    func testAdvancedCosmeticRulesWithPathModifier() {
+        var rules = ["[$path=page.html]#$#.textad { visibility: hidden }"];
+        var result = converter.convertArray(rules: rules, advancedBlocking: true);
+        XCTAssertEqual(result.convertedCount, 0);
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 1);
+        XCTAssertEqual(result.totalConvertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
+
+        var decoded = try! parseJsonString(json: result.advancedBlocking!);
+        XCTAssertEqual(decoded.count, 1);
+
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*page\\.html");
+        XCTAssertNil(decoded[0].trigger.ifDomain);
+        XCTAssertEqual(decoded[0].action.type, "css-inject");
+        XCTAssertEqual(decoded[0].action.css, ".textad { visibility: hidden }");
+
+        rules = ["[$path=/page.html]test.com#?#div:has(.textad)"];
+        result = converter.convertArray(rules: rules, advancedBlocking: true);
+        XCTAssertEqual(result.convertedCount, 0);
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 1);
+        XCTAssertEqual(result.totalConvertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
+
+        decoded = try! parseJsonString(json: result.advancedBlocking!);
+        XCTAssertEqual(decoded.count, 1);
+
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*\\/page\\.html");
+        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*test.com"]);
+        XCTAssertEqual(decoded[0].action.type, "css-extended");
+        XCTAssertEqual(decoded[0].action.css, "div:has(.textad)");
+    }
 
     func testUnicodeRules() {
         let rules = [
@@ -2074,7 +2106,8 @@ final class ContentBlockerConverterTests: XCTestCase {
         ("testBlockingRuleValidation", testBlockingRuleValidation),
         ("testInvalidRules", testInvalidRules),
         ("testProblematicRules", testProblematicRules),
-        ("testUnicodeRules", testUnicodeRules),
         ("testCosmeticRulesWithPathModifier", testCosmeticRulesWithPathModifier),
+        ("testAdvancedCosmeticRulesWithPathModifier", testAdvancedCosmeticRulesWithPathModifier),
+        ("testUnicodeRules", testUnicodeRules),
     ]
 }
