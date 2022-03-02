@@ -56,6 +56,8 @@ class BlockerEntryFactory {
     private static let VALIDATE_REGEXP_OR        = try! NSRegularExpression(pattern: #"[^\\]+\|+\S*"#, options: [.caseInsensitive]);
     private static let VALIDATE_REGEXP_LOOKAHEAD = try! NSRegularExpression(pattern: "\\(\\?!.*\\)", options: [.caseInsensitive]);
     private static let VALIDATE_REGEXP_METACHARS = try! NSRegularExpression(pattern: #"[^\\]\\[bdfnrstvw]"#, options: [.caseInsensitive]);
+    
+    private static let REGEXP_SLASH = "/"
 
     let advancedBlockingEnabled: Bool;
     let errorsCounter: ErrorsCounter;
@@ -158,7 +160,12 @@ class BlockerEntryFactory {
         var trigger = BlockerEntry.Trigger(urlFilter: BlockerEntryFactory.URL_FILTER_CSS_RULES);
 
         if rule.pathModifier != nil {
-            let pathRegex = SimpleRegex.createRegexText(str: rule.pathModifier! as NSString)! as String
+            var pathRegex: String
+            if rule.pathModifier!.hasPrefix(BlockerEntryFactory.REGEXP_SLASH) && rule.pathModifier!.hasSuffix(BlockerEntryFactory.REGEXP_SLASH) {
+                pathRegex = String(String(rule.pathModifier!.dropFirst()).dropLast())
+            } else {
+                pathRegex = SimpleRegex.createRegexText(str: rule.pathModifier! as NSString)! as String
+            }
             trigger = BlockerEntry.Trigger(urlFilter: BlockerEntryFactory.URL_FILTER_CSS_RULES + pathRegex)
         }
 

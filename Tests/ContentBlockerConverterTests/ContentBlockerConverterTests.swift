@@ -1994,6 +1994,20 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertNil(decoded[0].trigger.ifDomain);
         XCTAssertEqual(decoded[0].action.type, "css-display-none");
         XCTAssertEqual(decoded[0].action.selector, ".textad");
+        
+        rules = ["[$path=/\\/(sub1|sub2)\\/page\\.html/]##.textad"];
+        result = converter.convertArray(rules: rules);
+        XCTAssertEqual(result.convertedCount, 1);
+        XCTAssertEqual(result.totalConvertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
+
+        decoded = try! parseJsonString(json: result.converted);
+        XCTAssertEqual(decoded.count, 1);
+
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*\\/(sub1|sub2)\\/page\\.html");
+        XCTAssertNil(decoded[0].trigger.ifDomain);
+        XCTAssertEqual(decoded[0].action.type, "css-display-none");
+        XCTAssertEqual(decoded[0].action.selector, ".textad");
     }
 
     func testUnicodeRules() {
