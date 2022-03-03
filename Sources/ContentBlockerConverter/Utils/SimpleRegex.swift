@@ -14,6 +14,8 @@ class SimpleRegex {
     private static let  URL_FILTER_REGEXP_END_SEPARATOR = "([\\/:&\\?].*)?$";
     private static let  URL_FILTER_REGEXP_SEPARATOR = "[/:&?]?";
     
+    static private let RESTRICTED_SAFARI_REGEX_SYMBOLS = ["|", "!", "^", "$"]
+    
     // Constants
     private static let maskStartUrl = "||" as NSString;
     private static let maskPipe = "|" as NSString;
@@ -121,5 +123,18 @@ class SimpleRegex {
         return matches.map { match in
             return target.substring(with: match.range)
         }
+    }
+    
+    /**
+     * Validates regular expression for Safari
+     */
+    static func isValidSafariRegexString(regexStr: String) -> Bool {
+        var isValid = true
+        RESTRICTED_SAFARI_REGEX_SYMBOLS.forEach {
+            if regexStr.contains($0) {
+                isValid = false
+            }
+        }
+        return isValid
     }
 }

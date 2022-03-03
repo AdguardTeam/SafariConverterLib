@@ -163,6 +163,9 @@ class BlockerEntryFactory {
             var pathRegex: String
             if rule.pathModifier!.hasPrefix(BlockerEntryFactory.REGEXP_SLASH) && rule.pathModifier!.hasSuffix(BlockerEntryFactory.REGEXP_SLASH) {
                 pathRegex = String(String(rule.pathModifier!.dropFirst()).dropLast())
+                if !SimpleRegex.isValidSafariRegexString(regexStr: pathRegex) {
+                    throw ConversionError.unsupportedRegExp(message: "Unsupported regular expression for Safari")
+                }
             } else {
                 pathRegex = SimpleRegex.createRegexText(str: rule.pathModifier! as NSString)! as String
             }

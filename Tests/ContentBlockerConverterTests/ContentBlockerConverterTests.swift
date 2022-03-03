@@ -1995,7 +1995,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded[0].action.type, "css-display-none");
         XCTAssertEqual(decoded[0].action.selector, ".textad");
         
-        rules = ["[$path=/\\/(sub1|sub2)\\/page\\.html/]##.textad"];
+        rules = ["[$path=/\\/sub\\/.*\\/page\\.html/]##.textad"];
         result = converter.convertArray(rules: rules);
         XCTAssertEqual(result.convertedCount, 1);
         XCTAssertEqual(result.totalConvertedCount, 1);
@@ -2004,10 +2004,16 @@ final class ContentBlockerConverterTests: XCTestCase {
         decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
 
-        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*\\/(sub1|sub2)\\/page\\.html");
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*\\/sub\\/.*\\/page\\.html");
         XCTAssertNil(decoded[0].trigger.ifDomain);
         XCTAssertEqual(decoded[0].action.type, "css-display-none");
         XCTAssertEqual(decoded[0].action.selector, ".textad");
+        
+        rules = ["[$path=/\\/(sub1|sub2)\\/page\\.html/]##.textad"];
+        result = converter.convertArray(rules: rules);
+        XCTAssertEqual(result.convertedCount, 0);
+        XCTAssertEqual(result.totalConvertedCount, 0);
+        XCTAssertEqual(result.errorsCount, 1);
     }
     
     func testAdvancedCosmeticRulesWithPathModifier() {
