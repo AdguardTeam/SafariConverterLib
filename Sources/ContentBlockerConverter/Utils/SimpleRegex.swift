@@ -124,17 +124,4 @@ class SimpleRegex {
             return target.substring(with: match.range)
         }
     }
-    
-    /**
-     * Validates regular expression for Safari
-     */
-    static func isValidSafariRegexString(regexStr: String) -> Bool {
-        var isValid = true
-        RESTRICTED_SAFARI_REGEX_SYMBOLS.forEach {
-            if regexStr.contains($0) {
-                isValid = false
-            }
-        }
-        return isValid
-    }
 }
