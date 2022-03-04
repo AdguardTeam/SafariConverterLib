@@ -14,8 +14,6 @@ class SimpleRegex {
     private static let  URL_FILTER_REGEXP_END_SEPARATOR = "([\\/:&\\?].*)?$";
     private static let  URL_FILTER_REGEXP_SEPARATOR = "[/:&?]?";
     
-    static private let RESTRICTED_SAFARI_REGEX_SYMBOLS = ["|", "!", "^", "$"]
-    
     // Constants
     private static let maskStartUrl = "||" as NSString;
     private static let maskPipe = "|" as NSString;
