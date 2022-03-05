@@ -2014,6 +2014,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result.convertedCount, 0);
         XCTAssertEqual(result.totalConvertedCount, 0);
         XCTAssertEqual(result.errorsCount, 1);
+        XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON);
     }
     
     func testAdvancedCosmeticRulesWithPathModifier() {
@@ -2046,6 +2047,13 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded[0].trigger.ifDomain, ["*test.com"]);
         XCTAssertEqual(decoded[0].action.type, "css-extended");
         XCTAssertEqual(decoded[0].action.css, "div:has(.textad)");
+        
+        rules = ["[$path=/\\/тест\\/.*\\/page\\.html/]##.textad"];
+        result = converter.convertArray(rules: rules);
+        XCTAssertEqual(result.convertedCount, 0);
+        XCTAssertEqual(result.totalConvertedCount, 0);
+        XCTAssertEqual(result.errorsCount, 1);
+        XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON);
     }
 
     func testUnicodeRules() {

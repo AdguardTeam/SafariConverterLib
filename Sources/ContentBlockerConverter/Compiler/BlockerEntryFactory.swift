@@ -163,7 +163,13 @@ class BlockerEntryFactory {
             var pathRegex: String
             if rule.pathModifier!.hasPrefix(BlockerEntryFactory.REGEXP_SLASH) && rule.pathModifier!.hasSuffix(BlockerEntryFactory.REGEXP_SLASH) {
                 pathRegex = String(String(rule.pathModifier!.dropFirst()).dropLast())
+
                 try validateRegExp(urlRegExp: pathRegex as NSString)
+
+                // Safari doesn't support non-ASCII characters in regular expressions
+                if !pathRegex.canBeConverted(to: String.Encoding.ascii) {
+                    throw ConversionError.unsupportedRegExp(message: "Safari doesn't support non-ASCII characters in regular expressions")
+                }
             } else {
                 pathRegex = SimpleRegex.createRegexText(str: rule.pathModifier! as NSString)! as String
             }
@@ -208,6 +214,11 @@ class BlockerEntryFactory {
         if (urlRegExpSource == nil) {
             // Rule with empty regexp
             return BlockerEntryFactory.URL_FILTER_ANY_URL;
+        }
+
+        // Safari doesn't support non-ASCII characters in regular expressions
+        if !String(urlRegExpSource!).canBeConverted(to: String.Encoding.ascii) {
+            throw ConversionError.unsupportedRegExp(message: "Safari doesn't support non-ASCII characters in regular expressions")
         }
 
         // Regex that we generate for basic non-regex rules are okay
