@@ -2067,6 +2067,20 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result.totalConvertedCount, rules.count)
         XCTAssertEqual(result.errorsCount, 0)
     }
+    
+    func testBlockingRulesWithNonAsciiRegex() {
+        let rules = ["||example.org$domain=/реклама\\.рф/"]
+        let result = converter.convertArray(rules: rules)
+        XCTAssertEqual(result.convertedCount, 1)
+        XCTAssertEqual(result.errorsCount, 0)
+        
+        let decoded = try! parseJsonString(json: result.converted);
+        XCTAssertEqual(decoded.count, 1);
+        
+        XCTAssertEqual(decoded[0].trigger.urlFilter, "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org");
+        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*xn--/\\-7kcax4ahj5a.xn--/-4tbm"]);
+        XCTAssertEqual(decoded[0].action.type, "block");
+    }
 
     static var allTests = [
         ("testEmpty", testEmpty),
@@ -2123,5 +2137,6 @@ final class ContentBlockerConverterTests: XCTestCase {
         ("testCosmeticRulesWithPathModifier", testCosmeticRulesWithPathModifier),
         ("testAdvancedCosmeticRulesWithPathModifier", testAdvancedCosmeticRulesWithPathModifier),
         ("testUnicodeRules", testUnicodeRules),
+        ("testBlockingRulesWithNonAsciiRegex", testBlockingRulesWithNonAsciiRegex),
     ]
 }
