@@ -56,6 +56,8 @@ class BlockerEntryFactory {
     private static let VALIDATE_REGEXP_OR        = try! NSRegularExpression(pattern: #"[^\\]+\|+\S*"#, options: [.caseInsensitive]);
     private static let VALIDATE_REGEXP_LOOKAHEAD = try! NSRegularExpression(pattern: "\\(\\?!.*\\)", options: [.caseInsensitive]);
     private static let VALIDATE_REGEXP_METACHARS = try! NSRegularExpression(pattern: #"[^\\]\\[bdfnrstvw]"#, options: [.caseInsensitive]);
+    
+    private static let REGEXP_SLASH = "/"
 
     let advancedBlockingEnabled: Bool;
     let errorsCounter: ErrorsCounter;
@@ -156,6 +158,24 @@ class BlockerEntryFactory {
     */
     private func convertCssRule(rule: CosmeticRule) throws -> BlockerEntry? {
         var trigger = BlockerEntry.Trigger(urlFilter: BlockerEntryFactory.URL_FILTER_CSS_RULES);
+
+        if rule.pathModifier != nil {
+            var pathRegex: String
+            if rule.pathModifier!.hasPrefix(BlockerEntryFactory.REGEXP_SLASH) && rule.pathModifier!.hasSuffix(BlockerEntryFactory.REGEXP_SLASH) {
+                pathRegex = String(String(rule.pathModifier!.dropFirst()).dropLast())
+
+                try validateRegExp(urlRegExp: pathRegex as NSString)
+
+                // Safari doesn't support non-ASCII characters in regular expressions
+                if !pathRegex.canBeConverted(to: String.Encoding.ascii) {
+                    throw ConversionError.unsupportedRegExp(message: "Safari doesn't support non-ASCII characters in regular expressions")
+                }
+            } else {
+                pathRegex = SimpleRegex.createRegexText(str: rule.pathModifier! as NSString)! as String
+            }
+            trigger = BlockerEntry.Trigger(urlFilter: BlockerEntryFactory.URL_FILTER_CSS_RULES + pathRegex)
+        }
+
         var action = BlockerEntry.Action(type:"css-display-none");
 
         if (rule.isExtendedCss) {

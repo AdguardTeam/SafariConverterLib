@@ -17,6 +17,11 @@ class Rule {
     var permittedDomains = [String]();
     var restrictedDomains = [String]();
 
+    var pathModifier: String?;
+
+    public static let COMMA_SEPARATOR = ","
+    public static let VERTICAL_SEPARATOR = "|"
+
     init() {
 
     }
@@ -25,16 +30,10 @@ class Rule {
         self.ruleText = ruleText;
     }
 
-    /**
-     * Parses source string and sets up permitted and restricted domains fields
-     */
-    func setDomains(domains: String, sep: String) throws -> Void {
-        if (domains == "") {
-            throw SyntaxError.invalidRule(message: "Modifier $domain cannot be empty")
-        }
+    func setDomains(domains: String, separator: String) throws -> Void {
+        let domainsList = domains.components(separatedBy: separator)
 
-        let parts = domains.components(separatedBy: sep)
-        for var domain in parts {
+        for var domain in domainsList {
             var restricted = false;
             if domain.hasPrefix("~") {
                 restricted = true

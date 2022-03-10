@@ -310,7 +310,7 @@ class Compiler {
                 cssBlockingDomainSensitive.append(entry);
             } else if (entry.trigger.unlessDomain != nil) {
                 cssBlockingGenericDomainSensitive.append(entry);
-            } else if (entry.action.selector != nil) {
+            } else if (entry.action.selector != nil && entry.trigger.urlFilter == BlockerEntryFactory.URL_FILTER_CSS_RULES) {
                 wideSelectors.append(entry.action.selector!);
                 if (wideSelectors.count >= Compiler.MAX_SELECTORS_PER_WIDE_RULE) {
                     cssBlockingWide.append(createWideRule(wideSelectors: wideSelectors));

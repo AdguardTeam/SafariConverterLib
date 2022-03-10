@@ -1910,6 +1910,152 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result.errorsCount, 0);
     }
 
+    func testCosmeticRulesWithPathModifier() {
+        var rules = ["[$path=page.html]##.textad"];
+        var result = converter.convertArray(rules: rules);
+        XCTAssertEqual(result.convertedCount, 1);
+        XCTAssertEqual(result.totalConvertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
+
+        var decoded = try! parseJsonString(json: result.converted);
+        XCTAssertEqual(decoded.count, 1);
+
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*page\\.html");
+        XCTAssertNil(decoded[0].trigger.ifDomain);
+        XCTAssertEqual(decoded[0].action.type, "css-display-none");
+        XCTAssertEqual(decoded[0].action.selector, ".textad");
+
+        rules = ["[$path=/page.html]test.com##.textad"];
+        result = converter.convertArray(rules: rules);
+        XCTAssertEqual(result.convertedCount, 1);
+        XCTAssertEqual(result.totalConvertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
+
+        decoded = try! parseJsonString(json: result.converted);
+        XCTAssertEqual(decoded.count, 1);
+
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*\\/page\\.html");
+        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*test.com"]);
+        XCTAssertEqual(decoded[0].action.type, "css-display-none");
+        XCTAssertEqual(decoded[0].action.selector, ".textad");
+
+        rules = ["[$path=/page.html,domain=example.org|test.com]##.textad"];
+        result = converter.convertArray(rules: rules);
+        XCTAssertEqual(result.convertedCount, 1);
+        XCTAssertEqual(result.totalConvertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
+
+        decoded = try! parseJsonString(json: result.converted);
+        XCTAssertEqual(decoded.count, 1);
+
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*\\/page\\.html");
+        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*example.org", "*test.com"]);
+        XCTAssertEqual(decoded[0].action.type, "css-display-none");
+        XCTAssertEqual(decoded[0].action.selector, ".textad");
+
+        rules = ["[$domain=example.org,path=/page.html]##.textad"];
+        result = converter.convertArray(rules: rules);
+        XCTAssertEqual(result.convertedCount, 1);
+        XCTAssertEqual(result.totalConvertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
+
+        decoded = try! parseJsonString(json: result.converted);
+        XCTAssertEqual(decoded.count, 1);
+
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*\\/page\\.html");
+        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*example.org"]);
+        XCTAssertEqual(decoded[0].action.type, "css-display-none");
+        XCTAssertEqual(decoded[0].action.selector, ".textad");
+
+        rules = ["[$domain=example.org|test.com,path=/page.html]website.com##.textad"];
+        result = converter.convertArray(rules: rules);
+        XCTAssertEqual(result.convertedCount, 1);
+        XCTAssertEqual(result.totalConvertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
+
+        decoded = try! parseJsonString(json: result.converted);
+        XCTAssertEqual(decoded.count, 1);
+
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*\\/page\\.html");
+        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*example.org", "*test.com", "*website.com"]);
+        XCTAssertEqual(decoded[0].action.type, "css-display-none");
+        XCTAssertEqual(decoded[0].action.selector, ".textad");
+        
+        rules = ["[$path=/page*.html]##.textad"];
+        result = converter.convertArray(rules: rules);
+        XCTAssertEqual(result.convertedCount, 1);
+        XCTAssertEqual(result.totalConvertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
+
+        decoded = try! parseJsonString(json: result.converted);
+        XCTAssertEqual(decoded.count, 1);
+
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*\\/page.*\\.html");
+        XCTAssertNil(decoded[0].trigger.ifDomain);
+        XCTAssertEqual(decoded[0].action.type, "css-display-none");
+        XCTAssertEqual(decoded[0].action.selector, ".textad");
+        
+        rules = ["[$path=/\\/sub\\/.*\\/page\\.html/]##.textad"];
+        result = converter.convertArray(rules: rules);
+        XCTAssertEqual(result.convertedCount, 1);
+        XCTAssertEqual(result.totalConvertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
+
+        decoded = try! parseJsonString(json: result.converted);
+        XCTAssertEqual(decoded.count, 1);
+
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*\\/sub\\/.*\\/page\\.html");
+        XCTAssertNil(decoded[0].trigger.ifDomain);
+        XCTAssertEqual(decoded[0].action.type, "css-display-none");
+        XCTAssertEqual(decoded[0].action.selector, ".textad");
+        
+        rules = ["[$path=/\\/(sub1|sub2)\\/page\\.html/]##.textad"];
+        result = converter.convertArray(rules: rules);
+        XCTAssertEqual(result.convertedCount, 0);
+        XCTAssertEqual(result.totalConvertedCount, 0);
+        XCTAssertEqual(result.errorsCount, 1);
+        XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON);
+    }
+    
+    func testAdvancedCosmeticRulesWithPathModifier() {
+        var rules = ["[$path=page.html]#$#.textad { visibility: hidden }"];
+        var result = converter.convertArray(rules: rules, advancedBlocking: true);
+        XCTAssertEqual(result.convertedCount, 0);
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 1);
+        XCTAssertEqual(result.totalConvertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
+
+        var decoded = try! parseJsonString(json: result.advancedBlocking!);
+        XCTAssertEqual(decoded.count, 1);
+
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*page\\.html");
+        XCTAssertNil(decoded[0].trigger.ifDomain);
+        XCTAssertEqual(decoded[0].action.type, "css-inject");
+        XCTAssertEqual(decoded[0].action.css, ".textad { visibility: hidden }");
+
+        rules = ["[$path=/page.html]test.com#?#div:has(.textad)"];
+        result = converter.convertArray(rules: rules, advancedBlocking: true);
+        XCTAssertEqual(result.convertedCount, 0);
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 1);
+        XCTAssertEqual(result.totalConvertedCount, 1);
+        XCTAssertEqual(result.errorsCount, 0);
+
+        decoded = try! parseJsonString(json: result.advancedBlocking!);
+        XCTAssertEqual(decoded.count, 1);
+
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*\\/page\\.html");
+        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*test.com"]);
+        XCTAssertEqual(decoded[0].action.type, "css-extended");
+        XCTAssertEqual(decoded[0].action.css, "div:has(.textad)");
+        
+        rules = ["[$path=/\\/тест\\/.*\\/page\\.html/]##.textad"];
+        result = converter.convertArray(rules: rules);
+        XCTAssertEqual(result.convertedCount, 0);
+        XCTAssertEqual(result.totalConvertedCount, 0);
+        XCTAssertEqual(result.errorsCount, 1);
+        XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON);
+    }
+
     func testUnicodeRules() {
         let rules = [
             "example.org#$#simulate-event-poc click 'xpath(//*[text()=\"ได้รับการโปรโมท\"]')",
@@ -1920,6 +2066,26 @@ final class ContentBlockerConverterTests: XCTestCase {
         let result = converter.convertArray(rules: rules, safariVersion: .safari15, advancedBlocking: true)
         XCTAssertEqual(result.totalConvertedCount, rules.count)
         XCTAssertEqual(result.errorsCount, 0)
+    }
+    
+    func testBlockingRulesWithNonAsciiCharacters() {
+        var rules = ["||example.org$domain=/реклама\\.рф/"]
+        var result = converter.convertArray(rules: rules)
+        XCTAssertEqual(result.convertedCount, 1)
+        XCTAssertEqual(result.errorsCount, 0)
+        
+        var decoded = try! parseJsonString(json: result.converted);
+        XCTAssertEqual(decoded.count, 1);
+        
+        XCTAssertEqual(decoded[0].trigger.urlFilter, "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org");
+        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*xn--/\\-7kcax4ahj5a.xn--/-4tbm"]);
+        XCTAssertEqual(decoded[0].action.type, "block");
+        
+        rules = ["/тест-регексп/$domain=/test\\.com/"]
+        result = converter.convertArray(rules: rules)
+        XCTAssertEqual(result.convertedCount, 0)
+        XCTAssertEqual(result.errorsCount, 1)
+        XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON);
     }
 
     static var allTests = [
@@ -1974,6 +2140,9 @@ final class ContentBlockerConverterTests: XCTestCase {
         ("testBlockingRuleValidation", testBlockingRuleValidation),
         ("testInvalidRules", testInvalidRules),
         ("testProblematicRules", testProblematicRules),
-        ("testUnicodeRules", testUnicodeRules)
+        ("testCosmeticRulesWithPathModifier", testCosmeticRulesWithPathModifier),
+        ("testAdvancedCosmeticRulesWithPathModifier", testAdvancedCosmeticRulesWithPathModifier),
+        ("testUnicodeRules", testUnicodeRules),
+        ("testBlockingRulesWithNonAsciiCharacters", testBlockingRulesWithNonAsciiCharacters),
     ]
 }

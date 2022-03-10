@@ -26,6 +26,13 @@ class CosmeticRule: Rule {
     
     private static let EXT_CSS_EXT_INDICATOR = "[-ext-";
     
+    private static let OPEN_BRACKET = "["
+    private static let CLOSE_BRACKET = "]"
+    private static let MODIFIER_KEY = "$"
+    
+    private static let PATH_MODIFIER = "path="
+    private static let DOMAIN_MODIFIER = "domain="
+    
     var content: String = "";
     
     var scriptlet: String? = nil;
@@ -83,7 +90,7 @@ class CosmeticRule: Rule {
             // suppport for *## for generic rules
             // https://github.com/AdguardTeam/SafariConverterLib/issues/11
             if (!(domains.count == 1 && domains.contains("*"))) {
-                try super.setDomains(domains: domains, sep: ",");
+                try setCosmeticRuleDomains(domains: domains);
             }
         }
 
@@ -148,5 +155,41 @@ class CosmeticRule: Rule {
             default:
                 return false;
         }
+    }
+    
+    func setCosmeticRuleDomains(domains: String) throws -> Void {
+        // handle modifiers
+        if domains.starts(with: CosmeticRule.OPEN_BRACKET + CosmeticRule.MODIFIER_KEY) {
+            let closeBracketIndex = domains.indexOf(target: CosmeticRule.CLOSE_BRACKET)
+
+            if closeBracketIndex < 2 {
+                // invalid or empty modifier
+                throw SyntaxError.invalidRule(message: "Invalid modifier")
+            }
+
+            let modifiersString = domains.subString(startIndex: 2, toIndex: closeBracketIndex)
+
+            let modifiers = modifiersString.components(separatedBy: Rule.COMMA_SEPARATOR)
+
+            for modifier in modifiers {
+                if modifier.starts(with: CosmeticRule.PATH_MODIFIER) {
+                    self.pathModifier = modifier.subString(startIndex: CosmeticRule.PATH_MODIFIER.count)
+                }
+
+                if modifier.starts(with: CosmeticRule.DOMAIN_MODIFIER) {
+                    let domainModifier = modifier.subString(startIndex: CosmeticRule.DOMAIN_MODIFIER.count)
+                    try setDomains(domains: domainModifier, separator: Rule.VERTICAL_SEPARATOR)
+                }
+            }
+
+            if closeBracketIndex + 1 < domains.count {
+                let domainsString = domains.subString(startIndex: closeBracketIndex + 1)
+                try setDomains(domains: domainsString, separator: Rule.COMMA_SEPARATOR)
+            }
+
+            return;
+        }
+
+        try setDomains(domains: domains, separator: Rule.COMMA_SEPARATOR)
     }
 }

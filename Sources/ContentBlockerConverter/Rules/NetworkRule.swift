@@ -242,6 +242,17 @@ class NetworkRule: Rule {
 
         return false;
     }
+    
+    /**
+     * Parses source string and sets up permitted and restricted domains fields
+     */
+    private func setNetworkRuleDomains(domains: String) throws -> Void {
+        if (domains == "") {
+            throw SyntaxError.invalidRule(message: "Modifier $domain cannot be empty")
+        }
+
+        try setDomains(domains: domains, separator: Rule.VERTICAL_SEPARATOR)
+    }
 
     private func loadOptions(options: String) throws -> Void {
         let optionParts = options.splitByDelimiterWithEscapeCharacter(delimiter: NetworkRule.delimeterChar, escapeChar: NetworkRule.escapeChar);
@@ -321,7 +332,7 @@ class NetworkRule: Rule {
             isReplace = true;
             break;
         case "domain":
-            try setDomains(domains: optionValue, sep: "|");
+            try setNetworkRuleDomains(domains: optionValue);
             break;
         case "elemhide":
             try setOptionEnabled(option: NetworkRuleOption.Elemhide, value: true);
@@ -436,7 +447,7 @@ class NetworkRule: Rule {
         case "~webrtc":
             setRequestType(contentType: ContentType.WEBRTC, enabled: false);
             break;
-
+            
         default:
             throw SyntaxError.invalidRule(message: "Unknown option: \(optionName)");
         }
