@@ -2087,13 +2087,6 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result.errorsCount, 1)
         XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON);
     }
-    
-    func testTMP() {
-        let rules = ["||example.org$image,script,media,font,other,websocket,ping"]
-        let result = converter.convertArray(rules: rules, safariVersion: .safari15, advancedBlocking: true)
-        XCTAssertEqual(result.totalConvertedCount, rules.count)
-        XCTAssertEqual(result.errorsCount, 0)
-    }
 
     static var allTests = [
         ("testEmpty", testEmpty),
