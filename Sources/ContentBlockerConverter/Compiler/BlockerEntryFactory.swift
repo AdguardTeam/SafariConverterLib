@@ -272,7 +272,7 @@ class BlockerEntryFactory {
 
         var rawAdded = false
         if rule.hasContentType(contentType: NetworkRule.ContentType.XMLHTTPREQUEST) {
-            // `fetch` resource type is supported since Safari 15, but not supported in macOS 11 (Big Sur) and earlier
+            // `fetch` resource type is supported since Safari 15, but not supported in macOS 11 (Big Sur)
             if SafariService.current.version.isSafari15() && !isMacOS11 {
                 types.append("fetch")
             } else if !rawAdded {
@@ -282,7 +282,7 @@ class BlockerEntryFactory {
         }
 
         if rule.hasContentType(contentType: NetworkRule.ContentType.OTHER) {
-            // `other` resource type is supported since Safari 15, but not supported in macOS 11 (Big Sur) and earlier
+            // `other` resource type is supported since Safari 15, but not supported in macOS 11 (Big Sur)
             if SafariService.current.version.isSafari15() && !isMacOS11 {
                 types.append("other")
             } else if !rawAdded {
@@ -292,7 +292,7 @@ class BlockerEntryFactory {
         }
 
         if rule.hasContentType(contentType: NetworkRule.ContentType.WEBSOCKET) {
-            // `websocket` resource type is supported since Safari 15, but not supported in macOS 11 (Big Sur) and earlier
+            // `websocket` resource type is supported since Safari 15, but not supported in macOS 11 (Big Sur)
             if SafariService.current.version.isSafari15() && !isMacOS11 {
                 types.append("websocket")
             } else if !rawAdded {
