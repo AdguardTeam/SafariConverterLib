@@ -242,6 +242,10 @@ class BlockerEntryFactory {
             action.type = "ignore-previous-rules";
         }
     }
+    
+    private func isMacOS11() -> Bool {
+        return ProcessInfo().operatingSystemVersion.majorVersion == 11
+    }
 
     private func addResourceType(rule: NetworkRule, trigger: inout BlockerEntry.Trigger) throws -> Void {
         // Using String array instead of Set makes the code a bit more clunkier, but saves time.
@@ -268,8 +272,8 @@ class BlockerEntryFactory {
 
         var rawAdded = false
         if rule.hasContentType(contentType: NetworkRule.ContentType.XMLHTTPREQUEST) {
-            // `fetch` resource type is supported since Safari 15
-            if SafariService.current.version.isSafari15() {
+            // `fetch` resource type is supported since Safari 15, but not supported in macOS 11 (Big Sur) and earlier
+            if SafariService.current.version.isSafari15() && !isMacOS11 {
                 types.append("fetch")
             } else if !rawAdded {
                 rawAdded = true
@@ -278,8 +282,8 @@ class BlockerEntryFactory {
         }
 
         if rule.hasContentType(contentType: NetworkRule.ContentType.OTHER) {
-            // `other` resource type is supported since Safari 15
-            if SafariService.current.version.isSafari15() {
+            // `other` resource type is supported since Safari 15, but not supported in macOS 11 (Big Sur) and earlier
+            if SafariService.current.version.isSafari15() && !isMacOS11 {
                 types.append("other")
             } else if !rawAdded {
                 rawAdded = true
@@ -288,8 +292,8 @@ class BlockerEntryFactory {
         }
 
         if rule.hasContentType(contentType: NetworkRule.ContentType.WEBSOCKET) {
-            // `websocket` resource type is supported since Safari 15
-            if SafariService.current.version.isSafari15() {
+            // `websocket` resource type is supported since Safari 15, but not supported in macOS 11 (Big Sur) and earlier
+            if SafariService.current.version.isSafari15() && !isMacOS11 {
                 types.append("websocket")
             } else if !rawAdded {
                 rawAdded = true
