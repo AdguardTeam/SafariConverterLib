@@ -44,3 +44,7 @@ public enum SafariVersionError: Error, CustomDebugStringConvertible {
         }
     }
 }
+
+public func isMacOS11() -> Bool {
+    return ProcessInfo().operatingSystemVersion.majorVersion == 11
+}

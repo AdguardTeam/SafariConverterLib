@@ -242,10 +242,6 @@ class BlockerEntryFactory {
             action.type = "ignore-previous-rules";
         }
     }
-    
-    private func isMacOS11() -> Bool {
-        return ProcessInfo().operatingSystemVersion.majorVersion == 11
-    }
 
     private func addResourceType(rule: NetworkRule, trigger: inout BlockerEntry.Trigger) throws -> Void {
         // Using String array instead of Set makes the code a bit more clunkier, but saves time.
