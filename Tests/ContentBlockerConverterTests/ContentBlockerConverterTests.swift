@@ -2074,7 +2074,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result.convertedCount, 1)
         XCTAssertEqual(result.errorsCount, 0)
         
-        var decoded = try! parseJsonString(json: result.converted);
+        let decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         
         XCTAssertEqual(decoded[0].trigger.urlFilter, "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org");
@@ -2086,6 +2086,28 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result.convertedCount, 0)
         XCTAssertEqual(result.errorsCount, 1)
         XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON);
+    }
+    
+    func testNetworkExceptionRulesWithConvertedOptions() {
+        var rules = ["@@||example.org/*/test.js$1p"]
+        var result = converter.convertArray(rules: rules)
+        XCTAssertEqual(result.convertedCount, 1)
+        XCTAssertEqual(result.errorsCount, 0)
+        
+        var decoded = try! parseJsonString(json: result.converted);
+        XCTAssertEqual(decoded.count, 1);
+        XCTAssertEqual(decoded[0].trigger.loadType, ["first-party"]);
+        XCTAssertEqual(decoded[0].action.type, "ignore-previous-rules");
+        
+        rules = ["@@||example.org/*/test.js$3p"]
+        result = converter.convertArray(rules: rules)
+        XCTAssertEqual(result.convertedCount, 1)
+        XCTAssertEqual(result.errorsCount, 0)
+
+        decoded = try! parseJsonString(json: result.converted);
+        XCTAssertEqual(decoded.count, 1);
+        XCTAssertEqual(decoded[0].trigger.loadType, ["third-party"]);
+        XCTAssertEqual(decoded[0].action.type, "ignore-previous-rules");
     }
 
     static var allTests = [
