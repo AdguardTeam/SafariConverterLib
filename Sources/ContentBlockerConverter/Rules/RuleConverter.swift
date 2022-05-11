@@ -14,7 +14,8 @@ class RuleConverter {
     private static let IMPORTANT_MODIFIER_MASK = "important";
 
     private static let MODIFIER_MASK = "$";
-    private static let EXCEPTION_SUFFIX = "@@||";
+    private static let EXCEPTION_MASK = "@@";
+    private static let EXCEPTION_SUFFIX = EXCEPTION_MASK + "||";
 
     private let UBO_SCRIPTLET_MASK_1 = "##+js";
     private let UBO_SCRIPTLET_MASK_2 = "##script:inject";
@@ -329,6 +330,9 @@ class RuleConverter {
             }
 
             pattern = NetworkRuleParser.getAsciiDomainRule(pattern: parseResult.pattern) ?? ""
+            if parseResult.whitelist {
+                pattern = RuleConverter.EXCEPTION_MASK + pattern
+            }
         } catch {
             return [rule]
         }
