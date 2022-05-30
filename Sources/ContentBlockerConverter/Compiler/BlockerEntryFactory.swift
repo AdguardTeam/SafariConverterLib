@@ -46,7 +46,13 @@ class BlockerEntryFactory {
         "kr", "sa", "media", "edu.in", "pt", "gg", "blog", "com.ph", "hr", "mobi", "org.au", "fun", "bg", "com.sa", "ac.th", "mn", "ws", "ee", "one", "uk",
         "kg", "ba", "com.pe", "al", "today", "fm", "ml", "edu.tr", "bel.tr", "ac.uk", "net.ua", "dz", "win", "org.tw", "gov.co", "guru", "org.il", "edu.pk",
         "world", "gov.vn", "is", "com.uy", "gov.np", "gob.mx", "or.id", "gov.my", "edu.co", "si", "in.th", "gen.tr", "network", "org.in", "ga", "digital",
-        "edu.au", "web.id", "work", "best", "agency", "edu.ua", "net.au", "icu", "sh"
+        "edu.au", "web.id", "work", "best", "agency", "edu.ua", "net.au", "icu", "sh", "ad", "as", "bf", "bi", "bj", "bs", "bt", "cat", "cd", "cf", "cg",
+        "ci", "cm", "co.ao", "co.bw", "co.ck", "co.cr", "co.ls", "co.ma", "co.mz", "co.tz","co.ug", "co.uz", "co.ve", "co.vi", "co.zm", "co.zw", "com.af",
+        "com.ag", "com.ai", "com.bh", "com.bn", "com.bo", "com.bz", "com.cu", "com.cy", "com.do", "com.ec", "com.eg", "com.et", "com.fj", "com.gh", "com.gi",
+        "com.gt", "com.jm", "com.kh", "com.kw", "com.lb", "com.ly", "com.mm", "com.mt", "com.na", "com.nf", "com.ni", "com.om", "com.pa", "com.pg", "com.pr",
+        "com.py", "com.qa", "com.sb", "com.sl", "com.sv", "com.tj", "com.vc", "cv", "dj", "dm", "film", "gl", "gm", "gp", "gy", "hn", "ht", "im", "iq", "je",
+        "jo", "ki", "la", "li", "lu", "mg", "ms", "mu", "mv", "mw", "ne", "nr", "nu", "pn", "ps", "rw", "sc", "sm", "sn", "so", "sr", "st", "td", "tg", "tl",
+        "tm", "tt", "vg", "vu"
     ];
 
     /**
@@ -56,7 +62,7 @@ class BlockerEntryFactory {
     private static let VALIDATE_REGEXP_OR        = try! NSRegularExpression(pattern: #"[^\\]+\|+\S*"#, options: [.caseInsensitive]);
     private static let VALIDATE_REGEXP_LOOKAHEAD = try! NSRegularExpression(pattern: "\\(\\?!.*\\)", options: [.caseInsensitive]);
     private static let VALIDATE_REGEXP_METACHARS = try! NSRegularExpression(pattern: #"[^\\]\\[bdfnrstvw]"#, options: [.caseInsensitive]);
-    
+
     private static let REGEXP_SLASH = "/"
 
     let advancedBlockingEnabled: Bool;
@@ -341,7 +347,7 @@ class BlockerEntryFactory {
             trigger.resourceType = types
         }
     }
-    
+
     private func addLoadContext(rule: NetworkRule, trigger: inout BlockerEntry.Trigger) -> Void {
         var context = [String]();
         // `child-frame` and `top-frame` contexts are supported since Safari 15
