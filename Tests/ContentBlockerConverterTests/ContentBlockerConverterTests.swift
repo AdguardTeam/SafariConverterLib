@@ -2055,7 +2055,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result.errorsCount, 1);
         XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON);
         
-        rules = ["[$path=/^\\/test$/]example.org##.classname"]
+        rules = ["[$path=/^\\/test\\/$/]example.org##.classname"]
         result = converter.convertArray(rules: rules)
         XCTAssertEqual(result.convertedCount, 1)
         XCTAssertEqual(result.errorsCount, 0)
@@ -2063,7 +2063,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         let urlFilter = decoded[0].trigger.urlFilter;
-        XCTAssertEqual(urlFilter, "\\.[a-zA-Z]+\\/test$");
+        XCTAssertEqual(urlFilter, "\\.[a-zA-Z]+\\/test\\/$");
     }
 
     func testUnicodeRules() {
