@@ -29,7 +29,7 @@ class BlockerEntryFactory {
     /**
      * url-filter prefix for path modifier of css rule starting from start of string symbol (^)
      */
-    static let URL_FILTER_PREFIX_CSS_RULES_PATH_START_STRING = "\\.[a-zA-Z]+";
+    static let URL_FILTER_PREFIX_CSS_RULES_PATH_START_STRING = "^(https?:\\/\\/)([^\\/]+)";
     static let START_OF_STRING = "^";
 
     /**

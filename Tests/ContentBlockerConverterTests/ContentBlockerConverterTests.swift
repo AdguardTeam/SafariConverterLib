@@ -2063,7 +2063,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         let urlFilter = decoded[0].trigger.urlFilter;
-        XCTAssertEqual(urlFilter, "\\.[a-zA-Z]+\\/test\\/$");
+        XCTAssertEqual(urlFilter, "^(https?:\\/\\/)([^\\/]+)\\/test\\/$");
     }
 
     func testUnicodeRules() {
