@@ -25,6 +25,12 @@ class BlockerEntryFactory {
     static let URL_FILTER_CSS_RULES = ".*";
     static let URL_FILTER_SCRIPT_RULES = ".*";
     static let URL_FILTER_SCRIPTLET_RULES = ".*";
+    
+    /**
+     * url-filter prefix for path modifier of css rule starting from start of string symbol (^)
+     */
+    static let URL_FILTER_PREFIX_CSS_RULES_PATH_START_STRING = "^(https?:\\/\\/)([^\\/]+)";
+    static let START_OF_STRING = "^";
 
     /**
      * In some cases URL_FILTER_ANY_URL doesn't work for domain-specific url exceptions
@@ -173,7 +179,14 @@ class BlockerEntryFactory {
             } else {
                 pathRegex = SimpleRegex.createRegexText(str: rule.pathModifier! as NSString)! as String
             }
-            trigger = BlockerEntry.Trigger(urlFilter: BlockerEntryFactory.URL_FILTER_CSS_RULES + pathRegex)
+            if pathRegex.starts(with: BlockerEntryFactory.START_OF_STRING) {
+                // if path modifier starts from start of string symbol,
+                // remove start of string symbol and add prefix to match path right after domain
+                pathRegex = String(pathRegex.dropFirst())
+                trigger = BlockerEntry.Trigger(urlFilter: BlockerEntryFactory.URL_FILTER_PREFIX_CSS_RULES_PATH_START_STRING + pathRegex)
+            } else {
+                trigger = BlockerEntry.Trigger(urlFilter: BlockerEntryFactory.URL_FILTER_CSS_RULES + pathRegex)
+            }
         }
 
         var action = BlockerEntry.Action(type:"css-display-none");
