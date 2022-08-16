@@ -2065,6 +2065,85 @@ final class ContentBlockerConverterTests: XCTestCase {
         let urlFilter = decoded[0].trigger.urlFilter;
         XCTAssertEqual(urlFilter, "^(https?:\\/\\/)([^\\/]+)\\/test\\/$");
     }
+    
+    func testAdvancedCosmeticRulesWithDomainModifier() {
+        var rules = ["[$domain=mail.ru,path=/^\\/$/]#?#.toolbar:has(> div.toolbar__inner > div.toolbar__aside > span.toolbar__close)"]
+        var result = converter.convertArray(rules: rules, advancedBlocking: true)
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 1)
+        XCTAssertEqual(result.totalConvertedCount, 1)
+        XCTAssertEqual(result.errorsCount, 0)
+        
+        var decoded = try! parseJsonString(json: result.advancedBlocking!);
+        XCTAssertEqual(decoded.count, 1);
+        var ifDomain = decoded[0].trigger.ifDomain;
+        XCTAssertEqual(ifDomain, ["*mail.ru"]);
+        var urlFilter = decoded[0].trigger.urlFilter;
+        XCTAssertEqual(urlFilter, "^(https?:\\/\\/)([^\\/]+)\\/$");
+        XCTAssertEqual(decoded[0].action.type, "css-extended");
+        var css = decoded[0].action.css;
+        XCTAssertEqual(css, ".toolbar:has(> div.toolbar__inner > div.toolbar__aside > span.toolbar__close)");
+        
+        rules = ["[$domain=mail.ru,path=/^\\/$/]#?#div[data-testid=\"pulse-row\"] > div[data-testid=\"pulse-card\"] div[class*=\"_\"] > input[name=\"email\"]:upward(div[data-testid=\"pulse-card\"])"]
+        result = converter.convertArray(rules: rules, advancedBlocking: true)
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 1)
+        XCTAssertEqual(result.totalConvertedCount, 1)
+        XCTAssertEqual(result.errorsCount, 0)
+        
+        decoded = try! parseJsonString(json: result.advancedBlocking!);
+        XCTAssertEqual(decoded.count, 1);
+        ifDomain = decoded[0].trigger.ifDomain;
+        XCTAssertEqual(ifDomain, ["*mail.ru"]);
+        urlFilter = decoded[0].trigger.urlFilter;
+        XCTAssertEqual(urlFilter, "^(https?:\\/\\/)([^\\/]+)\\/$");
+        
+        rules = ["[$domain=facebook.com,path=/gaming]#$#body > .AdBox.Ad.advert ~ div[class] { display: block !important; }"]
+        result = converter.convertArray(rules: rules, advancedBlocking: true)
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 1)
+        XCTAssertEqual(result.totalConvertedCount, 1)
+        XCTAssertEqual(result.errorsCount, 0)
+        
+        decoded = try! parseJsonString(json: result.advancedBlocking!);
+        XCTAssertEqual(decoded.count, 1);
+        ifDomain = decoded[0].trigger.ifDomain;
+        XCTAssertEqual(ifDomain, ["*facebook.com"]);
+        urlFilter = decoded[0].trigger.urlFilter;
+        XCTAssertEqual(urlFilter, ".*\\/gaming");
+        XCTAssertEqual(decoded[0].action.type, "css-inject");
+        css = decoded[0].action.css;
+        XCTAssertEqual(css, "body > .AdBox.Ad.advert ~ div[class] { display: block !important; }");
+        
+        rules = ["[$domain=facebook.com,path=/gaming]#$#body > .AdBox.Ad.advert { display: block !important; }"]
+        result = converter.convertArray(rules: rules, advancedBlocking: true)
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 1)
+        XCTAssertEqual(result.totalConvertedCount, 1)
+        XCTAssertEqual(result.errorsCount, 0)
+        
+        decoded = try! parseJsonString(json: result.advancedBlocking!);
+        XCTAssertEqual(decoded.count, 1);
+        ifDomain = decoded[0].trigger.ifDomain;
+        XCTAssertEqual(ifDomain, ["*facebook.com"]);
+        urlFilter = decoded[0].trigger.urlFilter;
+        XCTAssertEqual(urlFilter, ".*\\/gaming");
+        XCTAssertEqual(decoded[0].action.type, "css-inject");
+        css = decoded[0].action.css;
+        XCTAssertEqual(css, "body > .AdBox.Ad.advert { display: block !important; }");
+        
+        rules = ["[$domain=lifebursa.com,path=/^\\/$/]#?#.container > div.row:has(> div[class^=\"col-\"] > div.banner)"]
+        result = converter.convertArray(rules: rules, advancedBlocking: true)
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 1)
+        XCTAssertEqual(result.totalConvertedCount, 1)
+        XCTAssertEqual(result.errorsCount, 0)
+        
+        decoded = try! parseJsonString(json: result.advancedBlocking!);
+        XCTAssertEqual(decoded.count, 1);
+        ifDomain = decoded[0].trigger.ifDomain;
+        XCTAssertEqual(ifDomain, ["*lifebursa.com"]);
+        urlFilter = decoded[0].trigger.urlFilter;
+        XCTAssertEqual(urlFilter, "^(https?:\\/\\/)([^\\/]+)\\/$");
+        XCTAssertEqual(decoded[0].action.type, "css-extended");
+        css = decoded[0].action.css;
+        XCTAssertEqual(css, ".container > div.row:has(> div[class^=\"col-\"] > div.banner)");
+    }
 
     func testUnicodeRules() {
         let rules = [
@@ -2175,6 +2254,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         ("testCosmeticRulesWithPathModifier", testCosmeticRulesWithPathModifier),
         ("testAdvancedCosmeticRulesWithPathModifier", testAdvancedCosmeticRulesWithPathModifier),
         ("testUnicodeRules", testUnicodeRules),
+        ("testAdvancedCosmeticRulesWithDomainModifier", testAdvancedCosmeticRulesWithDomainModifier),
         ("testBlockingRulesWithNonAsciiCharacters", testBlockingRulesWithNonAsciiCharacters),
     ]
 }
