@@ -42,14 +42,14 @@ class Distributor {
 
         var advBlockingEntries = [BlockerEntry]();
         if (advancedBlockedEnabled) {
-            advBlockingEntries.append(contentsOf: data.script);
-            advBlockingEntries.append(contentsOf: data.scriptlets);
-            advBlockingEntries.append(contentsOf: data.scriptJsInjectExceptions);
             advBlockingEntries.append(contentsOf: data.extendedCssBlockingWide);
             advBlockingEntries.append(contentsOf: data.extendedCssBlockingGenericDomainSensitive);
             advBlockingEntries.append(contentsOf: data.cssBlockingGenericHideExceptions);
             advBlockingEntries.append(contentsOf: data.extendedCssBlockingDomainSensitive);
             advBlockingEntries.append(contentsOf: data.cssElemhide);
+            advBlockingEntries.append(contentsOf: data.script);
+            advBlockingEntries.append(contentsOf: data.scriptlets);
+            advBlockingEntries.append(contentsOf: data.scriptJsInjectExceptions);
             advBlockingEntries.append(contentsOf: data.сssInjects);
             advBlockingEntries.append(contentsOf: data.other);
             advBlockingEntries.append(contentsOf: data.importantExceptions);

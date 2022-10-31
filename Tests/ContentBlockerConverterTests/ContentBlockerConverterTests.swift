@@ -517,6 +517,71 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded[1].action.type, "ignore-previous-rules");
         XCTAssertEqual(decoded[1].trigger.ifDomain, ["*example.org"]);
     }
+    
+    func testConvertAdvancedBlockingRulesSortingOrderGenerichide() {
+        var rules = [
+            "test.com#%#//scriptlet('set-constant', 'test', 'true')",
+            "@@||test.com^$generichide",
+        ]
+        var result = converter.convertArray(rules: rules, advancedBlocking: true);
+        XCTAssertEqual(result.totalConvertedCount, 3);
+        XCTAssertEqual(result.convertedCount, 1);
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 2);
+        
+        var decoded = try! parseJsonString(json: result.advancedBlocking!);
+        XCTAssertEqual(decoded.count, 2);
+
+        // generichide exception rule doesn't disable domain sensitive scriptlet rule
+        XCTAssertEqual(decoded[0].trigger.urlFilter, URL_FILTER_CSS_RULES);
+        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*test.com"]);
+        XCTAssertEqual(decoded[0].action.type, "ignore-previous-rules");
+
+        XCTAssertEqual(decoded[1].trigger.urlFilter, URL_FILTER_CSS_RULES);
+        XCTAssertEqual(decoded[1].trigger.ifDomain, ["*test.com"]);
+        XCTAssertEqual(decoded[1].action.type, "scriptlet");
+        
+        
+        rules = [
+            "@@||test.com^$generichide",
+            "test.com#%#console.log('test');",
+            "test.com#%#//scriptlet('set-constant', 'test', 'true')",
+            "test.com#?#div:has(.banner)",
+            "#?#div:has(.textad)",
+        ]
+        result = converter.convertArray(rules: rules, advancedBlocking: true);
+        XCTAssertEqual(result.totalConvertedCount, 6);
+        XCTAssertEqual(result.convertedCount, 1);
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 5);
+
+        decoded = try! parseJsonString(json: result.advancedBlocking!);
+        XCTAssertEqual(decoded.count, 5);
+
+        XCTAssertEqual(decoded[0].trigger.urlFilter, URL_FILTER_CSS_RULES);
+        XCTAssertEqual(decoded[0].action.type, "css-extended");
+        XCTAssertEqual(decoded[0].action.css, "div:has(.textad)");
+        
+        // generichide exception rule disables generic extended-css rule
+        XCTAssertEqual(decoded[1].trigger.urlFilter, URL_FILTER_CSS_RULES);
+        XCTAssertEqual(decoded[1].trigger.ifDomain, ["*test.com"]);
+        XCTAssertEqual(decoded[1].action.type, "ignore-previous-rules");
+        
+        // generichide exception rule doesn't disable
+        // domain sensitive extended-css, script and scriptlet rules
+        XCTAssertEqual(decoded[2].trigger.urlFilter, URL_FILTER_CSS_RULES);
+        XCTAssertEqual(decoded[2].trigger.ifDomain, ["*test.com"]);
+        XCTAssertEqual(decoded[2].action.type, "css-extended");
+        XCTAssertEqual(decoded[2].action.css, "div:has(.banner)");
+        
+        XCTAssertEqual(decoded[3].trigger.urlFilter, URL_FILTER_CSS_RULES);
+        XCTAssertEqual(decoded[3].trigger.ifDomain, ["*test.com"]);
+        XCTAssertEqual(decoded[3].action.type, "script");
+        XCTAssertEqual(decoded[3].action.script, "console.log('test');");
+        
+        XCTAssertEqual(decoded[4].trigger.urlFilter, URL_FILTER_CSS_RULES);
+        XCTAssertEqual(decoded[4].trigger.ifDomain, ["*test.com"]);
+        XCTAssertEqual(decoded[4].action.type, "scriptlet");
+        XCTAssertEqual(decoded[4].action.scriptlet, "set-constant");
+    }
 
     func testConvertGenericDomainSensitiveSortingOrderElemhide() {
         let result = converter.convertArray(rules: ["example.org###generic", "@@||example.org^$elemhide"]);
@@ -2218,6 +2283,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         ("testConvertGenericDomainSensitive", testConvertGenericDomainSensitive),
         ("testConvertGenericDomainSensitiveSortingOrder", testConvertGenericDomainSensitiveSortingOrder),
         ("testConvertGenericDomainSensitiveSortingOrderGenerichide", testConvertGenericDomainSensitiveSortingOrderGenerichide),
+        ("testConvertAdvancedBlockingRulesSortingOrderGenerichide", testConvertAdvancedBlockingRulesSortingOrderGenerichide),
         ("testConvertGenericDomainSensitiveSortingOrderElemhide", testConvertGenericDomainSensitiveSortingOrderElemhide),
         ("testConvertCompactDomainSensitiveElemhide", testConvertCompactDomainSensitiveElemhide),
         ("testCyrillicRules", testCyrillicRules),
