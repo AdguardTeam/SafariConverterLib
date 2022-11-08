@@ -4,12 +4,13 @@ import Foundation
  * Cosmetic rule class
  */
 class CosmeticRule: Rule {
+    private static let EXT_CSS_PSEUDO_INDICATOR_HAS = ":has("
     /**
      * Pseudo class indicators. They are used to detect if rule is extended or not even if rule does not
      * have extended css marker
      */
     private static let EXT_CSS_PSEUDO_INDICATORS = [
-        ":has(",
+        CosmeticRule.EXT_CSS_PSEUDO_INDICATOR_HAS,
         ":has-text(",
         ":contains(",
         ":matches-css",
@@ -122,6 +123,12 @@ class CosmeticRule: Rule {
             } else if c == ":".utf16.first! {
                 for indicator in CosmeticRule.EXT_CSS_PSEUDO_INDICATORS {
                     if nsContent.substring(from: i).starts(with: indicator) {
+                        // the rule with `##` marker and `:has()` pseudo-class should not be considered as ExtendedCss,
+                        // because `:has()` pseudo-class has native implementation
+                        // https://github.com/AdguardTeam/SafariConverterLib/issues/43
+                        if indicator == EXT_CSS_PSEUDO_INDICATOR_HAS {
+                            return false
+                        }
                         return true
                     }
                 }

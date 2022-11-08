@@ -2263,6 +2263,30 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded[0].trigger.loadType, ["third-party"]);
         XCTAssertEqual(decoded[0].action.type, "ignore-previous-rules");
     }
+    
+    func testConvertRulesWithPseudoClassHas() {
+        let rules = [
+            "test.com##div:has(.banner)",
+            "example.org#?#div:has(.adv)",
+        ]
+        let result = converter.convertArray(rules: rules, advancedBlocking: true)
+        XCTAssertEqual(result.convertedCount, 1)
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 1)
+        XCTAssertEqual(result.totalConvertedCount, 2)
+        XCTAssertEqual(result.errorsCount, 0)
+        
+        let decodedSimpleRules = try! parseJsonString(json: result.converted);
+        XCTAssertEqual(decodedSimpleRules.count, 1);
+        XCTAssertEqual(decodedSimpleRules[0].trigger.ifDomain, ["*test.com"]);
+        XCTAssertEqual(decodedSimpleRules[0].action.type, "css-display-none");
+        XCTAssertEqual(decodedSimpleRules[0].action.selector, "div:has(.banner)");
+        
+        let decodedAdvancedRules = try! parseJsonString(json: result.advancedBlocking!);
+        XCTAssertEqual(decodedAdvancedRules.count, 1);
+        XCTAssertEqual(decodedAdvancedRules[0].trigger.ifDomain, ["*example.org"]);
+        XCTAssertEqual(decodedAdvancedRules[0].action.type, "css-extended");
+        XCTAssertEqual(decodedAdvancedRules[0].action.css, "div:has(.adv)");
+    }
 
     static var allTests = [
         ("testEmpty", testEmpty),
@@ -2322,5 +2346,6 @@ final class ContentBlockerConverterTests: XCTestCase {
         ("testUnicodeRules", testUnicodeRules),
         ("testAdvancedCosmeticRulesWithDomainModifier", testAdvancedCosmeticRulesWithDomainModifier),
         ("testBlockingRulesWithNonAsciiCharacters", testBlockingRulesWithNonAsciiCharacters),
+        ("testConvertRulesWithPseudoClassHas", testConvertRulesWithPseudoClassHas),
     ]
 }
