@@ -317,7 +317,7 @@ final class AdvancedBlockingTests: XCTestCase {
             errorsCounter: ErrorsCounter()
         );
 
-        let rule = try! CosmeticRule(ruleText: "test.com##.content:has(> .test_selector)");
+        let rule = try! CosmeticRule(ruleText: "test.com#?#.content:has(> .test_selector)");
         let result = compiler.compileRules(rules: [rule as Rule]);
 
         XCTAssertNotNil(result)
