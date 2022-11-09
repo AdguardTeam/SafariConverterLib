@@ -2269,7 +2269,25 @@ final class ContentBlockerConverterTests: XCTestCase {
             "test.com##div:has(.banner)",
             "example.org#?#div:has(.adv)",
         ]
-        let result = converter.convertArray(rules: rules, advancedBlocking: true)
+
+        var result = converter.convertArray(rules: rules, safariVersion: .safari15 ,advancedBlocking: true)
+        XCTAssertEqual(result.convertedCount, 0)
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 2)
+        XCTAssertEqual(result.totalConvertedCount, 2)
+        XCTAssertEqual(result.errorsCount, 0)
+        
+        let decoded = try! parseJsonString(json: result.advancedBlocking!);
+        XCTAssertEqual(decoded.count, 2);
+
+        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*test.com"]);
+        XCTAssertEqual(decoded[0].action.type, "css-extended");
+        XCTAssertEqual(decoded[0].action.css, "div:has(.banner)");
+
+        XCTAssertEqual(decoded[1].trigger.ifDomain, ["*example.org"]);
+        XCTAssertEqual(decoded[1].action.type, "css-extended");
+        XCTAssertEqual(decoded[1].action.css, "div:has(.adv)");
+        
+        result = converter.convertArray(rules: rules, safariVersion: .safari16 ,advancedBlocking: true)
         XCTAssertEqual(result.convertedCount, 1)
         XCTAssertEqual(result.advancedBlockingConvertedCount, 1)
         XCTAssertEqual(result.totalConvertedCount, 2)

@@ -11,6 +11,7 @@ public enum SafariVersion: Int {
     case safari13 = 13;
     case safari14 = 14;
     case safari15 = 15;
+    case safari16 = 16;
     
     /**
      * Returns rules limit for current Safari version
@@ -19,12 +20,16 @@ public enum SafariVersion: Int {
     var rulesLimit: Int {
         switch self {
             case .safari11, .safari12, .safari13, .safari14: return 50000
-            case .safari15: return 150000
+            case .safari15, .safari16: return 150000
         }
     }
     
-    func isSafari15() -> Bool {
-        return self == SafariVersion.safari15;
+    func isSafari15orNewer() -> Bool {
+        return self == SafariVersion.safari15 || self == SafariVersion.safari16;
+    }
+    
+    func isSafari16() -> Bool {
+        return self == SafariVersion.safari16;
     }
 }
 

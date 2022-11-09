@@ -124,10 +124,10 @@ class CosmeticRule: Rule {
                 for indicator in CosmeticRule.EXT_CSS_PSEUDO_INDICATORS {
                     if nsContent.substring(from: i).starts(with: indicator) {
                         // the rule with `##` marker and `:has()` pseudo-class should not be considered as ExtendedCss,
-                        // because `:has()` pseudo-class has native implementation
+                        // because `:has()` pseudo-class has native implementation since Safari 16 (15.4)
                         // https://github.com/AdguardTeam/SafariConverterLib/issues/43
-                        if indicator == EXT_CSS_PSEUDO_INDICATOR_HAS {
-                            return false
+                        if indicator == EXT_CSS_PSEUDO_INDICATOR_HAS && SafariService.current.version.isSafari16()  {
+                            continue
                         }
                         return true
                     }
