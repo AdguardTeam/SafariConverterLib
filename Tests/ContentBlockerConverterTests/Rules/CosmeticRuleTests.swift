@@ -363,6 +363,7 @@ final class CosmeticRuleTests: XCTestCase {
         ("testScriptletRulesWhitelist", testScriptletRulesWhitelist),
         ("testDomains", testDomains),
         ("testGenericWildcardRules", testGenericWildcardRules),
+        ("testRulesWithPseudoClassHas", testRulesWithPseudoClassHas),
     ]
 }
 
