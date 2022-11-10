@@ -126,7 +126,7 @@ class CosmeticRule: Rule {
                         // the rule with `##` marker and `:has()` pseudo-class should not be considered as ExtendedCss,
                         // because `:has()` pseudo-class has native implementation since Safari 16 (15.4)
                         // https://github.com/AdguardTeam/SafariConverterLib/issues/43
-                        if indicator == EXT_CSS_PSEUDO_INDICATOR_HAS && SafariService.current.version.isSafari16()  {
+                        if indicator == EXT_CSS_PSEUDO_INDICATOR_HAS && SafariService.current.version.isSafari16orGreater()  {
                             continue
                         }
                         return true

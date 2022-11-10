@@ -282,7 +282,7 @@ class BlockerEntryFactory {
         var rawAdded = false
         if rule.hasContentType(contentType: NetworkRule.ContentType.XMLHTTPREQUEST) {
             // `fetch` resource type is supported since Safari 15
-            if SafariService.current.version.isSafari15orNewer() {
+            if SafariService.current.version.isSafari15orGreater() {
                 types.append("fetch")
             } else if !rawAdded {
                 rawAdded = true
@@ -292,7 +292,7 @@ class BlockerEntryFactory {
 
         if rule.hasContentType(contentType: NetworkRule.ContentType.OTHER) {
             // `other` resource type is supported since Safari 15
-            if SafariService.current.version.isSafari15orNewer() {
+            if SafariService.current.version.isSafari15orGreater() {
                 types.append("other")
             } else if !rawAdded {
                 rawAdded = true
@@ -302,7 +302,7 @@ class BlockerEntryFactory {
 
         if rule.hasContentType(contentType: NetworkRule.ContentType.WEBSOCKET) {
             // `websocket` resource type is supported since Safari 15
-            if SafariService.current.version.isSafari15orNewer() {
+            if SafariService.current.version.isSafari15orGreater() {
                 types.append("websocket")
             } else if !rawAdded {
                 rawAdded = true
@@ -326,7 +326,7 @@ class BlockerEntryFactory {
             types.append("document")
         }
         if !documentAdded && rule.hasContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT) {
-            if !SafariService.current.version.isSafari15orNewer() {
+            if !SafariService.current.version.isSafari15orGreater() {
                 documentAdded = true
                 types.append("document")
             }
@@ -358,7 +358,7 @@ class BlockerEntryFactory {
     private func addLoadContext(rule: NetworkRule, trigger: inout BlockerEntry.Trigger) -> Void {
         var context = [String]();
         // `child-frame` and `top-frame` contexts are supported since Safari 15
-        if SafariService.current.version.isSafari15orNewer() {
+        if SafariService.current.version.isSafari15orGreater() {
             if rule.hasContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT)
                 && !rule.isContentType(contentType:NetworkRule.ContentType.ALL) {
                 context.append("child-frame");

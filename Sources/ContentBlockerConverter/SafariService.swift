@@ -18,18 +18,16 @@ public enum SafariVersion: Int {
      * Safari allows up to 50k rules by default, but starting from 15 version it allows up to 150k rules
      */
     var rulesLimit: Int {
-        switch self {
-            case .safari11, .safari12, .safari13, .safari14: return 50000
-            case .safari15, .safari16: return 150000
-        }
+        self.rawValue >= SafariVersion.safari15.rawValue ? 150000 : 50000
     }
     
-    func isSafari15orNewer() -> Bool {
-        return self == SafariVersion.safari15 || self == SafariVersion.safari16;
+    func isSafari15orGreater() -> Bool {
+        return self.rawValue >= SafariVersion.safari15.rawValue;
+        
     }
     
-    func isSafari16() -> Bool {
-        return self == SafariVersion.safari16;
+    func isSafari16orGreater() -> Bool {
+        return self.rawValue >= SafariVersion.safari16.rawValue;
     }
 }
 
