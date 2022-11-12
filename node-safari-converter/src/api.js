@@ -4,14 +4,20 @@ const { version } = require('../../package.json');
 
 const CONVERTER_TOOL_PATH = path.resolve(__dirname, '../../bin/ConverterTool');
 
+const DEFAULT_SAFARI_VERSION = 13;
+
 module.exports = (function () {
-    const safariVersions = Object.freeze({
-        safari11: 11,
-        safari12: 12,
-        safari13: 13,
-        safari14: 14,
-        safari15: 15,
-    });
+    /**
+     * Validates and checks safari version
+     * @param version
+     */
+    const handleSafariVersion = (version) => {
+        if (Number.isInteger(version) && version >= DEFAULT_SAFARI_VERSION) {
+            return version;
+        } else {
+            return DEFAULT_SAFARI_VERSION;
+        }
+    }
 
     /**
      * Runs shell script
@@ -54,7 +60,7 @@ module.exports = (function () {
      * @param converterToolPath - optional path to converter resolved by Electron
      */
     const jsonFromRules = async (rules, advancedBlocking, safariVersion, converterToolPath) => {
-        let currentSafariVersion = Object.values(safariVersions).includes(safariVersion) ? safariVersion : safariVersions.safari13;
+        const currentSafariVersion = handleSafariVersion(safariVersion);
 
         return new Promise((resolve, reject) => {
             const child = runScript(converterToolPath || CONVERTER_TOOL_PATH, [
@@ -91,6 +97,5 @@ module.exports = (function () {
     return {
         jsonFromRules,
         getConverterVersion,
-        safariVersions,
     };
 })();
