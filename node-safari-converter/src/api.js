@@ -4,21 +4,9 @@ const { version } = require('../../package.json');
 
 const CONVERTER_TOOL_PATH = path.resolve(__dirname, '../../bin/ConverterTool');
 
-const DEFAULT_SAFARI_VERSION = 13;
+const MINIMAL_SUPPORTED_SAFARI_VERSION = 13;
 
 module.exports = (function () {
-    /**
-     * Validates and checks safari version
-     * @param version
-     */
-    const handleSafariVersion = (version) => {
-        if (Number.isInteger(version) && version >= DEFAULT_SAFARI_VERSION) {
-            return version;
-        } else {
-            return DEFAULT_SAFARI_VERSION;
-        }
-    }
-
     /**
      * Runs shell script
      *
@@ -60,11 +48,13 @@ module.exports = (function () {
      * @param converterToolPath - optional path to converter resolved by Electron
      */
     const jsonFromRules = async (rules, advancedBlocking, safariVersion, converterToolPath) => {
-        const currentSafariVersion = handleSafariVersion(safariVersion);
+        if (!Number.isInteger(safariVersion) || safariVersion < MINIMAL_SUPPORTED_SAFARI_VERSION) {
+            throw new Error('The provided Safari version is not supported');
+        }
 
         return new Promise((resolve, reject) => {
             const child = runScript(converterToolPath || CONVERTER_TOOL_PATH, [
-                `--safari-version=${currentSafariVersion}`,
+                `--safari-version=${safariVersion}`,
                 '--optimize=false',
                 `--advanced-blocking=${advancedBlocking}`,
             ], (code, stdout, stderr) => {
