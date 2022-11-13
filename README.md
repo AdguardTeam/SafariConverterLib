@@ -46,6 +46,7 @@ The result contains following properties:
 ```
     ConverterTool [--safari-version <safari-version>] [--optimize <optimize>] [--advanced-blocking <advanced-blocking>] [--advanced-blocking-format <advanced-blocking-format>] [<rules>]
 ```
+#### Please note that minimal supported Safari version is 13
 e.g.
 ```
     cat rules.txt | ./ConverterTool --safari-version 13 --optimize false --advanced-blocking true --advanced-blocking-format txt

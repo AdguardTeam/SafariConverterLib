@@ -49,7 +49,7 @@ module.exports = (function () {
      */
     const jsonFromRules = async (rules, advancedBlocking, safariVersion, converterToolPath) => {
         if (!Number.isInteger(safariVersion) || safariVersion < MINIMAL_SUPPORTED_SAFARI_VERSION) {
-            throw new Error('The provided Safari version is not supported');
+            throw new Error(`The provided Safari version is not supported: ${safariVersion}`);
         }
 
         return new Promise((resolve, reject) => {
