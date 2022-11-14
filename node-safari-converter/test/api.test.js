@@ -1,10 +1,13 @@
 const { jsonFromRules, getConverterVersion, safariVersions } = require('../index');
 const pJson = require('../../package.json');
 
+const SAFARI_VERSION_12 = 12;
+const SAFARI_VERSION_14 = 14;
+
 describe('API test', () => {
     it('jsonFromRules test', async () => {
         const rules = ['example.com##.ads-banner', '||test.com^$image'];
-        const result = await jsonFromRules(rules, false, safariVersions.safari14);
+        const result = await jsonFromRules(rules, false, SAFARI_VERSION_14);
         const converted = JSON.parse(result.converted);
 
         expect(converted[0].trigger['if-domain']).toStrictEqual(['*example.com']);
@@ -18,8 +21,8 @@ describe('API test', () => {
     it('Unsupported Safari version test', async () => {
         const rules = ['example.com##.ads-banner'];
 
-        await expect(jsonFromRules(rules, false, safariVersions.safari12))
-            .rejects.toThrow('Error: The provided Safari version is not supported');
+        await expect(jsonFromRules(rules, false, SAFARI_VERSION_12))
+            .rejects.toThrow('The provided Safari version is not supported');
     });
 
     it('getConverterVersion test', () => {
