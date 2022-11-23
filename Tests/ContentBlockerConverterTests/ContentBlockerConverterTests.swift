@@ -2322,13 +2322,13 @@ final class ContentBlockerConverterTests: XCTestCase {
         let decoded = try! parseJsonString(json: result.advancedBlocking!);
         XCTAssertEqual(decoded.count, 2);
         
-        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*test.com"]);
-        XCTAssertEqual(decoded[0].action.type, "css-extended");
-        XCTAssertEqual(decoded[0].action.css, ":xpath(//div[@data-st-area='Advert'])");
+        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*test.com"])
+        XCTAssertEqual(decoded[0].action.type, "css-extended")
+        XCTAssertEqual(decoded[0].action.css, ":xpath(//div[@data-st-area='Advert'])")
         
-        XCTAssertEqual(decoded[1].trigger.ifDomain, ["*example.org"]);
-        XCTAssertEqual(decoded[1].action.type, "css-extended");
-        XCTAssertEqual(decoded[1].action.css, ":xpath(//div[@id='stream_pagelet'])");
+        XCTAssertEqual(decoded[1].trigger.ifDomain, ["*example.org"])
+        XCTAssertEqual(decoded[1].action.type, "css-extended")
+        XCTAssertEqual(decoded[1].action.css, ":xpath(//div[@id='stream_pagelet'])")
     }
 
     static var allTests = [
