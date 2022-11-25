@@ -2330,6 +2330,136 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded[1].action.type, "css-extended")
         XCTAssertEqual(decoded[1].action.css, ":xpath(//div[@id='stream_pagelet'])")
     }
+    
+    func testApplyMultidomainCosmeticExclusions() {
+        var rules = [
+            "test.com,example.org###banner",
+            "example.org#@##banner",
+        ]
+        var result = converter.convertArray(rules: rules, safariVersion: .safari15)
+        XCTAssertEqual(result.convertedCount, 1)
+        XCTAssertEqual(result.totalConvertedCount, 1)
+        XCTAssertEqual(result.errorsCount, 0)
+
+        var decoded = try! parseJsonString(json: result.converted)
+        XCTAssertEqual(decoded.count, 1)
+        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*test.com"])
+        XCTAssertEqual(decoded[0].action.type, "css-display-none")
+        XCTAssertEqual(decoded[0].action.selector, "#banner")
+
+        rules = [
+            "test.com,example.org###banner",
+            "example.com,example.org#@##banner",
+        ]
+        result = converter.convertArray(rules: rules, safariVersion: .safari15)
+        XCTAssertEqual(result.convertedCount, 1)
+        XCTAssertEqual(result.totalConvertedCount, 1)
+        XCTAssertEqual(result.errorsCount, 0)
+        
+        decoded = try! parseJsonString(json: result.converted)
+        XCTAssertEqual(decoded.count, 1)
+        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*test.com"])
+        XCTAssertEqual(decoded[0].action.type, "css-display-none")
+        XCTAssertEqual(decoded[0].action.selector, "#banner")
+        
+        rules = [
+            "test1.com,example.org,test2.com###banner",
+            "example.com,example.org,test1.com#@##banner",
+        ]
+        result = converter.convertArray(rules: rules, safariVersion: .safari15)
+        XCTAssertEqual(result.convertedCount, 1)
+        XCTAssertEqual(result.totalConvertedCount, 1)
+        XCTAssertEqual(result.errorsCount, 0)
+        
+        decoded = try! parseJsonString(json: result.converted)
+        XCTAssertEqual(decoded.count, 1)
+        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*test2.com"])
+        XCTAssertEqual(decoded[0].action.type, "css-display-none")
+        XCTAssertEqual(decoded[0].action.selector, "#banner")
+        
+        rules = [
+            "test1.com,test2.com,test3.com###banner",
+            "example1.org,example2.org###banner",
+            "test1.com,example2.org#@##banner",
+            "test2.com,example1.org#@##banner",
+        ]
+        result = converter.convertArray(rules: rules, safariVersion: .safari15)
+        XCTAssertEqual(result.convertedCount, 1)
+        XCTAssertEqual(result.totalConvertedCount, 1)
+        XCTAssertEqual(result.errorsCount, 0)
+        
+        decoded = try! parseJsonString(json: result.converted)
+        XCTAssertEqual(decoded.count, 1)
+        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*test3.com"])
+        XCTAssertEqual(decoded[0].action.type, "css-display-none")
+        XCTAssertEqual(decoded[0].action.selector, "#banner")
+    }
+    
+    func testApplyMultidomainAdvancedExclusions() {
+        var rules = [
+            "example.com,test.com#$##adv{visibility:hidden;}",
+            "test.com#@$##adv{visibility:hidden;}",
+        ]
+        var result = converter.convertArray(rules: rules, safariVersion: .safari15, advancedBlocking: true)
+        XCTAssertEqual(result.convertedCount, 0)
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 1)
+        XCTAssertEqual(result.totalConvertedCount, 1)
+        XCTAssertEqual(result.errorsCount, 0)
+
+        var decoded = try! parseJsonString(json: result.advancedBlocking!)
+        XCTAssertEqual(decoded.count, 1)
+        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*example.com"])
+        XCTAssertEqual(decoded[0].action.type, "css-inject")
+        XCTAssertEqual(decoded[0].action.css, "#adv{visibility:hidden;}")
+
+        rules = [
+            "test.com,example.org#$##adv{visibility:hidden;}",
+            "example.com,example.org#@$##adv{visibility:hidden;}",
+        ]
+        result = converter.convertArray(rules: rules, safariVersion: .safari15, advancedBlocking: true)
+        XCTAssertEqual(result.convertedCount, 0)
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 1)
+        XCTAssertEqual(result.totalConvertedCount, 1)
+        XCTAssertEqual(result.errorsCount, 0)
+        
+        decoded = try! parseJsonString(json: result.advancedBlocking!)
+        XCTAssertEqual(decoded.count, 1)
+        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*test.com"])
+        XCTAssertEqual(decoded[0].action.type, "css-inject")
+        XCTAssertEqual(decoded[0].action.css, "#adv{visibility:hidden;}")
+        
+        rules = [
+            "test.com,example.org#?#div:has(> a[target='_blank'])",
+            "example.com,example.org#@?#div:has(> a[target='_blank'])",
+        ]
+        result = converter.convertArray(rules: rules, safariVersion: .safari15, advancedBlocking: true)
+        XCTAssertEqual(result.convertedCount, 0)
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 1)
+        XCTAssertEqual(result.totalConvertedCount, 1)
+        XCTAssertEqual(result.errorsCount, 0)
+        
+        decoded = try! parseJsonString(json: result.advancedBlocking!)
+        XCTAssertEqual(decoded.count, 1)
+        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*test.com"])
+        XCTAssertEqual(decoded[0].action.type, "css-extended")
+        XCTAssertEqual(decoded[0].action.css, "div:has(> a[target='_blank'])")
+        
+        rules = [
+            "example.org,test1.com,test2.com#%#window.adv_id = null;",
+            "example.com,example.org,test1.com#@%#window.adv_id = null;",
+        ]
+        result = converter.convertArray(rules: rules, safariVersion: .safari15, advancedBlocking: true)
+        XCTAssertEqual(result.convertedCount, 0)
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 1)
+        XCTAssertEqual(result.totalConvertedCount, 1)
+        XCTAssertEqual(result.errorsCount, 0)
+        
+        decoded = try! parseJsonString(json: result.advancedBlocking!)
+        XCTAssertEqual(decoded.count, 1)
+        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*test2.com"])
+        XCTAssertEqual(decoded[0].action.type, "script")
+        XCTAssertEqual(decoded[0].action.script, "window.adv_id = null;")
+    }
 
     static var allTests = [
         ("testEmpty", testEmpty),
@@ -2391,5 +2521,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         ("testBlockingRulesWithNonAsciiCharacters", testBlockingRulesWithNonAsciiCharacters),
         ("testConvertRulesWithPseudoClassHas", testConvertRulesWithPseudoClassHas),
         ("testXpathRules", testXpathRules),
+        ("testApplyMultidomainCosmeticExclusions", testApplyMultidomainCosmeticExclusions),
+        ("testApplyMultidomainAdvancedExclusions", testApplyMultidomainAdvancedExclusions),
     ]
 }

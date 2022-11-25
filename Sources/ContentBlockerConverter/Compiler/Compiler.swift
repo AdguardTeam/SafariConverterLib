@@ -165,7 +165,7 @@ class Compiler {
                 // First check that domain is not redundant
                 let applicable = domainsList?.firstIndex(of: domain) != nil;
                 if (!applicable) {
-                    return;
+                    continue
                 }
 
                 // remove exception domain
