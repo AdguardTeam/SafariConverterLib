@@ -4,13 +4,11 @@ import Foundation
  * Cosmetic rule class
  */
 class CosmeticRule: Rule {
-    private static let EXT_CSS_PSEUDO_INDICATOR_HAS = ":has("
     /**
      * Pseudo class indicators. They are used to detect if rule is extended or not even if rule does not
      * have extended css marker
      */
     private static let EXT_CSS_PSEUDO_INDICATORS = [
-        CosmeticRule.EXT_CSS_PSEUDO_INDICATOR_HAS,
         ":has(",
         ":has-text(",
         ":contains(",
