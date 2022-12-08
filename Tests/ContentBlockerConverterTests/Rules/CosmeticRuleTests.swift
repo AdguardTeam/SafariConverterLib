@@ -333,24 +333,6 @@ final class CosmeticRuleTests: XCTestCase {
         XCTAssertEqual(result.content, "//scriptlet(\"abort-on-property-read\", \"alert\")");
     }
     
-    func testRulesWithPseudoClassHas() {
-        SafariService.current.version = SafariVersion.safari15;
-
-        var result = try! CosmeticRule(ruleText: "##.banner:has(.ads)");
-        XCTAssertEqual(result.isExtendedCss, true);
-
-        result = try! CosmeticRule(ruleText: "#?#.banner:has(.ads)");
-        XCTAssertEqual(result.isExtendedCss, true);
-
-        SafariService.current.version = SafariVersion.safari16;
-
-        result = try! CosmeticRule(ruleText: "##.banner:has(.ads)");
-        XCTAssertEqual(result.isExtendedCss, false);
-
-        result = try! CosmeticRule(ruleText: "#?#.banner:has(.ads)");
-        XCTAssertEqual(result.isExtendedCss, true);
-    }
-    
     static var allTests = [
         ("testElemhidingRules", testElemhidingRules),
         ("testElemhidingRulesWhitelist", testElemhidingRulesWhitelist),
@@ -363,7 +345,6 @@ final class CosmeticRuleTests: XCTestCase {
         ("testScriptletRulesWhitelist", testScriptletRulesWhitelist),
         ("testDomains", testDomains),
         ("testGenericWildcardRules", testGenericWildcardRules),
-        ("testRulesWithPseudoClassHas", testRulesWithPseudoClassHas),
     ]
 }
 
