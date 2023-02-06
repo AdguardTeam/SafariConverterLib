@@ -5,7 +5,7 @@ plan:
   key: CIVSPECS
   name: Converter - increment version
 variables:
-  dockerNode: node:19.6.0-buster-slim
+  dockerNode: node:18.14.0-buster-slim
 stages:
   - Increment:
       manual: false
