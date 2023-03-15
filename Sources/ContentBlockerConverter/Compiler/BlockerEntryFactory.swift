@@ -25,7 +25,7 @@ class BlockerEntryFactory {
     static let URL_FILTER_CSS_RULES = ".*";
     static let URL_FILTER_SCRIPT_RULES = ".*";
     static let URL_FILTER_SCRIPTLET_RULES = ".*";
-    
+
     /**
      * url-filter prefix for path modifier of css rule starting from start of string symbol (^)
      */
@@ -62,7 +62,7 @@ class BlockerEntryFactory {
     private static let VALIDATE_REGEXP_OR        = try! NSRegularExpression(pattern: #"[^\\]+\|+\S*"#, options: [.caseInsensitive]);
     private static let VALIDATE_REGEXP_LOOKAHEAD = try! NSRegularExpression(pattern: "\\(\\?!.*\\)", options: [.caseInsensitive]);
     private static let VALIDATE_REGEXP_METACHARS = try! NSRegularExpression(pattern: #"[^\\]\\[bdfnrstvw]"#, options: [.caseInsensitive]);
-    
+
     private static let REGEXP_SLASH = "/"
 
     let advancedBlockingEnabled: Bool;
@@ -336,25 +336,27 @@ class BlockerEntryFactory {
             types = ["document"]
         }
 
-        // Not supported modificators
+        // Not supported modifiers
         if (rule.isContentType(contentType: NetworkRule.ContentType.OBJECT)) {
             throw ConversionError.unsupportedContentType(message: "$object content type is not yet supported")
         }
         if (rule.isContentType(contentType: NetworkRule.ContentType.OBJECT_SUBREQUEST)) {
-            throw ConversionError.unsupportedContentType(message: "$object_subrequest content type is not yet supported")
+            // https://adguard.com/kb/general/ad-filtering/create-own-filters/#object-subrequest-modifier
+            throw ConversionError.unsupportedContentType(message: "$object-subrequest content type is deprecated")
         }
         if (rule.isContentType(contentType: NetworkRule.ContentType.WEBRTC)) {
-            throw ConversionError.unsupportedContentType(message: "$webrtc content type is not yet supported")
+            // https://adguard.com/kb/general/ad-filtering/create-own-filters/#webrtc-modifier
+            throw ConversionError.unsupportedContentType(message: "$webrtc content type is deprecated")
         }
         if (rule.isReplace) {
-            throw ConversionError.unsupportedContentType(message: "$replace rules are ignored.")
+            throw ConversionError.unsupportedContentType(message: "$replace rules are not supported")
         }
 
         if (types.count > 0) {
             trigger.resourceType = types
         }
     }
-    
+
     private func addLoadContext(rule: NetworkRule, trigger: inout BlockerEntry.Trigger) -> Void {
         var context = [String]();
         // `child-frame` and `top-frame` contexts are supported since Safari 15
