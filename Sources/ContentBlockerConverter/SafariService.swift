@@ -1,17 +1,40 @@
 import Foundation
 
+private let DEFAULT_SAFARI_VERSION = SafariVersion.safari13;
+
 public enum SafariVersion: Int {
     // AdGuard for iOS supports Safari from 11 version
     // AdGuard for Safari doesn't support OS Sierra, so minimal Safari version is 13
     @available (OSX, unavailable)
-    case safari11 = 11;
+    case safari11 = 11
     @available (OSX, unavailable)
-    case safari12 = 12;
+    case safari12 = 12
+
+    case safari13 = 13
+    case safari14 = 14
+    case safari15 = 15
+    case safari16 = 16
+    case safari16Plus
     
-    case safari13 = 13;
-    case safari14 = 14;
-    case safari15 = 15;
-    case safari16 = 16;
+    public init(rawValue: Int) {
+        if rawValue > 16 {
+            self = .safari16Plus
+            return
+        }
+
+        switch rawValue {
+        case 13:
+            self = .safari13
+        case 14:
+            self = .safari14
+        case 15:
+            self = .safari15
+        case 16:
+            self = .safari16
+        default:
+            self = DEFAULT_SAFARI_VERSION
+        }
+    }
     
     /**
      * Returns rules limit for current Safari version
@@ -22,28 +45,16 @@ public enum SafariVersion: Int {
     }
     
     func isSafari15orGreater() -> Bool {
-        return self.rawValue >= SafariVersion.safari15.rawValue;
+        return self.rawValue >= SafariVersion.safari15.rawValue || self == .safari16Plus;
         
     }
     
     func isSafari16orGreater() -> Bool {
-        return self.rawValue >= SafariVersion.safari16.rawValue;
+        return self.rawValue >= SafariVersion.safari16.rawValue || self == .safari16Plus;
     }
 }
 
 class SafariService {
-    var version: SafariVersion = .safari13;
+    var version: SafariVersion = DEFAULT_SAFARI_VERSION;
     static let current: SafariService = SafariService();
-}
-
-public enum SafariVersionError: Error, CustomDebugStringConvertible {
-    case invalidSafariVersion(version: String)
-    case unsupportedSafariVersion(version: Int)
-    
-    public var debugDescription: String {
-        switch self {
-            case .invalidSafariVersion: return "Invalid Safari version value"
-            case .unsupportedSafariVersion: return "The provided Safari version is not supported"
-        }
-    }
 }
