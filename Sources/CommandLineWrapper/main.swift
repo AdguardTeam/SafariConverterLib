@@ -51,7 +51,7 @@ struct ConverterTool: ParsableCommand {
     var rules: String?
 
     mutating func run() throws {
-        let safariVersionResolved = SafariVersion(rawValue: safariVersion)ж
+        let safariVersionResolved = SafariVersion(rawValue: safariVersion);
 
         guard let advancedBlockingFormat = AdvancedBlockingFormat(rawValue: advancedBlockingFormat) else {
             throw AdvancedBlockingFormatError.unsupportedFormat()
