@@ -1,17 +1,34 @@
 import Foundation
 
+private let DEFAULT_SAFARI_VERSION = SafariVersion.safari13;
+
 public enum SafariVersion: Int {
     // AdGuard for iOS supports Safari from 11 version
     // AdGuard for Safari doesn't support OS Sierra, so minimal Safari version is 13
     @available (OSX, unavailable)
-    case safari11 = 11;
+    case safari11;
     @available (OSX, unavailable)
-    case safari12 = 12;
+    case safari12;
+
+    case safari13;
+    case safari14;
+    case safari15;
+    case safari16;
     
-    case safari13 = 13;
-    case safari14 = 14;
-    case safari15 = 15;
-    case safari16 = 16;
+    public init(rawValue: Int) {
+        switch rawValue {
+        case 13:
+            self = .safari13
+        case 14:
+            self = .safari14
+        case 15:
+            self = .safari15
+        case 16:
+            self = .safari16
+        default:
+            self = DEFAULT_SAFARI_VERSION
+        }
+    }
     
     /**
      * Returns rules limit for current Safari version
@@ -34,16 +51,4 @@ public enum SafariVersion: Int {
 class SafariService {
     var version: SafariVersion = .safari13;
     static let current: SafariService = SafariService();
-}
-
-public enum SafariVersionError: Error, CustomDebugStringConvertible {
-    case invalidSafariVersion(version: String)
-    case unsupportedSafariVersion(version: Int)
-    
-    public var debugDescription: String {
-        switch self {
-            case .invalidSafariVersion: return "Invalid Safari version value"
-            case .unsupportedSafariVersion: return "The provided Safari version is not supported"
-        }
-    }
 }
