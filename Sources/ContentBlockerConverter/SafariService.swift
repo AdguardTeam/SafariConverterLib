@@ -6,16 +6,22 @@ public enum SafariVersion: Int {
     // AdGuard for iOS supports Safari from 11 version
     // AdGuard for Safari doesn't support OS Sierra, so minimal Safari version is 13
     @available (OSX, unavailable)
-    case safari11;
+    case safari11
     @available (OSX, unavailable)
-    case safari12;
+    case safari12
 
-    case safari13;
-    case safari14;
-    case safari15;
-    case safari16;
+    case safari13
+    case safari14
+    case safari15
+    case safari16
+    case safari16Plus
     
     public init(rawValue: Int) {
+        if rawValue > 16 {
+            self = .safari16Plus
+            return
+        }
+
         switch rawValue {
         case 13:
             self = .safari13
@@ -39,16 +45,16 @@ public enum SafariVersion: Int {
     }
     
     func isSafari15orGreater() -> Bool {
-        return self.rawValue >= SafariVersion.safari15.rawValue;
+        return self.rawValue >= SafariVersion.safari15.rawValue || self == .safari16Plus;
         
     }
     
     func isSafari16orGreater() -> Bool {
-        return self.rawValue >= SafariVersion.safari16.rawValue;
+        return self.rawValue >= SafariVersion.safari16.rawValue || self == .safari16Plus;
     }
 }
 
 class SafariService {
-    var version: SafariVersion = .safari13;
+    var version: SafariVersion = DEFAULT_SAFARI_VERSION;
     static let current: SafariService = SafariService();
 }
