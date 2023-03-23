@@ -6,14 +6,14 @@ public enum SafariVersion: Int {
     // AdGuard for iOS supports Safari from 11 version
     // AdGuard for Safari doesn't support OS Sierra, so minimal Safari version is 13
     @available (OSX, unavailable)
-    case safari11
+    case safari11 = 11
     @available (OSX, unavailable)
-    case safari12
+    case safari12 = 12
 
-    case safari13
-    case safari14
-    case safari15
-    case safari16
+    case safari13 = 13
+    case safari14 = 14
+    case safari15 = 15
+    case safari16 = 16
     case safari16Plus
     
     public init(rawValue: Int) {
