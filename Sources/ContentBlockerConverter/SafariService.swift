@@ -47,6 +47,14 @@ public enum SafariVersion: CustomStringConvertible, CustomDebugStringConvertible
         }
     }
 
+    public var description: String {
+        return "\(self.doubleValue)"
+    }
+
+    public var debugDescription: String {
+        return "Safari v\(self.description)"
+    }
+
     /**
      * Returns rules limit for current Safari version:
      * Safari allows up to 50k rules by default,
