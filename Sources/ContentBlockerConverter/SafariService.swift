@@ -3,6 +3,14 @@ import Foundation
 private let DEFAULT_SAFARI_VERSION = SafariVersion.safari13;
 
 public enum SafariVersion: CustomStringConvertible, CustomDebugStringConvertible, Equatable {
+    public var description: String {
+        return "\(self.doubleValue)"
+    }
+
+    public var debugDescription: String {
+        return "Safari v\(self.description)"
+    }
+
     // AdGuard for iOS supports Safari from 11 version
     // AdGuard for Safari doesn't support OS Sierra, so minimal Safari version is 13
     @available (OSX, unavailable)
@@ -45,14 +53,6 @@ public enum SafariVersion: CustomStringConvertible, CustomDebugStringConvertible
         case .safari16_4: return 16.4
         case .safari16_4Plus(let version): return version
         }
-    }
-
-    public var description: String {
-        return "\(self.doubleValue)"
-    }
-
-    public var debugDescription: String {
-        return "Safari v\(self.description)"
     }
 
     /**
