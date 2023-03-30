@@ -36,7 +36,7 @@ struct ConverterTool: ParsableCommand {
     static let configuration = CommandConfiguration(commandName: "ConverterTool")
 
     @Option(name: .shortAndLong, help: "Safari version.")
-    var safariVersion: Int = 13
+    var safariVersion: Double = 13
 
     @Option(name: .shortAndLong, help: "Optimize.")
     var optimize = false
@@ -51,7 +51,7 @@ struct ConverterTool: ParsableCommand {
     var rules: String?
 
     mutating func run() throws {
-        let safariVersionResolved = SafariVersion(rawValue: safariVersion);
+        let safariVersionResolved = SafariVersion(safariVersion);
 
         guard let advancedBlockingFormat = AdvancedBlockingFormat(rawValue: advancedBlockingFormat) else {
             throw AdvancedBlockingFormatError.unsupportedFormat()
