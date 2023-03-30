@@ -427,7 +427,7 @@ class NetworkRule: Rule {
             break;
         case "ping":
             // `ping` resource type is supported since Safari 14
-            if SafariService.current.version.rawValue >= SafariVersion.safari14.rawValue {
+            if SafariService.current.version.isSafari14orGreater() {
                 setRequestType(contentType: ContentType.PING, enabled: true);
             } else {
                 throw SyntaxError.invalidRule(message: "$ping option is not supported");
@@ -435,7 +435,7 @@ class NetworkRule: Rule {
             break;
         case "~ping":
             // `ping` resource type is supported since Safari 14
-            if SafariService.current.version.rawValue >= SafariVersion.safari14.rawValue {
+            if SafariService.current.version.isSafari14orGreater() {
                 setRequestType(contentType: ContentType.PING, enabled: false);
             } else {
                 throw SyntaxError.invalidRule(message: "$~ping option is not supported");
