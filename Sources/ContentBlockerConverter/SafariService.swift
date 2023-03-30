@@ -52,6 +52,7 @@ public enum SafariVersion: CustomStringConvertible, CustomDebugStringConvertible
         case .safari16: return 16
         case .safari16_4: return 16.4
         case .safari16_4Plus(let version): return version
+        default: return 13
         }
     }
 
