@@ -128,7 +128,6 @@ class CosmeticRule: Rule {
                         // because `:has()` pseudo-class has native implementation since Safari 16.4
                         // https://www.webkit.org/blog/13966/webkit-features-in-safari-16-4/
                         // https://github.com/AdguardTeam/SafariConverterLib/issues/43
-                        // FIXME: improve safari version detection later for 16.4 or greater
                         if indicator == EXT_CSS_PSEUDO_INDICATOR_HAS && SafariService.current.version.isSafari16_4orGreater() {
                             continue
                         }
