@@ -48,7 +48,7 @@ module.exports = (function () {
      * @param converterToolPath - optional path to converter resolved by Electron
      */
     const jsonFromRules = async (rules, advancedBlocking, safariVersion, converterToolPath) => {
-        if (!Number.isInteger(safariVersion) || safariVersion < MINIMAL_SUPPORTED_SAFARI_VERSION) {
+        if (typeof safariVersion !== 'number' || safariVersion < MINIMAL_SUPPORTED_SAFARI_VERSION) {
             throw new Error(`The provided Safari version is not supported: ${safariVersion}`);
         }
 

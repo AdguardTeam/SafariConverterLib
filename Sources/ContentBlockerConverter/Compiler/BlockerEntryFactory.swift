@@ -315,7 +315,7 @@ class BlockerEntryFactory {
         }
         if rule.hasContentType(contentType: NetworkRule.ContentType.PING) {
             // `ping` resource type is supported since Safari 14
-            if SafariService.current.version.rawValue >= SafariVersion.safari14.rawValue {
+            if SafariService.current.version.isSafari14orGreater() {
                 types.append("ping")
             }
         }

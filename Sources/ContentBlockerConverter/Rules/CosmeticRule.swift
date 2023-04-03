@@ -4,12 +4,14 @@ import Foundation
  * Cosmetic rule class
  */
 class CosmeticRule: Rule {
+    private static let EXT_CSS_PSEUDO_INDICATOR_HAS = ":has("
+
     /**
      * Pseudo class indicators. They are used to detect if rule is extended or not even if rule does not
      * have extended css marker
      */
     private static let EXT_CSS_PSEUDO_INDICATORS = [
-        ":has(",
+        CosmeticRule.EXT_CSS_PSEUDO_INDICATOR_HAS,
         ":has-text(",
         ":contains(",
         ":matches-css",
@@ -23,28 +25,28 @@ class CosmeticRule: Rule {
         ":matches-property(",
         ":is("
     ];
-    
+
     private static let EXT_CSS_EXT_INDICATOR = "[-ext-";
-    
+
     private static let OPEN_BRACKET = "["
     private static let CLOSE_BRACKET = "]"
     private static let MODIFIER_KEY = "$"
-    
+
     private static let PATH_MODIFIER = "path="
     private static let DOMAIN_MODIFIER = "domain="
-    
+
     var content: String = "";
-    
+
     var scriptlet: String? = nil;
     var scriptletParam: String? = nil;
-    
+
     var isElemhide = false;
     var isExtendedCss = false;
     var isInjectCss = false;
-    
+
     override init(ruleText: NSString) throws {
         try super.init(ruleText: ruleText)
-        
+
         let markerInfo = CosmeticRuleMarker.findCosmeticRuleMarker(ruleText: ruleText)
         if (markerInfo.index == -1) {
             throw SyntaxError.invalidRule(message: "Not a cosmetic rule")
@@ -55,7 +57,7 @@ class CosmeticRule: Rule {
         if (self.content == "") {
             throw SyntaxError.invalidRule(message: "Rule content is empty")
         }
-        
+
         switch (markerInfo.marker!) {
             case CosmeticRuleMarker.ElementHiding,
                  CosmeticRuleMarker.ElementHidingExtCSS,
@@ -73,7 +75,7 @@ class CosmeticRule: Rule {
             default:
                 throw SyntaxError.invalidRule(message: "Unsupported rule type");
         }
-        
+
         if (self.isScript) {
             if (self.content.hasPrefix(ScriptletParser.SCRIPTLET_MASK)) {
                 self.isScriptlet = true;
@@ -87,7 +89,7 @@ class CosmeticRule: Rule {
             // This means that the marker is preceded by the list of domains
             // Now it's a good time to parse them.
             let domains = ruleText.substring(to: markerInfo.index);
-            // suppport for *## for generic rules
+            // support for *## for generic rules
             // https://github.com/AdguardTeam/SafariConverterLib/issues/11
             if (!(domains.count == 1 && domains.contains("*"))) {
                 try setCosmeticRuleDomains(domains: domains);
@@ -103,15 +105,15 @@ class CosmeticRule: Rule {
             }
         }
     }
-    
+
     private static func searchCssPseudoIndicators(content: String) -> Bool {
         let nsContent = content as NSString;
-        
-        // Not enought for even minimal length pseudo
+
+        // Not enough for even minimal length pseudo
         if (nsContent.length < 6) {
             return false
         }
-        
+
         let maxIndex = nsContent.length - 1
         for i in 0...maxIndex {
             let c = nsContent.character(at: i)
@@ -122,6 +124,13 @@ class CosmeticRule: Rule {
             } else if c == ":".utf16.first! {
                 for indicator in CosmeticRule.EXT_CSS_PSEUDO_INDICATORS {
                     if nsContent.substring(from: i).starts(with: indicator) {
+                        // the rule with `##` marker and `:has()` pseudo-class should not be considered as ExtendedCss,
+                        // because `:has()` pseudo-class has native implementation since Safari 16.4
+                        // https://www.webkit.org/blog/13966/webkit-features-in-safari-16-4/
+                        // https://github.com/AdguardTeam/SafariConverterLib/issues/43
+                        if indicator == EXT_CSS_PSEUDO_INDICATOR_HAS && SafariService.current.version.isSafari16_4orGreater() {
+                            continue
+                        }
                         return true
                     }
                 }
@@ -130,7 +139,7 @@ class CosmeticRule: Rule {
 
         return false;
     }
-    
+
     private static func parseWhitelist(marker: CosmeticRuleMarker) -> Bool {
         switch (marker) {
             case CosmeticRuleMarker.ElementHidingException,
@@ -144,7 +153,7 @@ class CosmeticRule: Rule {
                 return false;
         }
     }
-    
+
     private static func isExtCssMarker(marker: CosmeticRuleMarker) -> Bool {
         switch (marker) {
             case CosmeticRuleMarker.CssExtCSS,
@@ -156,7 +165,7 @@ class CosmeticRule: Rule {
                 return false;
         }
     }
-    
+
     func setCosmeticRuleDomains(domains: String) throws -> Void {
         // handle modifiers
         if domains.starts(with: CosmeticRule.OPEN_BRACKET + CosmeticRule.MODIFIER_KEY) {

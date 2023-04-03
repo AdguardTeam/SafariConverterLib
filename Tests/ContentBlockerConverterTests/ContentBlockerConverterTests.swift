@@ -517,7 +517,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded[1].action.type, "ignore-previous-rules");
         XCTAssertEqual(decoded[1].trigger.ifDomain, ["*example.org"]);
     }
-    
+
     func testConvertAdvancedBlockingRulesSortingOrderGenerichide() {
         var rules = [
             "test.com#%#//scriptlet('set-constant', 'test', 'true')",
@@ -527,7 +527,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result.totalConvertedCount, 3);
         XCTAssertEqual(result.convertedCount, 1);
         XCTAssertEqual(result.advancedBlockingConvertedCount, 2);
-        
+
         var decoded = try! parseJsonString(json: result.advancedBlocking!);
         XCTAssertEqual(decoded.count, 2);
 
@@ -539,8 +539,8 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded[1].trigger.urlFilter, URL_FILTER_CSS_RULES);
         XCTAssertEqual(decoded[1].trigger.ifDomain, ["*test.com"]);
         XCTAssertEqual(decoded[1].action.type, "scriptlet");
-        
-        
+
+
         rules = [
             "@@||test.com^$generichide",
             "test.com#%#console.log('test');",
@@ -559,24 +559,24 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded[0].trigger.urlFilter, URL_FILTER_CSS_RULES);
         XCTAssertEqual(decoded[0].action.type, "css-extended");
         XCTAssertEqual(decoded[0].action.css, "div:has(.textad)");
-        
+
         // generichide exception rule disables generic extended-css rule
         XCTAssertEqual(decoded[1].trigger.urlFilter, URL_FILTER_CSS_RULES);
         XCTAssertEqual(decoded[1].trigger.ifDomain, ["*test.com"]);
         XCTAssertEqual(decoded[1].action.type, "ignore-previous-rules");
-        
+
         // generichide exception rule doesn't disable
         // domain sensitive extended-css, script and scriptlet rules
         XCTAssertEqual(decoded[2].trigger.urlFilter, URL_FILTER_CSS_RULES);
         XCTAssertEqual(decoded[2].trigger.ifDomain, ["*test.com"]);
         XCTAssertEqual(decoded[2].action.type, "css-extended");
         XCTAssertEqual(decoded[2].action.css, "div:has(.banner)");
-        
+
         XCTAssertEqual(decoded[3].trigger.urlFilter, URL_FILTER_CSS_RULES);
         XCTAssertEqual(decoded[3].trigger.ifDomain, ["*test.com"]);
         XCTAssertEqual(decoded[3].action.type, "script");
         XCTAssertEqual(decoded[3].action.script, "console.log('test');");
-        
+
         XCTAssertEqual(decoded[4].trigger.urlFilter, URL_FILTER_CSS_RULES);
         XCTAssertEqual(decoded[4].trigger.ifDomain, ["*test.com"]);
         XCTAssertEqual(decoded[4].action.type, "scriptlet");
@@ -2045,7 +2045,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded[0].trigger.ifDomain, ["*example.org", "*test.com", "*website.com"]);
         XCTAssertEqual(decoded[0].action.type, "css-display-none");
         XCTAssertEqual(decoded[0].action.selector, ".textad");
-        
+
         rules = ["[$path=/page*.html]##.textad"];
         result = converter.convertArray(rules: rules);
         XCTAssertEqual(result.convertedCount, 1);
@@ -2059,7 +2059,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertNil(decoded[0].trigger.ifDomain);
         XCTAssertEqual(decoded[0].action.type, "css-display-none");
         XCTAssertEqual(decoded[0].action.selector, ".textad");
-        
+
         rules = ["[$path=/\\/sub\\/.*\\/page\\.html/]##.textad"];
         result = converter.convertArray(rules: rules);
         XCTAssertEqual(result.convertedCount, 1);
@@ -2073,7 +2073,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertNil(decoded[0].trigger.ifDomain);
         XCTAssertEqual(decoded[0].action.type, "css-display-none");
         XCTAssertEqual(decoded[0].action.selector, ".textad");
-        
+
         rules = ["[$path=/\\/(sub1|sub2)\\/page\\.html/]##.textad"];
         result = converter.convertArray(rules: rules);
         XCTAssertEqual(result.convertedCount, 0);
@@ -2081,7 +2081,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result.errorsCount, 1);
         XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON);
     }
-    
+
     func testAdvancedCosmeticRulesWithPathModifier() {
         var rules = ["[$path=page.html]#$#.textad { visibility: hidden }"];
         var result = converter.convertArray(rules: rules, advancedBlocking: true);
@@ -2112,32 +2112,32 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded[0].trigger.ifDomain, ["*test.com"]);
         XCTAssertEqual(decoded[0].action.type, "css-extended");
         XCTAssertEqual(decoded[0].action.css, "div:has(.textad)");
-        
+
         rules = ["[$path=/\\/тест\\/.*\\/page\\.html/]##.textad"];
         result = converter.convertArray(rules: rules);
         XCTAssertEqual(result.convertedCount, 0);
         XCTAssertEqual(result.totalConvertedCount, 0);
         XCTAssertEqual(result.errorsCount, 1);
         XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON);
-        
+
         rules = ["[$path=/^\\/test\\/$/]example.org##.classname"]
         result = converter.convertArray(rules: rules)
         XCTAssertEqual(result.convertedCount, 1)
         XCTAssertEqual(result.errorsCount, 0)
-        
+
         decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         let urlFilter = decoded[0].trigger.urlFilter;
         XCTAssertEqual(urlFilter, "^(https?:\\/\\/)([^\\/]+)\\/test\\/$");
     }
-    
+
     func testAdvancedCosmeticRulesWithDomainModifier() {
         var rules = ["[$domain=mail.ru,path=/^\\/$/]#?#.toolbar:has(> div.toolbar__inner > div.toolbar__aside > span.toolbar__close)"]
         var result = converter.convertArray(rules: rules, advancedBlocking: true)
         XCTAssertEqual(result.advancedBlockingConvertedCount, 1)
         XCTAssertEqual(result.totalConvertedCount, 1)
         XCTAssertEqual(result.errorsCount, 0)
-        
+
         var decoded = try! parseJsonString(json: result.advancedBlocking!);
         XCTAssertEqual(decoded.count, 1);
         var ifDomain = decoded[0].trigger.ifDomain;
@@ -2147,26 +2147,26 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded[0].action.type, "css-extended");
         var css = decoded[0].action.css;
         XCTAssertEqual(css, ".toolbar:has(> div.toolbar__inner > div.toolbar__aside > span.toolbar__close)");
-        
+
         rules = ["[$domain=mail.ru,path=/^\\/$/]#?#div[data-testid=\"pulse-row\"] > div[data-testid=\"pulse-card\"] div[class*=\"_\"] > input[name=\"email\"]:upward(div[data-testid=\"pulse-card\"])"]
         result = converter.convertArray(rules: rules, advancedBlocking: true)
         XCTAssertEqual(result.advancedBlockingConvertedCount, 1)
         XCTAssertEqual(result.totalConvertedCount, 1)
         XCTAssertEqual(result.errorsCount, 0)
-        
+
         decoded = try! parseJsonString(json: result.advancedBlocking!);
         XCTAssertEqual(decoded.count, 1);
         ifDomain = decoded[0].trigger.ifDomain;
         XCTAssertEqual(ifDomain, ["*mail.ru"]);
         urlFilter = decoded[0].trigger.urlFilter;
         XCTAssertEqual(urlFilter, "^(https?:\\/\\/)([^\\/]+)\\/$");
-        
+
         rules = ["[$domain=facebook.com,path=/gaming]#$#body > .AdBox.Ad.advert ~ div[class] { display: block !important; }"]
         result = converter.convertArray(rules: rules, advancedBlocking: true)
         XCTAssertEqual(result.advancedBlockingConvertedCount, 1)
         XCTAssertEqual(result.totalConvertedCount, 1)
         XCTAssertEqual(result.errorsCount, 0)
-        
+
         decoded = try! parseJsonString(json: result.advancedBlocking!);
         XCTAssertEqual(decoded.count, 1);
         ifDomain = decoded[0].trigger.ifDomain;
@@ -2176,13 +2176,13 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded[0].action.type, "css-inject");
         css = decoded[0].action.css;
         XCTAssertEqual(css, "body > .AdBox.Ad.advert ~ div[class] { display: block !important; }");
-        
+
         rules = ["[$domain=facebook.com,path=/gaming]#$#body > .AdBox.Ad.advert { display: block !important; }"]
         result = converter.convertArray(rules: rules, advancedBlocking: true)
         XCTAssertEqual(result.advancedBlockingConvertedCount, 1)
         XCTAssertEqual(result.totalConvertedCount, 1)
         XCTAssertEqual(result.errorsCount, 0)
-        
+
         decoded = try! parseJsonString(json: result.advancedBlocking!);
         XCTAssertEqual(decoded.count, 1);
         ifDomain = decoded[0].trigger.ifDomain;
@@ -2192,13 +2192,13 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded[0].action.type, "css-inject");
         css = decoded[0].action.css;
         XCTAssertEqual(css, "body > .AdBox.Ad.advert { display: block !important; }");
-        
+
         rules = ["[$domain=lifebursa.com,path=/^\\/$/]#?#.container > div.row:has(> div[class^=\"col-\"] > div.banner)"]
         result = converter.convertArray(rules: rules, advancedBlocking: true)
         XCTAssertEqual(result.advancedBlockingConvertedCount, 1)
         XCTAssertEqual(result.totalConvertedCount, 1)
         XCTAssertEqual(result.errorsCount, 0)
-        
+
         decoded = try! parseJsonString(json: result.advancedBlocking!);
         XCTAssertEqual(decoded.count, 1);
         ifDomain = decoded[0].trigger.ifDomain;
@@ -2221,38 +2221,38 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result.totalConvertedCount, rules.count)
         XCTAssertEqual(result.errorsCount, 0)
     }
-    
+
     func testBlockingRulesWithNonAsciiCharacters() {
         var rules = ["||example.org$domain=/реклама\\.рф/"]
         var result = converter.convertArray(rules: rules)
         XCTAssertEqual(result.convertedCount, 1)
         XCTAssertEqual(result.errorsCount, 0)
-        
+
         let decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
-        
+
         XCTAssertEqual(decoded[0].trigger.urlFilter, "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org");
         XCTAssertEqual(decoded[0].trigger.ifDomain, ["*xn--/\\-7kcax4ahj5a.xn--/-4tbm"]);
         XCTAssertEqual(decoded[0].action.type, "block");
-        
+
         rules = ["/тест-регексп/$domain=/test\\.com/"]
         result = converter.convertArray(rules: rules)
         XCTAssertEqual(result.convertedCount, 0)
         XCTAssertEqual(result.errorsCount, 1)
         XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON);
     }
-    
+
     func testNetworkExceptionRulesWithConvertedOptions() {
         var rules = ["@@||example.org/*/test.js$1p"]
         var result = converter.convertArray(rules: rules)
         XCTAssertEqual(result.convertedCount, 1)
         XCTAssertEqual(result.errorsCount, 0)
-        
+
         var decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         XCTAssertEqual(decoded[0].trigger.loadType, ["first-party"]);
         XCTAssertEqual(decoded[0].action.type, "ignore-previous-rules");
-        
+
         rules = ["@@||example.org/*/test.js$3p"]
         result = converter.convertArray(rules: rules)
         XCTAssertEqual(result.convertedCount, 1)
@@ -2263,7 +2263,49 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded[0].trigger.loadType, ["third-party"]);
         XCTAssertEqual(decoded[0].action.type, "ignore-previous-rules");
     }
-    
+
+    func testConvertRulesWithPseudoClassHas() {
+        let rules = [
+            "test.com##div:has(.banner)",
+            "example.org#?#div:has(.adv)",
+        ]
+
+        var result = converter.convertArray(rules: rules, safariVersion: .safari15, advancedBlocking: true)
+        XCTAssertEqual(result.convertedCount, 0)
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 2)
+        XCTAssertEqual(result.totalConvertedCount, 2)
+        XCTAssertEqual(result.errorsCount, 0)
+
+        let decoded = try! parseJsonString(json: result.advancedBlocking!);
+        XCTAssertEqual(decoded.count, 2);
+
+        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*test.com"]);
+        XCTAssertEqual(decoded[0].action.type, "css-extended");
+        XCTAssertEqual(decoded[0].action.css, "div:has(.banner)");
+
+        XCTAssertEqual(decoded[1].trigger.ifDomain, ["*example.org"]);
+        XCTAssertEqual(decoded[1].action.type, "css-extended");
+        XCTAssertEqual(decoded[1].action.css, "div:has(.adv)");
+
+        result = converter.convertArray(rules: rules, safariVersion: .safari16_4, advancedBlocking: true)
+        XCTAssertEqual(result.convertedCount, 1)
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 1)
+        XCTAssertEqual(result.totalConvertedCount, 2)
+        XCTAssertEqual(result.errorsCount, 0)
+
+        let decodedSimpleRules = try! parseJsonString(json: result.converted);
+        XCTAssertEqual(decodedSimpleRules.count, 1);
+        XCTAssertEqual(decodedSimpleRules[0].trigger.ifDomain, ["*test.com"]);
+        XCTAssertEqual(decodedSimpleRules[0].action.type, "css-display-none");
+        XCTAssertEqual(decodedSimpleRules[0].action.selector, "div:has(.banner)");
+
+        let decodedAdvancedRules = try! parseJsonString(json: result.advancedBlocking!);
+        XCTAssertEqual(decodedAdvancedRules.count, 1);
+        XCTAssertEqual(decodedAdvancedRules[0].trigger.ifDomain, ["*example.org"]);
+        XCTAssertEqual(decodedAdvancedRules[0].action.type, "css-extended");
+        XCTAssertEqual(decodedAdvancedRules[0].action.css, "div:has(.adv)");
+    }
+
     func testXpathRules() {
         let rules = [
             "test.com#?#:xpath(//div[@data-st-area='Advert'])",
@@ -2276,19 +2318,19 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result.advancedBlockingConvertedCount, 2)
         XCTAssertEqual(result.totalConvertedCount, 2)
         XCTAssertEqual(result.errorsCount, 0)
-        
+
         let decoded = try! parseJsonString(json: result.advancedBlocking!);
         XCTAssertEqual(decoded.count, 2);
-        
+
         XCTAssertEqual(decoded[0].trigger.ifDomain, ["*test.com"])
         XCTAssertEqual(decoded[0].action.type, "css-extended")
         XCTAssertEqual(decoded[0].action.css, ":xpath(//div[@data-st-area='Advert'])")
-        
+
         XCTAssertEqual(decoded[1].trigger.ifDomain, ["*example.org"])
         XCTAssertEqual(decoded[1].action.type, "css-extended")
         XCTAssertEqual(decoded[1].action.css, ":xpath(//div[@id='stream_pagelet'])")
     }
-    
+
     func testApplyMultidomainCosmeticExclusions() {
         var rules = [
             "test.com,example.org###banner",
@@ -2313,13 +2355,13 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result.convertedCount, 1)
         XCTAssertEqual(result.totalConvertedCount, 1)
         XCTAssertEqual(result.errorsCount, 0)
-        
+
         decoded = try! parseJsonString(json: result.converted)
         XCTAssertEqual(decoded.count, 1)
         XCTAssertEqual(decoded[0].trigger.ifDomain, ["*test.com"])
         XCTAssertEqual(decoded[0].action.type, "css-display-none")
         XCTAssertEqual(decoded[0].action.selector, "#banner")
-        
+
         rules = [
             "test1.com,example.org,test2.com###banner",
             "example.com,example.org,test1.com#@##banner",
@@ -2328,13 +2370,13 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result.convertedCount, 1)
         XCTAssertEqual(result.totalConvertedCount, 1)
         XCTAssertEqual(result.errorsCount, 0)
-        
+
         decoded = try! parseJsonString(json: result.converted)
         XCTAssertEqual(decoded.count, 1)
         XCTAssertEqual(decoded[0].trigger.ifDomain, ["*test2.com"])
         XCTAssertEqual(decoded[0].action.type, "css-display-none")
         XCTAssertEqual(decoded[0].action.selector, "#banner")
-        
+
         rules = [
             "test1.com,test2.com,test3.com###banner",
             "example1.org,example2.org###banner",
@@ -2345,14 +2387,14 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result.convertedCount, 1)
         XCTAssertEqual(result.totalConvertedCount, 1)
         XCTAssertEqual(result.errorsCount, 0)
-        
+
         decoded = try! parseJsonString(json: result.converted)
         XCTAssertEqual(decoded.count, 1)
         XCTAssertEqual(decoded[0].trigger.ifDomain, ["*test3.com"])
         XCTAssertEqual(decoded[0].action.type, "css-display-none")
         XCTAssertEqual(decoded[0].action.selector, "#banner")
     }
-    
+
     func testApplyMultidomainAdvancedExclusions() {
         var rules = [
             "example.com,test.com#$##adv{visibility:hidden;}",
@@ -2379,13 +2421,13 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result.advancedBlockingConvertedCount, 1)
         XCTAssertEqual(result.totalConvertedCount, 1)
         XCTAssertEqual(result.errorsCount, 0)
-        
+
         decoded = try! parseJsonString(json: result.advancedBlocking!)
         XCTAssertEqual(decoded.count, 1)
         XCTAssertEqual(decoded[0].trigger.ifDomain, ["*test.com"])
         XCTAssertEqual(decoded[0].action.type, "css-inject")
         XCTAssertEqual(decoded[0].action.css, "#adv{visibility:hidden;}")
-        
+
         rules = [
             "test.com,example.org#?#div:has(> a[target='_blank'])",
             "example.com,example.org#@?#div:has(> a[target='_blank'])",
@@ -2395,13 +2437,13 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result.advancedBlockingConvertedCount, 1)
         XCTAssertEqual(result.totalConvertedCount, 1)
         XCTAssertEqual(result.errorsCount, 0)
-        
+
         decoded = try! parseJsonString(json: result.advancedBlocking!)
         XCTAssertEqual(decoded.count, 1)
         XCTAssertEqual(decoded[0].trigger.ifDomain, ["*test.com"])
         XCTAssertEqual(decoded[0].action.type, "css-extended")
         XCTAssertEqual(decoded[0].action.css, "div:has(> a[target='_blank'])")
-        
+
         rules = [
             "example.org,test1.com,test2.com#%#window.adv_id = null;",
             "example.com,example.org,test1.com#@%#window.adv_id = null;",
@@ -2411,7 +2453,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result.advancedBlockingConvertedCount, 1)
         XCTAssertEqual(result.totalConvertedCount, 1)
         XCTAssertEqual(result.errorsCount, 0)
-        
+
         decoded = try! parseJsonString(json: result.advancedBlocking!)
         XCTAssertEqual(decoded.count, 1)
         XCTAssertEqual(decoded[0].trigger.ifDomain, ["*test2.com"])
@@ -2477,6 +2519,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         ("testUnicodeRules", testUnicodeRules),
         ("testAdvancedCosmeticRulesWithDomainModifier", testAdvancedCosmeticRulesWithDomainModifier),
         ("testBlockingRulesWithNonAsciiCharacters", testBlockingRulesWithNonAsciiCharacters),
+        ("testConvertRulesWithPseudoClassHas", testConvertRulesWithPseudoClassHas),
         ("testXpathRules", testXpathRules),
         ("testApplyMultidomainCosmeticExclusions", testApplyMultidomainCosmeticExclusions),
         ("testApplyMultidomainAdvancedExclusions", testApplyMultidomainAdvancedExclusions),
