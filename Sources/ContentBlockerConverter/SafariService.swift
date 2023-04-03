@@ -73,6 +73,10 @@ public enum SafariVersion: CustomStringConvertible, CustomDebugStringConvertible
         return self.doubleValue >= SafariVersion.safari15.doubleValue;
     }
 
+    /**
+     * Starting from 16.4 version Safari content blockers supports :has() pseudo-class.
+     * https://www.webkit.org/blog/13966/webkit-features-in-safari-16-4/
+     */
     func isSafari16_4orGreater() -> Bool {
         return self.doubleValue >= SafariVersion.safari16_4.doubleValue;
     }
