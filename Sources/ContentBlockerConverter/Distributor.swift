@@ -83,6 +83,7 @@ class Distributor {
             let unlessDomainsAmount = entry.trigger.unlessDomain?.count ?? 0
  
             // discard rules that exceed domains limit
+            // https://github.com/AdguardTeam/SafariConverterLib/issues/51
             if ifDomainsAmount > MAX_DOMAINS_FOR_RULE
                 || unlessDomainsAmount > MAX_DOMAINS_FOR_RULE {
                 continue
