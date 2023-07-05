@@ -2452,6 +2452,28 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded[0].action.type, "script")
         XCTAssertEqual(decoded[0].action.script, "window.adv_id = null;")
     }
+    
+    func testExcludingRulesWithRegex() {
+        var rules = ["||example.org$domain=/test\\.com/"]
+
+        var result = converter.convertArray(rules: rules, safariVersion: .safari15)
+        XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON);
+        
+        rules = [
+            "/example1\\.org/#%#alert('1');",
+            "||example2.org$domain=/test2\\.com/",
+            "||example3.org$domain=test3.com/",
+            "/example4\\.org/##.adv"
+        ]
+
+        result = converter.convertArray(rules: rules, safariVersion: .safari15)
+        let decoded = try! parseJsonString(json: result.converted)
+        XCTAssertEqual(decoded.count, 1)
+
+        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*test3.com/"])
+        XCTAssertEqual(decoded[0].trigger.urlFilter, "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example3\\.org")
+        XCTAssertEqual(decoded[0].action.type, "block")
+    }
 
     static var allTests = [
         ("testEmpty", testEmpty),
