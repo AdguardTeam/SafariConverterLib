@@ -3,7 +3,7 @@ import Foundation
 /**
  * Maximum domains amount for css blocking rule
  */
-private let MAX_DOMAINS_FOR_RULE = 250;
+private let MAX_DOMAINS_FOR_RULE = 10000;
 
 /**
  * Distributor class
@@ -70,45 +70,27 @@ class Distributor {
     }
 
     /**
-     * Checks the if-domain and unless-domain amount and splits entry if it's over limit
-     */
-    private func handleDomainLimit(entry: BlockerEntry) -> [BlockerEntry] {
-        var result = [BlockerEntry]();
-        let ifDomainsNum = entry.trigger.ifDomain?.count ?? 0;
-        let unlessDomainsNum = entry.trigger.unlessDomain?.count ?? 0;
-        if ifDomainsNum > MAX_DOMAINS_FOR_RULE {
-            let chunkedIfDomains = [[String]]?(entry.trigger.ifDomain!.chunked(into: MAX_DOMAINS_FOR_RULE));
-            for chunk in chunkedIfDomains! {
-                var newEntry = entry;
-                newEntry.trigger.ifDomain = Array(chunk);
-                result.append(newEntry);
-            }
-            return result;
-        } else if unlessDomainsNum > MAX_DOMAINS_FOR_RULE {
-            let chunkedUnlessDomains = [[String]]?(entry.trigger.unlessDomain!.chunked(into: MAX_DOMAINS_FOR_RULE));
-            for chunk in chunkedUnlessDomains! {
-                var newEntry = entry;
-                newEntry.trigger.unlessDomain = Array(chunk);
-                result.append(newEntry);
-            }
-            return result;
-        } else {
-            return [entry];
-        }
-    }
-
-    /**
      * Updates if-domain and unless-domain fields.
      * Adds wildcard to every rule and splits rules contains over limit domains
      */
     func updateDomains(entries: [BlockerEntry]) -> [BlockerEntry] {
-        var result = [BlockerEntry]();
+        var result = [BlockerEntry]()
         for var entry in entries {
-            entry.trigger.ifDomain = addWildcard(domains: entry.trigger.ifDomain);
-            entry.trigger.unlessDomain = addWildcard(domains: entry.trigger.unlessDomain);
-            result += handleDomainLimit(entry: entry);
+            entry.trigger.ifDomain = addWildcard(domains: entry.trigger.ifDomain)
+            entry.trigger.unlessDomain = addWildcard(domains: entry.trigger.unlessDomain)
+
+            let ifDomainsAmount = entry.trigger.ifDomain?.count ?? 0
+            let unlessDomainsAmount = entry.trigger.unlessDomain?.count ?? 0
+ 
+            // discard rules that exceed domains limit
+            if ifDomainsAmount > MAX_DOMAINS_FOR_RULE
+                || unlessDomainsAmount > MAX_DOMAINS_FOR_RULE {
+                continue
+            }
+            
+            result += [entry]
         }
-        return result;
+        return result
     };
 
     private func addWildcard(domains: [String]?) -> [String]? {

@@ -776,40 +776,32 @@ final class ContentBlockerConverterTests: XCTestCase {
 
     func testTldWildcardRules() {
         var result = converter.convertArray(rules: ["surge.*,testcases.adguard.*###case-5-wildcard-for-tld > .test-banner"]);
-        XCTAssertEqual(result.convertedCount, 2);
+        XCTAssertEqual(result.convertedCount, 1);
 
         var decoded = try! parseJsonString(json: result.converted);
-        XCTAssertEqual(decoded.count, 2);
+        XCTAssertEqual(decoded.count, 1);
         XCTAssertEqual(decoded[0].trigger.urlFilter, URL_FILTER_CSS_RULES);
         XCTAssertEqual(decoded[0].trigger.ifDomain?[0], "*surge.com");
         XCTAssertEqual(decoded[0].trigger.ifDomain?[1], "*surge.ru");
         XCTAssertEqual(decoded[0].trigger.ifDomain?[2], "*surge.net");
-        XCTAssertEqual(decoded[0].trigger.ifDomain?.count, 250);
-
-        XCTAssertEqual(decoded[1].trigger.urlFilter, URL_FILTER_CSS_RULES);
-        XCTAssertNotNil(decoded[1].trigger.ifDomain?[0]);
-        XCTAssertEqual(decoded[1].trigger.ifDomain?.count, 150);
+        XCTAssertEqual(decoded[0].trigger.ifDomain?.count, 400);
 
 
         result = converter.convertArray(rules: ["||*/test-files/adguard.png$domain=surge.*|testcases.adguard.*"]);
-        XCTAssertEqual(result.convertedCount, 2);
+        XCTAssertEqual(result.convertedCount, 1);
 
         decoded = try! parseJsonString(json: result.converted);
-        XCTAssertEqual(decoded.count, 2);
+        XCTAssertEqual(decoded.count, 1);
         XCTAssertEqual(decoded[0].trigger.urlFilter, START_URL_UNESCAPED + ".*\\/test-files\\/adguard\\.png");
         XCTAssertEqual(decoded[0].trigger.ifDomain?[0], "*surge.com");
         XCTAssertEqual(decoded[0].trigger.ifDomain?[1], "*surge.ru");
         XCTAssertEqual(decoded[0].trigger.ifDomain?[2], "*surge.net");
-        XCTAssertEqual(decoded[0].trigger.ifDomain?.count, 250);
+        XCTAssertEqual(decoded[0].trigger.ifDomain?.count, 400);
 
         var regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!);
         XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://test.com/test-files/adguard.png"));
 
-        XCTAssertEqual(decoded[1].trigger.urlFilter, START_URL_UNESCAPED + ".*\\/test-files\\/adguard\\.png");
-        XCTAssertNotNil(decoded[1].trigger.ifDomain?[0]);
-        XCTAssertEqual(decoded[1].trigger.ifDomain?.count, 150);
-
-        regex = try! NSRegularExpression(pattern: decoded[1].trigger.urlFilter!);
+        regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!);
         XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://test.com/test-files/adguard.png"));
 
         result = converter.convertArray(rules: ["|http$script,domain=forbes.*"]);
