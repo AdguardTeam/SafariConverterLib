@@ -2537,5 +2537,6 @@ final class ContentBlockerConverterTests: XCTestCase {
         ("testXpathRules", testXpathRules),
         ("testApplyMultidomainCosmeticExclusions", testApplyMultidomainCosmeticExclusions),
         ("testApplyMultidomainAdvancedExclusions", testApplyMultidomainAdvancedExclusions),
+        ("testExcludingRulesWithRegex", testExcludingRulesWithRegex),
     ]
 }
