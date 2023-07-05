@@ -3,7 +3,7 @@ import Foundation
 /**
  * Maximum domains amount for css blocking rule
  */
-private let MAX_DOMAINS_FOR_RULE = 10000;
+private let MAX_DOMAINS_FOR_RULE = 10000
 
 /**
  * Distributor class
