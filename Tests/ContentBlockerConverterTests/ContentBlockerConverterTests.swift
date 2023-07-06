@@ -2460,6 +2460,27 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded[0].action.type, "script")
         XCTAssertEqual(decoded[0].action.script, "window.adv_id = null;")
     }
+    
+    func testConvertRulesWithPseudoClassIs() {
+        let rules = [
+            "##:is(.test1, .test2)",
+            "example.org###adv:is(.test1, .test2)",
+        ]
+        
+        // converts as extended-css rule for Safari 15
+        var result = converter.convertArray(rules: rules, safariVersion: .safari15, advancedBlocking: true)
+        XCTAssertEqual(result.convertedCount, 0)
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 2)
+        XCTAssertEqual(result.totalConvertedCount, 2)
+        XCTAssertEqual(result.errorsCount, 0)
+        
+        // converts as cosmetic rule for Safari 16.4
+        result = converter.convertArray(rules: rules, safariVersion: .safari16_4, advancedBlocking: true)
+        XCTAssertEqual(result.convertedCount, 2)
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 0)
+        XCTAssertEqual(result.totalConvertedCount, 2)
+        XCTAssertEqual(result.errorsCount, 0)
+    }
 
     static var allTests = [
         ("testEmpty", testEmpty),
