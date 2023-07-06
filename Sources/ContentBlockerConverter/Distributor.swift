@@ -1,4 +1,5 @@
 import Foundation
+import Shared
 
 /**
  * Maximum domains amount for css blocking rule
@@ -86,6 +87,7 @@ class Distributor {
             // https://github.com/AdguardTeam/SafariConverterLib/issues/51
             if ifDomainsAmount > MAX_DOMAINS_FOR_RULE
                 || unlessDomainsAmount > MAX_DOMAINS_FOR_RULE {
+                Logger.log("Domains limit exceeded: \(ifDomainsAmount > MAX_DOMAINS_FOR_RULE ? ifDomainsAmount : unlessDomainsAmount)")
                 continue
             }
             
