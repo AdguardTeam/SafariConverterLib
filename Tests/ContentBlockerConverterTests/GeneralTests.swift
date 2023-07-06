@@ -413,7 +413,9 @@ final class GeneralTests: XCTestCase {
             "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/filters-2022.txt",
             "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/filters-2021.txt",
             "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/filters-2020.txt",
-            "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/annoyances.txt"
+            // temporary disabled uBlock Annoyances filter,
+            // because it's empty for the moment, what's goes against the current test case
+            // "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/annoyances.txt"
         ]
 
         for listUrl in lists {
