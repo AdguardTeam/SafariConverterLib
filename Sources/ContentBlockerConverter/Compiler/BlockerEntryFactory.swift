@@ -386,10 +386,27 @@ class BlockerEntryFactory {
         }
     };
 
-    private func addDomainOptions(rule: Rule, trigger: inout BlockerEntry.Trigger)  throws -> Void {
-        let included = resolveTopLevelDomainWildcards(domains: rule.permittedDomains);
+    /**
+     * Throws error if provided rule contains regexp in permitted or restricted domains
+     */
+    private func excludeRegexpDomainRule(_ rule: Rule) throws -> Void {
+        let domains = rule.restrictedDomains + rule.permittedDomains
+        try domains.forEach { item in
+            if item.hasPrefix("/") && item.hasSuffix("/") {
+                throw ConversionError.invalidDomains(message: "Safari does not support regular expressions in permitted or restricted domains");
+            }
+        }
+    }
 
-        var excludedDomains = rule.restrictedDomains;
+    private func addDomainOptions(rule: Rule, trigger: inout BlockerEntry.Trigger) throws -> Void {
+        var excludedDomains = rule.restrictedDomains
+        let includedDomains = rule.permittedDomains
+
+        // discard rules that contains regexp in if-domain or unless-domain
+        // https://github.com/AdguardTeam/SafariConverterLib/issues/53
+        try excludeRegexpDomainRule(rule);
+        
+        let included = resolveTopLevelDomainWildcards(domains: includedDomains);
         addUnlessDomainForThirdParty(rule: rule, domains: &excludedDomains);
         let excluded = resolveTopLevelDomainWildcards(domains: excludedDomains);
 
