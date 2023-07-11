@@ -2312,15 +2312,8 @@ final class ContentBlockerConverterTests: XCTestCase {
             "example.org###adv:is(.test1, .test2)",
         ]
         
-        // converts as extended-css rule for Safari 15
-        var result = converter.convertArray(rules: rules, safariVersion: .safari15, advancedBlocking: true)
-        XCTAssertEqual(result.convertedCount, 0)
-        XCTAssertEqual(result.advancedBlockingConvertedCount, 2)
-        XCTAssertEqual(result.totalConvertedCount, 2)
-        XCTAssertEqual(result.errorsCount, 0)
-        
-        // converts as cosmetic rule for Safari 16.4
-        result = converter.convertArray(rules: rules, safariVersion: .safari16_4, advancedBlocking: true)
+        // converts as cosmetic rule for Safari 14
+        let result = converter.convertArray(rules: rules, safariVersion: .safari14, advancedBlocking: true)
         XCTAssertEqual(result.convertedCount, 2)
         XCTAssertEqual(result.advancedBlockingConvertedCount, 0)
         XCTAssertEqual(result.totalConvertedCount, 2)

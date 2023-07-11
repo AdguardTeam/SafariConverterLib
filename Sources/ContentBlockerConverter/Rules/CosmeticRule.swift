@@ -130,8 +130,12 @@ class CosmeticRule: Rule {
                         // https://www.webkit.org/blog/13966/webkit-features-in-safari-16-4/
                         // https://github.com/AdguardTeam/SafariConverterLib/issues/43
                         if SafariService.current.version.isSafari16_4orGreater()
-                            && (indicator == EXT_CSS_PSEUDO_INDICATOR_HAS
-                                || indicator == EXT_CSS_PSEUDO_INDICATOR_IS) {
+                            && indicator == EXT_CSS_PSEUDO_INDICATOR_HAS {
+                            continue
+                        }
+                        // `:is()` pseudo-class has native implementation since Safari 14
+                        if SafariService.current.version.isSafari14orGreater()
+                            && indicator == EXT_CSS_PSEUDO_INDICATOR_IS {
                             continue
                         }
                         return true
