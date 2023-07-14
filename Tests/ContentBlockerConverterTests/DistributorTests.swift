@@ -92,10 +92,8 @@ final class DistributorTests: XCTestCase {
 
         let result = builder.updateDomains(entries: entries);
         XCTAssertNotNil(result);
-        XCTAssertEqual(result.count, 3);
-        XCTAssertEqual(result[0].trigger.ifDomain!.count, 250);
-        XCTAssertEqual(result[1].trigger.ifDomain!.count, 250);
-        XCTAssertEqual(result[2].trigger.ifDomain!.count, 51);
+        XCTAssertEqual(result.count, 1);
+        XCTAssertEqual(result[0].trigger.ifDomain!.count, 551);
     }
 
     func testHandleUnlessDomainsLimit() {
@@ -134,12 +132,9 @@ final class DistributorTests: XCTestCase {
 
         let result = builder.updateDomains(entries: entries);
         XCTAssertNotNil(result);
-        XCTAssertEqual(result.count, 3);
-        XCTAssertEqual(result[0].trigger.unlessDomain!.count, 250);
-        XCTAssertEqual(result[1].trigger.unlessDomain!.count, 250);
-        XCTAssertEqual(result[2].trigger.unlessDomain!.count, 51);
+        XCTAssertEqual(result.count, 1);
+        XCTAssertEqual(result[0].trigger.unlessDomain!.count, 551);
     }
-
 
     static var allTests = [
         ("testEmpty", testEmpty),
