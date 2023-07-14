@@ -2306,6 +2306,20 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decodedAdvancedRules[0].action.css, "div:has(.adv)");
     }
 
+    func testConvertRulesWithPseudoClassIs() {
+        let rules = [
+            "##:is(.test1, .test2)",
+            "example.org###adv:is(.test1, .test2)",
+        ]
+        
+        // converts as cosmetic rule for Safari 14
+        let result = converter.convertArray(rules: rules, safariVersion: .safari14, advancedBlocking: true)
+        XCTAssertEqual(result.convertedCount, 2)
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 0)
+        XCTAssertEqual(result.totalConvertedCount, 2)
+        XCTAssertEqual(result.errorsCount, 0)
+    }
+
     func testXpathRules() {
         let rules = [
             "test.com#?#:xpath(//div[@data-st-area='Advert'])",
@@ -2520,6 +2534,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         ("testAdvancedCosmeticRulesWithDomainModifier", testAdvancedCosmeticRulesWithDomainModifier),
         ("testBlockingRulesWithNonAsciiCharacters", testBlockingRulesWithNonAsciiCharacters),
         ("testConvertRulesWithPseudoClassHas", testConvertRulesWithPseudoClassHas),
+        ("testConvertRulesWithPseudoClassIs", testConvertRulesWithPseudoClassIs),
         ("testXpathRules", testXpathRules),
         ("testApplyMultidomainCosmeticExclusions", testApplyMultidomainCosmeticExclusions),
         ("testApplyMultidomainAdvancedExclusions", testApplyMultidomainAdvancedExclusions),
