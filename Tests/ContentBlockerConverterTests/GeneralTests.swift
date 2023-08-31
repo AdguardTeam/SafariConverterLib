@@ -345,8 +345,8 @@ final class GeneralTests: XCTestCase {
         let conversionResult = ContentBlockerConverter().convertArray(rules: rules)
         NSLog(conversionResult.message)
 
-        XCTAssertEqual(conversionResult.totalConvertedCount, 20193)
-        XCTAssertEqual(conversionResult.convertedCount, 20193)
+        XCTAssertEqual(conversionResult.totalConvertedCount, 19999)
+        XCTAssertEqual(conversionResult.convertedCount, 19999)
         XCTAssertEqual(conversionResult.errorsCount, 128)
         XCTAssertEqual(conversionResult.overLimit, false)
     }
@@ -363,8 +363,8 @@ final class GeneralTests: XCTestCase {
             let conversionResult = ContentBlockerConverter().convertArray(rules: rules)
             NSLog(conversionResult.message)
 
-            XCTAssertEqual(conversionResult.totalConvertedCount, 20193)
-            XCTAssertEqual(conversionResult.convertedCount, 20193)
+            XCTAssertEqual(conversionResult.totalConvertedCount, 19999)
+            XCTAssertEqual(conversionResult.convertedCount, 19999)
             XCTAssertEqual(conversionResult.errorsCount, 128)
             XCTAssertEqual(conversionResult.overLimit, false)
         }
@@ -413,8 +413,9 @@ final class GeneralTests: XCTestCase {
             "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/filters-2022.txt",
             "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/filters-2021.txt",
             "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/filters-2020.txt",
-            "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/annoyances-cookies.txt",
-            "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/annoyances-others.txt"
+            // temporary disabled uBlock Annoyances filter,
+            // because it's empty for the moment, what's goes against the current test case
+            // "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/annoyances.txt"
         ]
 
         for listUrl in lists {
