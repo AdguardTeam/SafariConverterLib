@@ -413,7 +413,8 @@ final class GeneralTests: XCTestCase {
             "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/filters-2022.txt",
             "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/filters-2021.txt",
             "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/filters-2020.txt",
-            "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/annoyances.txt"
+            "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/annoyances-cookies.txt",
+            "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/annoyances-others.txt"
         ]
 
         for listUrl in lists {
@@ -421,7 +422,7 @@ final class GeneralTests: XCTestCase {
             let rules = content.components(separatedBy: "\n")
 
             let conversionResult = ContentBlockerConverter().convertArray(rules: rules)
-            XCTAssertTrue(conversionResult.totalConvertedCount > 0)
+            XCTAssertTrue(conversionResult.totalConvertedCount > 0, "Conversion failed for URL: \(listUrl)")
         }
     }
 

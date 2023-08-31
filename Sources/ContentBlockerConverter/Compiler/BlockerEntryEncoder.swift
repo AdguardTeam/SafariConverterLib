@@ -93,7 +93,7 @@ class BlockerEntryEncoder {
         
         if (trigger.caseSensitive != nil) {
             result.append(",\"url-filter-is-case-sensitive\":");
-            result.append(trigger.caseSensitive! ? "\"true\"" : "\"false\"");
+            result.append(trigger.caseSensitive! ? "true" : "false");
         }
         
         if (trigger.regex != nil) {
