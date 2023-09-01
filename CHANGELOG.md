@@ -4,7 +4,7 @@
 
 ### Fixed
 
-* `$match-case` modifier does not work [AG-24905](https://github.com/AdguardTeam/SafariConverterLib/issues/55)
+* `$match-case` modifier does not work [#55](https://github.com/AdguardTeam/SafariConverterLib/issues/55)
 
 ## v2.0.34
 
