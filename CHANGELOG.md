@@ -1,5 +1,11 @@
 # Safari Converter Changelog
 
+## v2.0.42
+
+### Fixed
+
+* `$match-case` modifier does not work [#55](https://github.com/AdguardTeam/SafariConverterLib/issues/55)
+
 ## v2.0.34
 
 ### Fixed

@@ -423,7 +423,7 @@ final class GeneralTests: XCTestCase {
             let rules = content.components(separatedBy: "\n")
 
             let conversionResult = ContentBlockerConverter().convertArray(rules: rules)
-            XCTAssertTrue(conversionResult.totalConvertedCount > 0)
+            XCTAssertTrue(conversionResult.totalConvertedCount > 0, "Conversion failed for URL: \(listUrl)")
         }
     }
 

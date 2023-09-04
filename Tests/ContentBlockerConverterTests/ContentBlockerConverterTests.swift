@@ -2489,6 +2489,15 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded[0].action.type, "block")
     }
 
+    func testMatchCase() {
+        let rule = "eXamPle.com$match-case";
+        let result = converter.convertArray(rules: [rule]);
+        let decoded = try! parseJsonString(json: result.converted);
+        XCTAssertEqual(decoded.count, 1);
+        XCTAssertEqual(decoded[0].trigger.caseSensitive, true);
+        XCTAssertEqual(decoded[0].trigger.urlFilter, "eXamPle\\.com");
+    }
+
     static var allTests = [
         ("testEmpty", testEmpty),
         ("testConvertComment", testConvertComment),
