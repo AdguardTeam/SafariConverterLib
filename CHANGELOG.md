@@ -1,6 +1,6 @@
 # Safari Converter Changelog
 
-## v2.0.42
+## v2.0.43
 
 ### Fixed
 
