@@ -23,14 +23,11 @@ jobs:
 
       - name: Create Release
         id: create_release
-        uses: actions/create-release@v1
+        uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}
-          release_name: ${{ github.ref }}
-          body: |
-            - Updated converter binary
+          body: See [CHANGELOG.md](./CHANGELOG.md) for the list of changes.
           draft: false
           prerelease: false
 
@@ -44,4 +41,3 @@ jobs:
           asset_path: ./.build/release/ConverterTool
           asset_name: ConverterTool
           asset_content_type: application/macbinary
-
