@@ -97,6 +97,13 @@ final class CosmeticRuleTests: XCTestCase {
         XCTAssertEqual(result.permittedDomains, []);
         XCTAssertEqual(result.restrictedDomains, []);
         XCTAssertEqual(result.content, ".textad { visibility: hidden; }");
+
+        result = try! CosmeticRule(ruleText: "example.org#$#div[id^=\"imAd_\"] { visibility: hidden!important; }");
+
+        XCTAssertEqual(result.isInjectCss, true);
+        XCTAssertEqual(result.permittedDomains, ["example.org"]);
+        XCTAssertEqual(result.restrictedDomains, []);
+        XCTAssertEqual(result.content, "div[id^=\"imAd_\"] { visibility: hidden!important; }");
     }
 
     func testCssRulesWhitelist() {
