@@ -1,5 +1,11 @@
 # Safari Converter Changelog
 
+## v2.0.45
+
+### Added
+
+* Allow specifying the final CB json file size limit[#56](https://github.com/AdguardTeam/SafariConverterLib/issues/56)
+
 ## v2.0.43
 
 ### Fixed

@@ -5,7 +5,17 @@ import Shared
  * Conversion result wrapper class
  */
 public struct ConversionResult {
-    public init(totalConvertedCount: Int, convertedCount: Int, errorsCount: Int, overLimit: Bool, converted: String, advancedBlockingConvertedCount: Int = 0, advancedBlocking: String? = nil, advancedBlockingText: String? = nil, message: String) {
+    public init(
+        totalConvertedCount: Int,
+        convertedCount: Int,
+        errorsCount: Int,
+        overLimit: Bool,
+        converted: String,
+        advancedBlockingConvertedCount: Int = 0,
+        advancedBlocking: String? = nil,
+        advancedBlockingText: String? = nil,
+        message: String
+    ) {
         self.totalConvertedCount = totalConvertedCount
         self.convertedCount = convertedCount
         self.errorsCount = errorsCount
@@ -56,6 +66,11 @@ public struct ConversionResult {
      * Text of advanced content blocker rules
      */
     public var advancedBlockingText: String? = nil;
+    
+    /**
+     * Limit of the json size in bytes
+     */
+    private var maxJsonLimitBytes: Int? = nil;
 
     /**
      * Result message
@@ -64,7 +79,14 @@ public struct ConversionResult {
     
     public static let EMPTY_RESULT_JSON: String = "[{\"trigger\": {\"url-filter\": \".*\",\"if-domain\": [\"domain.com\"]},\"action\":{\"type\": \"ignore-previous-rules\"}}]";
     
-    public init(entries: [BlockerEntry], advBlockingEntries: [BlockerEntry] = [], limit: Int, errorsCount: Int, message: String) {
+    public init(
+        entries: [BlockerEntry],
+        advBlockingEntries: [BlockerEntry] = [],
+        limit: Int,
+        errorsCount: Int,
+        message: String,
+        maxJsonSizeBytes: Int? = nil
+    ) {
         self.totalConvertedCount = entries.count + advBlockingEntries.count;
         
         self.overLimit = (limit > 0 && entries.count > limit);
@@ -77,23 +99,36 @@ public struct ConversionResult {
             Logger.log("(ConversionResult) - The limit is reached. Overlimit rules will be ignored.");
         }
         
-        self.convertedCount = limitedEntries.count;
-        self.converted = ConversionResult.createJSONString(entries: limitedEntries);
+        let (encodedString, encodedCount) = ConversionResult.createJSONString(entries: limitedEntries, maxJsonSizeBytes: maxJsonSizeBytes)
+        self.converted = encodedString
+        self.convertedCount = encodedCount
         
         if advBlockingEntries.count > 0 {
-            self.advancedBlockingConvertedCount = advBlockingEntries.count;
-            self.advancedBlocking = ConversionResult.createJSONString(entries: advBlockingEntries);
+            let (encodedString, encodedCount) = ConversionResult.createJSONString(
+                entries: advBlockingEntries,
+                maxJsonSizeBytes: maxJsonSizeBytes
+            )
+            self.advancedBlocking = encodedString
+            self.advancedBlockingConvertedCount = encodedCount
         }
         
         self.message = message;
     }
     
-    private static func createJSONString(entries: [BlockerEntry]) -> String {
+    private static func createJSONString(entries: [BlockerEntry], maxJsonSizeBytes: Int?) -> (String, Int) {
         if entries.isEmpty {
-            return self.EMPTY_RESULT_JSON;
+            return (self.EMPTY_RESULT_JSON, 0)
         }
-        let encoder = BlockerEntryEncoder();
-        return encoder.encode(entries: entries);
+        
+        let encoder = BlockerEntryEncoder()
+        let (encoded, count) = encoder.encode(entries: entries, maxJsonSizeBytes: maxJsonSizeBytes)
+        
+        // if nothing was converted due to limits, return empty result json
+        if (count == 0) {
+            return (self.EMPTY_RESULT_JSON, 0)
+        }
+        
+        return (encoded, count)
     }
     
     static func createEmptyResult() -> ConversionResult {

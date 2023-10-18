@@ -14,13 +14,16 @@ class Distributor {
 
     private let limit: Int;
     private let advancedBlockedEnabled: Bool;
-
+    private let maxJsonSizeBytes: Int?;
+    
     init(
         limit: Int,
-        advancedBlocking: Bool
+        advancedBlocking: Bool,
+        maxJsonSizeBytes: Int? = nil
     ) {
         self.limit = limit
         advancedBlockedEnabled = advancedBlocking
+        self.maxJsonSizeBytes = maxJsonSizeBytes
     }
 
     /**
@@ -60,13 +63,14 @@ class Distributor {
         }
 
         let errorsCount = data.errorsCount;
-
+        
         return ConversionResult(
             entries: entries,
             advBlockingEntries: advBlockingEntries,
             limit: self.limit,
             errorsCount: errorsCount,
-            message: data.message
+            message: data.message,
+            maxJsonSizeBytes: self.maxJsonSizeBytes
         );
     }
 
