@@ -7,7 +7,7 @@ final class BlockerEntryEncoderTests: XCTestCase {
     private let encoder = BlockerEntryEncoder();
     
     func testEmpty() {
-        let result = encoder.encode(entries: [BlockerEntry]());
+        let (result, _) = encoder.encode(entries: [BlockerEntry]());
         XCTAssertEqual(result, "[]");
     }
     
@@ -18,7 +18,7 @@ final class BlockerEntryEncoderTests: XCTestCase {
         rule.permittedDomains = ["test.com"];
         
         let entry = converter.createBlockerEntry(rule: rule);
-        let result = encoder.encode(entries: [entry!]);
+        let (result, _) = encoder.encode(entries: [entry!]);
         XCTAssertEqual(result, "[{\"trigger\":{\"url-filter\":\"^[htpsw]+:\\\\/\\\\/\",\"if-domain\":[\"test.com\"]},\"action\":{\"type\":\"block\"}}]");
     }
     

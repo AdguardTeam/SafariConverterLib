@@ -2497,6 +2497,76 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded[0].trigger.caseSensitive, true);
         XCTAssertEqual(decoded[0].trigger.urlFilter, "eXamPle\\.com");
     }
+    
+    // Check if the JSON string is valid
+    func isJSONValid(_ jsonString: String) -> Bool {
+        guard let data = jsonString.data(using: .utf8) else { return false }
+        do {
+            _ = try JSONSerialization.jsonObject(with: data, options: [])
+            return true
+        } catch {
+            print("Invalid JSON: \(error.localizedDescription)")
+            return false
+        }
+    }
+    
+    func testMaxJsonSize() {
+        let rules = [
+            "||example1.org^",
+            "||example2.com^$document",
+            "example3.com##h1"
+        ]
+        
+        func performTest(withLimit limit: Int?, expectedCount: Int) {
+            let result = converter.convertArray(
+                rules: rules,
+                advancedBlocking: false,
+                maxJsonSizeBytes: limit
+            )
+            
+            let jsonSize = result.converted.utf8.count
+            if let limit = limit {
+                XCTAssertLessThanOrEqual(jsonSize, limit, "The converted JSON size should be less than or equal to the limit")
+            }
+            XCTAssertEqual(result.convertedCount, expectedCount, "The converted count should match the expected count")
+            XCTAssertTrue(isJSONValid(result.converted), "The converted JSON should be valid")
+        }
+        
+        performTest(withLimit: 110, expectedCount: 0)  // Bigger than empty JSON, smaller for rules to fit
+        performTest(withLimit: 150, expectedCount: 1)  // Enough for one rule
+        performTest(withLimit: 300, expectedCount: 2)  // Enough for two rules
+        performTest(withLimit: 1000, expectedCount: 3) // Enough for all rules
+        performTest(withLimit: nil, expectedCount: 3)  // No limit
+    }
+    
+    func testMaxJsonSizeAdvancedRules() {
+        let rules = [
+            "example1.org#%#console.log('test1')",
+            "example2.com#%#console.log('test2')",
+            "example3.com#%#console.log('test3')"
+        ]
+        
+        func performTest(withLimit limit: Int?, expectedCount: Int) {
+            let result = converter.convertArray(
+                rules: rules,
+                advancedBlocking: true,
+                maxJsonSizeBytes: limit
+            )
+            
+            let jsonSize = result.advancedBlocking!.utf8.count
+            if let limit = limit {
+                XCTAssertLessThanOrEqual(jsonSize, limit, "The converted JSON size should be less than or equal to the limit")
+            }
+            XCTAssertEqual(result.advancedBlockingConvertedCount, expectedCount, "The converted count should match the expected count")
+            XCTAssertTrue(isJSONValid(result.advancedBlocking!), "The converted JSON should be valid")
+        }
+        
+        performTest(withLimit: 110, expectedCount: 0)  // Bigger than empty JSON, smaller for rules to fit
+        performTest(withLimit: 150, expectedCount: 1)  // Enough for one rule
+        performTest(withLimit: 300, expectedCount: 2)  // Enough for two rules
+        performTest(withLimit: 1000, expectedCount: 3) // Enough for all rules
+        performTest(withLimit: nil, expectedCount: 3)  // No limit
+    }
 
     static var allTests = [
         ("testEmpty", testEmpty),

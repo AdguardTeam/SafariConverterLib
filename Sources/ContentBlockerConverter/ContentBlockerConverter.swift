@@ -64,7 +64,8 @@ public class ContentBlockerConverter {
             safariVersion: SafariVersion = .safari13,
             optimize: Bool = false,
             advancedBlocking: Bool = false,
-            advancedBlockingFormat: AdvancedBlockingFormat = .json
+            advancedBlockingFormat: AdvancedBlockingFormat = .json,
+            maxJsonSizeBytes: Int? = nil
     ) -> ConversionResult {
 
         SafariService.current.version = safariVersion;
@@ -111,7 +112,8 @@ public class ContentBlockerConverter {
 
         var conversionResult = Distributor(
             limit: rulesLimit,
-            advancedBlocking: advancedBlockingJson
+            advancedBlocking: advancedBlockingJson,
+            maxJsonSizeBytes: maxJsonSizeBytes
         )
             .createConversionResult(data: compilationResult);
 

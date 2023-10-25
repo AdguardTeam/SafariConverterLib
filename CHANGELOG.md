@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## v2.0.48
+
+### Added
+
+- Allow specifying the final CB json file size limit[#56](https://github.com/AdguardTeam/SafariConverterLib/issues/56)
+
+
 ## v2.0.43
 
 ### Fixed
