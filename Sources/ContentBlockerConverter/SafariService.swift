@@ -11,6 +11,15 @@ public enum SafariVersion: CustomStringConvertible, CustomDebugStringConvertible
         return "Safari v\(self.description)"
     }
 
+    /**
+     * Returns rules limit for current Safari version:
+     * Safari allows up to 50k rules by default,
+     * but starting from 15 version it allows up to 150k rules
+     */
+    public var rulesLimit: Int {
+        return self.doubleValue >= SafariVersion.safari15.doubleValue ? 150000 : 50000
+    }
+
     // AdGuard for iOS supports Safari from 11 version
     // AdGuard for Safari doesn't support OS Sierra, so minimal Safari version is 13
     @available (OSX, unavailable)
@@ -54,15 +63,6 @@ public enum SafariVersion: CustomStringConvertible, CustomDebugStringConvertible
         case .safari16_4Plus(let version): return version
         default: return 13
         }
-    }
-
-    /**
-     * Returns rules limit for current Safari version:
-     * Safari allows up to 50k rules by default,
-     * but starting from 15 version it allows up to 150k rules
-     */
-    var rulesLimit: Int {
-        return self.doubleValue >= SafariVersion.safari15.doubleValue ? 150000 : 50000
     }
 
     func isSafari14orGreater() -> Bool {

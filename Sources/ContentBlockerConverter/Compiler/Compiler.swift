@@ -28,7 +28,11 @@ class Compiler {
     /**
      * Compiles array of AG rules to intermediate compilation result
      */
-    func compileRules(rules: [Rule]) -> CompilationResult {
+    func compileRules(rules: [Rule], progress: Progress? = nil) -> CompilationResult {
+        var shouldContinue: Bool {
+            !(progress?.isCancelled ?? false)
+        }
+
         var cssBlocking = [BlockerEntry]()
         var cssExceptions = [BlockerEntry]()
 
@@ -46,12 +50,9 @@ class Compiler {
         compilationResult.rulesCount = rules.count
 
         for rule in rules {
-            let converted = blockerEntryFactory.createBlockerEntry(rule: rule)
-            if (converted == nil) {
-                continue
-            }
+            guard shouldContinue else { return CompilationResult() }
 
-            let item = converted!
+            guard let item = blockerEntryFactory.createBlockerEntry(rule: rule) else { continue }
 
             if item.action.type == "block" {
                 // Url blocking rules
@@ -88,6 +89,8 @@ class Compiler {
             }
         }
 
+        guard shouldContinue else { return CompilationResult() }
+
         // Applying CSS exceptions
         cssBlocking = Compiler.applyActionExceptions(blockingItems: &cssBlocking, exceptions: cssExceptions, actionValue: "selector")
         let cssCompact = Compiler.compactCssRules(cssBlocking: cssBlocking)
@@ -97,10 +100,16 @@ class Compiler {
         compilationResult.cssBlockingGenericDomainSensitive = Compiler.compactDomainCssRules(entries: cssCompact.cssBlockingGenericDomainSensitive, useUnlessDomain: true)
         compilationResult.cssBlockingDomainSensitive = Compiler.compactDomainCssRules(entries: cssCompact.cssBlockingDomainSensitive)
 
+        guard shouldContinue else { return CompilationResult() }
+
         // Apply specifichide exceptions
         compilationResult.cssBlockingDomainSensitive = Compiler.applySpecifichide(blockingItems: &compilationResult.cssBlockingDomainSensitive, specifichideExceptions: specifichideExceptionDomains)
 
+        guard shouldContinue else { return CompilationResult() }
+
         if advancedBlockedEnabled {
+            guard shouldContinue else { return CompilationResult() }
+
             // Applying CSS exceptions for extended css rules
             extendedCssBlocking = Compiler.applyActionExceptions(
                     blockingItems: &extendedCssBlocking, exceptions: cssExceptions + cosmeticCssExceptions, actionValue: "css"
@@ -112,8 +121,12 @@ class Compiler {
             compilationResult.extendedCssBlockingGenericDomainSensitive = extendedCssCompact.cssBlockingGenericDomainSensitive
             compilationResult.extendedCssBlockingDomainSensitive = extendedCssCompact.cssBlockingDomainSensitive
 
+            guard shouldContinue else { return CompilationResult() }
+
             // Apply specifichide exceptions for extended css rules
             compilationResult.extendedCssBlockingDomainSensitive = Compiler.applySpecifichide(blockingItems: &compilationResult.extendedCssBlockingDomainSensitive, specifichideExceptions: specifichideExceptionDomains)
+
+            guard shouldContinue else { return CompilationResult() }
 
             // Applying CSS exceptions for css injecting rules
             cssInjects = Compiler.applyActionExceptions(
@@ -121,8 +134,12 @@ class Compiler {
             )
             compilationResult.сssInjects = cssInjects
 
+            guard shouldContinue else { return CompilationResult() }
+
             // Apply specifichide exceptions for css injecting rules
             compilationResult.сssInjects = Compiler.applySpecifichide(blockingItems: &compilationResult.сssInjects, specifichideExceptions: specifichideExceptionDomains)
+
+            guard shouldContinue else { return CompilationResult() }
 
             // Applying script exceptions
             scriptRules = Compiler.applyActionExceptions(blockingItems: &scriptRules, exceptions: scriptExceptionRules, actionValue: "script")

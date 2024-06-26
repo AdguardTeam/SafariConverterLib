@@ -17,51 +17,56 @@ class RuleFactory {
     /**
      * Creates rules from lines
      */
-    func createRules(lines: [String]) -> [Rule] {
-        var result = [Rule]();
-        
-        var networkRules = [NetworkRule]();
-        var badfilterRules = [NetworkRule]();
-        
+    func createRules(lines: [String], progress: Progress? = nil) -> [Rule] {
+        var shouldContinue: Bool {
+            !(progress?.isCancelled ?? false)
+        }
+
+        var result = [Rule]()
+
+        var networkRules = [NetworkRule]()
+        var badfilterRules = [NetworkRule]()
+
         for line in lines {
-            let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines) as NSString;
-            let convertedLines = RuleFactory.converter.convertRule(rule: trimmed);
+            guard shouldContinue else { return [] }
+
+            let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines) as NSString
+            let convertedLines = RuleFactory.converter.convertRule(rule: trimmed)
             for convertedLine in convertedLines {
-                let rule = safeCreateRule(ruleText: convertedLine);
-                if (rule != nil) {
-                    if (rule is NetworkRule) {
-                        let networkRule = rule as! NetworkRule;
-                        if (networkRule.badfilter != nil) {
-                            badfilterRules.append(networkRule);
-                        } else {
-                            networkRules.append(networkRule);
-                        }
+                guard shouldContinue else { return [] }
+
+                guard let rule = safeCreateRule(ruleText: convertedLine) else { continue }
+                if let networkRule = rule as? NetworkRule {
+                    if networkRule.badfilter != nil {
+                        badfilterRules.append(networkRule)
                     } else {
-                        result.append(rule!);
+                        networkRules.append(networkRule)
                     }
+                } else {
+                    result.append(rule)
                 }
             }
         }
-        
-        result += RuleFactory.applyBadFilterExceptions(rules: networkRules, badfilterRules: badfilterRules);
-        return result;
+
+        guard shouldContinue else { return [] }
+
+        result += RuleFactory.applyBadFilterExceptions(rules: networkRules, badfilterRules: badfilterRules)
+        return result
     }
     
     /**
      * Filters rules with badfilter exceptions
      */
-    static func applyBadFilterExceptions(rules: [NetworkRule], badfilterRules: [NetworkRule]) -> [Rule] {
+    static func applyBadFilterExceptions(rules: [NetworkRule], badfilterRules: [NetworkRule], progress: Progress? = nil) -> [Rule] {
         var badfilters = [NSString]();
         for badFilter in badfilterRules {
             badfilters.append(badFilter.badfilter!);
         }
         
         var result = [Rule]();
-        for rule in rules {
-            if (RuleFactory.isRuleNegatedByBadFilters(rule: rule, badfilterRules: badfilterRules)) {
-                continue;
-            }
-            
+        for rule in rules where !RuleFactory.isRuleNegatedByBadFilters(rule: rule, badfilterRules: badfilterRules) {
+            guard !(progress?.isCancelled ?? false) else { return [] }
+
             result.append(rule);
         }
         

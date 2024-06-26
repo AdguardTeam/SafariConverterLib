@@ -65,8 +65,12 @@ public class ContentBlockerConverter {
             optimize: Bool = false,
             advancedBlocking: Bool = false,
             advancedBlockingFormat: AdvancedBlockingFormat = .json,
-            maxJsonSizeBytes: Int? = nil
+            maxJsonSizeBytes: Int? = nil,
+            progress: Progress? = nil
     ) -> ConversionResult {
+        var shouldContinue: Bool {
+            !(progress?.isCancelled ?? false)
+        }
 
         SafariService.current.version = safariVersion;
 
@@ -79,7 +83,12 @@ public class ContentBlockerConverter {
 
         let errorsCounter = ErrorsCounter();
 
-        let parsedRules = RuleFactory(errorsCounter: errorsCounter).createRules(lines: rules);
+        guard shouldContinue else {
+            Logger.log("(ContentBlockerConverter) - Cancelled before rules parsing")
+            return ConversionResult.createEmptyResult()
+        }
+
+        let parsedRules = RuleFactory(errorsCounter: errorsCounter).createRules(lines: rules, progress: progress)
 
         let advancedBlockingJson = advancedBlocking && advancedBlockingFormat == AdvancedBlockingFormat.json
 
@@ -92,16 +101,21 @@ public class ContentBlockerConverter {
         var compilationResult: CompilationResult;
         var advancedRulesTexts: String? = nil;
 
+        guard shouldContinue else {
+            Logger.log("(ContentBlockerConverter) - Cancelled before advanced converting")
+            return ConversionResult.createEmptyResult()
+        }
+
         if advancedBlocking && advancedBlockingFormat == .txt {
             let vettedRules = vetRules(parsedRules);
             let advancedRules = vettedRules.advancedRules;
             let simpleRules = vettedRules.simpleRules;
 
-            compilationResult = compiler.compileRules(rules: simpleRules);
+            compilationResult = compiler.compileRules(rules: simpleRules, progress: progress)
             advancedRulesTexts = advancedRules.map { $0.ruleText as String }.joined(separator: "\n")
-         } else {
+        } else {
             // by default for .json format
-            compilationResult = compiler.compileRules(rules: parsedRules);
+            compilationResult = compiler.compileRules(rules: parsedRules, progress: progress)
         }
 
         compilationResult.errorsCount = errorsCounter.getCount();
