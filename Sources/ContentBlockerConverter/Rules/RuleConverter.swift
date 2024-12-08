@@ -94,7 +94,7 @@ class RuleConverter {
             }
 
             // Convert options
-            let ruleWithConvertedOptions = convertOptions(rule: ruleText);
+            let ruleWithConvertedOptions = convertOptions(ruleText: ruleText);
             if (ruleWithConvertedOptions != nil) {
                 return ruleWithConvertedOptions!;
             }
@@ -339,13 +339,11 @@ class RuleConverter {
         UBO_3P_OPTION: "third-party"
     ]
 
-    private func convertOptions(rule: String) -> [String]? {
-        let ruleText = rule as NSString
-        
+    private func convertOptions(ruleText: String) -> [String]? {
         var pattern: String = ""
         var options: String? = nil
         do {
-            let parseResult = try NetworkRuleParser.parseRuleText(ruleText: rule)
+            let parseResult = try NetworkRuleParser.parseRuleText(ruleText: ruleText)
             options = parseResult.options
             if (options == nil || options == "") {
                 return nil
@@ -356,7 +354,7 @@ class RuleConverter {
                 pattern = RuleConverter.EXCEPTION_MASK + pattern
             }
         } catch {
-            return [rule]
+            return [ruleText]
         }
 
         let optionParts = options!.splitByDelimiterWithEscapeCharacter(delimiter: RuleConverter.delimeterChar, escapeChar: RuleConverter.escapeChar)
