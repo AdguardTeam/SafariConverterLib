@@ -2,15 +2,17 @@ import Foundation
 
 /**
  * Useful string extensions
+ *
+ * TODO(ameshkov): !!! Rework using UTF8View
  */
 extension String {
-
+    
     /**
      Escapes special characters so that the string could be used in a JSON.
      */
     func escapeForJSON() -> String {
         var result = ""
-
+        
         let scalars = self.unicodeScalars
         var start = scalars.startIndex
         let end = scalars.endIndex
@@ -34,23 +36,23 @@ extension String {
                 idx = scalars.index(after: idx)
                 continue
             }
-
+            
             if idx != start {
                 result.append(String(scalars[start..<idx]))
             }
             result.append(s)
-
+            
             idx = scalars.index(after: idx)
             start = idx
         }
-
+        
         if start != end {
             result.append(String(scalars[start..<end]))
         }
-
+        
         return result
     }
-
+    
     func indexOf(target: String) -> Int {
         let range = self.range(of: target)
         if let range = range {
@@ -59,18 +61,18 @@ extension String {
             return -1
         }
     }
-
+    
     func indexOf(target: String, startIndex: Int) -> Int {
         let startRange = self.index(target.startIndex, offsetBy: startIndex);
         let range = self.range(of: target, options: NSString.CompareOptions.literal, range: (startRange..<self.endIndex))
-
+        
         if let range = range {
             return distance(from: self.startIndex, to: range.lowerBound)
         } else {
             return -1
         }
     }
-
+    
     func lastIndexOf(target: String) -> Int {
         let range = self.range(of: target, options: .backwards)
         if let range = range {
@@ -79,24 +81,24 @@ extension String {
             return -1
         }
     }
-
+    
     func lastIndexOf(target: String, maxLength: Int) -> Int {
         let cut = String(self.prefix(maxLength));
         return cut.lastIndexOf(target: target);
     }
-
+    
     func subString(startIndex: Int) -> String {
         let start = self.index(self.startIndex, offsetBy: startIndex);
         let end = self.index(self.endIndex, offsetBy: 0);
         return String(self[start..<end])
     }
-
+    
     func subString(startIndex: Int, toIndex: Int) -> String {
         let start = self.index(self.startIndex, offsetBy: startIndex)
         let end = self.index(self.startIndex, offsetBy: toIndex)
         return String(self[start..<end])
     }
-
+    
     func subString(from: Int, toSubstring s2: String) -> String? {
         guard let r = self.range(of: s2) else {
             return nil
@@ -105,23 +107,23 @@ extension String {
         s = s.dropFirst(from)
         return String(s);
     }
-
+    
     func subString(startIndex: Int, length: Int) -> String {
         let start = self.index(self.startIndex, offsetBy: startIndex);
         let end = self.index(self.startIndex, offsetBy: startIndex + length);
         return String(self[start..<end])
     }
-
+    
     func replace(target: String, withString: String) -> String {
         return self.replacingOccurrences(of: target, with: withString, options: NSString.CompareOptions.literal, range: nil)
     }
-
+    
     func splitByDelimiterWithEscapeCharacter(delimiter: unichar, escapeChar: unichar) -> [String] {
         let str = self as NSString
         if str.length == 0 {
             return [String]()
         }
-
+        
         var delimiterIndexes = [Int]()
         for index in 0...str.length - 1 {
             let char = str.character(at: index)
@@ -131,13 +133,13 @@ extension String {
                 if (index > 0 && str.character(at: index - 1) == escapeChar) {
                     continue
                 }
-
+                
                 delimiterIndexes.append(index)
             default:
                 break
             }
         }
-
+        
         var result = [String]()
         var previous = 0
         for ind in delimiterIndexes {
@@ -149,19 +151,29 @@ extension String {
             }
             previous = ind + 1
         }
-
+        
         result.append(str.substring(from: previous))
-
+        
         return result
     }
-
+    
     func isASCII() -> Bool {
         for scalar in unicodeScalars {
             if (!scalar.isASCII) {
                 return false;
             }
         }
-
+        
         return true;
+    }
+}
+
+extension String.UTF8View {
+    /// Access a UTF-8 code unit by integer index.
+    subscript(safeIndex index: Int) -> UInt8? {
+        guard index >= 0, let utf8Index = self.index(self.startIndex, offsetBy: index, limitedBy: self.endIndex) else {
+            return nil
+        }
+        return self[utf8Index]
     }
 }

@@ -48,7 +48,7 @@ class CosmeticRule: Rule {
     override init(ruleText: NSString) throws {
         try super.init(ruleText: ruleText)
 
-        let markerInfo = CosmeticRuleMarker.findCosmeticRuleMarker(ruleText: ruleText)
+        let markerInfo = CosmeticRuleMarker.findCosmeticRuleMarker(ruleText: ruleText as String)
         if (markerInfo.index == -1) {
             throw SyntaxError.invalidRule(message: "Not a cosmetic rule")
         }

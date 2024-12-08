@@ -35,11 +35,11 @@ public class WebExtensionHelpers: WebExtensionHelpersProtocol {
      */
     func parseRuleDomains(ruleText: String) -> [String] {
         do {
-            guard let rule = try RuleFactory.createRule(ruleText: ruleText as NSString) else { return [] }
+            guard let rule = try RuleFactory.createRule(ruleText: ruleText) else { return [] }
             
             var ruleDomains = rule.permittedDomains + rule.restrictedDomains
             
-            if !RuleFactory.isCosmetic(ruleText: ruleText as NSString) {
+            if !RuleFactory.isCosmetic(ruleText: ruleText) {
                 if let ruleDomain = (rule as! NetworkRule).parseRuleDomain()?.domain {
                     ruleDomains += [String(ruleDomain)]
                 }

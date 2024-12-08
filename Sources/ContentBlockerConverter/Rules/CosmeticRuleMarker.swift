@@ -1,111 +1,113 @@
 import Foundation
 
-/**
- * Cosmetic rules marker enumeration
- */
+/// Cosmetic rules marker enumeration
 enum CosmeticRuleMarker: String, CaseIterable {
     case ElementHiding = "##"
     case ElementHidingException = "#@#"
     case ElementHidingExtCSS = "#?#"
     case ElementHidingExtCSSException = "#@?#"
-
+    
     case Css = "#$#"
     case CssException = "#@$#"
-
+    
     case CssExtCSS = "#$?#"
     case CssExtCSSException = "#@$?#"
-
+    
     case Js = "#%#"
     case JsException = "#@%#"
-
+    
     case Html = "$$"
     case HtmlException = "$@$"
     
     /**
      * Parses marker from string source
      */
-    static func findCosmeticRuleMarker(ruleText: NSString) -> ( index: Int, marker: CosmeticRuleMarker? ) {
-        let hash: unichar = "#".utf16.first!;
-        let atChar: unichar = "@".utf16.first!;
-        let dollar: unichar = "$".utf16.first!;
-        let percent: unichar = "%".utf16.first!;
-        let question: unichar = "?".utf16.first!;
-        
-        let maxIndex = ruleText.length-1
+    public static func findCosmeticRuleMarker(ruleText: String) -> (
+        index: Int, marker: CosmeticRuleMarker?
+    ) {
+        let maxIndex = ruleText.utf8.count - 5
         for i in 0...maxIndex {
-            let char = ruleText.character(at: i);
+            let char = ruleText.utf8[safeIndex: i]
+            
+            // This is most likely a network rule as it starts with |,
+            // something like ||example.org^, so exit immediately.
+            if i == 0 && char == Chars.PIPE {
+                return (-1, nil)
+            }
+            
             switch char {
-                case hash:
-                    if i + 4 <= maxIndex {
-                        if ruleText.character(at: i + 1) == atChar
-                            && ruleText.character(at: i + 2) == dollar
-                            && ruleText.character(at: i + 3) == question
-                            && ruleText.character(at: i + 4) == hash {
-                            return (i, CssExtCSSException);
+            case Chars.HASH:  // #
+                let nextChar = ruleText.utf8[safeIndex: i + 1]
+                let twoAhead = ruleText.utf8[safeIndex: i + 2]
+                let threeAhead = ruleText.utf8[safeIndex: i + 3]
+                let fourAhead = ruleText.utf8[safeIndex: i + 4]
+                
+                switch nextChar {
+                case Chars.AT_CHAR:  // #@
+                    switch twoAhead {
+                    case Chars.DOLLAR:  // #@$
+                        if threeAhead == Chars.HASH {
+                            // #@$#
+                            return (i, CssException)
+                        } else if threeAhead == Chars.QUESTION && fourAhead == Chars.HASH {
+                            // #@$?#
+                            return (i, CssExtCSSException)
                         }
+                    case Chars.QUESTION:  // #@?
+                        if threeAhead == Chars.HASH {
+                            // #@?#
+                            return (i, ElementHidingExtCSSException)
+                        }
+                    case Chars.PERCENT:  // #@%
+                        if threeAhead == Chars.HASH {
+                            // #@%#
+                            return (i, JsException)
+                        }
+                    case Chars.HASH:  // #@#
+                        return (i, ElementHidingException)
+                    default: break
                     }
-
-                    if i + 3 <= maxIndex {
-                        if ruleText.character(at: i + 1) == atChar
-                            && ruleText.character(at: i + 2) == question && ruleText.character(at: i + 3) == hash {
-                            return (i, ElementHidingExtCSSException);
+                case Chars.DOLLAR:  // #$
+                    switch twoAhead {
+                    case Chars.QUESTION:  // #$?
+                        if threeAhead == Chars.HASH {
+                            // #$?#
+                            return (i, CssExtCSS)
                         }
-
-                        if ruleText.character(at: i + 1) == atChar
-                            && ruleText.character(at: i + 2) == dollar && ruleText.character(at: i + 3) == hash {
-                            return (i, CssException);
-                        }
-
-                        if ruleText.character(at: i + 1) == atChar
-                            && ruleText.character(at: i + 2) == percent && ruleText.character(at: i + 3) == hash {
-                            return (i, JsException);
-                        }
-
-                        if ruleText.character(at: i + 1) == dollar
-                            && ruleText.character(at: i + 2) == question && ruleText.character(at: i + 3) == hash {
-                            return (i, CssExtCSS);
-                        }
+                    case Chars.HASH:
+                        // #$#
+                        return (i, Css)
+                    default: break
                     }
-
-                    if i + 2 <= maxIndex {
-                        if ruleText.character(at: i + 1) == atChar && ruleText.character(at: i + 2) == hash {
-                            return (i, ElementHidingException);
-                        }
-
-                        if ruleText.character(at: i + 1) == question && ruleText.character(at: i + 2) == hash {
-                            return (i, ElementHidingExtCSS);
-                        }
-
-                        if ruleText.character(at: i + 1) == percent && ruleText.character(at: i + 2) == hash {
-                            return (i, Js);
-                        }
-
-                        if ruleText.character(at: i + 1) == dollar && ruleText.character(at: i + 2) == hash {
-                            return (i, Css);
-                        }
+                case Chars.QUESTION:  // #?
+                    if twoAhead == Chars.HASH {
+                        // #?#
+                        return (i, ElementHidingExtCSS)
                     }
-
-                    if i + 1 <= maxIndex {
-                        if ruleText.character(at: i + 1) == hash {
-                            return (i, ElementHiding);
-                        }
+                case Chars.PERCENT:  // #%
+                    if twoAhead == Chars.HASH {
+                        // #%#
+                        return (i, Js)
                     }
-                case dollar:
-                    if i + 2 <= maxIndex {
-                        if ruleText.character(at: i + 1) == atChar && ruleText.character(at: i + 2) == dollar {
-                            return (i, HtmlException);
-                        }
-                    }
-
-                    if i + 1 <= maxIndex {
-                        if ruleText.character(at: i + 1) == dollar {
-                            return (i, Html);
-                        }
-                    }
+                case Chars.HASH:  // ##
+                    return (i, ElementHiding)
                 default: break
+                }
+                
+            case Chars.DOLLAR: // $
+                let nextChar = ruleText.utf8[safeIndex: i + 1]
+                let twoAhead = ruleText.utf8[safeIndex: i + 2]
+                
+                if nextChar == Chars.AT_CHAR && twoAhead == Chars.DOLLAR {
+                    // $@$
+                    return (i, HtmlException)
+                } else if (nextChar == Chars.DOLLAR) {
+                    return (i, Html)
+                }
+            default: break
             }
         }
-
-        return (-1, nil);
+        
+        return (-1, nil)
     }
 }

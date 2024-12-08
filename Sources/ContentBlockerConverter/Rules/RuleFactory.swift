@@ -30,8 +30,8 @@ class RuleFactory {
         for line in lines {
             guard shouldContinue else { return [] }
 
-            let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines) as NSString
-            let convertedLines = RuleFactory.converter.convertRule(rule: trimmed)
+            let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
+            let convertedLines = RuleFactory.converter.convertRule(ruleText: trimmed)
             for convertedLine in convertedLines {
                 guard shouldContinue else { return [] }
 
@@ -83,7 +83,7 @@ class RuleFactory {
         return false;
     }
     
-    func safeCreateRule(ruleText: NSString?) -> Rule? {
+    func safeCreateRule(ruleText: String?) -> Rule? {
         do {
             return try RuleFactory.createRule(ruleText: ruleText);
         } catch {
@@ -95,22 +95,22 @@ class RuleFactory {
     /**
      * Creates rule object from source text
      */
-    static func createRule(ruleText: NSString?) throws -> Rule? {
+    static func createRule(ruleText: String?) throws -> Rule? {
         do {
             if (ruleText == nil || ruleText! == "" || ruleText!.hasPrefix("!")) {
                 return nil;
             }
             
             // TODO add proper validation
-            if (ruleText!.length < 3) {
+            if (ruleText!.utf8.count < 3) {
                 throw SyntaxError.invalidRule(message: "Invalid rule text");
             }
             
             if (RuleFactory.isCosmetic(ruleText: ruleText!)) {
-                return try CosmeticRule(ruleText: ruleText!);
+                return try CosmeticRule(ruleText: ruleText! as NSString);
             }
 
-            return try NetworkRule(ruleText: ruleText!);
+            return try NetworkRule(ruleText: ruleText! as NSString);
         } catch {
             Logger.log("(RuleFactory) - Unexpected error: \(error) while creating rule from: \(String(describing: ruleText))");
             throw error;
@@ -121,7 +121,7 @@ class RuleFactory {
     /**
      * Checks if the rule is cosmetic (CSS, JS) or not
      */
-    static func isCosmetic(ruleText: NSString) -> Bool {
+    static func isCosmetic(ruleText: String) -> Bool {
         let markerInfo = CosmeticRuleMarker.findCosmeticRuleMarker(ruleText: ruleText);
         return markerInfo.index != -1;
     }

@@ -198,7 +198,7 @@ final class CompilerTests: XCTestCase {
             XCTAssertEqual(result.extendedCssBlockingDomainSensitive.count, 0);
         }
 
-        var ruleText: NSString = "example.org,~subdomain.example.org###banner";
+        var ruleText = "example.org,~subdomain.example.org###banner";
 
         var rule = try! RuleFactory.createRule(ruleText: ruleText)
         var result = compiler.compileRules(rules: [rule!]);
