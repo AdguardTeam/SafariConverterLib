@@ -7,4 +7,6 @@ class Chars {
     static let PERCENT: UInt8 = "%".utf8.first!
     static let QUESTION: UInt8 = "?".utf8.first!
     static let PIPE: UInt8 = "|".utf8.first!
+    static let BACKSLASH: UInt8 = "\\".utf8.first!
+    static let SLASH: UInt8 = "/".utf8.first!
 }

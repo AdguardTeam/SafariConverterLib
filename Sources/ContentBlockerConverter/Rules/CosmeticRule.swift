@@ -47,14 +47,21 @@ class CosmeticRule: Rule {
 
     override init(ruleText: NSString) throws {
         try super.init(ruleText: ruleText)
+        
+        // TODO(ameshkov): !!! Fix this, ruleText --> String
+        let rule = ruleText as String
 
-        let markerInfo = CosmeticRuleMarker.findCosmeticRuleMarker(ruleText: ruleText as String)
+        let markerInfo = CosmeticRuleMarker.findCosmeticRuleMarker(ruleText: rule)
         if (markerInfo.index == -1) {
             throw SyntaxError.invalidRule(message: "Not a cosmetic rule")
         }
 
-        let contentIndex = markerInfo.index + markerInfo.marker!.rawValue.unicodeScalars.count
-        self.content = ruleText.substring(from: contentIndex)
+        // TODO(ameshkov): !!! We need a helper here
+        let contentIndex = markerInfo.index + markerInfo.marker!.rawValue.utf8.count
+        let utfContentIndex = rule.utf8.index(rule.startIndex, offsetBy: contentIndex)
+        let utfContent = rule.utf8[utfContentIndex...]
+        self.content = String(decoding: utfContent, as: UTF8.self)
+
         if (self.content == "") {
             throw SyntaxError.invalidRule(message: "Rule content is empty")
         }
@@ -89,7 +96,10 @@ class CosmeticRule: Rule {
         if (markerInfo.index > 0) {
             // This means that the marker is preceded by the list of domains
             // Now it's a good time to parse them.
-            let domains = ruleText.substring(to: markerInfo.index);
+            let utfMarkerIndex = rule.utf8.index(rule.startIndex, offsetBy: markerInfo.index)
+            let utfDomains = rule.utf8[..<utfMarkerIndex]
+            let domains = String(decoding: utfDomains, as: UTF8.self)
+
             // support for *## for generic rules
             // https://github.com/AdguardTeam/SafariConverterLib/issues/11
             if (!(domains.count == 1 && domains.contains("*"))) {

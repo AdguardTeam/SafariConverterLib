@@ -6,64 +6,84 @@ import Punycode
  */
 class NetworkRuleParser {
     private static let MASK_WHITE_LIST = "@@";
+    private static let MASK_WHITE_LIST_UTF8 = [Chars.AT_CHAR, Chars.AT_CHAR]
+    private static let REPLACE_OPTION_MARKER = Array("$replace=".utf8)
 
-    /**
-     * Splits the rule text into multiple parts
-     */
-    static func parseRuleText(ruleText: NSString) throws -> BasicRuleParts {
+    // Parses network rule in its basic parts: pattern and options string
+    static func parseRuleText(ruleText: String) throws -> BasicRuleParts {
         var ruleParts = BasicRuleParts()
+        
+        // We'll be dealing with UTF8View when parsing.
+        let utfString = ruleText.utf8
 
+        // start index of the rule pattern
+        //
+        // a normal network rule looks like this:
+        // [@@] pattern [$options]
         var startIndex = 0
-        if (ruleText.hasPrefix(MASK_WHITE_LIST)) {
+      
+        if utfString.starts(with: MASK_WHITE_LIST_UTF8) {
             ruleParts.whitelist = true
             startIndex = 2
         }
-
-        if (ruleText.length <= startIndex) {
+        
+        if (utfString.count <= startIndex) {
             throw SyntaxError.invalidRule(message: "Rule is too short")
         }
+        
+        guard let utfStartIndex = utfString.index(utfString.startIndex, offsetBy: startIndex, limitedBy: utfString.endIndex)
+        else {
+            throw SyntaxError.invalidRule(message: "Invalid start index")
+        }
 
-        // Setting pattern to rule text (for the case of empty options)
-        ruleParts.pattern = ruleText.substring(from: startIndex)
+        var pattern = utfString[utfStartIndex...]
+        
+        // This is a regular expression rule without options
+        if pattern.first! == Chars.SLASH && pattern.last! == Chars.SLASH &&
+            !pattern.includes(REPLACE_OPTION_MARKER) {
 
-        // Avoid parsing options inside of a regex rule
-        if (ruleParts.pattern!.hasPrefix("/")
-                && ruleParts.pattern!.hasSuffix("/")
-                && (ruleParts.pattern?.indexOf(target: "$replace=") == -1)) {
+            ruleParts.pattern = String(decoding: pattern, as: UTF8.self)
+
             return ruleParts
         }
-
-        let delimeterIndex = NetworkRuleParser.findOptionsDelimeterIndex(ruleText: ruleText)
-        if (delimeterIndex == ruleText.length - 1) {
+        
+        let delimeterIndex = findOptionsDelimeterIndex(ruleText: utfString)
+        if (delimeterIndex == utfString.count - 1) {
             throw SyntaxError.invalidRule(message: "Invalid options")
         }
-
+        
         if (delimeterIndex >= 0) {
-            ruleParts.pattern = (ruleText.substring(to: delimeterIndex) as NSString).substring(from: startIndex)
-            ruleParts.options = ruleText.substring(from: delimeterIndex + 1)
+            var utfDelimiterIndex = utfString.index(utfString.startIndex, offsetBy: delimeterIndex, limitedBy: utfString.endIndex)
+            
+            pattern = utfString[utfStartIndex..<utfDelimiterIndex!]
+            
+            utfString.formIndex(after: &utfDelimiterIndex!)
+            let options = utfString[utfDelimiterIndex!...]
+            
+            ruleParts.pattern = String(decoding: pattern, as: UTF8.self)
+            ruleParts.options = String(decoding: options, as: UTF8.self)
+        } else {
+            ruleParts.pattern = String(decoding: pattern, as: UTF8.self)
         }
 
         return ruleParts
     }
-
-    private static func findOptionsDelimeterIndex(ruleText: NSString) -> Int {
-        let delim: unichar = "$".utf16.first!
-        let slash: unichar = "\\".utf16.first!
-        let bslash: unichar = "/".utf16.first!
-
-        let maxIndex = ruleText.length - 1
+    
+    // Looks for the options delimiter ($) in a network rule.
+    private static func findOptionsDelimeterIndex(ruleText: String.UTF8View) -> Int {
+        let maxIndex = ruleText.count - 1
         for i in 0...maxIndex {
-            let index = maxIndex - i;
-            let char = ruleText.character(at: index)
+            let index = maxIndex - i
+            let char = ruleText[safeIndex: index]
             switch char {
-            case delim:
+            case Chars.DOLLAR:
                 // ignore \$
-                if (index > 0 && ruleText.character(at: index - 1) == slash) {
+                if (index > 0 && ruleText[safeIndex: index - 1] == Chars.BACKSLASH) {
                     continue;
                 }
 
                 // ignore $/
-                if (index < maxIndex && ruleText.character(at: index + 1) == bslash) {
+                if (index < maxIndex && ruleText[safeIndex: index + 1] == Chars.SLASH) {
                     continue;
                 }
 
@@ -121,6 +141,7 @@ class NetworkRuleParser {
         return pattern.substring(with: NSRange(location: startIndex, length: endIndex - startIndex))
     }
 
+    // TODO(ameshkov): !!! Change to UTF8View
     struct BasicRuleParts {
         var pattern: String?;
         var options: String?;

@@ -345,7 +345,7 @@ class RuleConverter {
         var pattern: String = ""
         var options: String? = nil
         do {
-            let parseResult = try NetworkRuleParser.parseRuleText(ruleText: ruleText)
+            let parseResult = try NetworkRuleParser.parseRuleText(ruleText: rule)
             options = parseResult.options
             if (options == nil || options == "") {
                 return nil
@@ -495,7 +495,7 @@ class RuleConverter {
             return nil;
         }
 
-        let rule = try! NetworkRuleParser.parseRuleText(ruleText: ruleText);
+        let rule = try! NetworkRuleParser.parseRuleText(ruleText: rule);
 
         if (rule.pattern!.hasPrefix("|") || rule.pattern!.hasPrefix("||") || !ruleText.contains(RuleConverter.DOMAIN_MODIFIER_MASK)) {
             // Rule's matching pattern cannot target any domain or been used without $domain modifier

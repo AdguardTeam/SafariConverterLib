@@ -25,22 +25,29 @@ enum CosmeticRuleMarker: String, CaseIterable {
     public static func findCosmeticRuleMarker(ruleText: String) -> (
         index: Int, marker: CosmeticRuleMarker?
     ) {
-        let maxIndex = ruleText.utf8.count - 5
+        let length = ruleText.utf8.count
+        let maxIndex = length - 2
+        
+        if maxIndex <= 0 {
+            return (-1, nil)
+        }
+        
+        // This is most likely a network rule as it starts with | or @,
+        // something like ||example.org^ or @@||example.org^, so exit immediately.
+        let firstChar = ruleText.utf8.first!
+        if firstChar == Chars.PIPE || firstChar == Chars.AT_CHAR {
+            return (-1, nil)
+        }
+        
         for i in 0...maxIndex {
             let char = ruleText.utf8[safeIndex: i]
-            
-            // This is most likely a network rule as it starts with |,
-            // something like ||example.org^, so exit immediately.
-            if i == 0 && char == Chars.PIPE {
-                return (-1, nil)
-            }
             
             switch char {
             case Chars.HASH:  // #
                 let nextChar = ruleText.utf8[safeIndex: i + 1]
-                let twoAhead = ruleText.utf8[safeIndex: i + 2]
-                let threeAhead = ruleText.utf8[safeIndex: i + 3]
-                let fourAhead = ruleText.utf8[safeIndex: i + 4]
+                let twoAhead = (i + 2 < length) ? ruleText.utf8[safeIndex: i + 2] : nil
+                let threeAhead = (i + 3 < length) ? ruleText.utf8[safeIndex: i + 3] : nil
+                let fourAhead = (i + 4 < length) ? ruleText.utf8[safeIndex: i + 4] : nil
                 
                 switch nextChar {
                 case Chars.AT_CHAR:  // #@
@@ -96,7 +103,7 @@ enum CosmeticRuleMarker: String, CaseIterable {
                 
             case Chars.DOLLAR: // $
                 let nextChar = ruleText.utf8[safeIndex: i + 1]
-                let twoAhead = ruleText.utf8[safeIndex: i + 2]
+                let twoAhead = (i + 2 < length) ? ruleText.utf8[safeIndex: i + 2] : nil
                 
                 if nextChar == Chars.AT_CHAR && twoAhead == Chars.DOLLAR {
                     // $@$

@@ -1921,30 +1921,36 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result.errorsCount, 1);
         XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON);
 
+        // The rules will not be considered cosmetic
         result = converter.convertArray(rules: ["example.org##", "example.org#@#"], safariVersion: .safari15);
         XCTAssertEqual(result.convertedCount, 0);
         XCTAssertEqual(result.errorsCount, 2);
-        XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON);
+        XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON)
+        
+        result = converter.convertArray(rules: ["", "", "", ""], safariVersion: .safari15)
+        XCTAssertEqual(result.convertedCount, 0)
+        XCTAssertEqual(result.errorsCount, 0)
+        XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON)
 
-        result = converter.convertArray(rules: ["", "", "", ""], safariVersion: .safari15);
-        XCTAssertEqual(result.convertedCount, 0);
-        XCTAssertEqual(result.errorsCount, 0);
-        XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON);
+        result = converter.convertArray(rules: [], safariVersion: .safari15)
+        XCTAssertEqual(result.convertedCount, 0)
+        XCTAssertEqual(result.errorsCount, 0)
+        XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON)
 
-        result = converter.convertArray(rules: [], safariVersion: .safari15);
-        XCTAssertEqual(result.convertedCount, 0);
-        XCTAssertEqual(result.errorsCount, 0);
-        XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON);
+        result = converter.convertArray(rules: ["test.com#%#", "test.com#@%#"], safariVersion: .safari15)
+        XCTAssertEqual(result.convertedCount, 0)
+        XCTAssertEqual(result.errorsCount, 2)
+        XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON)
 
-        result = converter.convertArray(rules: ["test.com#%#", "test.com#@%#"], safariVersion: .safari15);
-        XCTAssertEqual(result.convertedCount, 0);
-        XCTAssertEqual(result.errorsCount, 2);
-        XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON);
-
-        result = converter.convertArray(rules: ["example.org#%#//scriptlet()", "example.org#%#", "example.org#@%#"], safariVersion: .safari15);
-        XCTAssertEqual(result.convertedCount, 0);
-        XCTAssertEqual(result.errorsCount, 3);
-        XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON);
+        result = converter.convertArray(rules: ["example.org#%#//scriptlet()"], safariVersion: .safari15)
+        XCTAssertEqual(result.convertedCount, 0)
+        XCTAssertEqual(result.errorsCount, 1)
+        XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON)
+        
+        result = converter.convertArray(rules: ["example.org#%#", "example.org#@%#"], safariVersion: .safari15)
+        XCTAssertEqual(result.convertedCount, 0)
+        XCTAssertEqual(result.errorsCount, 2)
+        XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON)
     }
 
     func testProblematicRules() {

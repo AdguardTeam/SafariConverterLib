@@ -43,7 +43,7 @@ class NetworkRule: Rule {
     override init(ruleText: NSString) throws {
         try super.init(ruleText: ruleText);
 
-        let ruleParts = try NetworkRuleParser.parseRuleText(ruleText: ruleText);
+        let ruleParts = try NetworkRuleParser.parseRuleText(ruleText: ruleText as String);
         isWhiteList = ruleParts.whitelist;
 
         if (ruleParts.options != nil && ruleParts.options != "") {

@@ -177,3 +177,50 @@ extension String.UTF8View {
         return self[utf8Index]
     }
 }
+
+extension Collection where Element == UInt8 {
+    func includes<C: Collection>(_ other: C) -> Bool where C.Element == UInt8 {
+        if #available(macOS 13.0, iOS 16.0, watchOS 9.0, tvOS 16.0, *) {
+            return self.contains(other)
+        }
+        
+        guard !other.isEmpty else {
+            // Empty subsequence is trivially included
+            return true
+        }
+        
+        // If other is longer than self, it can’t be included
+        guard count >= other.count else {
+            return false
+        }
+        
+        var start = startIndex
+        while start != endIndex {
+            // Check if there’s enough space left for other
+            if distance(from: start, to: endIndex) < other.count {
+                break
+            }
+            
+            var currentIndex = start
+            var otherIndex = other.startIndex
+            var matched = true
+            
+            while otherIndex != other.endIndex {
+                if self[currentIndex] != other[otherIndex] {
+                    matched = false
+                    break
+                }
+                formIndex(after: &currentIndex)
+                other.formIndex(after: &otherIndex)
+            }
+            
+            if matched {
+                return true
+            }
+            
+            formIndex(after: &start)
+        }
+        
+        return false
+    }
+}
