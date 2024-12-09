@@ -349,7 +349,7 @@ class RuleConverter {
                 return nil
             }
 
-            pattern = NetworkRuleParser.getAsciiDomainRule(pattern: parseResult.pattern) ?? ""
+            pattern = NetworkRuleParser.encodeDomainIfRequired(pattern: parseResult.pattern) ?? ""
             if parseResult.whitelist {
                 pattern = RuleConverter.EXCEPTION_MASK + pattern
             }

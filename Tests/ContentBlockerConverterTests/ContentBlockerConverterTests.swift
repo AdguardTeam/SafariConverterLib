@@ -773,6 +773,26 @@ final class ContentBlockerConverterTests: XCTestCase {
         let regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!);
         XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://test.org"));
     }
+    
+    func testBadfilterWithDomainsRules() {
+        let result = converter.convertArray(rules: [
+            "*$domain=test1.com,third-party,important",
+            "*$domain=test2.com,important",
+            "*$domain=bad1.com,third-party,important",
+            "*$domain=bad2.com|google.com,third-party,important",
+            "*$domain=bad1.com|bad2.com|lenta.ru,third-party,important",
+            "*$domain=bad2.com|bad1.com,third-party,important",
+            "*$domain=bad1.com|bad2.com,third-party,important,badfilter"
+        ]);
+        
+        XCTAssertEqual(result.convertedCount, 2);
+        
+        let decoded = try! parseJsonString(json: result.converted);
+        XCTAssertEqual(decoded.count, 2);
+        
+        XCTAssertEqual(decoded[0].trigger.ifDomain?[0], "*test1.com");
+        XCTAssertEqual(decoded[1].trigger.ifDomain?[0], "*test2.com");
+    }
 
     func testTldWildcardRules() {
         var result = converter.convertArray(rules: ["surge.*,testcases.adguard.*###case-5-wildcard-for-tld > .test-banner"]);

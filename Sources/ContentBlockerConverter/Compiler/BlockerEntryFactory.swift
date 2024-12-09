@@ -223,28 +223,29 @@ class BlockerEntryFactory {
             }
         }
 
-        let urlRegExpSource = rule.urlRegExpSource;
+        let urlRegExpSource = rule.urlRegExpSource
         if (urlRegExpSource == nil) {
             // Rule with empty regexp
             return BlockerEntryFactory.URL_FILTER_ANY_URL;
         }
 
         // Safari doesn't support non-ASCII characters in regular expressions
-        if !urlRegExpSource!.canBeConverted(to: String.Encoding.ascii.rawValue) {
+        let src = urlRegExpSource! as NSString
+        if !src.canBeConverted(to: String.Encoding.ascii.rawValue) {
             throw ConversionError.unsupportedRegExp(message: "Safari doesn't support non-ASCII characters in regular expressions")
         }
 
         // Regex that we generate for basic non-regex rules are okay
         // But if this is a regex rule, we can't be sure
         if rule.isRegexRule() {
-            try validateRegExp(urlRegExp: urlRegExpSource!);
+            try validateRegExp(urlRegExp: src)
         }
 
         // Prepending WebSocket protocol to resolve this:
         // https://github.com/AdguardTeam/AdguardBrowserExtension/issues/957
         if (isWebSocket && !urlRegExpSource!.hasPrefix("^") && !urlRegExpSource!.hasPrefix("ws")) {
             // TODO: convert to NSString
-            return BlockerEntryFactory.URL_FILTER_WS_ANY_URL + ".*" + (urlRegExpSource! as String);
+            return BlockerEntryFactory.URL_FILTER_WS_ANY_URL + ".*" + (urlRegExpSource! as String)
         }
 
         return urlRegExpSource! as String;

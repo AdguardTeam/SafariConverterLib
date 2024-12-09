@@ -4,77 +4,73 @@ import Foundation
 ///
 /// TODO(ameshkov): !!! Implement noop: https://adguard.com/kb/general/ad-filtering/create-own-filters/#noop-modifier
 class NetworkRule: Rule {
-    private static let MASK_WHITE_LIST = "@@";
-    private static let DOMAIN_VALIDATION_REGEXP = try! NSRegularExpression(pattern: "^[a-zA-Z0-9][a-zA-Z0-9-.]*[a-zA-Z0-9]\\.[a-zA-Z-]{2,}$", options: [.caseInsensitive]);
+    private static let DOMAIN_VALIDATION_REGEXP = try! NSRegularExpression(pattern: "^[a-zA-Z0-9][a-zA-Z0-9-.]*[a-zA-Z0-9]\\.[a-zA-Z-]{2,}$", options: [.caseInsensitive])
 
-    private static let delimeterChar = ",".utf16.first!;
-    private static let escapeChar = "\\".utf16.first!;
+    var isUrlBlock = false
+    var isCssExceptionRule = false
+    var isJsInject = false
 
-    private static let NOOP_PATTERN = "_";
+    var urlRuleText = ""
 
-    var isUrlBlock = false;
-    var isCssExceptionRule = false;
-    var isJsInject = false;
+    var isCheckThirdParty = false
+    var isThirdParty = false
+    var isMatchCase = false
+    var isBlockPopups = false
+    var isReplace = false
+    var isCspRule = false
+    var isWebSocket = false
+    var badfilter = false
 
-    var urlRuleText: NSString = "";
+    var permittedContentType: [ContentType] = [ContentType.ALL]
+    var restrictedContentType: [ContentType] = []
 
-    var isCheckThirdParty = false;
-    var isThirdParty = false;
-    var isMatchCase = false;
-    var isBlockPopups = false;
-    var isReplace = false;
-    var isCspRule = false;
-    var isWebSocket = false;
+    var enabledOptions: [NetworkRuleOption] = []
+    var disabledOptions: [NetworkRuleOption] = []
 
-    var permittedContentType: [ContentType] = [ContentType.ALL];
-    var restrictedContentType: [ContentType] = [];
-
-    var enabledOptions: [NetworkRuleOption] = [];
-    var disabledOptions: [NetworkRuleOption] = [];
-
-    var urlRegExpSource: NSString? = nil;
-
-    var badfilter: NSString? = nil;
+    var urlRegExpSource: String? = nil
 
     override init() {
-        super.init();
+        super.init()
     }
 
     override init(ruleText: String) throws {
-        try super.init(ruleText: ruleText);
+        try super.init(ruleText: ruleText)
 
-        let ruleParts = try NetworkRuleParser.parseRuleText(ruleText: ruleText);
-        isWhiteList = ruleParts.whitelist;
+        let ruleParts = try NetworkRuleParser.parseRuleText(ruleText: ruleText)
+        isWhiteList = ruleParts.whitelist
 
         if (ruleParts.options != nil && ruleParts.options != "") {
-            try loadOptions(options: ruleParts.options!);
+            try loadOptions(options: ruleParts.options!)
         }
 
         if (ruleParts.pattern != nil) {
             if (ruleParts.pattern! == "||"
                     || ruleParts.pattern! == "*"
                     || ruleParts.pattern! == ""
-                    || ruleParts.pattern!.unicodeScalars.count < 3
+                    || ruleParts.pattern!.utf8.count < 3
                ) {
                 if (permittedDomains.count < 1) {
                     // Rule matches too much and does not have any domain restriction
                     // We should not allow this kind of rules
-                    throw SyntaxError.invalidRule(message: "The rule is too wide, add domain restriction or make the pattern more specific");
+                    throw SyntaxError.invalidRule(message: "The rule is too wide, add domain restriction or make the pattern more specific")
                 }
             }
         }
 
         if (ruleParts.options == "specifichide" && ruleParts.whitelist == false) {
-            throw SyntaxError.invalidRule(message: "Specifichide modifier must be used for exception rules only");
+            throw SyntaxError.invalidRule(message: "Specifichide modifier must be used for exception rules only")
         }
 
-        urlRuleText = NetworkRuleParser.getAsciiDomainRule(pattern: ruleParts.pattern)! as NSString;
+        urlRuleText = NetworkRuleParser.encodeDomainIfRequired(pattern: ruleParts.pattern)!
 
         if (isRegexRule()) {
-            urlRegExpSource = urlRuleText.substring(with: NSMakeRange(1, urlRuleText.length - 2)) as NSString
+            let startIndex = urlRuleText.utf8.index(after: urlRuleText.utf8.startIndex)
+            let endIndex = urlRuleText.utf8.index(before: urlRuleText.utf8.endIndex)
+            
+            urlRegExpSource = String(urlRuleText[startIndex..<endIndex])
         } else {
-            if (urlRuleText != "") {
-                urlRegExpSource = SimpleRegex2.createRegexText(str: self.urlRuleText as String) as NSString
+            if (!urlRuleText.isEmpty) {
+                urlRegExpSource = SimpleRegex2.createRegexText(str: self.urlRuleText as String)
             }
         }
 
@@ -85,7 +81,7 @@ class NetworkRule: Rule {
     }
 
     func isRegexRule() -> Bool {
-        urlRuleText.hasPrefix("/") && urlRuleText.hasSuffix("/")
+        urlRuleText.utf8.first == Chars.SLASH && urlRuleText.utf8.last == Chars.SLASH
     }
 
     func isSingleOption(option: NetworkRuleOption) -> Bool {
@@ -122,6 +118,8 @@ class NetworkRule: Rule {
      * Parses domain and path
      */
     func parseRuleDomain() -> DomainInfo? {
+        let str = urlRuleText as NSString
+        
         let startsWith = [
             "http://www." as NSString,
             "https://www." as NSString,
@@ -145,18 +143,18 @@ class NetworkRule: Rule {
         // Exclusive for domain
         let exceptRule = "domain="
 
-        let optionsRange = urlRuleText.range(of: "$")
-        let domainRange = urlRuleText.range(of: exceptRule)
+        let optionsRange = str.range(of: "$")
+        let domainRange = str.range(of: exceptRule)
         if (domainRange.location != NSNotFound && optionsRange.location != NSNotFound) {
             startIndex = domainRange.location + exceptRule.count
         }
 
         var pathEndIndex = optionsRange.location
         if (pathEndIndex == 0 || pathEndIndex == NSNotFound) {
-            pathEndIndex = urlRuleText.length
+            pathEndIndex = str.length
         }
 
-        let candidateStr = urlRuleText.substring(with: NSMakeRange(0, pathEndIndex)) as NSString
+        let candidateStr = str.substring(with: NSMakeRange(0, pathEndIndex)) as NSString
         var symbolIndex = NSNotFound
         for containsPrefix in contains {
             let cntsRange = candidateStr.range(
@@ -171,12 +169,12 @@ class NetworkRule: Rule {
         }
 
         let domain = symbolIndex == NSNotFound ?
-                urlRuleText.substring(from: startIndex) :
-                urlRuleText.substring(with: NSMakeRange(startIndex, symbolIndex - startIndex))
+            str.substring(from: startIndex) :
+            str.substring(with: NSMakeRange(startIndex, symbolIndex - startIndex))
 
         let path = symbolIndex == NSNotFound ?
                 nil :
-                urlRuleText.substring(with: NSMakeRange(symbolIndex, pathEndIndex - symbolIndex))
+                str.substring(with: NSMakeRange(symbolIndex, pathEndIndex - symbolIndex))
 
         if (!SimpleRegex.isMatch(regex: NetworkRule.DOMAIN_VALIDATION_REGEXP, target: domain as NSString)) {
             // Not a valid domain name, ignore it
@@ -227,7 +225,7 @@ class NetworkRule: Rule {
     }
 
     /**
-     * TODO: Move to Array extension
+     * TODO(ameshkov): !!! Move to Array extension
      */
     static func stringArraysHaveIntersection(left: [String], right: [String]) -> Bool {
         if (left.count == 0 || right.count == 0) {
@@ -254,202 +252,201 @@ class NetworkRule: Rule {
         try setDomains(domainsStr: domains, separator: Chars.PIPE)
     }
 
+    /// Parses network rule options from the options string.
     private func loadOptions(options: String) throws -> Void {
-        let optionParts = options.splitByDelimiterWithEscapeCharacter(delimiter: NetworkRule.delimeterChar, escapeChar: NetworkRule.escapeChar);
-
+        let optionParts = options.split(delimiter: Chars.COMMA, escapeChar: Chars.BACKSLASH);
+        
         for option in optionParts {
-            var optionName = option;
-            var optionValue = "";
-
-            let valueIndex = option.indexOf(target: "=");
-            if (valueIndex > 0) {
-                optionName = option.subString(startIndex: 0, toIndex: valueIndex);
-                optionValue = option.subString(startIndex: valueIndex + 1);
+            var optionName = option
+            var optionValue = ""
+            
+            let valueIndex = option.utf8.firstIndex(of: Chars.EQUALS_SIGN)
+            if valueIndex != nil {
+                optionName = String(option[..<valueIndex!])
+                optionValue = String(option[option.utf8.index(after: valueIndex!)...])
             }
-
+            
             try loadOption(optionName: optionName, optionValue: optionValue);
         }
-
+        
         // Rules of these types can be applied to documents only
         // $jsinject, $elemhide, $urlblock, $genericblock, $generichide and $content for whitelist rules.
         // $popup - for url blocking
         if (
-                   isOptionEnabled(option: NetworkRuleOption.Document)
-                           || isOptionEnabled(option: NetworkRuleOption.Jsinject)
-                           || isOptionEnabled(option: NetworkRuleOption.Elemhide)
-                           || isOptionEnabled(option: NetworkRuleOption.Content)
-                           || isOptionEnabled(option: NetworkRuleOption.Urlblock)
-                           || isOptionEnabled(option: NetworkRuleOption.Genericblock)
-                           || isOptionEnabled(option: NetworkRuleOption.Generichide)
-                           || isBlockPopups
-           ) {
+            isOptionEnabled(option: NetworkRuleOption.Document)
+            || isOptionEnabled(option: NetworkRuleOption.Jsinject)
+            || isOptionEnabled(option: NetworkRuleOption.Elemhide)
+            || isOptionEnabled(option: NetworkRuleOption.Content)
+            || isOptionEnabled(option: NetworkRuleOption.Urlblock)
+            || isOptionEnabled(option: NetworkRuleOption.Genericblock)
+            || isOptionEnabled(option: NetworkRuleOption.Generichide)
+            || isBlockPopups
+        ) {
             self.permittedContentType = [ContentType.DOCUMENT];
         }
     }
 
+    /// Attempts to parse a single network rule option.
     private func loadOption(optionName: String, optionValue: String) throws -> Void {
-        if (optionName.hasSuffix(NetworkRule.NOOP_PATTERN)) {
+        if optionName.utf8.first == Chars.UNDERSCORE {
             // A noop modifier does nothing and can be used to increase some rules readability.
             // It consists of the sequence of underscore characters (_) of any length
             // and can appear in a rule as many times as it's needed.
-            let isNoopOption = !optionName.components(separatedBy: NetworkRule.NOOP_PATTERN).contains {
-                !$0.isEmpty
-            };
-            if (isNoopOption) {
-                return;
+            if optionName.utf8.allSatisfy({$0 == Chars.UNDERSCORE}) {
+                return
             }
         }
+
         switch (optionName) {
         case "third-party",
              "~first-party":
-            isCheckThirdParty = true;
-            isThirdParty = true;
-            break;
+            isCheckThirdParty = true
+            isThirdParty = true
+            break
         case "~third-party",
              "first-party":
-            isCheckThirdParty = true;
-            isThirdParty = false;
-            break;
+            isCheckThirdParty = true
+            isThirdParty = false
+            break
         case "match-case":
-            isMatchCase = true;
-            break;
+            isMatchCase = true
+            break
         case "~match-case":
-            isMatchCase = false;
-            break;
+            isMatchCase = false
+            break
         case "important":
-            isImportant = true;
-            break;
+            isImportant = true
+            break
         case "popup":
-            isBlockPopups = true;
-            break;
+            isBlockPopups = true
+            break
         case "badfilter":
-            badfilter = parseBadfilter() as NSString?;
-            break;
+            badfilter = true
+            break
         case "csp":
-            isCspRule = true;
-            break;
+            isCspRule = true
+            break
         case "replace":
-            isReplace = true;
-            break;
+            isReplace = true
+            break
         case "domain":
-            try setNetworkRuleDomains(domains: optionValue);
-            break;
+            try setNetworkRuleDomains(domains: optionValue)
+            break
         case "elemhide":
-            try setOptionEnabled(option: NetworkRuleOption.Elemhide, value: true);
-            break;
+            try setOptionEnabled(option: NetworkRuleOption.Elemhide, value: true)
+            break
         case "generichide":
-            try setOptionEnabled(option: NetworkRuleOption.Generichide, value: true);
-            break;
+            try setOptionEnabled(option: NetworkRuleOption.Generichide, value: true)
+            break
         case "genericblock":
-            try setOptionEnabled(option: NetworkRuleOption.Genericblock, value: true);
-            break;
+            try setOptionEnabled(option: NetworkRuleOption.Genericblock, value: true)
+            break
         case "specifichide":
-            try setOptionEnabled(option: NetworkRuleOption.Specifichide, value: true);
-            break;
+            try setOptionEnabled(option: NetworkRuleOption.Specifichide, value: true)
+            break
         case "jsinject":
-            try setOptionEnabled(option: NetworkRuleOption.Jsinject, value: true);
-            break;
+            try setOptionEnabled(option: NetworkRuleOption.Jsinject, value: true)
+            break
         case "urlblock":
-            try setOptionEnabled(option: NetworkRuleOption.Urlblock, value: true);
-            break;
+            try setOptionEnabled(option: NetworkRuleOption.Urlblock, value: true)
+            break
         case "content":
-            try setOptionEnabled(option: NetworkRuleOption.Content, value: true);
-            break;
+            try setOptionEnabled(option: NetworkRuleOption.Content, value: true)
+            break
         case "document":
-            try setOptionEnabled(option: NetworkRuleOption.Document, value: true);
-            break;
+            try setOptionEnabled(option: NetworkRuleOption.Document, value: true)
+            break
         case "script":
-            setRequestType(contentType: ContentType.SCRIPT, enabled: true);
-            break;
+            setRequestType(contentType: ContentType.SCRIPT, enabled: true)
+            break
         case "~script":
-            setRequestType(contentType: ContentType.SCRIPT, enabled: false);
-            break;
+            setRequestType(contentType: ContentType.SCRIPT, enabled: false)
+            break
         case "stylesheet":
-            setRequestType(contentType: ContentType.STYLESHEET, enabled: true);
-            break;
+            setRequestType(contentType: ContentType.STYLESHEET, enabled: true)
+            break
         case "~stylesheet":
-            setRequestType(contentType: ContentType.STYLESHEET, enabled: false);
-            break;
+            setRequestType(contentType: ContentType.STYLESHEET, enabled: false)
+            break
         case "subdocument":
-            setRequestType(contentType: ContentType.SUBDOCUMENT, enabled: true);
-            break;
+            setRequestType(contentType: ContentType.SUBDOCUMENT, enabled: true)
+            break
         case "~subdocument":
-            setRequestType(contentType: ContentType.SUBDOCUMENT, enabled: false);
-            break;
+            setRequestType(contentType: ContentType.SUBDOCUMENT, enabled: false)
+            break
         case "object":
-            setRequestType(contentType: ContentType.OBJECT, enabled: true);
-            break;
+            setRequestType(contentType: ContentType.OBJECT, enabled: true)
+            break
         case "~object":
-            setRequestType(contentType: ContentType.OBJECT, enabled: false);
-            break;
+            setRequestType(contentType: ContentType.OBJECT, enabled: false)
+            break
         case "image":
-            setRequestType(contentType: ContentType.IMAGE, enabled: true);
-            break;
+            setRequestType(contentType: ContentType.IMAGE, enabled: true)
+            break
         case "~image":
-            setRequestType(contentType: ContentType.IMAGE, enabled: false);
-            break;
+            setRequestType(contentType: ContentType.IMAGE, enabled: false)
+            break
         case "xmlhttprequest":
-            setRequestType(contentType: ContentType.XMLHTTPREQUEST, enabled: true);
-            break;
+            setRequestType(contentType: ContentType.XMLHTTPREQUEST, enabled: true)
+            break
         case "~xmlhttprequest":
-            setRequestType(contentType: ContentType.XMLHTTPREQUEST, enabled: false);
-            break;
+            setRequestType(contentType: ContentType.XMLHTTPREQUEST, enabled: false)
+            break
         case "media":
-            setRequestType(contentType: ContentType.MEDIA, enabled: true);
-            break;
+            setRequestType(contentType: ContentType.MEDIA, enabled: true)
+            break
         case "~media":
-            setRequestType(contentType: ContentType.MEDIA, enabled: false);
-            break;
+            setRequestType(contentType: ContentType.MEDIA, enabled: false)
+            break
         case "font":
-            setRequestType(contentType: ContentType.FONT, enabled: true);
-            break;
+            setRequestType(contentType: ContentType.FONT, enabled: true)
+            break
         case "~font":
-            setRequestType(contentType: ContentType.FONT, enabled: false);
-            break;
+            setRequestType(contentType: ContentType.FONT, enabled: false)
+            break
         case "websocket":
-            self.isWebSocket = true;
-            setRequestType(contentType: ContentType.WEBSOCKET, enabled: true);
-            break;
+            self.isWebSocket = true
+            setRequestType(contentType: ContentType.WEBSOCKET, enabled: true)
+            break
         case "~websocket":
-            setRequestType(contentType: ContentType.WEBSOCKET, enabled: false);
-            break;
+            setRequestType(contentType: ContentType.WEBSOCKET, enabled: false)
+            break
         case "other":
-            setRequestType(contentType: ContentType.OTHER, enabled: true);
-            break;
+            setRequestType(contentType: ContentType.OTHER, enabled: true)
+            break
         case "~other":
-            setRequestType(contentType: ContentType.OTHER, enabled: false);
-            break;
+            setRequestType(contentType: ContentType.OTHER, enabled: false)
+            break
         case "object-subrequest":
-            setRequestType(contentType: ContentType.OBJECT_SUBREQUEST, enabled: true);
-            break;
+            setRequestType(contentType: ContentType.OBJECT_SUBREQUEST, enabled: true)
+            break
         case "~object-subrequest":
-            setRequestType(contentType: ContentType.OBJECT_SUBREQUEST, enabled: false);
-            break;
+            setRequestType(contentType: ContentType.OBJECT_SUBREQUEST, enabled: false)
+            break
         case "ping":
             // `ping` resource type is supported since Safari 14
             if SafariService.current.version.isSafari14orGreater() {
-                setRequestType(contentType: ContentType.PING, enabled: true);
+                setRequestType(contentType: ContentType.PING, enabled: true)
             } else {
-                throw SyntaxError.invalidRule(message: "$ping option is not supported");
+                throw SyntaxError.invalidRule(message: "$ping option is not supported")
             }
-            break;
+            break
         case "~ping":
             // `ping` resource type is supported since Safari 14
             if SafariService.current.version.isSafari14orGreater() {
-                setRequestType(contentType: ContentType.PING, enabled: false);
+                setRequestType(contentType: ContentType.PING, enabled: false)
             } else {
-                throw SyntaxError.invalidRule(message: "$~ping option is not supported");
+                throw SyntaxError.invalidRule(message: "$~ping option is not supported")
             }
-            break;
+            break
         case "webrtc":
-            setRequestType(contentType: ContentType.WEBRTC, enabled: true);
-            break;
+            setRequestType(contentType: ContentType.WEBRTC, enabled: true)
+            break
         case "~webrtc":
-            setRequestType(contentType: ContentType.WEBRTC, enabled: false);
-            break;
-            
+            setRequestType(contentType: ContentType.WEBRTC, enabled: false)
+            break
         default:
-            throw SyntaxError.invalidRule(message: "Unknown option: \(optionName)");
+            throw SyntaxError.invalidRule(message: "Unknown option: \(optionName)")
         }
     }
 
@@ -476,13 +473,6 @@ class NetworkRule: Rule {
 
     private func isOptionEnabled(option: NetworkRuleOption) -> Bool {
         return self.enabledOptions.firstIndex(of: option) != nil;
-    }
-
-    private func parseBadfilter() -> String {
-        return self.ruleText
-                .replacingOccurrences(of: "$badfilter,", with: "$")
-                .replacingOccurrences(of: ",badfilter", with: "")
-                .replacingOccurrences(of: "$badfilter", with: "");
     }
 
     struct DomainInfo {

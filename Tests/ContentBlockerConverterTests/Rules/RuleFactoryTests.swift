@@ -37,51 +37,10 @@ final class RuleFactoryTests: XCTestCase {
         XCTAssertTrue(rule is CosmeticRule);
     }
     
-    func testApplyBadfilterExceptions() {
-        let rules = [
-            try! RuleFactory.createRule(ruleText: "||example.org^$image"),
-            try! RuleFactory.createRule(ruleText: "||test.org^")
-        ];
-        
-        let badfilters = [
-            try! RuleFactory.createRule(ruleText: "||example.org^$image,badfilter") as! NetworkRule
-        ]
-        
-        let filtered = RuleFactory.applyBadFilterExceptions(rules: rules as! [NetworkRule], badfilterRules: badfilters);
-        XCTAssertNotNil(filtered);
-        XCTAssertEqual(filtered.count, 1);
-        XCTAssertEqual(filtered[0].ruleText, "||test.org^");
-    }
-    
-    func testApplyBadfilterDomainExceptions() {
-        let rules = [
-            try! RuleFactory.createRule(ruleText: "*$domain=test1.com,third-party,important"),
-            try! RuleFactory.createRule(ruleText: "*$domain=test2.com,important"),
-            try! RuleFactory.createRule(ruleText: "*$domain=bad1.com,third-party,important"),
-            try! RuleFactory.createRule(ruleText: "*$domain=bad2.com|google.com,third-party,important"),
-            try! RuleFactory.createRule(ruleText: "*$domain=bad1.com|bad2.com|lenta.ru,third-party,important"),
-            try! RuleFactory.createRule(ruleText: "*$domain=bad1.com|bad2.com|lenta.ru,third-party,important"),
-            try! RuleFactory.createRule(ruleText: "*$domain=bad2.com|bad1.com,third-party,important"),
-
-        ];
-        
-        let badfilters = [
-            try! RuleFactory.createRule(ruleText: "*$domain=bad1.com|bad2.com,third-party,important,badfilter") as! NetworkRule
-        ]
-        
-        let filtered = RuleFactory.applyBadFilterExceptions(rules: rules as! [NetworkRule], badfilterRules: badfilters);
-        XCTAssertNotNil(filtered);
-        XCTAssertEqual(filtered.count, 2);
-        XCTAssertEqual(filtered[0].ruleText, "*$domain=test1.com,third-party,important");
-        XCTAssertEqual(filtered[1].ruleText, "*$domain=test2.com,important");
-    }
-
     static var allTests = [
         ("testInvalids", testInvalids),
         ("testNetworkRules", testNetworkRules),
         ("testCosmeticRules", testCosmeticRules),
-        ("testApplyBadfilterExceptions", testApplyBadfilterExceptions),
-        ("testApplyBadfilterDomainExceptions", testApplyBadfilterDomainExceptions)
     ]
 }
 

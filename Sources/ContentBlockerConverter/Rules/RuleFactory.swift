@@ -25,7 +25,7 @@ class RuleFactory {
         var result = [Rule]()
 
         var networkRules = [NetworkRule]()
-        var badfilterRules = [NetworkRule]()
+        var badfilterRules: [String: [NetworkRule]] = [:]
 
         for line in lines {
             guard shouldContinue else { return [] }
@@ -37,8 +37,8 @@ class RuleFactory {
 
                 guard let rule = safeCreateRule(ruleText: convertedLine) else { continue }
                 if let networkRule = rule as? NetworkRule {
-                    if networkRule.badfilter != nil {
-                        badfilterRules.append(networkRule)
+                    if networkRule.badfilter {
+                        badfilterRules[networkRule.urlRuleText, default: []].append(networkRule)
                     } else {
                         networkRules.append(networkRule)
                     }
@@ -51,36 +51,21 @@ class RuleFactory {
         guard shouldContinue else { return [] }
 
         result += RuleFactory.applyBadFilterExceptions(rules: networkRules, badfilterRules: badfilterRules)
+
         return result
     }
     
-    /**
-     * Filters rules with badfilter exceptions
-     */
-    static func applyBadFilterExceptions(rules: [NetworkRule], badfilterRules: [NetworkRule], progress: Progress? = nil) -> [Rule] {
-        var badfilters = [NSString]();
-        for badFilter in badfilterRules {
-            badfilters.append(badFilter.badfilter!);
-        }
-        
-        var result = [Rule]();
-        for rule in rules where !RuleFactory.isRuleNegatedByBadFilters(rule: rule, badfilterRules: badfilterRules) {
-            guard !(progress?.isCancelled ?? false) else { return [] }
-
-            result.append(rule);
-        }
-        
-        return result;
-    }
-    
-    static func isRuleNegatedByBadFilters(rule: NetworkRule, badfilterRules: [NetworkRule]) -> Bool {
-        for badfilter in badfilterRules {
-            if (badfilter.negatesBadfilter(specifiedRule: rule)) {
-                return true;
+    /// Filters out rules that are negated by $badfilter rules.
+    static func applyBadFilterExceptions(rules: [NetworkRule], badfilterRules: [String: [NetworkRule]]) -> [Rule] {
+        var result = [Rule]()
+        for rule in rules {
+            let negatingRule = badfilterRules[rule.urlRuleText]?.first(where: { $0.negatesBadfilter(specifiedRule: rule) })
+            if negatingRule == nil {
+                result.append(rule)
             }
         }
         
-        return false;
+        return result
     }
     
     func safeCreateRule(ruleText: String?) -> Rule? {

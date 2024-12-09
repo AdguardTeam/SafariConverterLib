@@ -118,6 +118,48 @@ extension String {
         return self.replacingOccurrences(of: target, with: withString, options: NSString.CompareOptions.literal, range: nil)
     }
     
+    /// Splits the string into parts by the specified delimiter.
+    ///
+    /// Takes into account if delimiter is escaped by the specified escape character.
+    /// Ignores empty components.
+    ///
+    /// TODO(ameshkov): !!! Add tests for this method
+    func split(delimiter: UInt8, escapeChar: UInt8) -> [String] {
+        let maxIndex = self.utf8.count - 1
+        
+        var result = [String]()
+        var previousDelimiterIndex = -1
+        
+        for index in 0...maxIndex {
+            let char = self.utf8[safeIndex: index]!
+            
+            if char == delimiter || index == maxIndex {
+                // Ignore escaped delimiter.
+                if index > 0 && char == delimiter && self.utf8[safeIndex: index - 1] == escapeChar {
+                    continue
+                }
+                
+                var partEndIndex = index
+                if index == maxIndex {
+                    partEndIndex = index + 1
+                }
+                
+                if partEndIndex > previousDelimiterIndex+1 {
+                    let startIndex = self.utf8.index(self.startIndex, offsetBy: previousDelimiterIndex + 1)
+                    let endIndex = self.utf8.index(self.startIndex, offsetBy: partEndIndex)
+
+                    let part = String(self[startIndex..<endIndex])
+                    result.append(part)
+                }
+                
+                previousDelimiterIndex = index
+            }
+        }
+
+        return result
+    }
+    
+    // TODO(ameshkov): !!! Remove
     func splitByDelimiterWithEscapeCharacter(delimiter: unichar, escapeChar: unichar) -> [String] {
         let str = self as NSString
         if str.length == 0 {

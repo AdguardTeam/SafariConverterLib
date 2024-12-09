@@ -8,20 +8,20 @@ class NetworkRuleParser {
     private static let MASK_WHITE_LIST = "@@";
     private static let MASK_WHITE_LIST_UTF8 = [Chars.AT_CHAR, Chars.AT_CHAR]
     private static let REPLACE_OPTION_MARKER = Array("$replace=".utf8)
-
+    
     // Parses network rule in its basic parts: pattern and options string
     static func parseRuleText(ruleText: String) throws -> BasicRuleParts {
         var ruleParts = BasicRuleParts()
         
         // We'll be dealing with UTF8View when parsing.
         let utfString = ruleText.utf8
-
+        
         // start index of the rule pattern
         //
         // a normal network rule looks like this:
         // [@@] pattern [$options]
         var startIndex = 0
-      
+        
         if utfString.starts(with: MASK_WHITE_LIST_UTF8) {
             ruleParts.whitelist = true
             startIndex = 2
@@ -35,15 +35,15 @@ class NetworkRuleParser {
         else {
             throw SyntaxError.invalidRule(message: "Invalid start index")
         }
-
+        
         var pattern = utfString[utfStartIndex...]
         
         // This is a regular expression rule without options
         if pattern.first! == Chars.SLASH && pattern.last! == Chars.SLASH &&
             !pattern.includes(REPLACE_OPTION_MARKER) {
-
+            
             ruleParts.pattern = String(decoding: pattern, as: UTF8.self)
-
+            
             return ruleParts
         }
         
@@ -65,7 +65,7 @@ class NetworkRuleParser {
         } else {
             ruleParts.pattern = String(decoding: pattern, as: UTF8.self)
         }
-
+        
         return ruleParts
     }
     
@@ -79,69 +79,79 @@ class NetworkRuleParser {
             case Chars.DOLLAR:
                 // ignore \$
                 if (index > 0 && ruleText[safeIndex: index - 1] == Chars.BACKSLASH) {
-                    continue;
+                    continue
                 }
-
+                
                 // ignore $/
                 if (index < maxIndex && ruleText[safeIndex: index + 1] == Chars.SLASH) {
-                    continue;
+                    continue
                 }
-
-                return index;
+                
+                return index
             default:
-                break;
-            }
-        }
-
-        return -1;
-    }
-
-    /**
-    * Searches for domain name in rule text and transforms it to punycode if needed.
-    */
-    static func getAsciiDomainRule(pattern: String?) -> String? {
-        if pattern == nil {
-            return pattern;
-        }
-
-        if pattern!.isASCII() {
-            return pattern;
-        }
-
-        let domain = NetworkRuleParser.parseRuleDomain(pattern: pattern! as NSString);
-        return pattern!.replacingOccurrences(of: domain, with: domain.idnaEncoded!);
-    }
-
-    static func parseRuleDomain(pattern: NSString) -> String {
-        let starts = ["||", "@@||", "http://www.", "https://www.", "http://", "https://", "//"]
-        let contains = ["/", "^"]
-
-        var startIndex = 0
-        for start in starts {
-            if pattern.hasPrefix(start) {
-                startIndex = start.unicodeScalars.count
                 break
             }
         }
-
-        var endIndex = NSNotFound
-        for end in contains {
-            let range = pattern.range(of: end, options: .literal, range: NSRange(location: startIndex, length: pattern.length - startIndex))
-            let index = range.location
-            if (index != NSNotFound) {
-                endIndex = index;
-                break;
+        
+        return -1
+    }
+    
+    /// Searches for domain name in rule text and transforms it to punycode if required.
+    static func encodeDomainIfRequired(pattern: String?) -> String? {
+        if pattern == nil {
+            return pattern
+        }
+        
+        if pattern!.isASCII() {
+            return pattern
+        }
+        
+        let domain = NetworkRuleParser.parseRuleDomain(pattern: pattern!)
+        
+        return pattern!.replacingOccurrences(of: domain, with: domain.idnaEncoded!)
+    }
+    
+    /// Parses domain name from a basic rule text.
+    ///
+    /// For instance, for ||example.org^ it will return example.org.
+    static func parseRuleDomain(pattern: String) -> String {
+        let starts = ["||", "@@||", "http://www.", "https://www.", "http://", "https://", "//"]
+        let contains = [Chars.SLASH, Chars.CARET]
+        
+        var startIndex = pattern.utf8.startIndex
+        for start in starts {
+            if pattern.utf8.starts(with: start.utf8) {
+                startIndex = pattern.utf8.index(pattern.utf8.startIndex, offsetBy: start.utf8.count)
+                break
             }
         }
-
-        if endIndex == NSNotFound {
-            return pattern.substring(from: startIndex)
+        
+        var endIndex: String.Index?
+        
+        for end in contains {
+            endIndex = pattern.utf8.lastIndex(of: end)
+            if endIndex != nil {
+                break
+            }
         }
-
-        return pattern.substring(with: NSRange(location: startIndex, length: endIndex - startIndex))
+        
+        if endIndex == nil {
+            return String(pattern[startIndex...])
+        }
+        
+        return String(pattern[startIndex..<endIndex!])
     }
-
-    // TODO(ameshkov): !!! Change to UTF8View
+    
+    /// Represents main parts of a basic rule.
+    ///
+    /// Normally, the rule looks like this:
+    /// [@@] pattern [$options]
+    ///
+    /// For instance, in the case of @@||example.org^$third-party the object will consist of the following:
+    ///
+    /// - pattern: ||example.org^
+    /// - options: third-party
+    /// - whitelist: true
     struct BasicRuleParts {
         var pattern: String?;
         var options: String?;
