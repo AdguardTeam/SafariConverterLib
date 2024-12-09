@@ -107,10 +107,10 @@ class RuleFactory {
             }
             
             if (RuleFactory.isCosmetic(ruleText: ruleText!)) {
-                return try CosmeticRule(ruleText: ruleText! as NSString);
+                return try CosmeticRule(ruleText: ruleText!);
             }
 
-            return try NetworkRule(ruleText: ruleText! as NSString);
+            return try NetworkRule(ruleText: ruleText!);
         } catch {
             Logger.log("(RuleFactory) - Unexpected error: \(error) while creating rule from: \(String(describing: ruleText))");
             throw error;

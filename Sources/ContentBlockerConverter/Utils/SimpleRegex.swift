@@ -118,6 +118,7 @@ class SimpleRegex {
         return matchCount > 0;
     }
     
+    // TODO(ameshkov): !!! Rename, rework
     static func isMatch3(regex: NSRegularExpression, target: Substring.UTF8View) -> Bool {
         let str = String(decoding: target, as: UTF8.self)
         

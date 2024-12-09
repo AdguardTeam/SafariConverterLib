@@ -81,7 +81,7 @@ class Compiler {
                 } else if item.action.css != nil && item.action.css! != "" {
                     cosmeticCssExceptions.append(item)
                 } else if (rule as! NetworkRule).isSingleOption(option: .Specifichide) {
-                    let exceptionDomain = NetworkRuleParser.parseRuleDomain(pattern: rule.ruleText)
+                    let exceptionDomain = NetworkRuleParser.parseRuleDomain(pattern: rule.ruleText as NSString)
                     specifichideExceptionDomains.append(exceptionDomain)
                 } else {
                     compilationResult.addIgnorePreviousTypedEntry(entry: item, source: rule)

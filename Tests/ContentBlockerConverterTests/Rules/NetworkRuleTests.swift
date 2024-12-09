@@ -198,7 +198,7 @@ final class NetworkRuleTests: XCTestCase {
     }
 
     func testNoopModifier() {
-        var rule = "||example.com^$domain=example.org,image,script,______,important" as NSString;
+        var rule = "||example.com^$domain=example.org,image,script,______,important";
 
         var result = try! NetworkRule(ruleText: rule);
         XCTAssertEqual(result.ruleText, rule)
@@ -219,7 +219,7 @@ final class NetworkRuleTests: XCTestCase {
         XCTAssertEqual(result.isBlockPopups, false);
         XCTAssertEqual(result.isReplace, false);
 
-        rule = "@@||example.com^$domain=example.org,__,_,image,__________,script,_,___,_,_,_,_,__,important" as NSString;
+        rule = "@@||example.com^$domain=example.org,__,_,image,__________,script,_,___,_,_,_,_,__,important";
 
         result = try! NetworkRule(ruleText: rule);
         XCTAssertEqual(result.ruleText, rule)
@@ -229,21 +229,21 @@ final class NetworkRuleTests: XCTestCase {
         XCTAssertEqual(result.restrictedDomains, []);
         XCTAssertEqual(result.urlRuleText, "||example.com^");
 
-        let invalidNoopRule = "@@||example.com^$domain=example.org,__,_,image,________z__,script,important" as NSString;
+        let invalidNoopRule = "@@||example.com^$domain=example.org,__,_,image,________z__,script,important";
 
         XCTAssertThrowsError(try NetworkRule(ruleText: invalidNoopRule));
     }
 
     func testPingModifier() {
-        var rule = "||example.com^$ping" as NSString;
+        var rule = "||example.com^$ping";
         XCTAssertThrowsError(try NetworkRule(ruleText: rule));
 
-        rule = "||example.com^$~ping" as NSString;
+        rule = "||example.com^$~ping";
         XCTAssertThrowsError(try NetworkRule(ruleText: rule));
     }
 
     func testSpecifichide() {
-        var rule = "@@||example.org^$specifichide" as NSString;
+        var rule = "@@||example.org^$specifichide";
 
         let result = try! NetworkRule(ruleText: rule);
 
@@ -253,7 +253,7 @@ final class NetworkRuleTests: XCTestCase {
         XCTAssertEqual(result.urlRuleText, "||example.org^");
         XCTAssertEqual(result.enabledOptions, [NetworkRule.NetworkRuleOption.Specifichide]);
 
-        rule = "||example.org^$specifichide" as NSString;
+        rule = "||example.org^$specifichide";
         XCTAssertThrowsError(try NetworkRule(ruleText: rule));
     }
 

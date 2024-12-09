@@ -156,7 +156,9 @@ extension String {
         
         return result
     }
-    
+}
+
+extension StringProtocol {
     func isASCII() -> Bool {
         for scalar in unicodeScalars {
             if (!scalar.isASCII) {
@@ -168,17 +170,19 @@ extension String {
     }
 }
 
-extension String.UTF8View {
+extension Collection where Element == UInt8, Index == String.Index {
     /// Access a UTF-8 code unit by integer index.
     subscript(safeIndex index: Int) -> UInt8? {
-        guard index >= 0, let utf8Index = self.index(self.startIndex, offsetBy: index, limitedBy: self.endIndex) else {
+        guard index >= 0, let utf8Index = self.index(startIndex, offsetBy: index, limitedBy: endIndex) else {
             return nil
         }
         return self[utf8Index]
     }
 }
 
+/// Extending Collection with UInt8 elements as they're used when working with UTF8 String representations.
 extension Collection where Element == UInt8 {
+    /// Checks if the collection contains the specified one.
     func includes<C: Collection>(_ other: C) -> Bool where C.Element == UInt8 {
         if #available(macOS 13.0, iOS 16.0, watchOS 9.0, tvOS 16.0, *) {
             return self.contains(other)

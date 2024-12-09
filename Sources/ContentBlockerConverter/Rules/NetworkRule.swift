@@ -1,8 +1,8 @@
 import Foundation
 
-/**
- * Network rule class
- */
+/// Represents a network rule
+///
+/// TODO(ameshkov): !!! Implement noop: https://adguard.com/kb/general/ad-filtering/create-own-filters/#noop-modifier
 class NetworkRule: Rule {
     private static let MASK_WHITE_LIST = "@@";
     private static let DOMAIN_VALIDATION_REGEXP = try! NSRegularExpression(pattern: "^[a-zA-Z0-9][a-zA-Z0-9-.]*[a-zA-Z0-9]\\.[a-zA-Z-]{2,}$", options: [.caseInsensitive]);
@@ -40,10 +40,10 @@ class NetworkRule: Rule {
         super.init();
     }
 
-    override init(ruleText: NSString) throws {
+    override init(ruleText: String) throws {
         try super.init(ruleText: ruleText);
 
-        let ruleParts = try NetworkRuleParser.parseRuleText(ruleText: ruleText as String);
+        let ruleParts = try NetworkRuleParser.parseRuleText(ruleText: ruleText);
         isWhiteList = ruleParts.whitelist;
 
         if (ruleParts.options != nil && ruleParts.options != "") {
@@ -74,7 +74,7 @@ class NetworkRule: Rule {
             urlRegExpSource = urlRuleText.substring(with: NSMakeRange(1, urlRuleText.length - 2)) as NSString
         } else {
             if (urlRuleText != "") {
-                urlRegExpSource = SimpleRegex.createRegexText(str: self.urlRuleText);
+                urlRegExpSource = SimpleRegex2.createRegexText(str: self.urlRuleText as String) as NSString
             }
         }
 
@@ -250,8 +250,8 @@ class NetworkRule: Rule {
         if (domains == "") {
             throw SyntaxError.invalidRule(message: "Modifier $domain cannot be empty")
         }
-
-        try setDomains(domains: domains, separator: Rule.VERTICAL_SEPARATOR)
+        
+        try setDomains(domainsStr: domains, separator: Chars.PIPE)
     }
 
     private func loadOptions(options: String) throws -> Void {
