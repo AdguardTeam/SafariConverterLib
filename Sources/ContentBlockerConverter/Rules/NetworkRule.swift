@@ -1,8 +1,18 @@
 import Foundation
 
-/// Represents a network rule
+/// Represents a network rule.
 ///
-/// TODO(ameshkov): !!! Implement noop: https://adguard.com/kb/general/ad-filtering/create-own-filters/#noop-modifier
+/// Note, that this implementations supports limited set of modifiers, it does not support
+/// the ones that are not supported by Safari content blocking and cannot be implemented
+/// using WebExtensions API.
+///
+/// Not supported:
+/// - $replace
+/// - $redirect
+/// - $csp
+/// - $object
+///
+/// TODO(ameshkov): !!! Add tests for not supported rules.
 class NetworkRule: Rule {
     private static let DOMAIN_VALIDATION_REGEXP = try! NSRegularExpression(pattern: "^[a-zA-Z0-9][a-zA-Z0-9-.]*[a-zA-Z0-9]\\.[a-zA-Z-]{2,}$", options: [.caseInsensitive])
 
@@ -16,8 +26,6 @@ class NetworkRule: Rule {
     var isThirdParty = false
     var isMatchCase = false
     var isBlockPopups = false
-    var isReplace = false
-    var isCspRule = false
     var isWebSocket = false
     var badfilter = false
 
@@ -88,35 +96,40 @@ class NetworkRule: Rule {
         enabledOptions.count == 1 && enabledOptions.firstIndex(of: option) != nil
     }
 
+    /// Checks if rule targets specified content type.
+    ///
+    /// TODO(ameshkov): Improve performance by changing permittedContentType/restrictedContentType to byte masks.
     func hasContentType(contentType: ContentType) -> Bool {
         if (permittedContentType == [ContentType.ALL] &&
                 restrictedContentType.count == 0) {
-            // Rule does not contain any constraint
-            return true;
+            // Rule does not contain any constraint.
+            return true
         }
 
-        // Checking that either all content types are permitted or request content type is in the permitted list
+        // Checking that either all content types are permitted or request content type is in the permitted list.
         let matchesPermitted = permittedContentType == [ContentType.ALL] ||
-                permittedContentType.firstIndex(of: contentType) ?? -1 >= 0;
+                permittedContentType.firstIndex(of: contentType) ?? -1 >= 0
 
-        // Checking that either no content types are restricted or request content type is not in the restricted list
+        // Checking that either no content types are restricted or request content type is not in the restricted list.
         let notMatchesRestricted = restrictedContentType.count == 0 ||
-                restrictedContentType.firstIndex(of: contentType) == nil;
+                restrictedContentType.firstIndex(of: contentType) == nil
 
-        return matchesPermitted && notMatchesRestricted;
+        return matchesPermitted && notMatchesRestricted
     }
 
+    /// Returns true if the rule targets only the specified content type and nothing else.
     func isContentType(contentType: ContentType) -> Bool {
         permittedContentType.count == 1 && permittedContentType[0] == contentType
     }
 
+    /// Returns true if the specified content type is restricted for this rule.
     func hasRestrictedContentType(contentType: ContentType) -> Bool {
         restrictedContentType.contains(contentType)
     }
 
-    /**
-     * Parses domain and path
-     */
+    /// Parses domain and path from the rule.
+    ///
+    /// TODO(ameshkov): Get rid of NSString.
     func parseRuleDomain() -> DomainInfo? {
         let str = urlRuleText as NSString
         
@@ -298,13 +311,16 @@ class NetworkRule: Rule {
         }
 
         switch (optionName) {
-        case "third-party",
-             "~first-party":
+        case "all":
+            // A normal blocking rule in the case of Safari is almost the same as $all,
+            // i.e. it blocks all requests including main frame ones.
+            // So we're doing nothing here.
+            break
+        case "third-party","~first-party","3p","~1p":
             isCheckThirdParty = true
             isThirdParty = true
             break
-        case "~third-party",
-             "first-party":
+        case "~third-party","first-party","1p","~3p":
             isCheckThirdParty = true
             isThirdParty = false
             break
@@ -323,25 +339,19 @@ class NetworkRule: Rule {
         case "badfilter":
             badfilter = true
             break
-        case "csp":
-            isCspRule = true
-            break
-        case "replace":
-            isReplace = true
-            break
         case "domain":
             try setNetworkRuleDomains(domains: optionValue)
             break
-        case "elemhide":
+        case "elemhide", "ehide":
             try setOptionEnabled(option: NetworkRuleOption.Elemhide, value: true)
             break
-        case "generichide":
+        case "generichide", "ghide":
             try setOptionEnabled(option: NetworkRuleOption.Generichide, value: true)
             break
         case "genericblock":
             try setOptionEnabled(option: NetworkRuleOption.Genericblock, value: true)
             break
-        case "specifichide":
+        case "specifichide", "shide":
             try setOptionEnabled(option: NetworkRuleOption.Specifichide, value: true)
             break
         case "jsinject":
@@ -353,7 +363,7 @@ class NetworkRule: Rule {
         case "content":
             try setOptionEnabled(option: NetworkRuleOption.Content, value: true)
             break
-        case "document":
+        case "document", "doc":
             try setOptionEnabled(option: NetworkRuleOption.Document, value: true)
             break
         case "script":
@@ -362,23 +372,17 @@ class NetworkRule: Rule {
         case "~script":
             setRequestType(contentType: ContentType.SCRIPT, enabled: false)
             break
-        case "stylesheet":
+        case "stylesheet", "css":
             setRequestType(contentType: ContentType.STYLESHEET, enabled: true)
             break
-        case "~stylesheet":
+        case "~stylesheet", "~css":
             setRequestType(contentType: ContentType.STYLESHEET, enabled: false)
             break
-        case "subdocument":
+        case "subdocument", "frame":
             setRequestType(contentType: ContentType.SUBDOCUMENT, enabled: true)
             break
-        case "~subdocument":
+        case "~subdocument", "~frame":
             setRequestType(contentType: ContentType.SUBDOCUMENT, enabled: false)
-            break
-        case "object":
-            setRequestType(contentType: ContentType.OBJECT, enabled: true)
-            break
-        case "~object":
-            setRequestType(contentType: ContentType.OBJECT, enabled: false)
             break
         case "image":
             setRequestType(contentType: ContentType.IMAGE, enabled: true)
@@ -386,10 +390,10 @@ class NetworkRule: Rule {
         case "~image":
             setRequestType(contentType: ContentType.IMAGE, enabled: false)
             break
-        case "xmlhttprequest":
+        case "xmlhttprequest", "xhr":
             setRequestType(contentType: ContentType.XMLHTTPREQUEST, enabled: true)
             break
-        case "~xmlhttprequest":
+        case "~xmlhttprequest", "~xhr":
             setRequestType(contentType: ContentType.XMLHTTPREQUEST, enabled: false)
             break
         case "media":
@@ -417,12 +421,6 @@ class NetworkRule: Rule {
         case "~other":
             setRequestType(contentType: ContentType.OTHER, enabled: false)
             break
-        case "object-subrequest":
-            setRequestType(contentType: ContentType.OBJECT_SUBREQUEST, enabled: true)
-            break
-        case "~object-subrequest":
-            setRequestType(contentType: ContentType.OBJECT_SUBREQUEST, enabled: false)
-            break
         case "ping":
             // `ping` resource type is supported since Safari 14
             if SafariService.current.version.isSafari14orGreater() {
@@ -438,12 +436,6 @@ class NetworkRule: Rule {
             } else {
                 throw SyntaxError.invalidRule(message: "$~ping option is not supported")
             }
-            break
-        case "webrtc":
-            setRequestType(contentType: ContentType.WEBRTC, enabled: true)
-            break
-        case "~webrtc":
-            setRequestType(contentType: ContentType.WEBRTC, enabled: false)
             break
         default:
             throw SyntaxError.invalidRule(message: "Unknown option: \(optionName)")
@@ -492,9 +484,6 @@ class NetworkRule: Rule {
         case FONT
         case DOCUMENT
         case SUBDOCUMENT
-        case OBJECT
-        case OBJECT_SUBREQUEST
-        case WEBRTC
         case PING
     }
 

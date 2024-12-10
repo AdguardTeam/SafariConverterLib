@@ -404,28 +404,6 @@ final class BlockerEntryFactoryTests: XCTestCase {
         XCTAssertEqual(result!.trigger.resourceType, ["image"]);
     }
 
-    func testInvalidResourceTypes() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: false, errorsCounter: ErrorsCounter());
-        let rule = createTestNetworkRule();
-
-        rule.permittedContentType = [NetworkRule.ContentType.OBJECT];
-        var result = converter.createBlockerEntry(rule: rule);
-        XCTAssertNil(result);
-
-        rule.permittedContentType = [NetworkRule.ContentType.OBJECT_SUBREQUEST];
-        result = converter.createBlockerEntry(rule: rule);
-        XCTAssertNil(result);
-
-        rule.permittedContentType = [NetworkRule.ContentType.WEBRTC];
-        result = converter.createBlockerEntry(rule: rule);
-        XCTAssertNil(result);
-
-        rule.permittedContentType = [NetworkRule.ContentType.IMAGE];
-        rule.isReplace = true;
-        result = converter.createBlockerEntry(rule: rule);
-        XCTAssertNil(result);
-    }
-
     private func createTestRule() -> Rule {
         let rule = try! CosmeticRule(ruleText: "example.org#%#test");
         return rule;

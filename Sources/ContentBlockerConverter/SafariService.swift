@@ -22,9 +22,9 @@ public enum SafariVersion: CustomStringConvertible, CustomDebugStringConvertible
 
     // AdGuard for iOS supports Safari from 11 version
     // AdGuard for Safari doesn't support OS Sierra, so minimal Safari version is 13
-    @available (OSX, unavailable)
+    @available(OSX, unavailable)
     case safari11
-    @available (OSX, unavailable)
+    @available(OSX, unavailable)
     case safari12
 
     case safari13
@@ -82,6 +82,12 @@ public enum SafariVersion: CustomStringConvertible, CustomDebugStringConvertible
     }
 }
 
+/// This is a singleton that's used for signalling for which Safari version we're compiling the content blocker.
+///
+/// Depending on the Safari version content blocking API supports different features and it needs to be
+/// taken into account.
+///
+/// TODO(ameshkov): !!! Add tests for SafariService.
 class SafariService {
     var version: SafariVersion = DEFAULT_SAFARI_VERSION;
     static let current: SafariService = SafariService();

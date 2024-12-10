@@ -73,9 +73,7 @@ class BlockerEntryFactory {
         self.errorsCounter = errorsCounter;
     }
 
-    /**
-     * Converts rule object to blocker entry object
-     */
+    /// Converts an AdGuard rule into a Safari content blocking rule.
     func createBlockerEntry(rule: Rule) -> BlockerEntry? {
         do {
             if (rule is NetworkRule) {
@@ -101,14 +99,8 @@ class BlockerEntryFactory {
         return nil;
     }
 
-    /**
-     * Creates blocker entry object from source Network rule.
-     */
+    /// Converts a network rule into a Safari content blocking rule.
     private func convertNetworkRule(rule: NetworkRule) throws -> BlockerEntry? {
-        if (rule.isCspRule) {
-            throw ConversionError.unsupportedRule(message: "CSP rules are not supported");
-        }
-
         let urlFilter = try createUrlFilterString(rule: rule);
 
         var trigger = BlockerEntry.Trigger(urlFilter: urlFilter);
@@ -270,12 +262,15 @@ class BlockerEntryFactory {
         if rule.hasContentType(contentType: NetworkRule.ContentType.IMAGE) {
             types.append("image")
         }
+
         if rule.hasContentType(contentType: NetworkRule.ContentType.STYLESHEET) {
             types.append("style-sheet")
         }
+
         if rule.hasContentType(contentType: NetworkRule.ContentType.SCRIPT) {
             types.append("script")
         }
+
         if rule.hasContentType(contentType: NetworkRule.ContentType.MEDIA) {
             types.append("media")
         }
@@ -314,6 +309,7 @@ class BlockerEntryFactory {
         if rule.hasContentType(contentType: NetworkRule.ContentType.FONT) {
             types.append("font")
         }
+
         if rule.hasContentType(contentType: NetworkRule.ContentType.PING) {
             // `ping` resource type is supported since Safari 14
             if SafariService.current.version.isSafari14orGreater() {
@@ -326,6 +322,7 @@ class BlockerEntryFactory {
             documentAdded = true
             types.append("document")
         }
+
         if !documentAdded && rule.hasContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT) {
             if !SafariService.current.version.isSafari15orGreater() {
                 documentAdded = true
@@ -337,59 +334,52 @@ class BlockerEntryFactory {
             types = ["document"]
         }
 
-        // Not supported modifiers
-        if (rule.isContentType(contentType: NetworkRule.ContentType.OBJECT)) {
-            throw ConversionError.unsupportedContentType(message: "$object content type is not yet supported")
-        }
-        if (rule.isContentType(contentType: NetworkRule.ContentType.OBJECT_SUBREQUEST)) {
-            // https://adguard.com/kb/general/ad-filtering/create-own-filters/#object-subrequest-modifier
-            throw ConversionError.unsupportedContentType(message: "$object-subrequest content type is deprecated")
-        }
-        if (rule.isContentType(contentType: NetworkRule.ContentType.WEBRTC)) {
-            // https://adguard.com/kb/general/ad-filtering/create-own-filters/#webrtc-modifier
-            throw ConversionError.unsupportedContentType(message: "$webrtc content type is deprecated")
-        }
-        if (rule.isReplace) {
-            throw ConversionError.unsupportedContentType(message: "$replace rules are not supported")
-        }
-
         if (types.count > 0) {
             trigger.resourceType = types
         }
     }
 
+    /// Adds "load-context" to the content blocker action.
+    ///
+    /// You can read more about it in the documentation: https://developer.apple.com/documentation/safariservices/creating-a-content-blocker#:~:text=top%2Durl.-,load%2Dcontext,-An%20array%20of
+    ///
+    /// We use this to apply $subdocument correctly in Safari, i.e. only apply it
+    /// on the child frame level.
     private func addLoadContext(rule: NetworkRule, trigger: inout BlockerEntry.Trigger) -> Void {
-        var context = [String]();
+        var context = [String]()
+
         // `child-frame` and `top-frame` contexts are supported since Safari 15
         if SafariService.current.version.isSafari15orGreater() {
             if rule.hasContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT)
                 && !rule.isContentType(contentType:NetworkRule.ContentType.ALL) {
-                context.append("child-frame");
+                context.append("child-frame")
             }
             if rule.hasRestrictedContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT) {
-                context.append("top-frame");
+                context.append("top-frame")
             }
         }
+
         if context.count > 0 {
-            trigger.loadContext = context;
+            trigger.loadContext = context
         }
-    };
+    }
 
     private func addThirdParty(rule: NetworkRule, trigger: inout BlockerEntry.Trigger) -> Void {
         if (rule.isCheckThirdParty) {
-            trigger.loadType = rule.isThirdParty ? ["third-party"] : ["first-party"];
+            trigger.loadType = rule.isThirdParty ? ["third-party"] : ["first-party"]
         }
-    };
+    }
 
     private func addMatchCase(rule: NetworkRule, trigger: inout BlockerEntry.Trigger) -> Void {
         if (rule.isMatchCase) {
-            trigger.caseSensitive = true;
+            trigger.caseSensitive = true
         }
-    };
+    }
 
     /**
      * Throws error if provided rule contains regexp in permitted or restricted domains
      */
+    // TODO(ameshkov): !!! Remove this
     private func excludeRegexpDomainRule(_ rule: Rule) throws -> Void {
         let domains = rule.restrictedDomains + rule.permittedDomains
         try domains.forEach { item in
@@ -399,25 +389,30 @@ class BlockerEntryFactory {
         }
     }
 
+    /// Adds domain limitations to the rule's trigger block.
+    ///
+    /// Domain limitations are controlled by the "if-domain" and "unless-domain" arrays.
     private func addDomainOptions(rule: Rule, trigger: inout BlockerEntry.Trigger) throws -> Void {
         var excludedDomains = rule.restrictedDomains
         let includedDomains = rule.permittedDomains
 
-        // discard rules that contains regexp in if-domain or unless-domain
+        // Discard rules that contains regexp in if-domain or unless-domain
         // https://github.com/AdguardTeam/SafariConverterLib/issues/53
-        try excludeRegexpDomainRule(rule);
+        try excludeRegexpDomainRule(rule)
         
-        let included = resolveTopLevelDomainWildcards(domains: includedDomains);
-        addUnlessDomainForThirdParty(rule: rule, domains: &excludedDomains);
-        let excluded = resolveTopLevelDomainWildcards(domains: excludedDomains);
+        let included = resolveTopLevelDomainWildcards(domains: includedDomains)
+        addUnlessDomainForThirdParty(rule: rule, domains: &excludedDomains)
 
-        try writeDomainOptions(included: included, excluded: excluded, trigger: &trigger);
+        let excluded = resolveTopLevelDomainWildcards(domains: excludedDomains)
+
+        try writeDomainOptions(included: included, excluded: excluded, trigger: &trigger)
     }
 
-    /**
-     * Adds domain to unless-domains for third-party rules
-     * https://github.com/AdguardTeam/AdGuardForSafari/issues/104
-     */
+    /// Adds domain to unless-domains for third-party rules
+    ///
+    /// https://github.com/AdguardTeam/AdGuardForSafari/issues/104
+    ///
+    /// TODO(ameshkov): !!! Test if this is really necessary in newer Safari.
     private func addUnlessDomainForThirdParty(rule: Rule, domains: inout [String]) {
         if !(rule is NetworkRule) {
             return;

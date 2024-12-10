@@ -6,8 +6,6 @@ import Foundation
 class ScriptletParser {
     public static let SCRIPTLET_MASK = "//scriptlet("
     private static let SCRIPTLET_MASK_LEN = SCRIPTLET_MASK.count
-    private static let TRIM_SINGLE_QUOTE = CharacterSet.whitespaces.union(CharacterSet(charactersIn: "'"))
-    private static let TRIM_DOUBLE_QUOTE = CharacterSet.whitespaces.union(CharacterSet(charactersIn: "\""))
     
     /**
      Parses and validates a scriptlet rule.

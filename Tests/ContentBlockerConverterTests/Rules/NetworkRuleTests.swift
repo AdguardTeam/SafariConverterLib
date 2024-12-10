@@ -20,7 +20,6 @@ final class NetworkRuleTests: XCTestCase {
         XCTAssertEqual(result.permittedDomains, []);
         XCTAssertEqual(result.restrictedDomains, []);
 
-        XCTAssertEqual(result.isCspRule, false);
         XCTAssertEqual(result.isWebSocket, false);
         XCTAssertEqual(result.isUrlBlock, false);
         XCTAssertEqual(result.isCssExceptionRule, false);
@@ -28,7 +27,6 @@ final class NetworkRuleTests: XCTestCase {
         XCTAssertEqual(result.isThirdParty, false);
         XCTAssertEqual(result.isMatchCase, false);
         XCTAssertEqual(result.isBlockPopups, false);
-        XCTAssertEqual(result.isReplace, false);
         XCTAssertEqual(result.urlRegExpSource, "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$");
 
         XCTAssertEqual(result.permittedContentType, [NetworkRule.ContentType.ALL]);
@@ -70,15 +68,6 @@ final class NetworkRuleTests: XCTestCase {
         XCTAssertEqual(result.urlRegExpSource, "regex");
 
         result = try! NetworkRule(ruleText: "@@/regex/$third-party");
-        XCTAssertEqual(result.urlRuleText, "/regex/");
-        XCTAssertEqual(result.urlRegExpSource, "regex");
-
-        result = try! NetworkRule(ruleText: "/regex/$replace=/test/test2/");
-        XCTAssertEqual(result.urlRuleText, "/regex/");
-        XCTAssertEqual(result.urlRegExpSource, "regex");
-        XCTAssertEqual(result.isReplace, true);
-
-        result = try! NetworkRule(ruleText: "/regex/$replace=/test\\$/test2/");
         XCTAssertEqual(result.urlRuleText, "/regex/");
         XCTAssertEqual(result.urlRegExpSource, "regex");
 
@@ -209,7 +198,6 @@ final class NetworkRuleTests: XCTestCase {
         XCTAssertEqual(result.isDocumentWhiteList, false);
         XCTAssertEqual(result.permittedDomains, ["example.org"]);
         XCTAssertEqual(result.restrictedDomains, []);
-        XCTAssertEqual(result.isCspRule, false);
         XCTAssertEqual(result.isWebSocket, false);
         XCTAssertEqual(result.isUrlBlock, false);
         XCTAssertEqual(result.isCssExceptionRule, false);
@@ -217,7 +205,6 @@ final class NetworkRuleTests: XCTestCase {
         XCTAssertEqual(result.isThirdParty, false);
         XCTAssertEqual(result.isMatchCase, false);
         XCTAssertEqual(result.isBlockPopups, false);
-        XCTAssertEqual(result.isReplace, false);
 
         rule = "@@||example.com^$domain=example.org,__,_,image,__________,script,_,___,_,_,_,_,__,important";
 

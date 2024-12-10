@@ -112,45 +112,4 @@ class SimpleRegex {
         let matchCount = regex.numberOfMatches(in: target as String, options: [], range: NSMakeRange(0, target.length))
         return matchCount > 0;
     }
-    
-    static func isMatch2(regex: NSRegularExpression, target: String) -> Bool {
-        let matchCount = regex.numberOfMatches(in: target, options: [], range: NSMakeRange(0, target.utf16.count))
-        return matchCount > 0;
-    }
-    
-    // TODO(ameshkov): !!! Rename, rework
-    static func isMatch3(regex: NSRegularExpression, target: Substring.UTF8View) -> Bool {
-        let str = String(decoding: target, as: UTF8.self)
-        
-        // Note that we use UTF-16 view to count strings as NSString internal
-        // representation is UTF-16 (and it is used by NSRegularExpression).
-        let range = NSMakeRange(0, str.utf16.count)
-        
-        let matchCount = regex.numberOfMatches(in: str, options: [], range: range)
-
-        return matchCount > 0;
-    }
-
-    /**
-     * Returns target string matches
-     */
-    static func matches(regex: NSRegularExpression, target: NSString) -> [String] {
-        let matches  = regex.matches(in: target as String, options: [], range: NSMakeRange(0, target.length))
-        return matches.map { match in
-            return target.substring(with: match.range)
-        }
-    }
-    
-    /**
-     * Returns target string matches
-     */
-    static func matches2(regex: NSRegularExpression, target: String) -> [String] {
-        let str: NSString = target as NSString
-
-        let matches  = regex.matches(in: target, options: [], range: NSMakeRange(0, str.length))
-
-        return matches.map { match in
-            return str.substring(with: match.range)
-        }
-    }
 }

@@ -7,9 +7,9 @@ import Foundation
  */
 extension String {
     
-    /**
-     Escapes special characters so that the string could be used in a JSON.
-     */
+    /// Escapes special characters so that the string could be used in a JSON.
+    ///
+    /// TODO(ameshkov): Optimize
     func escapeForJSON() -> String {
         var result = ""
         
@@ -53,6 +53,7 @@ extension String {
         return result
     }
     
+    // TODO(ameshkov): !!! Remove
     func indexOf(target: String) -> Int {
         let range = self.range(of: target)
         if let range = range {
@@ -62,6 +63,7 @@ extension String {
         }
     }
     
+    // TODO(ameshkov): !!! Remove
     func indexOf(target: String, startIndex: Int) -> Int {
         let startRange = self.index(target.startIndex, offsetBy: startIndex);
         let range = self.range(of: target, options: NSString.CompareOptions.literal, range: (startRange..<self.endIndex))
@@ -73,6 +75,7 @@ extension String {
         }
     }
     
+    // TODO(ameshkov): !!! Remove
     func lastIndexOf(target: String) -> Int {
         let range = self.range(of: target, options: .backwards)
         if let range = range {
@@ -82,23 +85,27 @@ extension String {
         }
     }
     
+    // TODO(ameshkov): !!! Remove
     func lastIndexOf(target: String, maxLength: Int) -> Int {
         let cut = String(self.prefix(maxLength));
         return cut.lastIndexOf(target: target);
     }
     
+    // TODO(ameshkov): !!! Remove
     func subString(startIndex: Int) -> String {
         let start = self.index(self.startIndex, offsetBy: startIndex);
         let end = self.index(self.endIndex, offsetBy: 0);
         return String(self[start..<end])
     }
     
+    // TODO(ameshkov): !!! Remove
     func subString(startIndex: Int, toIndex: Int) -> String {
         let start = self.index(self.startIndex, offsetBy: startIndex)
         let end = self.index(self.startIndex, offsetBy: toIndex)
         return String(self[start..<end])
     }
     
+    // TODO(ameshkov): !!! Remove
     func subString(from: Int, toSubstring s2: String) -> String? {
         guard let r = self.range(of: s2) else {
             return nil
@@ -108,6 +115,7 @@ extension String {
         return String(s);
     }
     
+    // TODO(ameshkov): !!! Remove
     func subString(startIndex: Int, length: Int) -> String {
         let start = self.index(self.startIndex, offsetBy: startIndex);
         let end = self.index(self.startIndex, offsetBy: startIndex + length);
@@ -159,6 +167,28 @@ extension String {
         return result
     }
     
+    /// Returns range of the first regex match in the string.
+    func firstMatch(for regex: NSRegularExpression) -> Range<String.Index>? {
+        let range = NSMakeRange(0, self.utf16.count)
+        if let match = regex.firstMatch(in: self, options: [], range: range) {
+            return Range(match.range, in: self)
+        }
+
+        return nil
+    }
+    
+    /// Returns all regex matches found in the string.
+    func matches(regex: NSRegularExpression) -> [String] {
+        let range = NSMakeRange(0, self.utf16.count)
+        let matches = regex.matches(in: self, options: [], range: range)
+        return matches.compactMap { match in
+            guard let substringRange = Range(match.range, in: self) else {
+                return nil
+            }
+            return String(self[substringRange])
+        }
+    }
+
     // TODO(ameshkov): !!! Remove
     func splitByDelimiterWithEscapeCharacter(delimiter: unichar, escapeChar: unichar) -> [String] {
         let str = self as NSString
@@ -226,10 +256,6 @@ extension Collection where Element == UInt8, Index == String.Index {
 extension Collection where Element == UInt8 {
     /// Checks if the collection contains the specified one.
     func includes<C: Collection>(_ other: C) -> Bool where C.Element == UInt8 {
-        if #available(macOS 13.0, iOS 16.0, watchOS 9.0, tvOS 16.0, *) {
-            return self.contains(other)
-        }
-        
         guard !other.isEmpty else {
             // Empty subsequence is trivially included
             return true

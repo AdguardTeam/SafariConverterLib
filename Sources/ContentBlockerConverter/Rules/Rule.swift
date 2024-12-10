@@ -26,7 +26,12 @@ class Rule {
         self.ruleText = ruleText;
     }
     
-    /// Parses the list of domains separated by the separator character.
+    /// Parses the list of domains separated by the separator character and populates
+    /// permittedDomains and restrictedDomains collections.
+    ///
+    /// - Parameters:
+    ///   - domainsStr: a string with domains to be parsed.
+    ///   - separator: a separator for the list of domains.
     func setDomains(domainsStr: String, separator: UInt8) throws -> Void {
         let utfString = domainsStr.utf8
         
@@ -42,7 +47,7 @@ class Rule {
                     // TODO(ameshkov): !!! Add test that checks this.
                     throw SyntaxError.invalidRule(message: "Empty or too short domain specified")
                 }
-                
+
                 var restricted = false
                 let firstDomainChar = utfString[safeIndex: previousSeparator]
                 if firstDomainChar == Chars.TILDE {
@@ -59,6 +64,12 @@ class Rule {
                     domain = domain.idnaEncoded!
                 }
                 
+                if domain.utf8.first == Chars.SLASH && domain.utf8.last == Chars.SLASH {
+                    // TODO(ameshkov): !!! Add a test that checks this.
+                    // https://github.com/AdguardTeam/SafariConverterLib/issues/53
+                    throw SyntaxError.invalidRule(message: "Using regular expression for domain modifier is not supported")
+                }
+
                 if restricted {
                     restrictedDomains.append(domain)
                 } else {

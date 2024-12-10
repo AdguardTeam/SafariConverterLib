@@ -310,6 +310,13 @@ final class GeneralTests: XCTestCase {
 
                                  """;
 
+    // TODO(ameshkov): !!! REMOVE
+    func testOneRule() {
+        let conversionResult = ContentBlockerConverter().convertArray(rules:["||tripadvisor.com^$third-party"])
+        
+        print(conversionResult.converted)
+    }
+    
     func testGeneral() {
         let conversionResult = ContentBlockerConverter().convertArray(rules: rules);
 
@@ -331,9 +338,7 @@ final class GeneralTests: XCTestCase {
         }
     }
 
-    /**
-     Single run of the rule converter so that it was easier to profile it.
-     */
+    /// Single run of the rule converter so that it was easier to profile it.
     func testPerformanceSingleRun() {
         let thisSourceFile = URL(fileURLWithPath: #file)
         let thisDirectory = thisSourceFile.deletingLastPathComponent()

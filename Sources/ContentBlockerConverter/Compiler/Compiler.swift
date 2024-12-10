@@ -1,19 +1,28 @@
 import Foundation
 
-/**
- * Compiler class
- */
+/// Compiler accepts a list of Rule objects (AdGuard rules representations)
+/// and converts them to Safari content blocking format.
 class Compiler {
-    // Max number of CSS selectors per rule (look at compactCssRules function)
-    private static let MAX_SELECTORS_PER_WIDE_RULE = 250;
-    private static let MAX_SELECTORS_PER_DOMAIN_RULE = 250;
+    /// Max number of CSS selectors per rule (look at compactCssRules function).
+    private static let MAX_SELECTORS_PER_WIDE_RULE = 250
+    private static let MAX_SELECTORS_PER_DOMAIN_RULE = 250
+    
+    /// Cosmetic rule actions.
+    ///
+    /// "css-display-none" is natively supported by Safari, other types are custom
+    /// actions that can only be supported by a different Safari extension.
+    private static let COSMETIC_ACTIONS: [String] = [
+        "css-display-none",
+        "css-inject",
+        "css-extended",
+        "scriptlet",
+        "script",
+    ]
 
     private let optimize: Bool
     private let advancedBlockedEnabled: Bool
 
-    private let blockerEntryFactory: BlockerEntryFactory;
-
-    private static let COSMETIC_ACTIONS: [String] = ["css-display-none", "css-inject", "css-extended", "scriptlet", "script"];
+    private let blockerEntryFactory: BlockerEntryFactory
 
     init(
             optimize: Bool,
@@ -22,12 +31,11 @@ class Compiler {
     ) {
         self.optimize = optimize
         advancedBlockedEnabled = advancedBlocking
-        blockerEntryFactory = BlockerEntryFactory(advancedBlockingEnabled: advancedBlocking, errorsCounter: errorsCounter);
+        blockerEntryFactory = BlockerEntryFactory(advancedBlockingEnabled: advancedBlocking, errorsCounter: errorsCounter)
     }
 
-    /**
-     * Compiles array of AG rules to intermediate compilation result
-     */
+    /// Compiles the list of AdGuard rules into an intermediate compilation result object
+    /// that later will be converted to JSON.
     func compileRules(rules: [Rule], progress: Progress? = nil) -> CompilationResult {
         var shouldContinue: Bool {
             !(progress?.isCancelled ?? false)

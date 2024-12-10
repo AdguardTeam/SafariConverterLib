@@ -38,7 +38,7 @@ class NetworkRuleParser {
         
         var pattern = utfString[utfStartIndex...]
         
-        // This is a regular expression rule without options
+        // This is a regular expression rule without options.
         if pattern.first! == Chars.SLASH && pattern.last! == Chars.SLASH &&
             !pattern.includes(REPLACE_OPTION_MARKER) {
             

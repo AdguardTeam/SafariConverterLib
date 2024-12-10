@@ -8,19 +8,19 @@ Content Blocker converter swift code
 Converts filter rules in AdGuard format to the format supported by Safari.
 * https://webkit.org/blog/3476/content-blockers-first-look/
 
-### How to build:
+### How to build
 
 ```
     swift build
 ```
 
-### Tests:
+### Tests
 
 ```
     swift test
 ```
 
-### How to use converter:
+### How to use converter
 
 ```
     let result: ConversionResult? = ContentBlockerConverter.convertArray(
@@ -111,23 +111,29 @@ A rule with the `denyallow` modifier will be converted into a blocking rule and 
 
 For example:
 
-* Generic rule `*$denyallow=x.com,image,domain=a.com`  will be converted to
-```
-*$image,domain=a.com
-@@||x.com$image,domain=a.com
-```
+* Generic rule `*$denyallow=x.com,image,domain=a.com`  will be converted to:
+
+    ```adblock
+    *$image,domain=a.com
+    @@||x.com$image,domain=a.com
+    ```
 
 * Blocking rule `/banner.png$image,denyallow=test1.com|test2.com,domain=example.org` will be converted to
-```
-/banner.png$image,domain=example.org
-@@||test1.com/banner.png$image,domain=example.org
-@@||test1.com/*/banner.png$image,domain=example.org
-@@||test2.com/banner.png$image,domain=example.org
-@@||test2.com/*/banner.png$image,domain=example.org
-```
-Exception rule `@@/banner.png$image,denyallow=test.com,domain=example.org` will be converted to
-```
-@@/banner.png$image,domain=example.org
-||test.com/banner.png$image,domain=example.org,important
-||test.com/*/banner.png$image,domain=example.org,important
-```
+
+    ```adblock
+    /banner.png$image,domain=example.org
+    @@||test1.com/banner.png$image,domain=example.org
+    @@||test1.com/*/banner.png$image,domain=example.org
+    @@||test2.com/banner.png$image,domain=example.org
+    @@||test2.com/*/banner.png$image,domain=example.org
+    ```
+
+* Exception rule `@@/banner.png$image,denyallow=test.com,domain=example.org` will be converted to
+
+    ```adblock
+    @@/banner.png$image,domain=example.org
+    ||test.com/banner.png$image,domain=example.org,important
+    ||test.com/*/banner.png$image,domain=example.org,important
+    ```
+
+TODO(ameshkov): !!! Rework documentation

@@ -681,11 +681,6 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://UpperCase.test"));
     }
 
-    func testCspRules() {
-        let result = converter.convertArray(rules: ["|blob:$script,domain=pornhub.com|xhamster.com|youporn.com"]);
-        XCTAssertEqual(result.convertedCount, 1);
-    }
-
     func testElemhideRules() {
         let result = converter.convertArray(rules: [
             "lenta.ru###root > section.b-header.b-header-main.js-header:nth-child(4) > div.g-layout > div.row",
@@ -2620,7 +2615,6 @@ final class ContentBlockerConverterTests: XCTestCase {
         ("testRegexRules", testRegexRules),
         ("testCssPseudoClasses", testCssPseudoClasses),
         ("testUpperCaseDomains", testUpperCaseDomains),
-        ("testCspRules", testCspRules),
         ("testElemhideRules", testElemhideRules),
         ("testImportantModifierRules", testImportantModifierRules),
         ("testBadfilterRules", testBadfilterRules),
