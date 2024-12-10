@@ -309,14 +309,7 @@ final class GeneralTests: XCTestCase {
                                  ]
 
                                  """;
-
-    // TODO(ameshkov): !!! REMOVE
-    func testOneRule() {
-        let conversionResult = ContentBlockerConverter().convertArray(rules:["||tripadvisor.com^$third-party"])
-        
-        print(conversionResult.converted)
-    }
-    
+   
     func testGeneral() {
         let conversionResult = ContentBlockerConverter().convertArray(rules: rules);
 

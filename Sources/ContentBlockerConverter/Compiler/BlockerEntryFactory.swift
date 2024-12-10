@@ -412,7 +412,7 @@ class BlockerEntryFactory {
     ///
     /// https://github.com/AdguardTeam/AdGuardForSafari/issues/104
     ///
-    /// TODO(ameshkov): !!! Test if this is really necessary in newer Safari.
+    /// TODO(ameshkov): !!! As of Safari 18 this is not required anymore
     private func addUnlessDomainForThirdParty(rule: Rule, domains: inout [String]) {
         if !(rule is NetworkRule) {
             return;
