@@ -29,9 +29,18 @@ class RuleFactory {
 
         for line in lines {
             guard shouldContinue else { return [] }
+            
+            var ruleLine = line
+            if !ruleLine.isContiguousUTF8 {
+                // This is of UTMOST importance for the conversion performance.
+                // Converter heavily relies on the UTF-8 view when parsing the rules
+                // and without having contigious UTF-8 any operation is painfully
+                // slow.
+                ruleLine.makeContiguousUTF8()
+            }
+            ruleLine = ruleLine.trimmingCharacters(in: .whitespacesAndNewlines)
 
-            let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
-            let convertedLines = RuleFactory.converter.convertRule(ruleText: trimmed)
+            let convertedLines = RuleFactory.converter.convertRule(ruleText: ruleLine)
             for convertedLine in convertedLines {
                 guard shouldContinue else { return [] }
 
