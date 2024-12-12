@@ -162,8 +162,9 @@ class BlockerEntryFactory {
                 case .failure(let error): throw ConversionError.unsupportedRegExp(message: "Unsupported regexp in $path: \(error.localizedDescription)")
                 }
             } else {
-                pathRegex = SimpleRegex.createRegexText(str: rule.pathModifier! as NSString)! as String
+                pathRegex = SimpleRegex2.createRegexText(str: rule.pathModifier!)
             }
+
             if pathRegex.starts(with: BlockerEntryFactory.START_OF_STRING) {
                 // if path modifier starts from start of string symbol,
                 // remove start of string symbol and add prefix to match path right after domain
@@ -412,7 +413,7 @@ class BlockerEntryFactory {
     ///
     /// https://github.com/AdguardTeam/AdGuardForSafari/issues/104
     ///
-    /// TODO(ameshkov): !!! As of Safari 18 this is not required anymore
+    /// TODO(ameshkov): !!! As of Safari 18 this is not required anymore, check other versions
     private func addUnlessDomainForThirdParty(rule: Rule, domains: inout [String]) {
         if !(rule is NetworkRule) {
             return
@@ -421,13 +422,12 @@ class BlockerEntryFactory {
         let networkRule = rule as! NetworkRule;
         if (networkRule.isThirdParty) {
             if (networkRule.permittedDomains.count == 0) {
-                let parseDomainResult = networkRule.parseRuleDomain();
-                if (parseDomainResult == nil || parseDomainResult!.domain == nil) {
+                let res = NetworkRuleParser.extractDomain(pattern: networkRule.urlRuleText)
+                if (res.domain == "") {
                     return;
                 }
 
-                let domain = parseDomainResult!.domain!;
-                domains.append(domain);
+                domains.append(res.domain);
             }
         }
     }
@@ -446,35 +446,30 @@ class BlockerEntryFactory {
         }
     };
 
+    // TODO(ameshkov): !!! Add normal comment here.
     private func checkWhiteListExceptions(rule: NetworkRule, trigger: inout BlockerEntry.Trigger) throws -> Void {
         if (!rule.isWhiteList) {
-            return;
+            return
         }
 
         if (rule.isDocumentWhiteList || rule.isUrlBlock || rule.isCssExceptionRule || rule.isJsInject) {
             if (rule.isDocumentWhiteList) {
-                trigger.resourceType = nil;
+                trigger.resourceType = nil
             }
 
-            let parseDomainResult = rule.parseRuleDomain();
-            if (parseDomainResult != nil &&
-                parseDomainResult!.path != nil &&
-                parseDomainResult!.path != "^" &&
-                parseDomainResult!.path != "/") {
-                // https://jira.adguard.com/browse/AG-8664
-                return;
+            let ruleDomain = NetworkRuleParser.extractDomain(pattern: rule.urlRuleText)
+            if ruleDomain.domain == "" || ruleDomain.patternMatchesPath {
+                // Do not add exceptions when the rule does not target any domain.
+                // TODO(ameshkov): !!! Add test for that.
+                return
             }
 
-            if (parseDomainResult == nil || parseDomainResult!.domain == nil) {
-                return;
-            }
+            // TODO(ameshkov): !!! Bad pattern, modifies state
+            rule.permittedDomains.append(ruleDomain.domain)
+            try addDomainOptions(rule: rule, trigger: &trigger)
 
-            let domain = parseDomainResult!.domain!;
-            rule.permittedDomains.append(domain);
-            try addDomainOptions(rule: rule, trigger: &trigger);
-
-            trigger.urlFilter = BlockerEntryFactory.URL_FILTER_URL_RULES_EXCEPTIONS;
-            trigger.resourceType = nil;
+            trigger.urlFilter = BlockerEntryFactory.URL_FILTER_URL_RULES_EXCEPTIONS
+            trigger.resourceType = nil
         }
     }
 

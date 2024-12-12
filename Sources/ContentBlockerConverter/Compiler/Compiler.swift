@@ -63,7 +63,6 @@ class Compiler {
             guard let item = blockerEntryFactory.createBlockerEntry(rule: rule) else { continue }
 
             if item.action.type == "block" {
-                // Url blocking rules
                 compilationResult.addBlockTypedEntry(entry: item, source: rule)
             } else if item.action.type == "css-display-none" {
                 cssBlocking.append(item)
@@ -89,8 +88,10 @@ class Compiler {
                 } else if item.action.css != nil && item.action.css! != "" {
                     cosmeticCssExceptions.append(item)
                 } else if (rule as! NetworkRule).isSingleOption(option: .Specifichide) {
-                    let exceptionDomain = NetworkRuleParser.parseRuleDomain(pattern: rule.ruleText)
-                    specifichideExceptionDomains.append(exceptionDomain)
+                    let res = NetworkRuleParser.extractDomain(pattern: (rule as! NetworkRule).urlRuleText)
+                    if res.domain != "" {
+                        specifichideExceptionDomains.append(res.domain)
+                    }
                 } else {
                     compilationResult.addIgnorePreviousTypedEntry(entry: item, source: rule)
                 }

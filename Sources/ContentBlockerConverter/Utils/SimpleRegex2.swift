@@ -1,8 +1,10 @@
 import Foundation
 
-/**
- * Regex helper
- */
+/// This class provides logic for converting network rules patterns to regular expressions.
+///
+/// AdGuard's network rules mostly use a simplified syntax for matching URLs instead
+/// of full-scale regular expressions. These patterns can be converted to regular expressions
+/// that are supported by Safari content blocking rules.
 class SimpleRegex2 {
     private static let maskStartUrl = "||"
     private static let maskPipe = "|"
@@ -13,7 +15,7 @@ class SimpleRegex2 {
     private static let regexAnySymbolChars = Array(".*".utf8)
     private static let regexStartString = Array("^".utf8)
     private static let regexEndString = Array("$".utf8)
-    
+
     /// Improved regular expression instead of UrlFilterRule.REGEXP_START_URL (||).
     ///
     /// Please note, that this regular expression matches only ONE level of subdomains.
@@ -23,40 +25,37 @@ class SimpleRegex2 {
     /// Simplified separator (to fix an issue with $ restriction - it can be only in the end of regexp).
     private static let regexEndSeparator = Array("([\\/:&\\?].*)?$".utf8)
     private static let regexSeparator = Array("[/:&?]?".utf8)
-    
-    /**
-     * Characters to be escaped in the regex
-     * https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/regexp
-     * should be escaped . * + ? ^ $ { } ( ) | [ ] / \
-     * except of * | ^
-     */
+
+    /// Characters to be escaped in the regular expressions.
+    ///
+    /// Source:
+    /// https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/regexp
+    ///
+    /// '\*', '|', '^' are processed differently.
     private static let CHARS_TO_ESCAPE = [
-        ".".utf8.first!,
-        "+".utf8.first!,
-        "?".utf8.first!,
-        "$".utf8.first!,
-        "{".utf8.first!,
-        "}".utf8.first!,
-        "(".utf8.first!,
-        ")".utf8.first!,
-        "[".utf8.first!,
-        "]".utf8.first!,
-        "/".utf8.first!,
-        "\\".utf8.first!
+        UInt8(ascii: "."),
+        UInt8(ascii: "+"),
+        UInt8(ascii: "?"),
+        UInt8(ascii: "$"),
+        UInt8(ascii: "{"),
+        UInt8(ascii: "}"),
+        UInt8(ascii: "("),
+        UInt8(ascii: ")"),
+        UInt8(ascii: "["),
+        UInt8(ascii: "]"),
+        UInt8(ascii: "/"),
+        UInt8(ascii: "\\"),
     ]
-    private static let charPipe = "|".utf8.first!
-    private static let charSeparator = "^".utf8.first!
-    private static let charWildcard = "*".utf8.first!
     
     /// Creates a regular expression from a network rule pattern.
     public static func createRegexText(str: String) -> String {
-        if (str == maskStartUrl ||
+        if (str == "" ||
+            str == maskStartUrl ||
             str == maskPipe ||
             str == maskAnySymbol) {
             return regexAnySymbol
         }
-        
-        var result = ""
+
         var resultChars = [UInt8]()
         
         let maxIndex = str.utf8.count - 1
@@ -90,7 +89,7 @@ class SimpleRegex2 {
                     } else {
                         resultChars.append(contentsOf: regexSeparator)
                     }
-                case charWildcard:
+                case Chars.WILDCARD:
                     resultChars.append(contentsOf: regexAnySymbolChars)
                 default:
                     resultChars.append(char)
@@ -99,7 +98,7 @@ class SimpleRegex2 {
             
             i += 1
         }
-        
-        return String(bytes: resultChars, encoding: .utf8)!
+
+        return String(decoding: resultChars, as: UTF8.self)
     }
 }

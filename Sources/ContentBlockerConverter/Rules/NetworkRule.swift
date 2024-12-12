@@ -14,13 +14,9 @@ import Foundation
 ///
 /// TODO(ameshkov): !!! Add tests for not supported rules.
 class NetworkRule: Rule {
-    private static let DOMAIN_VALIDATION_REGEXP = try! NSRegularExpression(pattern: "^[a-zA-Z0-9][a-zA-Z0-9-.]*[a-zA-Z0-9]\\.[a-zA-Z-]{2,}$", options: [.caseInsensitive])
-
     var isUrlBlock = false
     var isCssExceptionRule = false
     var isJsInject = false
-
-    var urlRuleText = ""
 
     var isCheckThirdParty = false
     var isThirdParty = false
@@ -35,6 +31,10 @@ class NetworkRule: Rule {
     var enabledOptions: [NetworkRuleOption] = []
     var disabledOptions: [NetworkRuleOption] = []
 
+    /// Network rule pattern.
+    var urlRuleText = ""
+
+    /// Regular expression that's converted from the rule pattern.
     var urlRegExpSource: String? = nil
 
     override init() {
@@ -76,8 +76,9 @@ class NetworkRule: Rule {
             urlRegExpSource = String(urlRuleText[startIndex..<endIndex])
         } else {
             urlRuleText = NetworkRuleParser.encodeDomainIfRequired(pattern: urlRuleText)!
-            
+
             if (!urlRuleText.isEmpty) {
+                // TODO(ameshkov): !!! Check urlRuleText for ASCII here or inside createRegexText
                 urlRegExpSource = SimpleRegex2.createRegexText(str: urlRuleText as String)
             }
         }
@@ -127,80 +128,8 @@ class NetworkRule: Rule {
         restrictedContentType.contains(contentType)
     }
 
-    /// Parses domain and path from the rule.
-    ///
-    /// TODO(ameshkov): Get rid of NSString.
-    func parseRuleDomain() -> DomainInfo? {
-        let str = urlRuleText as NSString
-        
-        let startsWith = [
-            "http://www." as NSString,
-            "https://www." as NSString,
-            "http://" as NSString,
-            "https://" as NSString,
-            "||" as NSString,
-            "//" as NSString
-        ]
-        let contains = ["/", "^"]
-
-        var startIndex = 0
-
-        for start in startsWith {
-            // hasPrefix is bridged with NSString so no problem using Swift's String here
-            if (urlRuleText.hasPrefix(start as String)) {
-                startIndex = start.length
-                break
-            }
-        }
-
-        // Exclusive for domain
-        let exceptRule = "domain="
-
-        let optionsRange = str.range(of: "$")
-        let domainRange = str.range(of: exceptRule)
-        if (domainRange.location != NSNotFound && optionsRange.location != NSNotFound) {
-            startIndex = domainRange.location + exceptRule.count
-        }
-
-        var pathEndIndex = optionsRange.location
-        if (pathEndIndex == 0 || pathEndIndex == NSNotFound) {
-            pathEndIndex = str.length
-        }
-
-        let candidateStr = str.substring(with: NSMakeRange(0, pathEndIndex)) as NSString
-        var symbolIndex = NSNotFound
-        for containsPrefix in contains {
-            let cntsRange = candidateStr.range(
-                    of: containsPrefix,
-                    options: NSString.CompareOptions.literal,
-                    range: NSMakeRange(startIndex, candidateStr.length - startIndex))
-            let index = cntsRange.location
-            if (index >= 0 && index != NSNotFound) {
-                symbolIndex = index
-                break
-            }
-        }
-
-        let domain = symbolIndex == NSNotFound ?
-            str.substring(from: startIndex) :
-            str.substring(with: NSMakeRange(startIndex, symbolIndex - startIndex))
-
-        let path = symbolIndex == NSNotFound ?
-                nil :
-                str.substring(with: NSMakeRange(symbolIndex, pathEndIndex - symbolIndex))
-
-        if (!SimpleRegex.isMatch(regex: NetworkRule.DOMAIN_VALIDATION_REGEXP, target: domain as NSString)) {
-            // Not a valid domain name, ignore it
-            return nil
-        }
-
-        return DomainInfo(domain: domain, path: path)
-    };
-
-    /**
-    * Returns true if this rule negates the specified rule
-    * Only makes sense when this rule has a `badfilter` modifier
-    */
+    /// Checks if this rule negates the other rule.
+    /// Only makes sense when this rule has a `$badfilter` modifier.
     func negatesBadfilter(specifiedRule: NetworkRule) -> Bool {
         if (isWhiteList != specifiedRule.isWhiteList) {
             return false;

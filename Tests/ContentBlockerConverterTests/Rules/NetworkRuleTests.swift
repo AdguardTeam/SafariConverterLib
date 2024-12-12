@@ -125,59 +125,51 @@ final class NetworkRuleTests: XCTestCase {
         let result = try! NetworkRule(ruleText: "||почта.рф^")
         XCTAssertEqual(result.urlRuleText, "||xn--80a1acny.xn--p1ai^")
     }
+    
+    func testExtractDomain() {
+        let testPatterns: [(pattern: String, expectedDomain: String, expectedPatternMatchesPath: Bool)] = [
+            ("", "", false),
+            ("/", "", false),
+            ("@@", "", false),
+            ("@@^", "", false),
+            ("@@/", "", false),
+            ("example", "example", false),
+            ("example.com", "example.com", false),
+            ("||example.com", "example.com", false),
+            ("||example.com/path", "example.com", true),
+            ("||invalid/path", "invalid", true),
+            ("http://example.org$", "example.org", false),
+            ("https://example.org^someother", "example.org", true),
+        ]
+        
+        for testPattern in testPatterns {
+            let result = NetworkRuleParser.extractDomain(pattern: testPattern.pattern)
+            XCTAssertEqual(result.domain, testPattern.expectedDomain, "Pattern \(testPattern.pattern): expected domain \(testPattern.expectedDomain), but got \(result.domain)")
+            XCTAssertEqual(result.patternMatchesPath, testPattern.expectedPatternMatchesPath, "Pattern \(testPattern.pattern): expected patternMatchesPath \(testPattern.expectedPatternMatchesPath), but got \(result.patternMatchesPath)")
+        }
+    }
+    
+    func testExtractDomainAndValidate() {
+        let testPatterns: [(pattern: String, expectedDomain: String, expectedPatternMatchesPath: Bool)] = [
+            ("", "", false),
+            ("/", "", false),
+            ("@@", "", false),
+            ("@@^", "", false),
+            ("@@/", "", false),
+            ("example", "", false),
+            ("example.com", "example.com", false),
+            ("||example.com", "example.com", false),
+            ("||example.com/path", "example.com", true),
+            ("||invalid/path", "", false),
+            ("http://example.org$", "example.org", false),
+            ("https://example.org^someother", "example.org", true),
+        ]
 
-    func testParseDomainInfo() {
-        let rule = NetworkRule()
-
-        rule.urlRuleText = ""
-        var result = rule.parseRuleDomain()
-        XCTAssertNil(result)
-
-        rule.urlRuleText = "example.com"
-        result = rule.parseRuleDomain()
-        XCTAssertNotNil(result)
-        XCTAssertEqual(result?.domain, "example.com")
-        XCTAssertEqual(result?.path, nil)
-
-        rule.urlRuleText = "||example.com"
-        result = rule.parseRuleDomain()
-        XCTAssertNotNil(result)
-        XCTAssertEqual(result?.domain, "example.com")
-        XCTAssertEqual(result?.path, nil)
-
-        rule.urlRuleText = "||example.com/path"
-        result = rule.parseRuleDomain()
-        XCTAssertNotNil(result)
-        XCTAssertEqual(result?.domain, "example.com")
-        XCTAssertEqual(result?.path, "/path")
-
-        rule.urlRuleText = "||invalid/path"
-        result = rule.parseRuleDomain()
-        XCTAssertNil(result)
-
-        rule.urlRuleText = "$third-party,domain=example.com"
-        result = rule.parseRuleDomain()
-        XCTAssertNotNil(result)
-        XCTAssertEqual(result?.domain, "example.com")
-        XCTAssertEqual(result?.path, nil)
-
-        rule.urlRuleText = "||example.com^$document"
-        result = rule.parseRuleDomain()
-        XCTAssertNotNil(result)
-        XCTAssertEqual(result?.domain, "example.com")
-        XCTAssertEqual(result?.path, "^")
-
-        rule.urlRuleText = "||test.com$document^"
-        result = rule.parseRuleDomain()
-        XCTAssertNil(result)
-
-        rule.urlRuleText = "@@||test.com^$document^"
-        result = rule.parseRuleDomain()
-        XCTAssertNil(result)
-
-        rule.urlRuleText = "||test.com$document/"
-        result = rule.parseRuleDomain()
-        XCTAssertNil(result)
+        for testPattern in testPatterns {
+            let result = NetworkRuleParser.extractDomainAndValidate(pattern: testPattern.pattern)
+            XCTAssertEqual(result.domain, testPattern.expectedDomain, "Pattern \(testPattern.pattern): expected domain \(testPattern.expectedDomain), but got \(result.domain)")
+            XCTAssertEqual(result.patternMatchesPath, testPattern.expectedPatternMatchesPath, "Pattern \(testPattern.pattern): expected patternMatchesPath \(testPattern.expectedPatternMatchesPath), but got \(result.patternMatchesPath)")
+        }
     }
 
     func testDomainWithSeparator() {
@@ -278,23 +270,4 @@ final class NetworkRuleTests: XCTestCase {
         rule = "||example.org^$specifichide"
         XCTAssertThrowsError(try NetworkRule(ruleText: rule))
     }
-
-    static var allTests = [
-        ("testSimpleRules", testSimpleRules),
-        ("testDomains", testDomains),
-        ("testRegexRules", testRegexRules),
-        ("testUrlSlashRules", testUrlSlashRules),
-        ("testMatchAllUrlsPattern", testMatchAllUrlsPattern),
-        ("testReplaceModifier", testReplaceModifier),
-        ("testUnexpectedOptionValue", testUnexpectedOptionValue),
-        ("testRuleWithModifierThatLooksLikeRegex", testRuleWithModifierThatLooksLikeRegex),
-        ("testDomainWithRegexModifier", testDomainWithRegexModifier),
-        ("testPunycodeDomain", testPunycodeDomain),
-        ("testParseDomainInfo", testParseDomainInfo),
-        ("testDomainWithSeparator", testDomainWithSeparator),
-        ("testVariousUrlRegex", testVariousUrlRegex),
-        ("testNoopModifier", testNoopModifier),
-        ("testPingModifier", testPingModifier),
-        ("testSpecifichide", testSpecifichide),
-    ]
 }

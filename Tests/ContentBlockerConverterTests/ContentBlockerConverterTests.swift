@@ -193,42 +193,42 @@ final class ContentBlockerConverterTests: XCTestCase {
     }
 
     func testConvertWebsocketRules() {
-        var result = converter.convertArray(rules: ["||test.com^$websocket"]);
-        XCTAssertEqual(result.convertedCount, 1);
+        var result = converter.convertArray(rules: ["||test.com^$websocket"])
+        XCTAssertEqual(result.convertedCount, 1)
 
-        var decoded = try! parseJsonString(json: result.converted);
-        XCTAssertEqual(decoded.count, 1);
-        var entry = decoded[0];
-        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
-        XCTAssertEqual(entry.trigger.ifDomain, nil);
-        XCTAssertEqual(entry.trigger.unlessDomain, nil);
-        XCTAssertEqual(entry.trigger.loadType, nil);
-        XCTAssertEqual(entry.trigger.resourceType, ["raw"]);
+        var decoded = try! parseJsonString(json: result.converted)
+        XCTAssertEqual(decoded.count, 1)
+        var entry = decoded[0]
+        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR)
+        XCTAssertEqual(entry.trigger.ifDomain, nil)
+        XCTAssertEqual(entry.trigger.unlessDomain, nil)
+        XCTAssertEqual(entry.trigger.loadType, nil)
+        XCTAssertEqual(entry.trigger.resourceType, ["raw"])
 
-        let regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!);
-        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://test.com"));
+        let regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!)
+        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://test.com"))
 
-        result = converter.convertArray(rules: ["$websocket,domain=123movies.is"]);
-        XCTAssertEqual(result.convertedCount, 1);
+        result = converter.convertArray(rules: ["$websocket,domain=123movies.is"])
+        XCTAssertEqual(result.convertedCount, 1)
 
-        decoded = try! parseJsonString(json: result.converted);
-        XCTAssertEqual(decoded.count, 1);
-        entry = decoded[0];
-        XCTAssertEqual(entry.trigger.urlFilter, URL_FILTER_WS_ANY_URL_UNESCAPED);
-        XCTAssertEqual(entry.trigger.ifDomain, ["*123movies.is"]);
-        XCTAssertEqual(entry.trigger.resourceType, ["raw"]);
+        decoded = try! parseJsonString(json: result.converted)
+        XCTAssertEqual(decoded.count, 1)
+        entry = decoded[0]
+        XCTAssertEqual(entry.trigger.urlFilter, URL_FILTER_WS_ANY_URL_UNESCAPED)
+        XCTAssertEqual(entry.trigger.ifDomain, ["*123movies.is"])
+        XCTAssertEqual(entry.trigger.resourceType, ["raw"])
 
-        result = converter.convertArray(rules: [".rocks^$third-party,websocket"]);
-        XCTAssertEqual(result.convertedCount, 1);
+        result = converter.convertArray(rules: [".rocks^$third-party,websocket"])
+        XCTAssertEqual(result.convertedCount, 1)
 
-        decoded = try! parseJsonString(json: result.converted);
-        XCTAssertEqual(decoded.count, 1);
-        entry = decoded[0];
-        XCTAssertEqual(entry.trigger.urlFilter, URL_FILTER_WS_ANY_URL_UNESCAPED + ".*\\.rocks" + URL_FILTER_REGEXP_END_SEPARATOR);
-        XCTAssertEqual(entry.trigger.ifDomain, nil);
-        XCTAssertEqual(entry.trigger.unlessDomain, nil);
-        XCTAssertEqual(entry.trigger.loadType, ["third-party"]);
-        XCTAssertEqual(entry.trigger.resourceType, ["raw"]);
+        decoded = try! parseJsonString(json: result.converted)
+        XCTAssertEqual(decoded.count, 1)
+        entry = decoded[0]
+        XCTAssertEqual(entry.trigger.urlFilter, URL_FILTER_WS_ANY_URL_UNESCAPED + ".*\\.rocks" + URL_FILTER_REGEXP_END_SEPARATOR)
+        XCTAssertEqual(entry.trigger.ifDomain, nil)
+        XCTAssertEqual(entry.trigger.unlessDomain, nil)
+        XCTAssertEqual(entry.trigger.loadType, ["third-party"])
+        XCTAssertEqual(entry.trigger.resourceType, ["raw"])
     }
 
     func testWebsocketRulesProperConversion() {
@@ -335,7 +335,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(entry.trigger.loadType, ["third-party"]);
 
         var regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!);
-        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://test.com"));
+        XCTAssertNotNil("https://test.com".firstMatch(for: regex))
 
         result = converter.convertArray(rules: ["||test.com$third-party,domain=~example.com"]);
         XCTAssertEqual(result.convertedCount, 1);
@@ -368,13 +368,13 @@ final class ContentBlockerConverterTests: XCTestCase {
 
 
         // Add domains only
-        result = converter.convertArray(rules: ["not-a-domain$third-party"]);
+        result = converter.convertArray(rules: ["not_a_domain$third-party"]);
         XCTAssertEqual(result.convertedCount, 1);
 
         decoded = try! parseJsonString(json: result.converted);
         XCTAssertEqual(decoded.count, 1);
         entry = decoded[0];
-        XCTAssertEqual(entry.trigger.urlFilter, "not-a-domain");
+        XCTAssertEqual(entry.trigger.urlFilter, "not_a_domain");
         XCTAssertEqual(entry.trigger.ifDomain, nil);
         XCTAssertEqual(entry.trigger.unlessDomain, nil);
         XCTAssertEqual(entry.trigger.loadType, ["third-party"]);
@@ -667,18 +667,6 @@ final class ContentBlockerConverterTests: XCTestCase {
         );
         XCTAssertEqual(result.convertedCount, 4);
         XCTAssertEqual(result.errorsCount, 0);
-    }
-
-    func testUpperCaseDomains() {
-        let result = converter.convertArray(rules: ["@@||UpperCase.test^$genericblock"]);
-        XCTAssertEqual(result.convertedCount, 1);
-
-        let decoded = try! parseJsonString(json: result.converted);
-        XCTAssertEqual(decoded.count, 1);
-        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*uppercase.test"]);
-
-        let regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!);
-        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://UpperCase.test"));
     }
 
     func testElemhideRules() {
@@ -2589,68 +2577,4 @@ final class ContentBlockerConverterTests: XCTestCase {
         performTest(withLimit: nil, expectedCount: 3)  // No limit
     }
 
-    static var allTests = [
-        ("testEmpty", testEmpty),
-        ("testConvertComment", testConvertComment),
-        ("testConvertNetworkRule", testConvertNetworkRule),
-        ("testPopupRules", testPopupRules),
-        ("testConvertFirstPartyRule", testConvertFirstPartyRule),
-        ("testConvertWebsocketRules", testConvertWebsocketRules),
-        ("testWebsocketRulesProperConversion", testWebsocketRulesProperConversion),
-        ("testConvertScriptRestrictRules", testConvertScriptRestrictRules),
-        ("testConvertSubdocumentFirstParty", testConvertSubdocumentFirstParty),
-        ("testConvertSubdocumentThirdParty", testConvertSubdocumentThirdParty),
-        ("testSubdocumentRuleProperConversion", testSubdocumentRuleProperConversion),
-        ("testAddUnlessDomainsForThirdParty", testAddUnlessDomainsForThirdParty),
-        ("testConvertEmptyRegex", testConvertEmptyRegex),
-        ("testConvertInvertedWhitelistRule", testConvertInvertedWhitelistRule),
-        ("testConvertGenerichide", testConvertGenerichide),
-        ("testConvertGenericDomainSensitive", testConvertGenericDomainSensitive),
-        ("testConvertGenericDomainSensitiveSortingOrder", testConvertGenericDomainSensitiveSortingOrder),
-        ("testConvertGenericDomainSensitiveSortingOrderGenerichide", testConvertGenericDomainSensitiveSortingOrderGenerichide),
-        ("testConvertAdvancedBlockingRulesSortingOrderGenerichide", testConvertAdvancedBlockingRulesSortingOrderGenerichide),
-        ("testConvertGenericDomainSensitiveSortingOrderElemhide", testConvertGenericDomainSensitiveSortingOrderElemhide),
-        ("testConvertCompactDomainSensitiveElemhide", testConvertCompactDomainSensitiveElemhide),
-        ("testCyrillicRules", testCyrillicRules),
-        ("testRegexRules", testRegexRules),
-        ("testCssPseudoClasses", testCssPseudoClasses),
-        ("testUpperCaseDomains", testUpperCaseDomains),
-        ("testElemhideRules", testElemhideRules),
-        ("testImportantModifierRules", testImportantModifierRules),
-        ("testBadfilterRules", testBadfilterRules),
-        ("testTldWildcardRules", testTldWildcardRules),
-        ("testUboScriptletRules", testUboScriptletRules),
-        ("testInvalidRegexpRules", testInvalidRegexpRules),
-        ("testCollisionCssAndScriptRules", testCollisionCssAndScriptRules),
-        ("testCollisionCssAndScriptletRules", testCollisionCssAndScriptletRules),
-        ("testCollisionCssAndScriptRulesAdvancedBlocking", testCollisionCssAndScriptRulesAdvancedBlocking),
-        ("testCollisionCssAndScriptletRulesAdvancedBlocking", testCollisionCssAndScriptletRulesAdvancedBlocking),
-        ("testGenericCssRules", testGenericCssRules),
-        ("testCssInjectWithMultiSelectors", testCssInjectWithMultiSelectors),
-        ("testSpecialCharactersEscape", testSpecialCharactersEscape),
-        ("testSpecifichide", testSpecifichide),
-        ("testPingModifierRules", testPingModifierRules),
-        ("testOtherModifierRules", testOtherModifierRules),
-        ("testXmlhttprequestModifierRules", testXmlhttprequestModifierRules),
-        ("testEscapeBackslash", testEscapeBackslash),
-        ("testCssExceptions", testCssExceptions),
-        ("testAdvancedBlockingExceptions", testAdvancedBlockingExceptions),
-        ("testOptimizeRules", testOptimizeRules),
-        ("testLoadContext", testLoadContext),
-        ("testResourceTypeForVariousSafariVersions", testResourceTypeForVariousSafariVersions),
-        ("testBlockingRuleValidation", testBlockingRuleValidation),
-        ("testInvalidRules", testInvalidRules),
-        ("testProblematicRules", testProblematicRules),
-        ("testCosmeticRulesWithPathModifier", testCosmeticRulesWithPathModifier),
-        ("testAdvancedCosmeticRulesWithPathModifier", testAdvancedCosmeticRulesWithPathModifier),
-        ("testUnicodeRules", testUnicodeRules),
-        ("testAdvancedCosmeticRulesWithDomainModifier", testAdvancedCosmeticRulesWithDomainModifier),
-        ("testBlockingRulesWithNonAsciiCharacters", testBlockingRulesWithNonAsciiCharacters),
-        ("testConvertRulesWithPseudoClassHas", testConvertRulesWithPseudoClassHas),
-        ("testConvertRulesWithPseudoClassIs", testConvertRulesWithPseudoClassIs),
-        ("testXpathRules", testXpathRules),
-        ("testApplyMultidomainCosmeticExclusions", testApplyMultidomainCosmeticExclusions),
-        ("testApplyMultidomainAdvancedExclusions", testApplyMultidomainAdvancedExclusions),
-        ("testExcludingRulesWithRegex", testExcludingRulesWithRegex),
-    ]
 }

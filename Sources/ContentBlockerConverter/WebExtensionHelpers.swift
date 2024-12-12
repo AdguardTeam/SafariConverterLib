@@ -30,18 +30,17 @@ public class WebExtensionHelpers: WebExtensionHelpersProtocol {
     
     public init() {}
     
-    /**
-     * Parses domains from provided rule
-     */
+    /// Parses domains from the provided rule.
     func parseRuleDomains(ruleText: String) -> [String] {
         do {
             guard let rule = try RuleFactory.createRule(ruleText: ruleText) else { return [] }
             
             var ruleDomains = rule.permittedDomains + rule.restrictedDomains
             
-            if !RuleFactory.isCosmetic(ruleText: ruleText) {
-                if let ruleDomain = (rule as! NetworkRule).parseRuleDomain()?.domain {
-                    ruleDomains += [String(ruleDomain)]
+            if rule is NetworkRule {
+                let ruleDomain = NetworkRuleParser.extractDomain(pattern: (rule as! NetworkRule).urlRuleText)
+                if ruleDomain.domain != "" {
+                    ruleDomains += [ruleDomain.domain]
                 }
             }
             return ruleDomains;
@@ -51,11 +50,10 @@ public class WebExtensionHelpers: WebExtensionHelpersProtocol {
         }
     }
     
-    /**
-     * Checks if provided rule is associated with the domain
-     */
+    /// Checks if the provided rule is associated with the specified domain.
     public func userRuleIsAssociated(with domain: String, _ userRule: String) -> Bool {
         let ruleDomains = parseRuleDomains(ruleText: userRule)
+
         return ruleDomains.contains{ $0 == domain }
     }
     
