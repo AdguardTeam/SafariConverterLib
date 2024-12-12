@@ -1,99 +1,79 @@
 import Foundation
 import Punycode
 
-/**
- * Network rules parser
- */
+/// Simple parser that is only capable of splitting network rule into basic parts.
+/// The further complicated parsing is done by NetworkRule.
 class NetworkRuleParser {
-    private static let MASK_WHITE_LIST = "@@";
     private static let MASK_WHITE_LIST_UTF8 = [Chars.AT_CHAR, Chars.AT_CHAR]
     private static let REPLACE_OPTION_MARKER = Array("$replace=".utf8)
     
-    // Parses network rule in its basic parts: pattern and options string
+    /// Split the specified network rule into its basic parts: pattern and options strings.
     static func parseRuleText(ruleText: String) throws -> BasicRuleParts {
         var ruleParts = BasicRuleParts()
         
-        // We'll be dealing with UTF8View when parsing.
-        let utfString = ruleText.utf8
-        
-        // start index of the rule pattern
-        //
-        // a normal network rule looks like this:
-        // [@@] pattern [$options]
-        var startIndex = 0
-        
-        if utfString.starts(with: MASK_WHITE_LIST_UTF8) {
-            ruleParts.whitelist = true
-            startIndex = 2
-        }
-        
-        if (utfString.count <= startIndex) {
+        let utf8 = ruleText.utf8
+        var i = utf8.endIndex
+        var start = utf8.startIndex
+        var delimiterIndex: String.Index?
+
+        if utf8.isEmpty {
             throw SyntaxError.invalidRule(message: "Rule is too short")
         }
-        
-        guard let utfStartIndex = utfString.index(utfString.startIndex, offsetBy: startIndex, limitedBy: utfString.endIndex)
-        else {
-            throw SyntaxError.invalidRule(message: "Invalid start index")
+
+        if utf8.starts(with: MASK_WHITE_LIST_UTF8) {
+            start = utf8.index(utf8.startIndex, offsetBy: 2)
+            ruleParts.whitelist = true
         }
-        
-        var pattern = utfString[utfStartIndex...]
-        
-        // This is a regular expression rule without options.
-        if pattern.first! == Chars.SLASH && pattern.last! == Chars.SLASH &&
-            !pattern.includes(REPLACE_OPTION_MARKER) {
-            
-            ruleParts.pattern = String(decoding: pattern, as: UTF8.self)
-            
-            return ruleParts
+
+        @inline(__always) func peekNext() -> UInt8? {
+            let next = utf8.index(after: i)
+            guard next < utf8.endIndex else { return nil }
+            return utf8[next]
         }
-        
-        let delimeterIndex = findOptionsDelimeterIndex(ruleText: utfString)
-        if (delimeterIndex == utfString.count - 1) {
-            throw SyntaxError.invalidRule(message: "Invalid options")
+
+        @inline(__always) func peekPrevious() -> UInt8? {
+            guard i > start else { return nil }
+            let previous = utf8.index(before: i)
+            return utf8[previous]
         }
-        
-        if (delimeterIndex >= 0) {
-            var utfDelimiterIndex = utfString.index(utfString.startIndex, offsetBy: delimeterIndex, limitedBy: utfString.endIndex)
+
+        // The first step is to find the options delimiter.
+        // In order to do that we iterate over the string and look for the '$' character.
+        // We also check that it's not escaped and that it's not likely a part of a regex.
+        while i > start {
+            i = utf8.index(before: i)
             
-            pattern = utfString[utfStartIndex..<utfDelimiterIndex!]
+            let char = utf8[i]
             
-            utfString.formIndex(after: &utfDelimiterIndex!)
-            let options = utfString[utfDelimiterIndex!...]
-            
-            ruleParts.pattern = String(decoding: pattern, as: UTF8.self)
-            ruleParts.options = String(decoding: options, as: UTF8.self)
-        } else {
-            ruleParts.pattern = String(decoding: pattern, as: UTF8.self)
-        }
-        
-        return ruleParts
-    }
-    
-    // Looks for the options delimiter ($) in a network rule.
-    private static func findOptionsDelimeterIndex(ruleText: String.UTF8View) -> Int {
-        let maxIndex = ruleText.count - 1
-        for i in 0...maxIndex {
-            let index = maxIndex - i
-            let char = ruleText[safeIndex: index]
-            switch char {
-            case Chars.DOLLAR:
-                // ignore \$
-                if (index > 0 && ruleText[safeIndex: index - 1] == Chars.BACKSLASH) {
-                    continue
+            if char == Chars.DOLLAR {
+                // Check that it's not escaped (\$) and that it's not likely a part of regex ($/).
+                if peekPrevious() != Chars.BACKSLASH && peekNext() != Chars.SLASH {
+                    delimiterIndex = i
+                    
+                    // Delimiter index found, exit
+                    break
                 }
-                
-                // ignore $/
-                if (index < maxIndex && ruleText[safeIndex: index + 1] == Chars.SLASH) {
-                    continue
-                }
-                
-                return index
-            default:
-                break
             }
         }
         
-        return -1
+        var optionsIndex = utf8.endIndex
+        if delimiterIndex != nil {
+            optionsIndex = utf8.index(after: delimiterIndex!)
+        }
+
+        if optionsIndex == utf8.endIndex {
+            if start == utf8.startIndex {
+                // Avoid allocating new String if it's possible.
+                ruleParts.pattern = ruleText
+            } else {
+                ruleParts.pattern = String(ruleText[start...])
+            }
+        } else {
+            ruleParts.pattern = String(ruleText[start..<delimiterIndex!])
+            ruleParts.options = String(ruleText[optionsIndex...])
+        }
+        
+        return ruleParts
     }
     
     /// Searches for domain name in rule text and transforms it to punycode if required.
@@ -153,8 +133,8 @@ class NetworkRuleParser {
     /// - options: third-party
     /// - whitelist: true
     struct BasicRuleParts {
-        var pattern: String?;
-        var options: String?;
-        var whitelist = false;
+        var pattern: String = ""
+        var options: String?
+        var whitelist = false
     }
 }

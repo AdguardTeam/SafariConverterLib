@@ -51,25 +51,23 @@ class NetworkRule: Rule {
             try loadOptions(options: ruleParts.options!)
         }
 
-        if (ruleParts.pattern != nil) {
-            if (ruleParts.pattern! == "||"
-                    || ruleParts.pattern! == "*"
-                    || ruleParts.pattern! == ""
-                    || ruleParts.pattern!.utf8.count < 3
-               ) {
-                if (permittedDomains.count < 1) {
-                    // Rule matches too much and does not have any domain restriction
-                    // We should not allow this kind of rules
-                    throw SyntaxError.invalidRule(message: "The rule is too wide, add domain restriction or make the pattern more specific")
-                }
+        if (ruleParts.pattern == "||"
+                || ruleParts.pattern == "*"
+                || ruleParts.pattern == ""
+                || ruleParts.pattern.utf8.count < 3
+           ) {
+            if (permittedDomains.count < 1) {
+                // Rule matches too much and does not have any domain restriction
+                // We should not allow this kind of rules
+                throw SyntaxError.invalidRule(message: "The rule is too wide, add domain restriction or make the pattern more specific")
             }
         }
 
         if (ruleParts.options == "specifichide" && ruleParts.whitelist == false) {
             throw SyntaxError.invalidRule(message: "Specifichide modifier must be used for exception rules only")
         }
-
-        urlRuleText = NetworkRuleParser.encodeDomainIfRequired(pattern: ruleParts.pattern)!
+        
+        urlRuleText = ruleParts.pattern
 
         if (isRegexRule()) {
             let startIndex = urlRuleText.utf8.index(after: urlRuleText.utf8.startIndex)
@@ -77,8 +75,10 @@ class NetworkRule: Rule {
             
             urlRegExpSource = String(urlRuleText[startIndex..<endIndex])
         } else {
+            urlRuleText = NetworkRuleParser.encodeDomainIfRequired(pattern: urlRuleText)!
+            
             if (!urlRuleText.isEmpty) {
-                urlRegExpSource = SimpleRegex2.createRegexText(str: self.urlRuleText as String)
+                urlRegExpSource = SimpleRegex2.createRegexText(str: urlRuleText as String)
             }
         }
 
@@ -319,108 +319,74 @@ class NetworkRule: Rule {
         case "third-party","~first-party","3p","~1p":
             isCheckThirdParty = true
             isThirdParty = true
-            break
         case "~third-party","first-party","1p","~3p":
             isCheckThirdParty = true
             isThirdParty = false
-            break
         case "match-case":
             isMatchCase = true
-            break
         case "~match-case":
             isMatchCase = false
-            break
         case "important":
             isImportant = true
-            break
         case "popup":
             isBlockPopups = true
-            break
         case "badfilter":
             badfilter = true
-            break
         case "domain":
             try setNetworkRuleDomains(domains: optionValue)
-            break
         case "elemhide", "ehide":
             try setOptionEnabled(option: NetworkRuleOption.Elemhide, value: true)
-            break
         case "generichide", "ghide":
             try setOptionEnabled(option: NetworkRuleOption.Generichide, value: true)
-            break
         case "genericblock":
             try setOptionEnabled(option: NetworkRuleOption.Genericblock, value: true)
-            break
         case "specifichide", "shide":
             try setOptionEnabled(option: NetworkRuleOption.Specifichide, value: true)
-            break
         case "jsinject":
             try setOptionEnabled(option: NetworkRuleOption.Jsinject, value: true)
-            break
         case "urlblock":
             try setOptionEnabled(option: NetworkRuleOption.Urlblock, value: true)
-            break
         case "content":
             try setOptionEnabled(option: NetworkRuleOption.Content, value: true)
-            break
         case "document", "doc":
             try setOptionEnabled(option: NetworkRuleOption.Document, value: true)
-            break
         case "script":
             setRequestType(contentType: ContentType.SCRIPT, enabled: true)
-            break
         case "~script":
             setRequestType(contentType: ContentType.SCRIPT, enabled: false)
-            break
         case "stylesheet", "css":
             setRequestType(contentType: ContentType.STYLESHEET, enabled: true)
-            break
         case "~stylesheet", "~css":
             setRequestType(contentType: ContentType.STYLESHEET, enabled: false)
-            break
         case "subdocument", "frame":
             setRequestType(contentType: ContentType.SUBDOCUMENT, enabled: true)
-            break
         case "~subdocument", "~frame":
             setRequestType(contentType: ContentType.SUBDOCUMENT, enabled: false)
-            break
         case "image":
             setRequestType(contentType: ContentType.IMAGE, enabled: true)
-            break
         case "~image":
             setRequestType(contentType: ContentType.IMAGE, enabled: false)
-            break
         case "xmlhttprequest", "xhr":
             setRequestType(contentType: ContentType.XMLHTTPREQUEST, enabled: true)
-            break
         case "~xmlhttprequest", "~xhr":
             setRequestType(contentType: ContentType.XMLHTTPREQUEST, enabled: false)
-            break
         case "media":
             setRequestType(contentType: ContentType.MEDIA, enabled: true)
-            break
         case "~media":
             setRequestType(contentType: ContentType.MEDIA, enabled: false)
-            break
         case "font":
             setRequestType(contentType: ContentType.FONT, enabled: true)
-            break
         case "~font":
             setRequestType(contentType: ContentType.FONT, enabled: false)
-            break
         case "websocket":
             self.isWebSocket = true
             setRequestType(contentType: ContentType.WEBSOCKET, enabled: true)
-            break
         case "~websocket":
             setRequestType(contentType: ContentType.WEBSOCKET, enabled: false)
-            break
         case "other":
             setRequestType(contentType: ContentType.OTHER, enabled: true)
-            break
         case "~other":
             setRequestType(contentType: ContentType.OTHER, enabled: false)
-            break
         case "ping":
             // `ping` resource type is supported since Safari 14
             if SafariService.current.version.isSafari14orGreater() {
@@ -428,7 +394,6 @@ class NetworkRule: Rule {
             } else {
                 throw SyntaxError.invalidRule(message: "$ping option is not supported")
             }
-            break
         case "~ping":
             // `ping` resource type is supported since Safari 14
             if SafariService.current.version.isSafari14orGreater() {
@@ -436,9 +401,12 @@ class NetworkRule: Rule {
             } else {
                 throw SyntaxError.invalidRule(message: "$~ping option is not supported")
             }
-            break
         default:
             throw SyntaxError.invalidRule(message: "Unknown option: \(optionName)")
+        }
+
+        if optionName != "domain" && optionValue != "" {
+            throw SyntaxError.invalidRule(message: "Option \(optionName) must not have value")
         }
     }
 

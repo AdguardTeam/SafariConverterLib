@@ -39,11 +39,11 @@ public class ContentBlockerConverter {
         var shouldContinue: Bool {
             !(progress?.isCancelled ?? false)
         }
-        
+
         SafariService.current.version = safariVersion
-        
+
         let rulesLimit = safariVersion.rulesLimit
-        
+
         if rules.count == 0 || (rules.count == 1 && rules[0].isEmpty) {
             Logger.log("(ContentBlockerConverter) - No rules passed")
             return ConversionResult.createEmptyResult()
@@ -78,7 +78,7 @@ public class ContentBlockerConverter {
             let vettedRules = vetRules(parsedRules)
             let advancedRules = vettedRules.advancedRules
             let simpleRules = vettedRules.simpleRules
-            
+
             compilationResult = compiler.compileRules(rules: simpleRules, progress: progress)
             advancedRulesTexts = advancedRules.map { $0.ruleText as String }.joined(separator: "\n")
         } else {

@@ -67,25 +67,25 @@ class CosmeticRule: Rule {
             CosmeticRuleMarker.ElementHidingExtCSS,
             CosmeticRuleMarker.ElementHidingException,
             CosmeticRuleMarker.ElementHidingExtCSSException:
-            self.isElemhide = true;
+            self.isElemhide = true
         case CosmeticRuleMarker.Css,
             CosmeticRuleMarker.CssExtCSS,
             CosmeticRuleMarker.CssException,
             CosmeticRuleMarker.CssExtCSSException:
-            self.isInjectCss = true;
+            self.isInjectCss = true
         case CosmeticRuleMarker.Js,
             CosmeticRuleMarker.JsException:
-            self.isScript = true;
+            self.isScript = true
         default:
             throw SyntaxError.invalidRule(message: "Unsupported rule type");
         }
         
         if (self.isScript) {
             if (self.content.hasPrefix(ScriptletParser.SCRIPTLET_MASK)) {
-                self.isScriptlet = true;
+                self.isScriptlet = true
                 let scriptletInfo = try ScriptletParser.parse(data:self.content);
-                self.scriptlet = scriptletInfo.name;
-                self.scriptletParam = scriptletInfo.json;
+                self.scriptlet = scriptletInfo.name
+                self.scriptletParam = scriptletInfo.json
             }
         }
         
@@ -104,11 +104,11 @@ class CosmeticRule: Rule {
             }
         }
         
-        self.isWhiteList = CosmeticRule.isWhitelist(marker: markerInfo.marker!);
-        self.isExtendedCss = CosmeticRule.isExtCssMarker(marker: markerInfo.marker!);
+        self.isWhiteList = CosmeticRule.isWhitelist(marker: markerInfo.marker!)
+        self.isExtendedCss = CosmeticRule.isExtCssMarker(marker: markerInfo.marker!)
         if (!self.isExtendedCss && CosmeticRule.hasExtCSSIndicators(content: self.content)) {
             // Additional check if rule is extended css rule by pseudo class indicators.
-            self.isExtendedCss = true;
+            self.isExtendedCss = true
         }
     }
     
@@ -183,7 +183,7 @@ class CosmeticRule: Rule {
             }
         }
         
-        return false;
+        return false
     }
     
     /// Returns true if the rule marker is for an exception rule.
@@ -195,9 +195,9 @@ class CosmeticRule: Rule {
             CosmeticRuleMarker.CssExtCSSException,
             CosmeticRuleMarker.JsException,
             CosmeticRuleMarker.HtmlException:
-            return true;
+            return true
         default:
-            return false;
+            return false
         }
     }
     
@@ -208,16 +208,16 @@ class CosmeticRule: Rule {
             CosmeticRuleMarker.CssExtCSSException,
             CosmeticRuleMarker.ElementHidingExtCSS,
             CosmeticRuleMarker.ElementHidingExtCSSException:
-            return true;
+            return true
         default:
-            return false;
+            return false
         }
     }
     
     /// Parses cosmetic rule options.
     ///
     /// The rule can look like this:
-    /// [$domain=example.com,path=/test.html]##example.org
+    /// [$domain=example.com,path=/test.html]example.net##example.org
     ///
     /// Learn more about this syntax here.
     /// https://adguard.com/kb/general/ad-filtering/create-own-filters/#non-basic-rules-modifiers
@@ -257,7 +257,7 @@ class CosmeticRule: Rule {
             }
         }
         
-        return;
+        return
     }
 
     func setCosmeticRuleDomains(domains: String) throws -> Void {
@@ -265,8 +265,8 @@ class CosmeticRule: Rule {
         // TODO(ameshkov): !!! Implement logic here
         if domains.utf8.first == Chars.SQUARE_BRACKET_OPEN {
             try parseCosmeticOptions(domains: domains)
+        } else {
+            try setDomains(domainsStr: domains, separator: Chars.COMMA)
         }
-        
-        try setDomains(domainsStr: domains, separator: Chars.COMMA)
     }
 }

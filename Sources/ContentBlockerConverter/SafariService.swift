@@ -1,6 +1,6 @@
 import Foundation
 
-private let DEFAULT_SAFARI_VERSION = SafariVersion.safari13;
+let DEFAULT_SAFARI_VERSION = SafariVersion.safari13;
 
 public enum SafariVersion: CustomStringConvertible, CustomDebugStringConvertible, Equatable {
     public var description: String {

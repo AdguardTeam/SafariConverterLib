@@ -23,11 +23,14 @@ class Chars {
     static let WHITESPACE: UInt8 = 32           // ' '
     static let SQUARE_BRACKET_OPEN: UInt8 = 91  // '['
     static let SQUARE_BRACKET_CLOSE: UInt8 = 93 // ']'
+    static let CURLY_BRACKET_OPEN: UInt8 = 123  // '{'
+    static let CURLY_BRACKET_CLOSE: UInt8 = 125 // '}'
     static let BRACKET_OPEN: UInt8 = 40         // '('
     static let BRACKET_CLOSE: UInt8 = 41        // ')'
     static let COLON: UInt8 = 58                // ':'
     static let EQUALS_SIGN: UInt8 = 61          // '='
     static let CARET: UInt8 = 94                // '^'
+    static let PLUS:UInt8 = 43                  // '+'
     
     static let TRIM_SINGLE_QUOTE = CharacterSet.whitespaces.union(CharacterSet(charactersIn: "'"))
     static let TRIM_DOUBLE_QUOTE = CharacterSet.whitespaces.union(CharacterSet(charactersIn: "\""))

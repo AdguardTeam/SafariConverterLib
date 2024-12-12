@@ -246,7 +246,7 @@ class RuleConverter {
 
         let ruleParts = try! NetworkRuleParser.parseRuleText(ruleText: ruleText)
         
-        if ruleParts.pattern!.utf8.first == Chars.PIPE ||
+        if ruleParts.pattern.utf8.first == Chars.PIPE ||
             ruleParts.options == nil ||
             !ruleParts.options!.utf8.includes(RuleConverter.DOMAIN_MODIFIER_MASK.utf8) {
             
@@ -259,7 +259,7 @@ class RuleConverter {
             return nil
         }
 
-        var blockingElement: String = ruleParts.pattern!;
+        var blockingElement: String = ruleParts.pattern;
         if (blockingElement.starts(with: "/")) {
             blockingElement = String(blockingElement.dropFirst());
         }
@@ -292,7 +292,7 @@ class RuleConverter {
         let exceptionRuleSuffix: String = ruleParts.whitelist ? "," + RuleConverter.IMPORTANT_MODIFIER_MASK : ""
 
         // Blocking rule.
-        let blockingRule = blockingRulePrefix + ruleParts.pattern! + RuleConverter.MODIFIER_MASK + optionsWithoutDenyallow
+        let blockingRule = blockingRulePrefix + ruleParts.pattern + RuleConverter.MODIFIER_MASK + optionsWithoutDenyallow
         result.append(blockingRule)
 
         // Exception rules.

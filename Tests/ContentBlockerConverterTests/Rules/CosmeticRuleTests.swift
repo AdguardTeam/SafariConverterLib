@@ -4,6 +4,11 @@ import XCTest
 @testable import ContentBlockerConverter
 
 final class CosmeticRuleTests: XCTestCase {
+    override func tearDown() {
+        // Restore the default state.
+        SafariService.current.version = DEFAULT_SAFARI_VERSION
+    }
+    
     func testElemhidingRules() {
 
         var result = try! CosmeticRule(ruleText: "##.banner");
@@ -71,39 +76,38 @@ final class CosmeticRuleTests: XCTestCase {
 
     func testCssRules() {
 
-        var result = try! CosmeticRule(ruleText: "example.org#$#.textad { visibility: hidden; }");
+        var result = try! CosmeticRule(ruleText: "example.org#$#.textad { visibility: hidden; }")
 
-        XCTAssertNotNil(result);
-        XCTAssertEqual(result.isWhiteList, false);
-        XCTAssertEqual(result.isImportant, false);
-        XCTAssertEqual(result.isScript, false);
-        XCTAssertEqual(result.isScriptlet, false);
-        XCTAssertEqual(result.isDocumentWhiteList, false);
+        XCTAssertNotNil(result)
+        XCTAssertEqual(result.isWhiteList, false)
+        XCTAssertEqual(result.isImportant, false)
+        XCTAssertEqual(result.isScript, false)
+        XCTAssertEqual(result.isScriptlet, false)
+        XCTAssertEqual(result.isDocumentWhiteList, false)
 
-        XCTAssertEqual(result.permittedDomains, ["example.org"]);
-        XCTAssertEqual(result.restrictedDomains, []);
+        XCTAssertEqual(result.permittedDomains, ["example.org"])
+        XCTAssertEqual(result.restrictedDomains, [])
 
+        XCTAssertEqual(result.content, ".textad { visibility: hidden; }")
+        XCTAssertEqual(result.scriptlet, nil)
+        XCTAssertEqual(result.scriptletParam, nil)
 
-        XCTAssertEqual(result.content, ".textad { visibility: hidden; }");
-        XCTAssertEqual(result.scriptlet, nil);
-        XCTAssertEqual(result.scriptletParam, nil);
+        XCTAssertEqual(result.isExtendedCss, false)
+        XCTAssertEqual(result.isInjectCss, true)
 
-        XCTAssertEqual(result.isExtendedCss, false);
-        XCTAssertEqual(result.isInjectCss, true);
+        result = try! CosmeticRule(ruleText: "*#$#.textad { visibility: hidden; }")
 
-        result = try! CosmeticRule(ruleText: "*#$#.textad { visibility: hidden; }");
+        XCTAssertEqual(result.isInjectCss, true)
+        XCTAssertEqual(result.permittedDomains, [])
+        XCTAssertEqual(result.restrictedDomains, [])
+        XCTAssertEqual(result.content, ".textad { visibility: hidden; }")
 
-        XCTAssertEqual(result.isInjectCss, true);
-        XCTAssertEqual(result.permittedDomains, []);
-        XCTAssertEqual(result.restrictedDomains, []);
-        XCTAssertEqual(result.content, ".textad { visibility: hidden; }");
+        result = try! CosmeticRule(ruleText: "example.org#$#div[id^=\"imAd_\"] { visibility: hidden!important; }")
 
-        result = try! CosmeticRule(ruleText: "example.org#$#div[id^=\"imAd_\"] { visibility: hidden!important; }");
-
-        XCTAssertEqual(result.isInjectCss, true);
-        XCTAssertEqual(result.permittedDomains, ["example.org"]);
-        XCTAssertEqual(result.restrictedDomains, []);
-        XCTAssertEqual(result.content, "div[id^=\"imAd_\"] { visibility: hidden!important; }");
+        XCTAssertEqual(result.isInjectCss, true)
+        XCTAssertEqual(result.permittedDomains, ["example.org"])
+        XCTAssertEqual(result.restrictedDomains, [])
+        XCTAssertEqual(result.content, "div[id^=\"imAd_\"] { visibility: hidden!important; }")
     }
 
     func testCssRulesWhitelist() {
@@ -341,7 +345,7 @@ final class CosmeticRuleTests: XCTestCase {
     }
 
     func testRulesWithPseudoClassHas() {
-        SafariService.current.version = SafariVersion.safari15;
+        SafariService.current.version = SafariVersion.safari15
 
         var result = try! CosmeticRule(ruleText: "##.banner:has(.ads)");
         XCTAssertEqual(result.isExtendedCss, true);
@@ -356,6 +360,30 @@ final class CosmeticRuleTests: XCTestCase {
 
         result = try! CosmeticRule(ruleText: "#?#.banner:has(.ads)");
         XCTAssertEqual(result.isExtendedCss, true);
+    }
+    
+    func testRuleWithModifiers() {
+        let ruleText = "[$domain=mail.ru,path=/^\\/$/]#?#.toolbar:has(> div.toolbar__inner > div.toolbar__aside > span.toolbar__close)"
+        
+        let result = try! CosmeticRule(ruleText: ruleText)
+        
+        XCTAssertNotNil(result)
+        XCTAssertEqual(result.isWhiteList, false)
+        XCTAssertEqual(result.isImportant, false)
+        XCTAssertEqual(result.isScript, false)
+        XCTAssertEqual(result.isScriptlet, false)
+        XCTAssertEqual(result.isDocumentWhiteList, false)
+        
+        XCTAssertEqual(result.permittedDomains, ["mail.ru"])
+        XCTAssertEqual(result.restrictedDomains, [])
+        
+        XCTAssertEqual(result.content, ".toolbar:has(> div.toolbar__inner > div.toolbar__aside > span.toolbar__close)")
+        XCTAssertEqual(result.scriptlet, nil)
+        XCTAssertEqual(result.scriptletParam, nil)
+
+        XCTAssertEqual(result.isExtendedCss, true)
+        XCTAssertEqual(result.isInjectCss, false)
+
     }
 
     static var allTests = [

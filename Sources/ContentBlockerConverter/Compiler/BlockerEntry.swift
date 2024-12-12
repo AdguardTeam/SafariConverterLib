@@ -1,8 +1,11 @@
 import Foundation
 
-/**
- * Blocker entry object description
- */
+/// Represents a Safari content blocking rule.
+///
+/// The format of this rule is described here:
+/// https://developer.apple.com/documentation/safariservices/creating-a-content-blocker
+///
+/// In addition to Safari normal syntax it adds some new fields that are interpreted by a custom extension.
 public struct BlockerEntry {
     public init(trigger: BlockerEntry.Trigger, action: BlockerEntry.Action) {
         self.trigger = trigger
@@ -12,6 +15,7 @@ public struct BlockerEntry {
     public var trigger: Trigger
     public let action: Action
     
+    /// Trigger is the "trigger" field of a content blocking rule, i.e. defines conditions when the rule is applied.
     public struct Trigger {
         public init(ifDomain: [String]? = nil, urlFilter: String? = nil, unlessDomain: [String]? = nil, shortcut: String? = nil, regex: NSRegularExpression? = nil, loadType: [String]? = nil, resourceType: [String]? = nil, caseSensitive: Bool? = nil, loadContext: [String]? = nil) {
             self.ifDomain = ifDomain
@@ -65,6 +69,7 @@ public struct BlockerEntry {
         }
     }
     
+    /// Action represents an action that this rule applies.
     public struct Action {
         public init(type: String, selector: String? = nil, css: String? = nil, script: String? = nil, scriptlet: String? = nil, scriptletParam: String? = nil) {
             self.type = type

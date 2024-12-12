@@ -636,25 +636,25 @@ final class ContentBlockerConverterTests: XCTestCase {
     }
 
     func testRegexRules() {
-        var ruleText = #"/^https?://(?!static\.)([^.]+\.)+?fastpic\.ru[:/]/$script,domain=fastpic.ru"#;
-        var result = converter.convertArray(rules: [ruleText]);
-        XCTAssertEqual(result.convertedCount, 0);
-        XCTAssertEqual(result.errorsCount, 1);
+        var ruleText = #"/^https?://(?!static\.)([^.]+\.)+?fastpic\.ru[:/]/$script,domain=fastpic.ru"#
+        var result = converter.convertArray(rules: [ruleText])
+        XCTAssertEqual(result.convertedCount, 0)
+        XCTAssertEqual(result.errorsCount, 1)
 
-        ruleText = #"@@/:\/\/.*[.]wp[.]pl\/[a-z0-9_]{30,50}[.][a-z]{2,5}([\/:&\?].*)?$/"#;
-        result = converter.convertArray(rules: [ruleText]);
-        XCTAssertEqual(result.convertedCount, 0);
-        XCTAssertEqual(result.errorsCount, 1);
+        ruleText = #"@@/:\/\/.*[.]wp[.]pl\/[a-z0-9_]{30,50}[.][a-z]{2,5}([\/:&\?].*)?$/"#
+        result = converter.convertArray(rules: [ruleText])
+        XCTAssertEqual(result.convertedCount, 0)
+        XCTAssertEqual(result.errorsCount, 1)
 
-        ruleText = #"@@/:\/\/.*[.]wp[.]pl\/[a-z0-9_]+[.][a-z]+\b/"#;
-        result = converter.convertArray(rules: [ruleText]);
-        XCTAssertEqual(result.convertedCount, 0);
-        XCTAssertEqual(result.errorsCount, 1);
+        ruleText = #"@@/:\/\/.*[.]wp[.]pl\/[a-z0-9_]+[.][a-z]+\b/"#
+        result = converter.convertArray(rules: [ruleText])
+        XCTAssertEqual(result.convertedCount, 0)
+        XCTAssertEqual(result.errorsCount, 1)
 
         ruleText = #"/example{/"#;
-        result = converter.convertArray(rules: [ruleText]);
-        XCTAssertEqual(result.convertedCount, 1);
-        XCTAssertEqual(result.errorsCount, 0);
+        result = converter.convertArray(rules: [ruleText])
+        XCTAssertEqual(result.convertedCount, 0)
+        XCTAssertEqual(result.errorsCount, 1)
     }
 
     func testCssPseudoClasses() {
@@ -2154,12 +2154,12 @@ final class ContentBlockerConverterTests: XCTestCase {
         var decoded = try! parseJsonString(json: result.advancedBlocking!);
         XCTAssertEqual(decoded.count, 1);
         var ifDomain = decoded[0].trigger.ifDomain;
-        XCTAssertEqual(ifDomain, ["*mail.ru"]);
-        var urlFilter = decoded[0].trigger.urlFilter;
-        XCTAssertEqual(urlFilter, "^(https?:\\/\\/)([^\\/]+)\\/$");
-        XCTAssertEqual(decoded[0].action.type, "css-extended");
-        var css = decoded[0].action.css;
-        XCTAssertEqual(css, ".toolbar:has(> div.toolbar__inner > div.toolbar__aside > span.toolbar__close)");
+        XCTAssertEqual(ifDomain, ["*mail.ru"])
+        var urlFilter = decoded[0].trigger.urlFilter
+        XCTAssertEqual(urlFilter, "^(https?:\\/\\/)([^\\/]+)\\/$")
+        XCTAssertEqual(decoded[0].action.type, "css-extended")
+        var css = decoded[0].action.css
+        XCTAssertEqual(css, ".toolbar:has(> div.toolbar__inner > div.toolbar__aside > span.toolbar__close)")
 
         rules = ["[$domain=mail.ru,path=/^\\/$/]#?#div[data-testid=\"pulse-row\"] > div[data-testid=\"pulse-card\"] div[class*=\"_\"] > input[name=\"email\"]:upward(div[data-testid=\"pulse-card\"])"]
         result = converter.convertArray(rules: rules, advancedBlocking: true)

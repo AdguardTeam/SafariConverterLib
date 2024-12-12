@@ -55,70 +55,62 @@ class BlockerEntryFactory {
         "edu.au", "web.id", "work", "best", "agency", "edu.ua", "net.au", "icu", "sh"
     ];
 
-    /**
-     * Precompiled validate regexps
-     */
-    private static let VALIDATE_REGEXP_DIGITS    = try! NSRegularExpression(pattern: "\\{[0-9,]+\\}", options: [.caseInsensitive]);
-    private static let VALIDATE_REGEXP_OR        = try! NSRegularExpression(pattern: #"[^\\]+\|+\S*"#, options: [.caseInsensitive]);
-    private static let VALIDATE_REGEXP_LOOKAHEAD = try! NSRegularExpression(pattern: "\\(\\?!.*\\)", options: [.caseInsensitive]);
-    private static let VALIDATE_REGEXP_METACHARS = try! NSRegularExpression(pattern: #"[^\\]\\[bdfnrstvw]"#, options: [.caseInsensitive]);
-
     private static let REGEXP_SLASH = "/"
 
-    let advancedBlockingEnabled: Bool;
-    let errorsCounter: ErrorsCounter;
+    let advancedBlockingEnabled: Bool
+    let errorsCounter: ErrorsCounter
 
     init(advancedBlockingEnabled: Bool, errorsCounter: ErrorsCounter) {
-        self.advancedBlockingEnabled = advancedBlockingEnabled;
-        self.errorsCounter = errorsCounter;
+        self.advancedBlockingEnabled = advancedBlockingEnabled
+        self.errorsCounter = errorsCounter
     }
 
     /// Converts an AdGuard rule into a Safari content blocking rule.
     func createBlockerEntry(rule: Rule) -> BlockerEntry? {
         do {
             if (rule is NetworkRule) {
-                return try convertNetworkRule(rule: rule as! NetworkRule);
+                return try convertNetworkRule(rule: rule as! NetworkRule)
             } else {
                 if (self.advancedBlockingEnabled) {
                     if (rule.isScriptlet) {
-                        return try convertScriptletRule(rule: rule as! CosmeticRule);
+                        return try convertScriptletRule(rule: rule as! CosmeticRule)
                     } else if (rule.isScript) {
-                        return try convertScriptRule(rule: rule as! CosmeticRule);
+                        return try convertScriptRule(rule: rule as! CosmeticRule)
                     }
                 }
 
                 if (!rule.isScript && !rule.isScriptlet) {
-                    return try convertCssRule(rule: rule as! CosmeticRule);
+                    return try convertCssRule(rule: rule as! CosmeticRule)
                 }
             }
         } catch {
-            self.errorsCounter.add();
-            Logger.log("(BlockerEntryFactory) - Unexpected error: \(error) while converting \(rule.ruleText)");
+            self.errorsCounter.add()
+            Logger.log("(BlockerEntryFactory) - Unexpected error: \(error) while converting \(rule.ruleText)")
         }
 
-        return nil;
+        return nil
     }
 
     /// Converts a network rule into a Safari content blocking rule.
     private func convertNetworkRule(rule: NetworkRule) throws -> BlockerEntry? {
-        let urlFilter = try createUrlFilterString(rule: rule);
+        let urlFilter = try createUrlFilterString(rule: rule)
 
-        var trigger = BlockerEntry.Trigger(urlFilter: urlFilter);
-        var action = BlockerEntry.Action(type: "block");
+        var trigger = BlockerEntry.Trigger(urlFilter: urlFilter)
+        var action = BlockerEntry.Action(type: "block")
 
-        setWhiteList(rule: rule, action: &action);
-        try addResourceType(rule: rule, trigger: &trigger);
-        addLoadContext(rule: rule, trigger: &trigger);
-        addThirdParty(rule: rule, trigger: &trigger);
-        addMatchCase(rule: rule, trigger: &trigger);
-        try addDomainOptions(rule: rule, trigger: &trigger);
+        setWhiteList(rule: rule, action: &action)
+        try addResourceType(rule: rule, trigger: &trigger)
+        addLoadContext(rule: rule, trigger: &trigger)
+        addThirdParty(rule: rule, trigger: &trigger)
+        addMatchCase(rule: rule, trigger: &trigger)
+        try addDomainOptions(rule: rule, trigger: &trigger)
 
-        try checkWhiteListExceptions(rule: rule, trigger: &trigger);
+        try checkWhiteListExceptions(rule: rule, trigger: &trigger)
 
         let result = BlockerEntry(trigger: trigger, action: action)
-        try validateUrlBlockingRule(rule: rule, entry: result);
+        try validateUrlBlockingRule(rule: rule, entry: result)
 
-        return result;
+        return result
     };
 
     /**
@@ -155,18 +147,19 @@ class BlockerEntryFactory {
     * In case the rule selector contains extended css or rule is an inject-style rule, then the result entry could be used in advanced blocking json only.
     */
     private func convertCssRule(rule: CosmeticRule) throws -> BlockerEntry? {
-        var trigger = BlockerEntry.Trigger(urlFilter: BlockerEntryFactory.URL_FILTER_CSS_RULES);
+        var trigger = BlockerEntry.Trigger(urlFilter: BlockerEntryFactory.URL_FILTER_CSS_RULES)
 
         if rule.pathModifier != nil {
             var pathRegex: String
+            
+            // TODO(ameshkov): !!! Change this.
             if rule.pathModifier!.hasPrefix(BlockerEntryFactory.REGEXP_SLASH) && rule.pathModifier!.hasSuffix(BlockerEntryFactory.REGEXP_SLASH) {
                 pathRegex = String(String(rule.pathModifier!.dropFirst()).dropLast())
 
-                try validateRegExp(urlRegExp: pathRegex as NSString)
-
-                // Safari doesn't support non-ASCII characters in regular expressions
-                if !pathRegex.canBeConverted(to: String.Encoding.ascii) {
-                    throw ConversionError.unsupportedRegExp(message: "Safari doesn't support non-ASCII characters in regular expressions")
+                let result = SafariRegex.isSupported(pattern: pathRegex)
+                switch result {
+                case .success: break
+                case .failure(let error): throw ConversionError.unsupportedRegExp(message: "Unsupported regexp in $path: \(error.localizedDescription)")
                 }
             } else {
                 pathRegex = SimpleRegex.createRegexText(str: rule.pathModifier! as NSString)! as String
@@ -202,12 +195,15 @@ class BlockerEntryFactory {
         return result;
     }
 
+    /// Builds the "url-filter" property of a Safari content blocking rule.
+    ///
+    /// "url-filter" supports a limited set of regular expressions syntax.
     private func createUrlFilterString(rule: NetworkRule) throws -> String {
         let isWebSocket = rule.isWebSocket
 
         // Use a single standard regex for rules that are supposed to match every URL
         for anyUrlTmpl in BlockerEntryFactory.ANY_URL_TEMPLATES {
-            if rule.urlRuleText.compare(anyUrlTmpl, options: NSString.CompareOptions.literal) == ComparisonResult.orderedSame {
+            if rule.urlRuleText == anyUrlTmpl {
                 if isWebSocket {
                     return BlockerEntryFactory.URL_FILTER_WS_ANY_URL
                 }
@@ -217,20 +213,19 @@ class BlockerEntryFactory {
 
         let urlRegExpSource = rule.urlRegExpSource
         if (urlRegExpSource == nil) {
-            // Rule with empty regexp
-            return BlockerEntryFactory.URL_FILTER_ANY_URL;
+            // Rule with empty regexp, matches any URL.
+            return BlockerEntryFactory.URL_FILTER_ANY_URL
         }
 
-        // Safari doesn't support non-ASCII characters in regular expressions
-        let src = urlRegExpSource! as NSString
-        if !src.canBeConverted(to: String.Encoding.ascii.rawValue) {
-            throw ConversionError.unsupportedRegExp(message: "Safari doesn't support non-ASCII characters in regular expressions")
-        }
-
-        // Regex that we generate for basic non-regex rules are okay
-        // But if this is a regex rule, we can't be sure
+        // Regex that we generate for basic non-regex rules are okay.
+        // But if this is a regex rule, we can't be sure.
         if rule.isRegexRule() {
-            try validateRegExp(urlRegExp: src)
+            let result = SafariRegex.isSupported(pattern: urlRegExpSource!)
+            
+            switch result {
+            case .success: break
+            case .failure(let error): throw ConversionError.unsupportedRegExp(message: "Unsupported regexp rule: \(error.localizedDescription)")
+            }
         }
 
         // Prepending WebSocket protocol to resolve this:
@@ -243,12 +238,17 @@ class BlockerEntryFactory {
         return urlRegExpSource! as String;
     };
 
+    /// Changes the rule action to "ignore-previous-rules".
     private func setWhiteList(rule: Rule, action: inout BlockerEntry.Action) -> Void {
         if (rule.isWhiteList) {
             action.type = "ignore-previous-rules";
         }
     }
 
+    /// Adds resource type based on the content types specified in the network rule.
+    ///
+    /// Read more about it here:
+    /// https://developer.apple.com/documentation/safariservices/creating-a-content-blocker#:~:text=if%2Ddomain.-,resource%2Dtype,-An%20array%20of
     private func addResourceType(rule: NetworkRule, trigger: inout BlockerEntry.Trigger) throws -> Void {
         // Using String array instead of Set makes the code a bit more clunkier, but saves time.
         var types: [String] = []
@@ -415,7 +415,7 @@ class BlockerEntryFactory {
     /// TODO(ameshkov): !!! As of Safari 18 this is not required anymore
     private func addUnlessDomainForThirdParty(rule: Rule, domains: inout [String]) {
         if !(rule is NetworkRule) {
-            return;
+            return
         }
 
         let networkRule = rule as! NetworkRule;
@@ -503,48 +503,6 @@ class BlockerEntryFactory {
 
         return result
     }
-
-    /**
-     * Safari doesn't support some regular expressions
-     * Supporeted expressions:
-     * .* - Matches all strings with a dot appearing zero or more times. Use this syntax to match every URL.
-     * . - Matches any character.
-     * \. - Explicitly matches the dot character.
-     * [a-b] - Matches a range of alphabetic characters.
-     * (abc) - Matches groups of the specified characters.
-     * + - Matches the preceding term one or more times.
-     * * - Matches the preceding character zero or more times.
-     * ? - Matches the preceding character zero or one time.
-     */
-    private func validateRegExp(urlRegExp: NSString) throws -> Void {
-        // Safari doesn't support {digit} in regular expressions
-        if (urlRegExp.contains("{")) {
-            if (SimpleRegex.isMatch(regex: BlockerEntryFactory.VALIDATE_REGEXP_DIGITS, target: urlRegExp)) {
-                throw ConversionError.unsupportedRegExp(message: "Safari doesn't support '{digit}' in regular expressions");
-            }
-        }
-
-        // Safari doesn't support | in regular expressions
-        if (urlRegExp.contains("|")) {
-            if (SimpleRegex.isMatch(regex: BlockerEntryFactory.VALIDATE_REGEXP_OR, target: urlRegExp)) {
-                throw ConversionError.unsupportedRegExp(message: "Safari doesn't support '|' in regular expressions");
-            }
-        }
-
-        // Safari doesn't support negative lookahead (?!...) in regular expressions
-        if (urlRegExp.contains("(?!")) {
-            if (SimpleRegex.isMatch(regex: BlockerEntryFactory.VALIDATE_REGEXP_LOOKAHEAD, target: urlRegExp)) {
-                throw ConversionError.unsupportedRegExp(message: "Safari doesn't support negative lookahead in regular expressions");
-            }
-        }
-
-        // Safari doesn't support metacharacters in regular expressions
-        if (urlRegExp.contains("\\")) {
-            if (SimpleRegex.isMatch(regex: BlockerEntryFactory.VALIDATE_REGEXP_METACHARS, target: urlRegExp)) {
-                throw ConversionError.unsupportedRegExp(message: "Safari doesn't support metacharacters in regular expressions");
-            }
-        }
-    };
 
     private func validateUrlBlockingRule(rule: NetworkRule, entry: BlockerEntry) throws -> Void {
         if rule.hasContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT)
