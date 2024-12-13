@@ -32,14 +32,10 @@ class NetworkRule: Rule {
     var disabledOptions: [NetworkRuleOption] = []
 
     /// Network rule pattern.
-    var urlRuleText = ""
+    var urlRuleText: String = ""
 
     /// Regular expression that's converted from the rule pattern.
     var urlRegExpSource: String? = nil
-
-    override init() {
-        super.init()
-    }
 
     override init(ruleText: String) throws {
         try super.init(ruleText: ruleText)
@@ -82,10 +78,10 @@ class NetworkRule: Rule {
             }
         }
 
-        isDocumentWhiteList = isOptionEnabled(option: .Document);
-        isUrlBlock = isSingleOption(option: .Urlblock) || isSingleOption(option: .Genericblock);
-        isCssExceptionRule = isSingleOption(option: .Elemhide) || isSingleOption(option: .Generichide);
-        isJsInject = isSingleOption(option: .Jsinject);
+        isDocumentWhiteList = isOptionEnabled(option: .Document)
+        isUrlBlock = isSingleOption(option: .Urlblock) || isSingleOption(option: .Genericblock)
+        isCssExceptionRule = isSingleOption(option: .Elemhide) || isSingleOption(option: .Generichide)
+        isJsInject = isSingleOption(option: .Jsinject)
     }
 
     func isRegexRule() -> Bool {

@@ -5,7 +5,7 @@ import Punycode
  * AG Rule super class
  */
 class Rule {
-    var ruleText: String = ""
+    let ruleText: String
     
     var isWhiteList = false
     var isImportant = false
@@ -16,10 +16,6 @@ class Rule {
 
     var permittedDomains = [String]()
     var restrictedDomains = [String]()
-    
-    init() {
-        
-    }
     
     init(ruleText: String) throws {
         self.ruleText = ruleText;

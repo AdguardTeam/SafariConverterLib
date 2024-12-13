@@ -11,15 +11,13 @@ final class BlockerEntryEncoderTests: XCTestCase {
         XCTAssertEqual(result, "[]");
     }
     
-    func testSimpleEntry() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: false, errorsCounter: ErrorsCounter());
-        let rule = NetworkRule();
-        rule.ruleText = "||example.com/path$domain=test.com";
-        rule.permittedDomains = ["test.com"];
+    func testSimpleEntry() throws {
+        let converter = BlockerEntryFactory(advancedBlockingEnabled: false, errorsCounter: ErrorsCounter())
+        let rule = try NetworkRule(ruleText: "||example.com/path$domain=test.com")
         
-        let entry = converter.createBlockerEntry(rule: rule);
-        let (result, _) = encoder.encode(entries: [entry!]);
-        XCTAssertEqual(result, "[{\"trigger\":{\"url-filter\":\"^[htpsw]+:\\\\/\\\\/\",\"if-domain\":[\"*test.com\"]},\"action\":{\"type\":\"block\"}}]");
+        let entry = converter.createBlockerEntry(rule: rule)
+        let (result, _) = encoder.encode(entries: [entry!])
+        XCTAssertEqual(result, "[{\"trigger\":{\"url-filter\":\"^[htpsw]+:\\\\/\\\\/([a-z0-9-]+\\\\.)?example\\\\.com\\\\/path\",\"if-domain\":[\"*test.com\"]},\"action\":{\"type\":\"block\"}}]");
     }
     
     // TODO(ameshkov): !!! Remove allTests, not needed in newer Swift.

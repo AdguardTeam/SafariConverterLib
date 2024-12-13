@@ -48,20 +48,20 @@ class CosmeticRule: Rule {
     
     override init(ruleText: String) throws {
         try super.init(ruleText: ruleText)
-        
+
         let markerInfo = CosmeticRuleMarker.findCosmeticRuleMarker(ruleText: ruleText)
         if (markerInfo.index == -1) {
             throw SyntaxError.invalidRule(message: "Not a cosmetic rule")
         }
-        
+
         let contentIndex = markerInfo.index + markerInfo.marker!.rawValue.utf8.count
         let utfContentIndex = ruleText.utf8.index(ruleText.utf8.startIndex, offsetBy: contentIndex)
         self.content = String(ruleText[utfContentIndex...])
-        
+
         if (self.content == "") {
             throw SyntaxError.invalidRule(message: "Rule content is empty")
         }
-        
+
         switch (markerInfo.marker!) {
         case CosmeticRuleMarker.ElementHiding,
             CosmeticRuleMarker.ElementHidingExtCSS,
@@ -79,7 +79,7 @@ class CosmeticRule: Rule {
         default:
             throw SyntaxError.invalidRule(message: "Unsupported rule type");
         }
-        
+
         if (self.isScript) {
             if (self.content.hasPrefix(ScriptletParser.SCRIPTLET_MASK)) {
                 self.isScriptlet = true
@@ -88,7 +88,7 @@ class CosmeticRule: Rule {
                 self.scriptletParam = scriptletInfo.json
             }
         }
-        
+
         if (markerInfo.index > 0) {
             // This means that the marker is preceded by the list of domains
             // Now it's a good time to parse them.
