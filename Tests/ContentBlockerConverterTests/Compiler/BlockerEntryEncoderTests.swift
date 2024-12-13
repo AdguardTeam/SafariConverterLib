@@ -19,7 +19,7 @@ final class BlockerEntryEncoderTests: XCTestCase {
         
         let entry = converter.createBlockerEntry(rule: rule);
         let (result, _) = encoder.encode(entries: [entry!]);
-        XCTAssertEqual(result, "[{\"trigger\":{\"url-filter\":\"^[htpsw]+:\\\\/\\\\/\",\"if-domain\":[\"test.com\"]},\"action\":{\"type\":\"block\"}}]");
+        XCTAssertEqual(result, "[{\"trigger\":{\"url-filter\":\"^[htpsw]+:\\\\/\\\\/\",\"if-domain\":[\"*test.com\"]},\"action\":{\"type\":\"block\"}}]");
     }
     
     // TODO(ameshkov): !!! Remove allTests, not needed in newer Swift.

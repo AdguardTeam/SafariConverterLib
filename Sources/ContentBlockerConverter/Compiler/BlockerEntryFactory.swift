@@ -13,47 +13,45 @@ class BlockerEntryFactory {
      * Angry users are here:
      * https://github.com/AdguardTeam/AdguardForiOS/issues/550
      */
-    static let ANY_URL_TEMPLATES = ["||*", "", "*", "|*"];
-    static let URL_FILTER_ANY_URL = "^[htpsw]+:\\/\\/";
-    static let URL_FILTER_WS_ANY_URL = "^wss?:\\/\\/";
+    static let ANY_URL_TEMPLATES = ["||*", "", "*", "|*"]
+    static let URL_FILTER_ANY_URL = "^[htpsw]+:\\/\\/"
+    static let URL_FILTER_WS_ANY_URL = "^wss?:\\/\\/"
 
     /**
      * Using .* for the css-display-none rules trigger.url-filter.
      * Please note, that this is important to use ".*" for this kind of rules, otherwise performance is degraded:
      * https://github.com/AdguardTeam/AdguardForiOS/issues/662
      */
-    static let URL_FILTER_CSS_RULES = ".*";
-    static let URL_FILTER_SCRIPT_RULES = ".*";
-    static let URL_FILTER_SCRIPTLET_RULES = ".*";
+    static let URL_FILTER_CSS_RULES = ".*"
+    static let URL_FILTER_SCRIPT_RULES = ".*"
+    static let URL_FILTER_SCRIPTLET_RULES = ".*"
 
     /**
      * url-filter prefix for path modifier of css rule starting from start of string symbol (^)
      */
-    static let URL_FILTER_PREFIX_CSS_RULES_PATH_START_STRING = "^(https?:\\/\\/)([^\\/]+)";
-    static let START_OF_STRING = "^";
+    static let URL_FILTER_PREFIX_CSS_RULES_PATH_START_STRING = "^(https?:\\/\\/)([^\\/]+)"
+    static let START_OF_STRING = "^"
 
     /**
      * In some cases URL_FILTER_ANY_URL doesn't work for domain-specific url exceptions
      * https://github.com/AdguardTeam/AdGuardForSafari/issues/285
      */
-    static let URL_FILTER_URL_RULES_EXCEPTIONS = ".*";
+    private static let URL_FILTER_URL_RULES_EXCEPTIONS = ".*"
 
-    /**
-     * Popular top level domains list
-     */
-    static let TOP_LEVEL_DOMAINS_LIST = [
-        "com", "ru", "net", "org", "ir", "in", "com.au", "com.tr", "co.uk", "io", "co", "gr", "ca", "com.ua", "vn", "info", "de", "fr", "me", "by", "jp",
-        "xyz", "ua", "com.tw", "co.za", "co.il", "online", "eu", "it", "tv", "id", "xn--p1ai", "edu", "com.br", "es", "ch", "co.in", "kz", "com.vn", "biz",
-        "app", "co.id", "nl", "pro", "us", "pl", "cl", "com.mx", "ro", "club", "co.jp", "co.nz", "ma", "com.ar", "su", "site", "cc", "rs", "cn", "ae", "co.kr",
-        "mx", "pk", "se", "gov.in", "com.my", "cz", "shop", "lk", "live", "tw", "ai", "com.sg", "top", "gov", "ac.id", "com.co", "co.th", "ac.in", "be",
-        "in.ua", "store", "org.ua", "org.tr", "dk", "hu", "az", "gov.ua", "edu.vn", "am", "uz", "com.pk", "news", "md", "tech", "nic.in", "go.id", "com.hk",
-        "ge", "com.cn", "ac.ir", "sg", "org.uk", "my", "no", "go.th", "pw", "com.bd", "to", "gov.tr", "dev", "kiev.ua", "mk", "com.ng", "ie", "asia", "at",
-        "co.ke", "com.np", "ph", "sch.id", "fi", "tk", "lv", "space", "life", "pe", "sk", "ng", "lt", "tn", "hk", "link", "vip", "cloud", "gov.bd", "website",
-        "kr", "sa", "media", "edu.in", "pt", "gg", "blog", "com.ph", "hr", "mobi", "org.au", "fun", "bg", "com.sa", "ac.th", "mn", "ws", "ee", "one", "uk",
-        "kg", "ba", "com.pe", "al", "today", "fm", "ml", "edu.tr", "bel.tr", "ac.uk", "net.ua", "dz", "win", "org.tw", "gov.co", "guru", "org.il", "edu.pk",
-        "world", "gov.vn", "is", "com.uy", "gov.np", "gob.mx", "or.id", "gov.my", "edu.co", "si", "in.th", "gen.tr", "network", "org.in", "ga", "digital",
-        "edu.au", "web.id", "work", "best", "agency", "edu.ua", "net.au", "icu", "sh"
-    ];
+    /// Top 100 most popular TLDs according to data here:
+    /// https://github.com/AdguardTeam/FiltersRegistry/blob/master/scripts/wildcard-domain-processor/wildcard_domains.json
+    private static let POPULAR_TLDS = [
+        "com.bd", "com.np", "com", "net", "org", "co", "de", "ru", "fr", "me",
+        "it", "nl", "io", "cc", "in", "pl", "xyz", "es", "se", "co.uk",
+        "tv", "pro", "info", "site", "us", "online", "ch", "at", "eu", "top",
+        "be", "cz", "biz", "fi", "one", "dk", "app", "ca", "to", "vip",
+        "com.br", "no", "fun", "live", "mx", "ro", "ws", "pt", "club", "sk",
+        "store", "com.au", "jp", "cloud", "hu", "gr", "my", "cl", "ie", "com.tr",
+        "cn", "mobi", "life", "com.mx", "dev", "icu", "asia", "com.co", "si", "co.za",
+        "shop", "uk", "lt", "lv", "space", "ee", "is", "id", "com.ua", "kz",
+        "work", "co.in", "tech", "co.kr", "com.ar", "blog", "pw", "co.il", "ph", "su",
+        "co.nz", "rs", "ai", "website", "bg", "ua", "ma", "world", "pe", "link"
+    ]
 
     private static let REGEXP_SLASH = "/"
 
@@ -202,6 +200,8 @@ class BlockerEntryFactory {
     private func createUrlFilterString(rule: NetworkRule) throws -> String {
         let isWebSocket = rule.isWebSocket
 
+        // TODO(ameshkov): !!! Move this to SimpleRegex?
+        
         // Use a single standard regex for rules that are supposed to match every URL
         for anyUrlTmpl in BlockerEntryFactory.ANY_URL_TEMPLATES {
             if rule.urlRuleText == anyUrlTmpl {
@@ -236,7 +236,7 @@ class BlockerEntryFactory {
             return BlockerEntryFactory.URL_FILTER_WS_ANY_URL + ".*" + (urlRegExpSource! as String)
         }
 
-        return urlRegExpSource! as String;
+        return urlRegExpSource! as String
     };
 
     /// Changes the rule action to "ignore-previous-rules".
@@ -377,36 +377,26 @@ class BlockerEntryFactory {
         }
     }
 
-    /**
-     * Throws error if provided rule contains regexp in permitted or restricted domains
-     */
-    // TODO(ameshkov): !!! Remove this
-    private func excludeRegexpDomainRule(_ rule: Rule) throws -> Void {
-        let domains = rule.restrictedDomains + rule.permittedDomains
-        try domains.forEach { item in
-            if item.hasPrefix("/") && item.hasSuffix("/") {
-                throw ConversionError.invalidDomains(message: "Safari does not support regular expressions in permitted or restricted domains");
-            }
-        }
-    }
-
     /// Adds domain limitations to the rule's trigger block.
     ///
     /// Domain limitations are controlled by the "if-domain" and "unless-domain" arrays.
     private func addDomainOptions(rule: Rule, trigger: inout BlockerEntry.Trigger) throws -> Void {
-        var excludedDomains = rule.restrictedDomains
-        let includedDomains = rule.permittedDomains
+        let included = resolveDomains(domains: rule.permittedDomains)
+        var excluded = resolveDomains(domains: rule.restrictedDomains)
 
-        // Discard rules that contains regexp in if-domain or unless-domain
-        // https://github.com/AdguardTeam/SafariConverterLib/issues/53
-        try excludeRegexpDomainRule(rule)
-        
-        let included = resolveTopLevelDomainWildcards(domains: includedDomains)
-        addUnlessDomainForThirdParty(rule: rule, domains: &excludedDomains)
+        addUnlessDomainForThirdParty(rule: rule, domains: &excluded)
 
-        let excluded = resolveTopLevelDomainWildcards(domains: excludedDomains)
+        if (included.count > 0 && excluded.count > 0) {
+            throw ConversionError.invalidDomains(message: "Safari does not support both permitted and restricted domains")
+        }
 
-        try writeDomainOptions(included: included, excluded: excluded, trigger: &trigger)
+        if (included.count > 0) {
+            trigger.ifDomain = included
+        }
+
+        if (excluded.count > 0) {
+            trigger.unlessDomain = excluded
+        }
     }
 
     /// Adds domain to unless-domains for third-party rules
@@ -432,23 +422,9 @@ class BlockerEntryFactory {
                     return
                 }
 
-                domains.append(res.domain)
+                // Prepend wildcard to cover subdomains.
+                domains.append("*" + res.domain)
             }
-        }
-    }
-
-    private func writeDomainOptions(included: [String], excluded: [String], trigger: inout BlockerEntry.Trigger) throws -> Void {
-
-        if (included.count > 0 && excluded.count > 0) {
-            throw ConversionError.invalidDomains(message: "Safari does not support both permitted and restricted domains")
-        }
-
-        if (included.count > 0) {
-            trigger.ifDomain = included
-        }
-
-        if (excluded.count > 0) {
-            trigger.unlessDomain = excluded
         }
     }
 
@@ -478,29 +454,32 @@ class BlockerEntryFactory {
             trigger.resourceType = nil
         }
     }
-
-    /**
-     * As a limited solution to support wildcard in tld, as there is no support for wildcards in "if-domain" property in CB
-     * we are going to use a list of popular domains.
-     * https://github.com/AdguardTeam/AdGuardForSafari/issues/248
-     *
-     * @param domains
-     */
-    private func resolveTopLevelDomainWildcards(domains: [String]) -> [String] {
+    
+    /// Resolve domains prepares a list of domains to be used in the "if-domain" and "unless-domain"
+    /// Safari rule properties.
+    ///
+    /// This includes several things.
+    ///
+    /// - First of all, we apply special handling for `domain.*` values. Since we cannot fully support it yet,
+    ///     we replace `.*` with a list of the most popular TLD domains.
+    /// - In the case of AdGuard, $domain modifier includes all subdomains. For Safari these rules should be
+    ///     transformed to `*domain.com` to signal that subdomains are included.
+    private func resolveDomains(domains: [String]) -> [String] {
         var result = [String]()
-
+        
         for domain in domains {
-            // TODO(ameshkov): !!! Should be .*
             if domain.utf8.last == Chars.WILDCARD {
+                // This is most likely a TLD domain, replace '.*' with popular TLDs.
                 let prefix = domain.dropLast(2)
-                for tld in BlockerEntryFactory.TOP_LEVEL_DOMAINS_LIST {
-                    result.append(prefix + "." + tld)
+                for tld in BlockerEntryFactory.POPULAR_TLDS {
+                    result.append("*" + prefix + "." + tld)
                 }
             } else {
-                result.append(domain)
+                // Prepend * to include subdomains.
+                result.append("*" + domain)
             }
         }
-
+        
         return result
     }
 

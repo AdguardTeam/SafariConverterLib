@@ -90,7 +90,8 @@ class Compiler {
                 } else if (rule as! NetworkRule).isSingleOption(option: .Specifichide) {
                     let res = NetworkRuleParser.extractDomain(pattern: (rule as! NetworkRule).urlRuleText)
                     if res.domain != "" {
-                        specifichideExceptionDomains.append(res.domain)
+                        // Prepend wildcard as these domains will then be evaluated against
+                        specifichideExceptionDomains.append("*" + res.domain)
                     }
                 } else {
                     compilationResult.addIgnorePreviousTypedEntry(entry: item, source: rule)

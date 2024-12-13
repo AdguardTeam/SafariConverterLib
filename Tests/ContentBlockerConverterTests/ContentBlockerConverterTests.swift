@@ -784,10 +784,10 @@ final class ContentBlockerConverterTests: XCTestCase {
         var decoded = try! parseJsonString(json: result.converted)
         XCTAssertEqual(decoded.count, 1)
         XCTAssertEqual(decoded[0].trigger.urlFilter, URL_FILTER_CSS_RULES)
-        XCTAssertEqual(decoded[0].trigger.ifDomain?[0], "*surge.com")
-        XCTAssertEqual(decoded[0].trigger.ifDomain?[1], "*surge.ru")
-        XCTAssertEqual(decoded[0].trigger.ifDomain?[2], "*surge.net")
-        XCTAssertEqual(decoded[0].trigger.ifDomain?.count, 400)
+        XCTAssertEqual(decoded[0].trigger.ifDomain?[0], "*surge.com.bd")
+        XCTAssertEqual(decoded[0].trigger.ifDomain?[1], "*surge.com.np")
+        XCTAssertEqual(decoded[0].trigger.ifDomain?[2], "*surge.com")
+        XCTAssertEqual(decoded[0].trigger.ifDomain?.count, 200)
 
 
         result = converter.convertArray(rules: ["||*/test-files/adguard.png$domain=surge.*|testcases.adguard.*"])
@@ -796,12 +796,12 @@ final class ContentBlockerConverterTests: XCTestCase {
         decoded = try! parseJsonString(json: result.converted)
         XCTAssertEqual(decoded.count, 1)
         XCTAssertEqual(decoded[0].trigger.urlFilter, START_URL_UNESCAPED + ".*\\/test-files\\/adguard\\.png")
-        XCTAssertEqual(decoded[0].trigger.ifDomain?[0], "*surge.com")
-        XCTAssertEqual(decoded[0].trigger.ifDomain?[1], "*surge.ru")
-        XCTAssertEqual(decoded[0].trigger.ifDomain?[2], "*surge.net")
-        XCTAssertEqual(decoded[0].trigger.ifDomain?.count, 400)
+        XCTAssertEqual(decoded[0].trigger.ifDomain?[0], "*surge.com.bd")
+        XCTAssertEqual(decoded[0].trigger.ifDomain?[1], "*surge.com.np")
+        XCTAssertEqual(decoded[0].trigger.ifDomain?[2], "*surge.com")
+        XCTAssertEqual(decoded[0].trigger.ifDomain?.count, 200)
 
-        var regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!)
+        let regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!)
         XCTAssertNotNil("https://test.com/test-files/adguard.png".firstMatch(for: regex))
 
         result = converter.convertArray(rules: ["|http$script,domain=forbes.*"])
@@ -812,11 +812,11 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded[0].action.type, "block")
         XCTAssertEqual(decoded[0].trigger.urlFilter, "^http")
         XCTAssertEqual(decoded[0].trigger.resourceType, ["script"])
-        XCTAssertEqual(decoded[0].trigger.ifDomain?[0], "*forbes.com")
-        XCTAssertEqual(decoded[0].trigger.ifDomain?[1], "*forbes.ru")
-        XCTAssertEqual(decoded[0].trigger.ifDomain?[2], "*forbes.net")
-        XCTAssertEqual(decoded[0].trigger.ifDomain?[199], "*forbes.sh")
-        XCTAssertEqual(decoded[0].trigger.ifDomain?.count, 200)
+        XCTAssertEqual(decoded[0].trigger.ifDomain?[0], "*forbes.com.bd")
+        XCTAssertEqual(decoded[0].trigger.ifDomain?[1], "*forbes.com.np")
+        XCTAssertEqual(decoded[0].trigger.ifDomain?[2], "*forbes.com")
+        XCTAssertEqual(decoded[0].trigger.ifDomain?[99], "*forbes.link")
+        XCTAssertEqual(decoded[0].trigger.ifDomain?.count, 100)
     }
 
     func testUboScriptletRules() {

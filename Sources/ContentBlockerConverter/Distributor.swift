@@ -34,8 +34,6 @@ class Distributor {
         entries.append(contentsOf: data.importantExceptions)
         entries.append(contentsOf: data.documentExceptions)
 
-        entries = updateDomains(entries: entries)
-
         var advBlockingEntries = [BlockerEntry]()
         if (advancedBlockedEnabled) {
             advBlockingEntries.append(contentsOf: data.extendedCssBlockingWide)
@@ -50,8 +48,6 @@ class Distributor {
             advBlockingEntries.append(contentsOf: data.other)
             advBlockingEntries.append(contentsOf: data.importantExceptions)
             advBlockingEntries.append(contentsOf: data.documentExceptions)
-
-            advBlockingEntries = updateDomains(entries: advBlockingEntries)
         }
 
         let errorsCount = data.errorsCount
@@ -65,38 +61,4 @@ class Distributor {
             maxJsonSizeBytes: self.maxJsonSizeBytes
         )
     }
-
-    /**
-     * Updates if-domain and unless-domain fields.
-     * Adds wildcard to every rule and splits rules contains over limit domains
-     *
-     * TODO(ameshkov): !!! Why are we doing it here?
-     */
-    func updateDomains(entries: [BlockerEntry]) -> [BlockerEntry] {
-        var result = [BlockerEntry]()
-        for var entry in entries {
-            entry.trigger.ifDomain = addWildcard(domains: entry.trigger.ifDomain)
-            entry.trigger.unlessDomain = addWildcard(domains: entry.trigger.unlessDomain)
-
-            result += [entry]
-        }
-        return result
-    };
-
-    private func addWildcard(domains: [String]?) -> [String]? {
-        if domains == nil || domains?.count == 0 {
-            return domains;
-        }
-
-        var result = [String]();
-        for domain in domains! {
-            if !domain.hasPrefix("*") {
-                result.append("*" + domain);
-            } else {
-                result.append(domain);
-            }
-        }
-
-        return result;
-    };
 }

@@ -14,7 +14,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
         let result = converter.createBlockerEntry(rule: rule);
         XCTAssertNotNil(result);
         XCTAssertEqual(result!.trigger.urlFilter, "^[htpsw]+:\\/\\/");
-        XCTAssertEqual(result!.trigger.ifDomain![0], "test.com");
+        XCTAssertEqual(result!.trigger.ifDomain![0], "*test.com");
         XCTAssertEqual(result!.trigger.unlessDomain, nil);
         XCTAssertEqual(result!.trigger.shortcut, nil);
         XCTAssertEqual(result!.trigger.regex, nil);
@@ -70,7 +70,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
         var result = converter.createBlockerEntry(rule: rule)
         XCTAssertNotNil(result)
         XCTAssertEqual(result!.trigger.urlFilter, ".*")
-        XCTAssertEqual(result!.trigger.ifDomain![0], "example.com")
+        XCTAssertEqual(result!.trigger.ifDomain![0], "*example.com")
         XCTAssertEqual(result!.trigger.unlessDomain, nil)
 
         rule = try! NetworkRule(ruleText: "@@||example.com$document")
@@ -78,7 +78,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
         result = converter.createBlockerEntry(rule: rule)
         XCTAssertNotNil(result)
         XCTAssertEqual(result!.trigger.urlFilter, ".*")
-        XCTAssertEqual(result!.trigger.ifDomain![0], "example.com")
+        XCTAssertEqual(result!.trigger.ifDomain![0], "*example.com")
         XCTAssertEqual(result!.trigger.unlessDomain, nil)
     }
 
@@ -216,7 +216,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
         let result = converter.createBlockerEntry(rule: rule);
         XCTAssertNotNil(result);
         XCTAssertEqual(result!.trigger.urlFilter, ".*");
-        XCTAssertEqual(result!.trigger.ifDomain, ["example.com"]);
+        XCTAssertEqual(result!.trigger.ifDomain, ["*example.com"]);
         XCTAssertEqual(result!.trigger.unlessDomain, nil);
 
         XCTAssertEqual(result!.action.type, "ignore-previous-rules");
@@ -252,7 +252,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
         let result = converter.createBlockerEntry(rule: rule);
         XCTAssertNotNil(result);
         XCTAssertEqual(result!.trigger.urlFilter, ".*");
-        XCTAssertEqual(result!.trigger.ifDomain!, ["example.com"]);
+        XCTAssertEqual(result!.trigger.ifDomain!, ["*example.com"]);
         XCTAssertNil(result!.trigger.unlessDomain);
         XCTAssertEqual(result!.trigger.shortcut, nil);
         XCTAssertEqual(result!.trigger.regex, nil);
@@ -317,8 +317,8 @@ final class BlockerEntryFactoryTests: XCTestCase {
         let result = converter.createBlockerEntry(rule: rule);
         XCTAssertNotNil(result);
         XCTAssertTrue(result!.trigger.ifDomain!.count >= 100);
-        XCTAssertTrue(result!.trigger.ifDomain!.contains("example.com"))
-        XCTAssertTrue(result!.trigger.ifDomain!.contains("example.com.tr"))
+        XCTAssertTrue(result!.trigger.ifDomain!.contains("*example.com"))
+        XCTAssertTrue(result!.trigger.ifDomain!.contains("*example.com.tr"))
     }
 
     func testDomainsRestrictions() {
