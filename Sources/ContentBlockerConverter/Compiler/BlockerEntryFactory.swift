@@ -159,7 +159,7 @@ class BlockerEntryFactory {
                 let result = SafariRegex.isSupported(pattern: pathRegex)
                 switch result {
                 case .success: break
-                case .failure(let error): throw ConversionError.unsupportedRegExp(message: "Unsupported regexp in $path: \(error.localizedDescription)")
+                case .failure(let error): throw ConversionError.unsupportedRegExp(message: "Unsupported regexp in $path: \(error)")
                 }
             } else {
                 pathRegex = SimpleRegex.createRegexText(str: rule.pathModifier!)
@@ -225,7 +225,7 @@ class BlockerEntryFactory {
             
             switch result {
             case .success: break
-            case .failure(let error): throw ConversionError.unsupportedRegExp(message: "Unsupported regexp rule: \(error.localizedDescription)")
+            case .failure(let error): throw ConversionError.unsupportedRegExp(message: "Unsupported regexp rule: \(error)")
             }
         }
 
@@ -411,10 +411,15 @@ class BlockerEntryFactory {
 
     /// Adds domain to unless-domains for third-party rules
     ///
+    /// This is an attempt to fix this issue:
     /// https://github.com/AdguardTeam/AdGuardForSafari/issues/104
     ///
-    /// TODO(ameshkov): !!! As of Safari 18 this is not required anymore, check other versions
+    /// The issue was fixed later in WebKit so we only need it for older Safari versions.
     private func addUnlessDomainForThirdParty(rule: Rule, domains: inout [String]) {
+        if SafariService.current.version.isSafari16_4orGreater() {
+            return
+        }
+
         if !(rule is NetworkRule) {
             return
         }
@@ -424,10 +429,10 @@ class BlockerEntryFactory {
             if (networkRule.permittedDomains.count == 0) {
                 let res = NetworkRuleParser.extractDomain(pattern: networkRule.urlRuleText)
                 if (res.domain == "") {
-                    return;
+                    return
                 }
 
-                domains.append(res.domain);
+                domains.append(res.domain)
             }
         }
     }
@@ -435,16 +440,17 @@ class BlockerEntryFactory {
     private func writeDomainOptions(included: [String], excluded: [String], trigger: inout BlockerEntry.Trigger) throws -> Void {
 
         if (included.count > 0 && excluded.count > 0) {
-            throw ConversionError.invalidDomains(message: "Safari does not support both permitted and restricted domains");
+            throw ConversionError.invalidDomains(message: "Safari does not support both permitted and restricted domains")
         }
 
         if (included.count > 0) {
-            trigger.ifDomain = included;
+            trigger.ifDomain = included
         }
+
         if (excluded.count > 0) {
-            trigger.unlessDomain = excluded;
+            trigger.unlessDomain = excluded
         }
-    };
+    }
 
     // TODO(ameshkov): !!! Add normal comment here.
     private func checkWhiteListExceptions(rule: NetworkRule, trigger: inout BlockerEntry.Trigger) throws -> Void {
@@ -506,13 +512,16 @@ class BlockerEntryFactory {
                 entry.trigger.ifDomain == nil &&
                 entry.trigger.loadType?.firstIndex(of: "third-party") == nil) {
 
+                // TODO(ameshkov): !!! This limitation looks wrong and can be lifted for newer Safari versions
+
                 // Due to https://github.com/AdguardTeam/AdguardBrowserExtension/issues/145
-                throw ConversionError.unsupportedContentType(message: "Subdocument blocking rules are allowed only along with third-party or if-domain modifiers");
+                throw ConversionError.unsupportedContentType(message: "Subdocument blocking rules are allowed only along with third-party or if-domain modifiers")
             }
         }
 
+        // TODO(ameshkov): !!! What? Where would it get here?
         if (entry.trigger.resourceType?.firstIndex(of: "popup") != nil) {
-            throw ConversionError.unsupportedRule(message: "$popup rules are not supported");
+            throw ConversionError.unsupportedRule(message: "$popup rules are not supported")
         }
     }
 

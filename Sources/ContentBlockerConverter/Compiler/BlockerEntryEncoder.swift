@@ -114,56 +114,56 @@ class BlockerEntryEncoder {
     }
     
     private func encodeTrigger(trigger: BlockerEntry.Trigger) -> String {
-        var result = "{";
+        var result = "{"
         
-        result.append("\"url-filter\":\"");
-        result.append(trigger.urlFilter!.escapeForJSON());
-        result.append("\"");
+        result.append("\"url-filter\":\"")
+        result.append(trigger.urlFilter!.escapeForJSON())
+        result.append("\"")
         
         if trigger.shortcut != nil {
-            result.append("\"url-shortcut\":\"");
-            result.append(trigger.shortcut!.escapeForJSON());
-            result.append("\"");
+            result.append("\"url-shortcut\":\"")
+            result.append(trigger.shortcut!.escapeForJSON())
+            result.append("\"")
         }
         
         if (trigger.caseSensitive != nil) {
-            result.append(",\"url-filter-is-case-sensitive\":");
-            result.append(trigger.caseSensitive! ? "true" : "false");
+            result.append(",\"url-filter-is-case-sensitive\":")
+            result.append(trigger.caseSensitive! ? "true" : "false")
         }
         
         if (trigger.regex != nil) {
-            result.append(",\"regex\":\"");
-            result.append(trigger.regex!.pattern.escapeForJSON());
-            result.append("\"");
+            result.append(",\"regex\":\"")
+            result.append(trigger.regex!.pattern.escapeForJSON())
+            result.append("\"")
         }
         
         if (trigger.loadType != nil) {
-            result.append(",\"load-type\":");
-            result.append(JsonUtils.encodeStringArray(arr: trigger.loadType!));
+            result.append(",\"load-type\":")
+            result.append(JsonUtils.encodeStringArray(arr: trigger.loadType!))
         }
         
         if (trigger.resourceType != nil) {
-            result.append(",\"resource-type\":");
-            result.append(JsonUtils.encodeStringArray(arr: trigger.resourceType!));
+            result.append(",\"resource-type\":")
+            result.append(JsonUtils.encodeStringArray(arr: trigger.resourceType!))
         }
         
         if (trigger.loadContext != nil) {
-            result.append(",\"load-context\":");
-            result.append(JsonUtils.encodeStringArray(arr: trigger.loadContext!));
+            result.append(",\"load-context\":")
+            result.append(JsonUtils.encodeStringArray(arr: trigger.loadContext!))
         }
-        
+
         if (trigger.ifDomain != nil) {
-            result.append(",\"if-domain\":");
-            result.append(JsonUtils.encodeStringArray(arr: trigger.ifDomain!, escape: true));
+            result.append(",\"if-domain\":")
+            result.append(JsonUtils.encodeStringArray(arr: trigger.ifDomain!, escape: true))
         }
-        
+
         if (trigger.unlessDomain != nil) {
-            result.append(",\"unless-domain\":");
-            result.append(JsonUtils.encodeStringArray(arr: trigger.unlessDomain!, escape: true));
+            result.append(",\"unless-domain\":")
+            result.append(JsonUtils.encodeStringArray(arr: trigger.unlessDomain!, escape: true))
         }
-        
-        result.append("}");
-        
-        return result;
+
+        result.append("}")
+
+        return result
     }
 }

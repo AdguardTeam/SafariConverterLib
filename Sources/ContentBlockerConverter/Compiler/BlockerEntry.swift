@@ -6,17 +6,23 @@ import Foundation
 /// https://developer.apple.com/documentation/safariservices/creating-a-content-blocker
 ///
 /// In addition to Safari normal syntax it adds some new fields that are interpreted by a custom extension.
-public struct BlockerEntry {
+public struct BlockerEntry : Codable {
     public init(trigger: BlockerEntry.Trigger, action: BlockerEntry.Action) {
         self.trigger = trigger
         self.action = action
+    }
+    
+    // Define CodingKeys to guarantee the correct property order in the output.
+    enum CodingKeys: String, CodingKey {
+        case trigger = "trigger"
+        case action = "action"
     }
     
     public var trigger: Trigger
     public let action: Action
     
     /// Trigger is the "trigger" field of a content blocking rule, i.e. defines conditions when the rule is applied.
-    public struct Trigger {
+    public struct Trigger : Codable {
         public init(ifDomain: [String]? = nil, urlFilter: String? = nil, unlessDomain: [String]? = nil, shortcut: String? = nil, regex: NSRegularExpression? = nil, loadType: [String]? = nil, resourceType: [String]? = nil, caseSensitive: Bool? = nil, loadContext: [String]? = nil) {
             self.ifDomain = ifDomain
             self.urlFilter = urlFilter
@@ -70,7 +76,7 @@ public struct BlockerEntry {
     }
     
     /// Action represents an action that this rule applies.
-    public struct Action {
+    public struct Action : Codable {
         public init(type: String, selector: String? = nil, css: String? = nil, script: String? = nil, scriptlet: String? = nil, scriptletParam: String? = nil) {
             self.type = type
             self.selector = selector
@@ -86,9 +92,14 @@ public struct BlockerEntry {
         public var script: String?
         public var scriptlet: String?
         public var scriptletParam: String?
+        
+        enum CodingKeys: String, CodingKey {
+            case type = "type"
+            case selector = "selector"
+            case css = "css"
+            case script = "script"
+            case scriptlet = "scriptlet"
+            case scriptletParam = "scriptletParam"
+        }
     }
 }
-
-extension BlockerEntry: Codable {}
-extension BlockerEntry.Trigger: Codable {}
-extension BlockerEntry.Action: Codable {}

@@ -1,22 +1,16 @@
 import Foundation
 import Shared
 
-/**
- * Rule factory creates rules from source texts
- */
+/// RuleFactory is responsible for parsing AdGuard rules.
 class RuleFactory {
-    
-    private static let converter = RuleConverter();
-    
-    private var errorsCounter: ErrorsCounter;
+    private static let converter = RuleConverter()
+    private var errorsCounter: ErrorsCounter
     
     init(errorsCounter: ErrorsCounter) {
-        self.errorsCounter = errorsCounter;
+        self.errorsCounter = errorsCounter
     }
     
-    /**
-     * Creates rules from lines
-     */
+    /// Creates AdGuard rules from the specified lines.
     func createRules(lines: [String], progress: Progress? = nil) -> [Rule] {
         var shouldContinue: Bool {
             !(progress?.isCancelled ?? false)
@@ -38,21 +32,27 @@ class RuleFactory {
                 // slow.
                 ruleLine.makeContiguousUTF8()
             }
+            
             ruleLine = ruleLine.trimmingCharacters(in: .whitespacesAndNewlines)
+            if ruleLine.isEmpty || RuleFactory.isComment(ruleText: ruleLine) {
+                continue
+            }
 
             let convertedLines = RuleFactory.converter.convertRule(ruleText: ruleLine)
             for convertedLine in convertedLines {
                 guard shouldContinue else { return [] }
 
-                guard let rule = safeCreateRule(ruleText: convertedLine) else { continue }
-                if let networkRule = rule as? NetworkRule {
-                    if networkRule.badfilter {
-                        badfilterRules[networkRule.urlRuleText, default: []].append(networkRule)
+                if convertedLine != nil {
+                    guard let rule = safeCreateRule(ruleText: convertedLine!) else { continue }
+                    if let networkRule = rule as? NetworkRule {
+                        if networkRule.badfilter {
+                            badfilterRules[networkRule.urlRuleText, default: []].append(networkRule)
+                        } else {
+                            networkRules.append(networkRule)
+                        }
                     } else {
-                        networkRules.append(networkRule)
+                        result.append(rule)
                     }
-                } else {
-                    result.append(rule)
                 }
             }
         }
@@ -77,46 +77,65 @@ class RuleFactory {
         return result
     }
     
-    func safeCreateRule(ruleText: String?) -> Rule? {
+    /// Helper for safely create a rule or increment an errors counter.
+    private func safeCreateRule(ruleText: String) -> Rule? {
         do {
-            return try RuleFactory.createRule(ruleText: ruleText);
+            return try RuleFactory.createRule(ruleText: ruleText)
         } catch {
-            self.errorsCounter.add();
-            return nil;
+            self.errorsCounter.add()
+            return nil
         }
     }
     
-    /**
-     * Creates rule object from source text
-     */
-    static func createRule(ruleText: String?) throws -> Rule? {
+    /// Creates an AdGuard rule from the rule text.
+    static func createRule(ruleText: String) throws -> Rule? {
         do {
-            if (ruleText == nil || ruleText! == "" || ruleText!.hasPrefix("!")) {
-                return nil;
+            if ruleText.isEmpty || isComment(ruleText: ruleText) {
+                return nil
             }
             
-            // TODO add proper validation
-            if (ruleText!.utf8.count < 3) {
-                throw SyntaxError.invalidRule(message: "Invalid rule text");
+            if (ruleText.utf8.count < 3) {
+                throw SyntaxError.invalidRule(message: "The rule is too short")
             }
             
-            if (RuleFactory.isCosmetic(ruleText: ruleText!)) {
-                return try CosmeticRule(ruleText: ruleText!);
+            if (RuleFactory.isCosmetic(ruleText: ruleText)) {
+                return try CosmeticRule(ruleText: ruleText)
             }
 
-            return try NetworkRule(ruleText: ruleText!);
+            return try NetworkRule(ruleText: ruleText)
         } catch {
-            Logger.log("(RuleFactory) - Unexpected error: \(error) while creating rule from: \(String(describing: ruleText))");
-            throw error;
+            Logger.log("(RuleFactory) - Unexpected error: \(error) while creating rule from: \(String(describing: ruleText))")
+            throw error
         }
-    };
-    
-    
-    /**
-     * Checks if the rule is cosmetic (CSS, JS) or not
-     */
+    }
+   
+    /// Checks if the rule is a cosmetic (CSS/JS) or not.
     static func isCosmetic(ruleText: String) -> Bool {
-        let markerInfo = CosmeticRuleMarker.findCosmeticRuleMarker(ruleText: ruleText);
-        return markerInfo.index != -1;
+        let markerInfo = CosmeticRuleMarker.findCosmeticRuleMarker(ruleText: ruleText)
+        return markerInfo.index != -1
+    }
+    
+    /// Checks if the rule is a comment.
+    ///
+    /// There are two types of comments:
+    /// A line starts with '!'
+    /// A line starts with '# '
+    static func isComment(ruleText: String) -> Bool {
+        switch ruleText.utf8.first {
+            case Chars.EXCLAMATION:
+            return true
+        case Chars.HASH:
+            if ruleText.utf8.count == 1 {
+                return true
+            }
+            let nextChar = ruleText.utf8[ruleText.utf8.index(after: ruleText.utf8.startIndex)]
+            if nextChar == Chars.WHITESPACE {
+                return true
+            }
+
+            return false
+        default:
+            return false
+        }
     }
 }

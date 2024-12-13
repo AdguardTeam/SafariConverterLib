@@ -87,22 +87,22 @@ public struct ConversionResult {
         message: String,
         maxJsonSizeBytes: Int? = nil
     ) {
-        self.totalConvertedCount = entries.count + advBlockingEntries.count;
+        self.totalConvertedCount = entries.count + advBlockingEntries.count
         
-        self.overLimit = (limit > 0 && entries.count > limit);
-        self.errorsCount = self.overLimit ? errorsCount + 1 : errorsCount;
+        self.overLimit = (limit > 0 && entries.count > limit)
+        self.errorsCount = self.overLimit ? errorsCount + 1 : errorsCount
         
-        var limitedEntries = entries;
+        var limitedEntries = entries
         if self.overLimit {
-            limitedEntries = Array(entries.prefix(limit));
+            limitedEntries = Array(entries.prefix(limit))
             
-            Logger.log("(ConversionResult) - The limit is reached. Overlimit rules will be ignored.");
+            Logger.log("(ConversionResult) - The limit is reached. Overlimit rules will be ignored.")
         }
         
         let (encodedString, encodedCount) = ConversionResult.createJSONString(entries: limitedEntries, maxJsonSizeBytes: maxJsonSizeBytes)
         self.converted = encodedString
         self.convertedCount = encodedCount
-        
+
         if advBlockingEntries.count > 0 {
             let (encodedString, encodedCount) = ConversionResult.createJSONString(
                 entries: advBlockingEntries,
@@ -112,7 +112,7 @@ public struct ConversionResult {
             self.advancedBlockingConvertedCount = encodedCount
         }
         
-        self.message = message;
+        self.message = message
     }
     
     private static func createJSONString(entries: [BlockerEntry], maxJsonSizeBytes: Int?) -> (String, Int) {

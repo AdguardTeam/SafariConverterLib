@@ -50,7 +50,7 @@ class RuleConverter {
     ///
     /// Note, that some rules are converted to a list of rules.
     func convertRule(ruleText: String) -> [String?] {
-        if (ruleText.isEmpty || isComment(ruleText: ruleText)) {
+        if (ruleText.isEmpty) {
             return [ruleText]
         }
 
@@ -83,12 +83,6 @@ class RuleConverter {
         }
 
         return [ruleText]
-    }
-
-    /// isComment returns true if the rule is a comment.
-    private func isComment(ruleText: String) -> Bool {
-        // TODO(ameshkov): !!! There's one more case, starts with HASH + SPACE
-        return ruleText.utf8.first == Chars.EXCLAMATION;
     }
     
     /// Returns true if the rule is a uBO scriptlet rule.

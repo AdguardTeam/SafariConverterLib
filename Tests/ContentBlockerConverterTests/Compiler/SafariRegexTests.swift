@@ -60,6 +60,7 @@ final class SafariRegexTests: XCTestCase {
             ("^\\/$", true),
             (#"@@/:\/\/.*[.]wp[.]pl\/[a-z0-9_]+[.][a-z]+\/"#, true),
             ("\\/(sub1|sub2)\\/page\\.html", false),
+            ("^https?\\:\\/\\/", false),
             
             // Edge cases allowed due to simplicity of logic
             ("[a-]", true),       // In our simplified logic, we allowed this
@@ -100,7 +101,7 @@ final class SafariRegexTests: XCTestCase {
         
         for (pattern, expected) in testPatterns {
             let result = SafariRegex.isSupported(pattern: pattern)
-            
+
             switch result {
             case .success:
                 if !expected {

@@ -331,7 +331,7 @@ class NetworkRule: Rule {
                 throw SyntaxError.invalidRule(message: "$~ping option is not supported")
             }
         default:
-            throw SyntaxError.invalidRule(message: "Unknown option: \(optionName)")
+            throw SyntaxError.invalidRule(message: "Unsupported option: \(optionName)")
         }
 
         if optionName != "domain" && optionValue != "" {

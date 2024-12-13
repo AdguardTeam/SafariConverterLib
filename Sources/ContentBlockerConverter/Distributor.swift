@@ -1,15 +1,7 @@
 import Foundation
 import Shared
 
-/**
- * Maximum domains amount for css blocking rule
- */
-private let MAX_DOMAINS_FOR_RULE = 10000
-
-/**
- * Distributor class
- * Creates a distribution ready result object
- */
+/// Distributor creates a Safari JSON and checks for additional limitations while doing that.
 class Distributor {
 
     private let limit: Int;
@@ -30,39 +22,39 @@ class Distributor {
      * Creates final conversion result from compilation result object
      */
     func createConversionResult(data: CompilationResult) -> ConversionResult {
-        var entries = [BlockerEntry]();
-        entries.append(contentsOf: data.cssBlockingWide);
-        entries.append(contentsOf: data.cssBlockingGenericDomainSensitive);
-        entries.append(contentsOf: data.cssBlockingGenericHideExceptions);
-        entries.append(contentsOf: data.cssBlockingDomainSensitive);
-        entries.append(contentsOf: data.cssElemhide);
-        entries.append(contentsOf: data.urlBlocking);
-        entries.append(contentsOf: data.other);
-        entries.append(contentsOf: data.important);
-        entries.append(contentsOf: data.importantExceptions);
-        entries.append(contentsOf: data.documentExceptions);
+        var entries = [BlockerEntry]()
+        entries.append(contentsOf: data.cssBlockingWide)
+        entries.append(contentsOf: data.cssBlockingGenericDomainSensitive)
+        entries.append(contentsOf: data.cssBlockingGenericHideExceptions)
+        entries.append(contentsOf: data.cssBlockingDomainSensitive)
+        entries.append(contentsOf: data.cssElemhide)
+        entries.append(contentsOf: data.urlBlocking)
+        entries.append(contentsOf: data.other)
+        entries.append(contentsOf: data.important)
+        entries.append(contentsOf: data.importantExceptions)
+        entries.append(contentsOf: data.documentExceptions)
 
-        entries = updateDomains(entries: entries);
+        entries = updateDomains(entries: entries)
 
-        var advBlockingEntries = [BlockerEntry]();
+        var advBlockingEntries = [BlockerEntry]()
         if (advancedBlockedEnabled) {
-            advBlockingEntries.append(contentsOf: data.extendedCssBlockingWide);
-            advBlockingEntries.append(contentsOf: data.extendedCssBlockingGenericDomainSensitive);
-            advBlockingEntries.append(contentsOf: data.cssBlockingGenericHideExceptions);
-            advBlockingEntries.append(contentsOf: data.extendedCssBlockingDomainSensitive);
-            advBlockingEntries.append(contentsOf: data.cssElemhide);
-            advBlockingEntries.append(contentsOf: data.script);
-            advBlockingEntries.append(contentsOf: data.scriptlets);
-            advBlockingEntries.append(contentsOf: data.scriptJsInjectExceptions);
-            advBlockingEntries.append(contentsOf: data.сssInjects);
-            advBlockingEntries.append(contentsOf: data.other);
-            advBlockingEntries.append(contentsOf: data.importantExceptions);
-            advBlockingEntries.append(contentsOf: data.documentExceptions);
+            advBlockingEntries.append(contentsOf: data.extendedCssBlockingWide)
+            advBlockingEntries.append(contentsOf: data.extendedCssBlockingGenericDomainSensitive)
+            advBlockingEntries.append(contentsOf: data.cssBlockingGenericHideExceptions)
+            advBlockingEntries.append(contentsOf: data.extendedCssBlockingDomainSensitive)
+            advBlockingEntries.append(contentsOf: data.cssElemhide)
+            advBlockingEntries.append(contentsOf: data.script)
+            advBlockingEntries.append(contentsOf: data.scriptlets)
+            advBlockingEntries.append(contentsOf: data.scriptJsInjectExceptions)
+            advBlockingEntries.append(contentsOf: data.сssInjects)
+            advBlockingEntries.append(contentsOf: data.other)
+            advBlockingEntries.append(contentsOf: data.importantExceptions)
+            advBlockingEntries.append(contentsOf: data.documentExceptions)
 
-            advBlockingEntries = updateDomains(entries: advBlockingEntries);
+            advBlockingEntries = updateDomains(entries: advBlockingEntries)
         }
 
-        let errorsCount = data.errorsCount;
+        let errorsCount = data.errorsCount
         
         return ConversionResult(
             entries: entries,
@@ -71,12 +63,14 @@ class Distributor {
             errorsCount: errorsCount,
             message: data.message,
             maxJsonSizeBytes: self.maxJsonSizeBytes
-        );
+        )
     }
 
     /**
      * Updates if-domain and unless-domain fields.
      * Adds wildcard to every rule and splits rules contains over limit domains
+     *
+     * TODO(ameshkov): !!! Why are we doing it here?
      */
     func updateDomains(entries: [BlockerEntry]) -> [BlockerEntry] {
         var result = [BlockerEntry]()
@@ -84,19 +78,6 @@ class Distributor {
             entry.trigger.ifDomain = addWildcard(domains: entry.trigger.ifDomain)
             entry.trigger.unlessDomain = addWildcard(domains: entry.trigger.unlessDomain)
 
-            let ifDomainsAmount = entry.trigger.ifDomain?.count ?? 0
-            let unlessDomainsAmount = entry.trigger.unlessDomain?.count ?? 0
- 
-            // discard rules that exceed domains limit
-            // https://github.com/AdguardTeam/SafariConverterLib/issues/51
-            
-            // TODO(ameshkov): !!! Check what's the actual limit, maybe can be increased (running into some issues with the current one)
-            if ifDomainsAmount > MAX_DOMAINS_FOR_RULE
-                || unlessDomainsAmount > MAX_DOMAINS_FOR_RULE {
-                Logger.log("Domains limit exceeded: \(ifDomainsAmount > MAX_DOMAINS_FOR_RULE ? ifDomainsAmount : unlessDomainsAmount)")
-                continue
-            }
-            
             result += [entry]
         }
         return result
