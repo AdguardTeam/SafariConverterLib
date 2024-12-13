@@ -29,7 +29,6 @@ final class BlockerEntryFactoryTests: XCTestCase {
         let converter = BlockerEntryFactory(advancedBlockingEnabled: false, errorsCounter: ErrorsCounter());
 
         let rule = try NetworkRule(ruleText: "/regex/$script")
-        rule.urlRuleText = "/regex/$script"
 
         let result = converter.createBlockerEntry(rule: rule)
         XCTAssertNotNil(result)
@@ -115,25 +114,24 @@ final class BlockerEntryFactoryTests: XCTestCase {
     }
 
     func testConvertScriptRuleWhitelist() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter());
+        let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter())
 
-        let rule = try! CosmeticRule(ruleText: "example.org#@%#test");
-        rule.permittedDomains = ["test_domain_one", "test_domain_two"];
+        let rule = try! CosmeticRule(ruleText: "example.org,example.com#@%#test")
 
-        let result = converter.createBlockerEntry(rule: rule);
-        XCTAssertNotNil(result);
-        XCTAssertEqual(result!.trigger.urlFilter, ".*");
-        XCTAssertEqual(result!.trigger.ifDomain!.count, 2);
-        XCTAssertEqual(result!.trigger.unlessDomain, nil);
-        XCTAssertEqual(result!.trigger.shortcut, nil);
-        XCTAssertEqual(result!.trigger.regex, nil);
+        let result = converter.createBlockerEntry(rule: rule)
+        XCTAssertNotNil(result)
+        XCTAssertEqual(result!.trigger.urlFilter, ".*")
+        XCTAssertEqual(result!.trigger.ifDomain!.count, 2)
+        XCTAssertEqual(result!.trigger.unlessDomain, nil)
+        XCTAssertEqual(result!.trigger.shortcut, nil)
+        XCTAssertEqual(result!.trigger.regex, nil)
 
-        XCTAssertEqual(result!.action.type, "ignore-previous-rules");
-        XCTAssertEqual(result!.action.selector, nil);
-        XCTAssertEqual(result!.action.css, nil);
-        XCTAssertEqual(result!.action.script, "test");
-        XCTAssertEqual(result!.action.scriptlet, nil);
-        XCTAssertEqual(result!.action.scriptletParam, nil);
+        XCTAssertEqual(result!.action.type, "ignore-previous-rules")
+        XCTAssertEqual(result!.action.selector, nil)
+        XCTAssertEqual(result!.action.css, nil)
+        XCTAssertEqual(result!.action.script, "test")
+        XCTAssertEqual(result!.action.scriptlet, nil)
+        XCTAssertEqual(result!.action.scriptletParam, nil)
     }
 
     func testConvertScriptletRule() {
@@ -158,49 +156,42 @@ final class BlockerEntryFactoryTests: XCTestCase {
     }
 
     func testConvertScriptletRuleWhitelist() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter());
+        let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter())
 
-        let rule = try! CosmeticRule(ruleText: "##test");
-        rule.isScript = false;
-        rule.isScriptlet = true;
-        rule.scriptlet = "test scriptlet";
-        rule.scriptletParam = "test scriptlet param";
-        rule.restrictedDomains = ["test_domain_one", "test_domain_two"];
-        rule.isWhiteList = true;
+        let rule = try! CosmeticRule(ruleText: "~example.org,~example.com#@%#//scriptlet('test scriptlet', 'test scriptlet param')")
 
-        let result = converter.createBlockerEntry(rule: rule);
-        XCTAssertNotNil(result);
-        XCTAssertEqual(result!.trigger.urlFilter, ".*");
-        XCTAssertEqual(result!.trigger.ifDomain, nil);
-        XCTAssertEqual(result!.trigger.unlessDomain!.count, 2);
-        XCTAssertEqual(result!.trigger.shortcut, nil);
-        XCTAssertEqual(result!.trigger.regex, nil);
+        let result = converter.createBlockerEntry(rule: rule)
+        XCTAssertNotNil(result)
+        XCTAssertEqual(result!.trigger.urlFilter, ".*")
+        XCTAssertEqual(result!.trigger.ifDomain, nil)
+        XCTAssertEqual(result!.trigger.unlessDomain!.count, 2)
+        XCTAssertEqual(result!.trigger.shortcut, nil)
+        XCTAssertEqual(result!.trigger.regex, nil)
 
-        XCTAssertEqual(result!.action.type, "ignore-previous-rules");
-        XCTAssertEqual(result!.action.selector, nil);
-        XCTAssertEqual(result!.action.css, nil);
-        XCTAssertEqual(result!.action.script, nil);
-        XCTAssertEqual(result!.action.scriptlet, "test scriptlet");
-        XCTAssertEqual(result!.action.scriptletParam, "test scriptlet param");
+        XCTAssertEqual(result!.action.type, "ignore-previous-rules")
+        XCTAssertEqual(result!.action.selector, nil)
+        XCTAssertEqual(result!.action.css, nil)
+        XCTAssertEqual(result!.action.script, nil)
+        XCTAssertEqual(result!.action.scriptlet, "test scriptlet")
+        XCTAssertEqual(result!.action.scriptletParam, "{\"name\":\"test scriptlet\",\"args\":[\"test scriptlet param\"]}")
     }
 
     func testConvertCssRule() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter());
+        let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter())
 
-        let rule = try! CosmeticRule(ruleText: "##.test_css_selector");
-        rule.restrictedDomains = ["test_domain_one", "test_domain_two"];
+        let rule = try! CosmeticRule(ruleText: "~example.org,~example.com##.test_css_selector")
 
-        let result = converter.createBlockerEntry(rule: rule);
-        XCTAssertNotNil(result);
-        XCTAssertEqual(result!.trigger.urlFilter, ".*");
-        XCTAssertEqual(result!.trigger.ifDomain, nil);
-        XCTAssertEqual(result!.trigger.unlessDomain!.count, 2);
-        XCTAssertEqual(result!.trigger.shortcut, nil);
-        XCTAssertEqual(result!.trigger.regex, nil);
+        let result = converter.createBlockerEntry(rule: rule)
+        XCTAssertNotNil(result)
+        XCTAssertEqual(result!.trigger.urlFilter, ".*")
+        XCTAssertEqual(result!.trigger.ifDomain, nil)
+        XCTAssertEqual(result!.trigger.unlessDomain!.count, 2)
+        XCTAssertEqual(result!.trigger.shortcut, nil)
+        XCTAssertEqual(result!.trigger.regex, nil)
 
-        XCTAssertEqual(result!.action.type, "css-display-none");
-        XCTAssertEqual(result!.action.selector, ".test_css_selector");
-        XCTAssertEqual(result!.action.css, nil);
+        XCTAssertEqual(result!.action.type, "css-display-none")
+        XCTAssertEqual(result!.action.selector, ".test_css_selector")
+        XCTAssertEqual(result!.action.css, nil)
     }
 
     func testConvertCssExceptionRule() {
@@ -220,61 +211,57 @@ final class BlockerEntryFactoryTests: XCTestCase {
     }
 
     func testConvertCssRuleExtendedCss() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter());
+        let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter())
 
-        let rule = try! CosmeticRule(ruleText: "##.test_css_selector:has(> .test_selector)");
-        rule.isExtendedCss = true;
-        rule.restrictedDomains = ["test_domain_one", "test_domain_two"];
+        let rule = try! CosmeticRule(ruleText: "~example.org,~example.com#?#.test_css_selector:has(> .test_selector)")
 
-        let result = converter.createBlockerEntry(rule: rule);
-        XCTAssertNotNil(result);
-        XCTAssertEqual(result!.trigger.urlFilter, ".*");
-        XCTAssertEqual(result!.trigger.ifDomain, nil);
-        XCTAssertEqual(result!.trigger.unlessDomain!.count, 2);
-        XCTAssertEqual(result!.trigger.shortcut, nil);
-        XCTAssertEqual(result!.trigger.regex, nil);
+        let result = converter.createBlockerEntry(rule: rule)
+        XCTAssertNotNil(result)
+        XCTAssertEqual(result!.trigger.urlFilter, ".*")
+        XCTAssertEqual(result!.trigger.ifDomain, nil)
+        XCTAssertEqual(result!.trigger.unlessDomain!.count, 2)
+        XCTAssertEqual(result!.trigger.shortcut, nil)
+        XCTAssertEqual(result!.trigger.regex, nil)
 
-        XCTAssertEqual(result!.action.type, "css-extended");
-        XCTAssertEqual(result!.action.selector, nil);
-        XCTAssertEqual(result!.action.css, ".test_css_selector:has(> .test_selector)");
+        XCTAssertEqual(result!.action.type, "css-extended")
+        XCTAssertEqual(result!.action.selector, nil)
+        XCTAssertEqual(result!.action.css, ".test_css_selector:has(> .test_selector)")
     }
 
     func testConvertCssRuleCssInject() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter());
+        let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter())
 
-        let rule = try! CosmeticRule(ruleText: "example.com#$#.body { overflow: visible!important; }");
+        let rule = try! CosmeticRule(ruleText: "example.com#$#.body { overflow: visible!important; }")
 
-        let result = converter.createBlockerEntry(rule: rule);
-        XCTAssertNotNil(result);
-        XCTAssertEqual(result!.trigger.urlFilter, ".*");
-        XCTAssertEqual(result!.trigger.ifDomain!, ["*example.com"]);
-        XCTAssertNil(result!.trigger.unlessDomain);
-        XCTAssertEqual(result!.trigger.shortcut, nil);
-        XCTAssertEqual(result!.trigger.regex, nil);
+        let result = converter.createBlockerEntry(rule: rule)
+        XCTAssertNotNil(result)
+        XCTAssertEqual(result!.trigger.urlFilter, ".*")
+        XCTAssertEqual(result!.trigger.ifDomain!, ["*example.com"])
+        XCTAssertNil(result!.trigger.unlessDomain)
+        XCTAssertEqual(result!.trigger.shortcut, nil)
+        XCTAssertEqual(result!.trigger.regex, nil)
 
-        XCTAssertEqual(result!.action.type, "css-inject");
-        XCTAssertEqual(result!.action.selector, nil);
-        XCTAssertEqual(result!.action.css, ".body { overflow: visible!important; }");
+        XCTAssertEqual(result!.action.type, "css-inject")
+        XCTAssertEqual(result!.action.selector, nil)
+        XCTAssertEqual(result!.action.css, ".body { overflow: visible!important; }")
     }
 
     func testConvertInvalidRegexNetworkRule() throws {
         let converter = BlockerEntryFactory(advancedBlockingEnabled: false, errorsCounter: ErrorsCounter())
 
-        let rule = try NetworkRule(ruleText: "/regex/")
-
-        rule.urlRegExpSource = "regex{0,9}"
+        var rule = try NetworkRule(ruleText: "/regex{0,9}/")
         var result = converter.createBlockerEntry(rule: rule)
         XCTAssertNil(result)
 
-        rule.urlRegExpSource = "regex|test"
+        rule = try NetworkRule(ruleText: "/regex|test/")
         result = converter.createBlockerEntry(rule: rule)
         XCTAssertNil(result)
 
-        rule.urlRegExpSource = "test(?!test)"
+        rule = try NetworkRule(ruleText: "/test(?!test)/")
         result = converter.createBlockerEntry(rule: rule)
         XCTAssertNil(result)
 
-        rule.urlRegExpSource = "test\\b"
+        rule = try NetworkRule(ruleText: "/test\\b/")
         result = converter.createBlockerEntry(rule: rule)
         XCTAssertNil(result)
     }
@@ -282,57 +269,40 @@ final class BlockerEntryFactoryTests: XCTestCase {
     func testConvertInvalidNetworkRule() throws {
         let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter())
 
-        let rule = try NetworkRule(ruleText: "||example.org^$subdocument")
+        let rule = try NetworkRule(ruleText: "||example.org^$subdocument,~third-party")
 
-        rule.permittedContentType = [NetworkRule.ContentType.SUBDOCUMENT]
-        rule.isCheckThirdParty = true
-        rule.isThirdParty = false
         let result = converter.createBlockerEntry(rule: rule)
         XCTAssertNil(result)
     }
 
-    func testTldDomains() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter());
-        let rule = createTestRule();
+    func testTldDomains() throws {
+        let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter())
+        let rule = try CosmeticRule(ruleText: "example.*##.banner")
 
-        rule.permittedDomains = ["example.*"];
-
-        let result = converter.createBlockerEntry(rule: rule);
-        XCTAssertNotNil(result);
-        XCTAssertTrue(result!.trigger.ifDomain!.count >= 100);
+        let result = converter.createBlockerEntry(rule: rule)
+        XCTAssertNotNil(result)
+        XCTAssertTrue(result!.trigger.ifDomain!.count >= 100)
         XCTAssertTrue(result!.trigger.ifDomain!.contains("*example.com"))
         XCTAssertTrue(result!.trigger.ifDomain!.contains("*example.com.tr"))
     }
 
-    func testDomainsRestrictions() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter());
-        let rule = createTestRule();
+    func testDomainsRestrictions() throws {
+        let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter())
+        let rule = try CosmeticRule(ruleText: "example.org,~example.com##.banner")
 
-        rule.permittedDomains = ["permitted"];
-        rule.restrictedDomains = ["restricted"];
-
-        let result = converter.createBlockerEntry(rule: rule);
-        XCTAssertNil(result);
+        let result = converter.createBlockerEntry(rule: rule)
+        XCTAssertNil(result)
     }
 
     func testThirdParty() throws {
         let converter = BlockerEntryFactory(advancedBlockingEnabled: false, errorsCounter: ErrorsCounter())
-        let rule = try NetworkRule(ruleText: "||example.org^$third-party")
-
-        rule.isCheckThirdParty = false
-        rule.isThirdParty = true
-
+        
+        var rule = try NetworkRule(ruleText: "||example.org^$third-party")
         var result = converter.createBlockerEntry(rule: rule)
-        XCTAssertNil(result!.trigger.loadType)
-
-        rule.isCheckThirdParty = true
-        rule.isThirdParty = true
-        result = converter.createBlockerEntry(rule: rule)
         XCTAssertEqual(result!.trigger.loadType!.count, 1)
         XCTAssertEqual(result!.trigger.loadType![0], "third-party")
 
-        rule.isCheckThirdParty = true
-        rule.isThirdParty = false
+        rule = try NetworkRule(ruleText: "||example.org^$~third-party")
         result = converter.createBlockerEntry(rule: rule)
         XCTAssertEqual(result!.trigger.loadType!.count, 1)
         XCTAssertEqual(result!.trigger.loadType![0], "first-party")
@@ -386,10 +356,5 @@ final class BlockerEntryFactoryTests: XCTestCase {
         XCTAssertEqual(rule.restrictedContentType, [NetworkRule.ContentType.FONT])
         result = converter.createBlockerEntry(rule: rule)
         XCTAssertEqual(result!.trigger.resourceType, ["image"])
-    }
-
-    private func createTestRule() -> Rule {
-        let rule = try! CosmeticRule(ruleText: "example.org#%#test");
-        return rule;
     }
 }
