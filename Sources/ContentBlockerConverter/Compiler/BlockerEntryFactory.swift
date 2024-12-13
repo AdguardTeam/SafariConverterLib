@@ -14,7 +14,7 @@ class BlockerEntryFactory {
      * https://github.com/AdguardTeam/AdguardForiOS/issues/550
      */
     static let ANY_URL_TEMPLATES = ["||*", "", "*", "|*"]
-    static let URL_FILTER_ANY_URL = "^[htpsw]+:\\/\\/"
+    static let URL_FILTER_ANY_URL = ".*"
     static let URL_FILTER_WS_ANY_URL = "^wss?:\\/\\/"
 
     /**
@@ -207,9 +207,7 @@ class BlockerEntryFactory {
     private func createUrlFilterString(rule: NetworkRule) throws -> String {
         let isWebSocket = rule.isWebSocket
 
-        // TODO(ameshkov): !!! Move this to SimpleRegex?
-        
-        // Use a single standard regex for rules that are supposed to match every URL
+        // Use a single standard regex for rules that are supposed to match every URL.
         for anyUrlTmpl in BlockerEntryFactory.ANY_URL_TEMPLATES {
             if rule.urlRuleText == anyUrlTmpl {
                 if isWebSocket {
@@ -218,17 +216,18 @@ class BlockerEntryFactory {
                 return BlockerEntryFactory.URL_FILTER_ANY_URL
             }
         }
-
-        let urlRegExpSource = rule.urlRegExpSource
-        if (urlRegExpSource == nil) {
+        
+        if rule.urlRegExpSource == nil {
             // Rule with empty regexp, matches any URL.
             return BlockerEntryFactory.URL_FILTER_ANY_URL
         }
 
+        let urlFilter = rule.urlRegExpSource!
+
         // Regex that we generate for basic non-regex rules are okay.
         // But if this is a regex rule, we can't be sure.
         if rule.isRegexRule() {
-            let result = SafariRegex.isSupported(pattern: urlRegExpSource!)
+            let result = SafariRegex.isSupported(pattern: urlFilter)
             
             switch result {
             case .success: break
@@ -238,12 +237,11 @@ class BlockerEntryFactory {
 
         // Prepending WebSocket protocol to resolve this:
         // https://github.com/AdguardTeam/AdguardBrowserExtension/issues/957
-        if (isWebSocket && !urlRegExpSource!.hasPrefix("^") && !urlRegExpSource!.hasPrefix("ws")) {
-            // TODO: convert to NSString
-            return BlockerEntryFactory.URL_FILTER_WS_ANY_URL + ".*" + (urlRegExpSource! as String)
+        if (isWebSocket && !urlFilter.hasPrefix("^") && !urlFilter.hasPrefix("ws")) {
+            return BlockerEntryFactory.URL_FILTER_WS_ANY_URL + ".*" + urlFilter
         }
 
-        return urlRegExpSource! as String
+        return urlFilter
     };
 
     /// Changes the rule action to "ignore-previous-rules".
