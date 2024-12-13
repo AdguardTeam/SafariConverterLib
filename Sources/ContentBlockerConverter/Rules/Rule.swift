@@ -42,7 +42,6 @@ class Rule {
             
             if char == separator || i == maxIndex {
                 if i - previousSeparator <= 2 {
-                    // TODO(ameshkov): !!! Add test that checks this.
                     throw SyntaxError.invalidModifier(message: "Empty or too short domain specified")
                 }
 
@@ -63,7 +62,6 @@ class Rule {
                 }
                 
                 if domain.utf8.first == Chars.SLASH && domain.utf8.last == Chars.SLASH {
-                    // TODO(ameshkov): !!! Add a test that checks this.
                     // https://github.com/AdguardTeam/SafariConverterLib/issues/53
                     throw SyntaxError.invalidModifier(message: "Using regular expression for domain modifier is not supported")
                 }

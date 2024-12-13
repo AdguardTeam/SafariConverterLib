@@ -273,8 +273,7 @@ class CosmeticRule: Rule {
 
         let optionsString = String(domains[startIndex..<endIndex!])
         let options = optionsString.split(delimiter: Chars.COMMA, escapeChar: Chars.BACKSLASH)
-        
-        // TODO(ameshkov): !!! Add tests for cosmetic options.
+
         for option in options {
             var optionName = option
             var optionValue = ""
@@ -299,7 +298,6 @@ class CosmeticRule: Rule {
     }
 
     func setCosmeticRuleDomains(domains: String) throws -> Void {
-        // TODO(ameshkov): !!! Add tests for cosmetic rule modifiers !!!
         if domains.utf8.first == Chars.SQUARE_BRACKET_OPEN {
             let remainingDomains = try parseCosmeticOptions(domains: domains)
             if remainingDomains != nil && !remainingDomains!.isEmpty {

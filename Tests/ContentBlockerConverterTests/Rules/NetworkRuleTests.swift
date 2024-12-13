@@ -99,8 +99,18 @@ final class NetworkRuleTests: XCTestCase {
     
     func testUnsupportedOptions() {
         XCTAssertThrowsError(try NetworkRule(ruleText: "/example/$replace=/test/test2/"))
+        XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org^$csp=script-src self"))
+        XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org^$redirect-rule=noopjs"))
+        XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org^$redirect=noopjs"))
+        XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org^$empty"))
+        XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org^$mp4"))
         XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org^$doc=test"))
         XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org^$domain="))
+        XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org^$domain=~"))
+        XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org^$domain=e"))
+        XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org^$domain=~e"))
+        XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org^$domain=/example.org/"))
+        XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org^$domain=example.org|/test.com/"))
         XCTAssertThrowsError(try NetworkRule(ruleText: "//$domain=example.com"))
     }
     

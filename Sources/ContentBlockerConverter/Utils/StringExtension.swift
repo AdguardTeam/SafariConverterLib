@@ -1,10 +1,6 @@
 import Foundation
 
-/**
- * Useful string extensions
- *
- * TODO(ameshkov): !!! Rework using UTF8View
- */
+/// Useful string extensions.
 extension String {
     
     /// Escapes special characters so that the string could be used in a JSON.
@@ -53,23 +49,6 @@ extension String {
         }
         
         return result
-    }
-    
-    // TODO(ameshkov): !!! Remove
-    func indexOf(target: String) -> Int {
-        let range = self.range(of: target)
-        if let range = range {
-            return distance(from: self.startIndex, to: range.lowerBound)
-        } else {
-            return -1
-        }
-    }
-    
-    // TODO(ameshkov): !!! Remove
-    func subString(startIndex: Int) -> String {
-        let start = self.index(self.startIndex, offsetBy: startIndex);
-        let end = self.index(self.endIndex, offsetBy: 0);
-        return String(self[start..<end])
     }
     
     /// Replaces all occuriences of the target string with the specified string.

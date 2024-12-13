@@ -411,6 +411,7 @@ class BlockerEntryFactory {
     ///
     /// The issue was fixed later in WebKit so we only need it for older Safari versions.
     private func addUnlessDomainForThirdParty(rule: Rule, domains: inout [String]) {
+        // TODO(ameshkov): !!! Add a test that checks if this is required.
         if SafariService.current.version.isSafari16_4orGreater() {
             return
         }
@@ -489,7 +490,9 @@ class BlockerEntryFactory {
     }
 
     private func validateUrlBlockingRule(rule: NetworkRule, entry: BlockerEntry) throws -> Void {
-        if rule.hasContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT)
+        // TODO(ameshkov): !!! Add a test that checks this with an older Safari version.
+        if !SafariService.current.version.isSafari16_4orGreater() &&
+            rule.hasContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT)
                 && !rule.isContentType(contentType:NetworkRule.ContentType.ALL) {
             if (entry.action.type == "block" &&
                 entry.trigger.resourceType?.firstIndex(of: "document") != nil &&
@@ -501,11 +504,6 @@ class BlockerEntryFactory {
                 // Due to https://github.com/AdguardTeam/AdguardBrowserExtension/issues/145
                 throw ConversionError.unsupportedContentType(message: "Subdocument blocking rules are allowed only along with third-party or if-domain modifiers")
             }
-        }
-
-        // TODO(ameshkov): !!! What? Where would it get here?
-        if (entry.trigger.resourceType?.firstIndex(of: "popup") != nil) {
-            throw ConversionError.unsupportedRule(message: "$popup rules are not supported")
         }
     }
 
