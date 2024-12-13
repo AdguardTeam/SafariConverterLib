@@ -29,7 +29,7 @@ class BlockerEntryEncoder {
         
         for index in 0..<entries.count {
             // Encode the individual entry to its JSON representation
-            let entryJSON = self.encodeEntry(entry: entries[index])
+            let entryJSON = encodeEntry(entry: entries[index])
             // Calculate the size in bytes of the JSON representation
             let entrySize = entryJSON.utf8.count
             // Calculate the size of the comma separator (if needed)

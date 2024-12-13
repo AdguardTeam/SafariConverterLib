@@ -132,60 +132,56 @@ class NetworkRule: Rule {
     /// Only makes sense when this rule has a `$badfilter` modifier.
     func negatesBadfilter(specifiedRule: NetworkRule) -> Bool {
         if (isWhiteList != specifiedRule.isWhiteList) {
-            return false;
+            return false
         }
 
         if (urlRuleText != specifiedRule.urlRuleText) {
-            return false;
+            return false
         }
 
         if (permittedContentType != specifiedRule.permittedContentType) {
-            return false;
+            return false
         }
 
         if (restrictedContentType != specifiedRule.restrictedContentType) {
-            return false;
+            return false
         }
 
         if (enabledOptions != specifiedRule.enabledOptions) {
-            return false;
+            return false
         }
 
         if (disabledOptions != specifiedRule.disabledOptions) {
-            return false;
+            return false
         }
 
         if (restrictedDomains != specifiedRule.restrictedDomains) {
-            return false;
+            return false
         }
 
         if (!NetworkRule.stringArraysHaveIntersection(left: permittedDomains, right: specifiedRule.permittedDomains)) {
-            return false;
+            return false
         }
 
-        return true;
+        return true
     }
 
-    /**
-     * TODO(ameshkov): !!! Move to Array extension
-     */
-    static func stringArraysHaveIntersection(left: [String], right: [String]) -> Bool {
-        if (left.count == 0 || right.count == 0) {
-            return true;
+    /// Checks if two string arrays have at least 1 element in intersection.
+    private static func stringArraysHaveIntersection(left: [String], right: [String]) -> Bool {
+        if (left.count == 0 && right.count == 0) {
+            return true
         }
 
         for elem in left {
             if (right.contains(elem)) {
-                return true;
+                return true
             }
         }
 
-        return false;
+        return false
     }
     
-    /**
-     * Parses source string and sets up permitted and restricted domains fields
-     */
+    /// Sets rule domains from the $domain modifier.
     private func setNetworkRuleDomains(domains: String) throws -> Void {
         if (domains == "") {
             throw SyntaxError.invalidRule(message: "Modifier $domain cannot be empty")

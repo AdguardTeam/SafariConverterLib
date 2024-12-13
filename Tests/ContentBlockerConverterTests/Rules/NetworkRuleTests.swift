@@ -270,4 +270,26 @@ final class NetworkRuleTests: XCTestCase {
         rule = "||example.org^$specifichide"
         XCTAssertThrowsError(try NetworkRule(ruleText: rule))
     }
+    
+    func testNegatesBadfilter() {
+        let testRules: [(rule: String, badfilter: String, expected: Bool)] = [
+            ("||example.org^", "||example.org^$badfilter", true),
+            ("||example.org", "||example.org^$badfilter", false),
+            ("||example.org^$script", "||example.org^$badfilter", false),
+            ("||example.org^$script", "||example.org^$script,badfilter", true),
+            ("||example.org^$script,xhr", "||example.org^$script,badfilter", false),
+            ("||example.org^$script,xhr", "||example.org^$script,xhr,badfilter", true),
+            ("||example.org^", "||example.org^$badfilter,domain=example.com", false),
+            ("||example.org^$domain=~example.com", "||example.org^$badfilter", false),
+            ("||example.org^$domain=~example.com", "||example.org^$domain=~example.com,badfilter", true),
+            ("||example.org^$domain=example.com", "||example.org^$badfilter,domain=example.com", true),
+            ("||example.org^$domain=example.com|example.net", "||example.org^$badfilter,domain=example.org|example.com", true),
+        ]
+        
+        for (rule, badfilter, expected) in testRules {
+            let networkRule = try! NetworkRule(ruleText: rule)
+            let badfilterRule = try! NetworkRule(ruleText: badfilter)
+            XCTAssertEqual(badfilterRule.negatesBadfilter(specifiedRule: networkRule), expected, "Rule \(badfilter) expected to \(expected ? "negate" : "not negate") \(rule)")
+        }
+    }
 }

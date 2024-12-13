@@ -766,15 +766,15 @@ final class ContentBlockerConverterTests: XCTestCase {
             "*$domain=bad1.com|bad2.com|lenta.ru,third-party,important",
             "*$domain=bad2.com|bad1.com,third-party,important",
             "*$domain=bad1.com|bad2.com,third-party,important,badfilter"
-        ]);
+        ])
         
-        XCTAssertEqual(result.convertedCount, 2);
+        XCTAssertEqual(result.convertedCount, 2)
         
-        let decoded = try! parseJsonString(json: result.converted);
-        XCTAssertEqual(decoded.count, 2);
+        let decoded = try! parseJsonString(json: result.converted)
+        XCTAssertEqual(decoded.count, 2)
         
-        XCTAssertEqual(decoded[0].trigger.ifDomain?[0], "*test1.com");
-        XCTAssertEqual(decoded[1].trigger.ifDomain?[0], "*test2.com");
+        XCTAssertEqual(decoded[0].trigger.ifDomain?[0], "*test1.com")
+        XCTAssertEqual(decoded[1].trigger.ifDomain?[0], "*test2.com")
     }
 
     func testTldWildcardRules() {
