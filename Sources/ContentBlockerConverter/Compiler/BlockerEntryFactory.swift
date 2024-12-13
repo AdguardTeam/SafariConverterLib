@@ -160,7 +160,7 @@ class BlockerEntryFactory {
                 case .failure(let error): throw ConversionError.unsupportedRegExp(message: "Unsupported regexp in $path: \(error)")
                 }
             } else {
-                pathRegex = SimpleRegex.createRegexText(str: rule.pathModifier!)
+                pathRegex = try! SimpleRegex.createRegexText(pattern: rule.pathModifier!)
             }
 
             if pathRegex.starts(with: BlockerEntryFactory.START_OF_STRING) {

@@ -48,20 +48,25 @@ class SimpleRegex {
     ]
     
     /// Creates a regular expression from a network rule pattern.
-    public static func createRegexText(str: String) -> String {
-        if (str == "" ||
-            str == maskStartUrl ||
-            str == maskPipe ||
-            str == maskAnySymbol) {
+    ///
+    /// - Parameters:
+    ///   - pattern: network rule pattern to convert.
+    /// - Returns: regular expression corresponding to that pattern.
+    /// - Throws: SyntaxError if the pattern contains non-ASCII characters.
+    public static func createRegexText(pattern: String) throws -> String {
+        if (pattern == "" ||
+            pattern == maskStartUrl ||
+            pattern == maskPipe ||
+            pattern == maskAnySymbol) {
             return regexAnySymbol
         }
 
         var resultChars = [UInt8]()
-        
-        let maxIndex = str.utf8.count - 1
+
+        let maxIndex = pattern.utf8.count - 1
         var i = 0
         while i <= maxIndex {
-            let char = str.utf8[safeIndex: i]!
+            let char = pattern.utf8[safeIndex: i]!
             
             if CHARS_TO_ESCAPE.contains(char) {
                 resultChars.append(Chars.BACKSLASH)
@@ -70,7 +75,7 @@ class SimpleRegex {
                 switch char {
                 case Chars.PIPE:
                     if i == 0 {
-                        let nextChar = str.utf8[safeIndex: i+1]
+                        let nextChar = pattern.utf8[safeIndex: i+1]
                         if nextChar == Chars.PIPE {
                             resultChars.append(contentsOf: regexStartUrl)
                             i += 1 // increment i as we processed next char already
@@ -92,6 +97,10 @@ class SimpleRegex {
                 case Chars.WILDCARD:
                     resultChars.append(contentsOf: regexAnySymbolChars)
                 default:
+                    if char > 127 {
+                        throw SyntaxError.invalidPattern(message: "Non ASCII characters are not supported")
+                    }
+
                     resultChars.append(char)
                 }
             }

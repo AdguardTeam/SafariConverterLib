@@ -228,7 +228,7 @@ class CosmeticRule: Rule {
         if domains.utf8.count < 3 ||
             domains.utf8[safeIndex: 1] != Chars.DOLLAR ||
             endIndex == nil {
-            throw SyntaxError.invalidRule(message: "Invalid cosmetic rule modifier")
+            throw SyntaxError.invalidModifier(message: "Invalid cosmetic rule modifier")
         }
         
         let modifiersString = domains[startIndex..<endIndex!]

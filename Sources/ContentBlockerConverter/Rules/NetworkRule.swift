@@ -59,12 +59,12 @@ class NetworkRule: Rule {
             if (permittedDomains.count < 1) {
                 // Rule matches too much and does not have any domain restriction
                 // We should not allow this kind of rules
-                throw SyntaxError.invalidRule(message: "The rule is too wide, add domain restriction or make the pattern more specific")
+                throw SyntaxError.invalidPattern(message: "The rule is too wide, add domain restriction or make the pattern more specific")
             }
         }
 
         if (ruleParts.options == "specifichide" && ruleParts.whitelist == false) {
-            throw SyntaxError.invalidRule(message: "Specifichide modifier must be used for exception rules only")
+            throw SyntaxError.invalidModifier(message: "$pecifichide modifier must be used for exception rules only")
         }
         
         urlRuleText = ruleParts.pattern
@@ -78,8 +78,7 @@ class NetworkRule: Rule {
             urlRuleText = NetworkRuleParser.encodeDomainIfRequired(pattern: urlRuleText)!
 
             if (!urlRuleText.isEmpty) {
-                // TODO(ameshkov): !!! Check urlRuleText for ASCII here or inside createRegexText
-                urlRegExpSource = SimpleRegex.createRegexText(str: urlRuleText as String)
+                urlRegExpSource = try! SimpleRegex.createRegexText(pattern: urlRuleText)
             }
         }
 
@@ -184,7 +183,7 @@ class NetworkRule: Rule {
     /// Sets rule domains from the $domain modifier.
     private func setNetworkRuleDomains(domains: String) throws -> Void {
         if (domains == "") {
-            throw SyntaxError.invalidRule(message: "Modifier $domain cannot be empty")
+            throw SyntaxError.invalidModifier(message: "$domain cannot be empty")
         }
         
         try setDomains(domainsStr: domains, separator: Chars.PIPE)
@@ -317,21 +316,21 @@ class NetworkRule: Rule {
             if SafariService.current.version.isSafari14orGreater() {
                 setRequestType(contentType: ContentType.PING, enabled: true)
             } else {
-                throw SyntaxError.invalidRule(message: "$ping option is not supported")
+                throw SyntaxError.invalidModifier(message: "$ping is not supported")
             }
         case "~ping":
             // `ping` resource type is supported since Safari 14
             if SafariService.current.version.isSafari14orGreater() {
                 setRequestType(contentType: ContentType.PING, enabled: false)
             } else {
-                throw SyntaxError.invalidRule(message: "$~ping option is not supported")
+                throw SyntaxError.invalidModifier(message: "$~ping is not supported")
             }
         default:
-            throw SyntaxError.invalidRule(message: "Unsupported option: \(optionName)")
+            throw SyntaxError.invalidModifier(message: "Unsupported modifier: \(optionName)")
         }
 
         if optionName != "domain" && optionValue != "" {
-            throw SyntaxError.invalidRule(message: "Option \(optionName) must not have value")
+            throw SyntaxError.invalidModifier(message: "Option \(optionName) must not have value")
         }
     }
 
