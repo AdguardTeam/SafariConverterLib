@@ -25,12 +25,15 @@ class BlockerEntryFactory {
     static let URL_FILTER_CSS_RULES = ".*"
     static let URL_FILTER_SCRIPT_RULES = ".*"
     static let URL_FILTER_SCRIPTLET_RULES = ".*"
-
-    /**
-     * url-filter prefix for path modifier of css rule starting from start of string symbol (^)
-     */
+    
+    /// Regular expression for cosmetic rules.
+    ///
+    /// Please note, that this is important to use `.*` for this kind of rules, otherwise performance is degraded:
+    /// https://github.com/AdguardTeam/AdguardForiOS/issues/662
+    static let URL_FILTER_COSMETIC_RULES = ".*"
+    
+    /// Prefix for the regular expression that we prepend to the regexp from the $path modifier.
     static let URL_FILTER_PREFIX_CSS_RULES_PATH_START_STRING = "^(https?:\\/\\/)([^\\/]+)"
-    static let START_OF_STRING = "^"
 
     /**
      * In some cases URL_FILTER_ANY_URL doesn't work for domain-specific url exceptions
@@ -140,39 +143,13 @@ class BlockerEntryFactory {
         return BlockerEntry(trigger: trigger, action: action);
     }
 
-    /**
-    * Creates blocker entry object from source Cosmetic script rule.
-    * In case the rule selector contains extended css or rule is an inject-style rule, then the result entry could be used in advanced blocking json only.
-    */
+    /// Creates a blocker entry object from the source cosmetic rule.
+    ///
+    /// In the case the rule selector contains extended css or rule is an inject-style rule,
+    /// the result entry could be used in advanced blocking json only.
     private func convertCssRule(rule: CosmeticRule) throws -> BlockerEntry? {
-        var trigger = BlockerEntry.Trigger(urlFilter: BlockerEntryFactory.URL_FILTER_CSS_RULES)
-
-        if rule.pathModifier != nil {
-            var pathRegex: String
-            
-            // TODO(ameshkov): !!! Change this.
-            if rule.pathModifier!.hasPrefix(BlockerEntryFactory.REGEXP_SLASH) && rule.pathModifier!.hasSuffix(BlockerEntryFactory.REGEXP_SLASH) {
-                pathRegex = String(String(rule.pathModifier!.dropFirst()).dropLast())
-
-                let result = SafariRegex.isSupported(pattern: pathRegex)
-                switch result {
-                case .success: break
-                case .failure(let error): throw ConversionError.unsupportedRegExp(message: "Unsupported regexp in $path: \(error)")
-                }
-            } else {
-                pathRegex = try SimpleRegex.createRegexText(pattern: rule.pathModifier!)
-            }
-
-            if pathRegex.starts(with: BlockerEntryFactory.START_OF_STRING) {
-                // if path modifier starts from start of string symbol,
-                // remove start of string symbol and add prefix to match path right after domain
-                pathRegex = String(pathRegex.dropFirst())
-                trigger = BlockerEntry.Trigger(urlFilter: BlockerEntryFactory.URL_FILTER_PREFIX_CSS_RULES_PATH_START_STRING + pathRegex)
-            } else {
-                trigger = BlockerEntry.Trigger(urlFilter: BlockerEntryFactory.URL_FILTER_CSS_RULES + pathRegex)
-            }
-        }
-
+        let urlFilter = try createUrlFilterStringForCosmetic(rule: rule)
+        var trigger = BlockerEntry.Trigger(urlFilter: urlFilter)
         var action = BlockerEntry.Action(type:"css-display-none")
 
         if (rule.isExtendedCss) {
@@ -191,6 +168,37 @@ class BlockerEntryFactory {
         let result = BlockerEntry(trigger: trigger, action: action)
 
         return result
+    }
+    
+    /// Builds the "url-filter" property of a Safari content blocking rule from a cosmetic rule.
+    private func createUrlFilterStringForCosmetic(rule: CosmeticRule) throws -> String {
+        if rule.pathRegExpSource == nil || rule.pathModifier == nil {
+            return BlockerEntryFactory.URL_FILTER_COSMETIC_RULES
+        }
+        
+        // Special treatment for $path
+        let pathRegex = rule.pathRegExpSource!
+        let path = rule.pathModifier!
+        
+        // First, validate custom regular expressions.
+        if path.utf8.first == Chars.SLASH && path.utf8.last == Chars.SLASH {
+            let result = SafariRegex.isSupported(pattern: pathRegex)
+            
+            switch result {
+            case .success: break
+            case .failure(let error): throw ConversionError.unsupportedRegExp(message: "Unsupported regexp in $path: \(error)")
+            }
+        }
+
+        if pathRegex.utf8.first == Chars.CARET {
+            // If $path regular expression starts with '^', we need to prepend a regular expression
+            // that will match the beginning of the URL as we'll put the result into 'url-filter'
+            // which is applied to the full URL and not just to path.
+            return BlockerEntryFactory.URL_FILTER_PREFIX_CSS_RULES_PATH_START_STRING + pathRegex.dropFirst()
+        }
+        
+        // In other cases just prepend "any URL" pattern.
+        return BlockerEntryFactory.URL_FILTER_CSS_RULES + pathRegex
     }
 
     /// Builds the "url-filter" property of a Safari content blocking rule.

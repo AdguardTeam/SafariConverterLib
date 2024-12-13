@@ -77,6 +77,10 @@ class NetworkRule: Rule {
                 urlRegExpSource = try SimpleRegex.createRegexText(pattern: urlRuleText)
             }
         }
+        
+        if urlRegExpSource == "" {
+            throw SyntaxError.invalidPattern(message: "Empty regular expression for URL")
+        }
 
         isDocumentWhiteList = isOptionEnabled(option: .Document)
         isUrlBlock = isSingleOption(option: .Urlblock) || isSingleOption(option: .Genericblock)
@@ -182,7 +186,7 @@ class NetworkRule: Rule {
             throw SyntaxError.invalidModifier(message: "$domain cannot be empty")
         }
         
-        try setDomains(domainsStr: domains, separator: Chars.PIPE)
+        try addDomains(domainsStr: domains, separator: Chars.PIPE)
     }
 
     /// Parses network rule options from the options string.

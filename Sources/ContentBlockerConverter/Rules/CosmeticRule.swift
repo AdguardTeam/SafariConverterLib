@@ -45,6 +45,7 @@ class CosmeticRule: Rule {
     var isInjectCss = false
     
     var pathModifier: String?
+    var pathRegExpSource: String?
     
     override init(ruleText: String) throws {
         try super.init(ruleText: ruleText)
@@ -218,6 +219,39 @@ class CosmeticRule: Rule {
         }
     }
     
+    /// Parses a single cosmetic option.
+    private func parseOption(name: String, value: String) throws -> Void {
+        switch name {
+        case "domain":
+            if value.isEmpty {
+                throw SyntaxError.invalidModifier(message: "$domain modifier cannot be empty")
+            }
+            try addDomains(domainsStr: value, separator: Chars.PIPE)
+        case "path":
+            if value.isEmpty {
+                throw SyntaxError.invalidRule(message: "$path modifier cannot be empty")
+            }
+
+            pathModifier = value
+            if pathModifier!.utf8.first == Chars.SLASH && pathModifier!.utf8.last == Chars.SLASH {
+                // Dealing with a regex.
+                let startIndex = pathModifier!.utf8.index(after: pathModifier!.utf8.startIndex)
+                let endIndex = pathModifier!.utf8.index(before: pathModifier!.utf8.endIndex)
+                
+                pathRegExpSource = String(pathModifier![startIndex..<endIndex])
+            } else {
+                pathRegExpSource = try SimpleRegex.createRegexText(pattern: pathModifier!)
+            }
+            
+            if pathRegExpSource == "" {
+                throw SyntaxError.invalidModifier(message: "Empty regular expression for path")
+            }
+            
+        default:
+            throw SyntaxError.invalidModifier(message: "Unsupported modifier \(name)")
+        }
+    }
+    
     /// Parses cosmetic rule options.
     ///
     /// The rule can look like this:
@@ -225,7 +259,9 @@ class CosmeticRule: Rule {
     ///
     /// Learn more about this syntax here.
     /// https://adguard.com/kb/general/ad-filtering/create-own-filters/#non-basic-rules-modifiers
-    private func parseCosmeticOptions(domains: String) throws -> Void {
+    ///
+    /// - Returns: what's left of the domains string or nil if the rule only has cosmetic options.
+    private func parseCosmeticOptions(domains: String) throws -> String? {
         let startIndex = domains.utf8.index(domains.utf8.startIndex, offsetBy: 2)
         let endIndex = domains.utf8.lastIndex(of: Chars.SQUARE_BRACKET_CLOSE)
         
@@ -234,42 +270,43 @@ class CosmeticRule: Rule {
             endIndex == nil {
             throw SyntaxError.invalidModifier(message: "Invalid cosmetic rule modifier")
         }
-        
-        let modifiersString = domains[startIndex..<endIndex!]
-        
-        // TODO(ameshkov): !!! Need a UTF8View based helper for that.
-        let modifiers = modifiersString.components(separatedBy: ",")
+
+        let optionsString = String(domains[startIndex..<endIndex!])
+        let options = optionsString.split(delimiter: Chars.COMMA, escapeChar: Chars.BACKSLASH)
         
         // TODO(ameshkov): !!! Add tests for cosmetic options.
-        for modifier in modifiers {
-            if modifier.starts(with: CosmeticRule.PATH_MODIFIER) {
-                self.pathModifier = modifier.subString(startIndex: CosmeticRule.PATH_MODIFIER.count)
+        for option in options {
+            var optionName = option
+            var optionValue = ""
+            
+            let valueIndex = option.utf8.firstIndex(of: Chars.EQUALS_SIGN)
+            if valueIndex != nil {
+                optionName = String(option[..<valueIndex!])
+                optionValue = String(option[option.utf8.index(after: valueIndex!)...])
             }
             
-            if modifier.starts(with: CosmeticRule.DOMAIN_MODIFIER) {
-                let domainModifier = modifier.subString(startIndex: CosmeticRule.DOMAIN_MODIFIER.count)
-                try setDomains(domainsStr: domainModifier, separator: Chars.PIPE)
-            }
+            try parseOption(name: optionName, value: optionValue)
         }
         
         // Parse what's left after the options string.
         let domainsIndex = domains.index(after: endIndex!)
         if domainsIndex < domains.endIndex {
             let domainsStr = domains[domainsIndex...]
-            if !domainsStr.isEmpty {
-                try setDomains(domainsStr: String(domainsStr), separator: Chars.COMMA)
-            }
+            return String(domainsStr)
         }
-        
-        return
+
+        return nil
     }
 
     func setCosmeticRuleDomains(domains: String) throws -> Void {
         // TODO(ameshkov): !!! Add tests for cosmetic rule modifiers !!!
         if domains.utf8.first == Chars.SQUARE_BRACKET_OPEN {
-            try parseCosmeticOptions(domains: domains)
+            let remainingDomains = try parseCosmeticOptions(domains: domains)
+            if remainingDomains != nil && !remainingDomains!.isEmpty {
+                try addDomains(domainsStr: remainingDomains!, separator: Chars.COMMA)
+            }
         } else {
-            try setDomains(domainsStr: domains, separator: Chars.COMMA)
+            try addDomains(domainsStr: domains, separator: Chars.COMMA)
         }
     }
 }

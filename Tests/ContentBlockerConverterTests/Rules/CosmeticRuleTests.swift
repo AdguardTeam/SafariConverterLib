@@ -364,7 +364,7 @@ final class CosmeticRuleTests: XCTestCase {
     
     func testRuleWithModifiers() {
         let ruleText = "[$domain=mail.ru,path=/^\\/$/]#?#.toolbar:has(> div.toolbar__inner > div.toolbar__aside > span.toolbar__close)"
-        
+
         let result = try! CosmeticRule(ruleText: ruleText)
         
         XCTAssertNotNil(result)
@@ -375,6 +375,7 @@ final class CosmeticRuleTests: XCTestCase {
         XCTAssertEqual(result.isDocumentWhiteList, false)
         
         XCTAssertEqual(result.pathModifier, "/^\\/$/")
+        XCTAssertEqual(result.pathRegExpSource, "^\\/$")
         XCTAssertEqual(result.permittedDomains, ["mail.ru"])
         XCTAssertEqual(result.restrictedDomains, [])
         
@@ -384,7 +385,6 @@ final class CosmeticRuleTests: XCTestCase {
 
         XCTAssertEqual(result.isExtendedCss, true)
         XCTAssertEqual(result.isInjectCss, false)
-
     }
     
     func testRuleWithPunycodeDomain() {

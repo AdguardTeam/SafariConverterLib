@@ -1974,110 +1974,126 @@ final class ContentBlockerConverterTests: XCTestCase {
     }
 
     func testCosmeticRulesWithPathModifier() {
-        var rules = ["[$path=page.html]##.textad"];
-        var result = converter.convertArray(rules: rules);
-        XCTAssertEqual(result.convertedCount, 1);
-        XCTAssertEqual(result.totalConvertedCount, 1);
-        XCTAssertEqual(result.errorsCount, 0);
+        var rules = ["[$path=page.html]##.textad"]
+        var result = converter.convertArray(rules: rules)
+        XCTAssertEqual(result.convertedCount, 1)
+        XCTAssertEqual(result.totalConvertedCount, 1)
+        XCTAssertEqual(result.errorsCount, 0)
 
-        var decoded = try! parseJsonString(json: result.converted);
-        XCTAssertEqual(decoded.count, 1);
+        var decoded = try! parseJsonString(json: result.converted)
+        XCTAssertEqual(decoded.count, 1)
 
-        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*page\\.html");
-        XCTAssertNil(decoded[0].trigger.ifDomain);
-        XCTAssertEqual(decoded[0].action.type, "css-display-none");
-        XCTAssertEqual(decoded[0].action.selector, ".textad");
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*page\\.html")
+        XCTAssertNil(decoded[0].trigger.ifDomain)
+        XCTAssertEqual(decoded[0].action.type, "css-display-none")
+        XCTAssertEqual(decoded[0].action.selector, ".textad")
 
-        rules = ["[$path=/page.html]test.com##.textad"];
-        result = converter.convertArray(rules: rules);
-        XCTAssertEqual(result.convertedCount, 1);
-        XCTAssertEqual(result.totalConvertedCount, 1);
-        XCTAssertEqual(result.errorsCount, 0);
+        rules = ["[$path=/page.html]test.com##.textad"]
+        result = converter.convertArray(rules: rules)
+        XCTAssertEqual(result.convertedCount, 1)
+        XCTAssertEqual(result.totalConvertedCount, 1)
+        XCTAssertEqual(result.errorsCount, 0)
 
-        decoded = try! parseJsonString(json: result.converted);
-        XCTAssertEqual(decoded.count, 1);
+        decoded = try! parseJsonString(json: result.converted)
+        XCTAssertEqual(decoded.count, 1)
 
-        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*\\/page\\.html");
-        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*test.com"]);
-        XCTAssertEqual(decoded[0].action.type, "css-display-none");
-        XCTAssertEqual(decoded[0].action.selector, ".textad");
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*\\/page\\.html")
+        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*test.com"])
+        XCTAssertEqual(decoded[0].action.type, "css-display-none")
+        XCTAssertEqual(decoded[0].action.selector, ".textad")
 
-        rules = ["[$path=/page.html,domain=example.org|test.com]##.textad"];
-        result = converter.convertArray(rules: rules);
-        XCTAssertEqual(result.convertedCount, 1);
-        XCTAssertEqual(result.totalConvertedCount, 1);
-        XCTAssertEqual(result.errorsCount, 0);
+        rules = ["[$path=/page.html,domain=example.org|test.com]##.textad"]
+        result = converter.convertArray(rules: rules)
+        XCTAssertEqual(result.convertedCount, 1)
+        XCTAssertEqual(result.totalConvertedCount, 1)
+        XCTAssertEqual(result.errorsCount, 0)
 
-        decoded = try! parseJsonString(json: result.converted);
-        XCTAssertEqual(decoded.count, 1);
+        decoded = try! parseJsonString(json: result.converted)
+        XCTAssertEqual(decoded.count, 1)
 
-        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*\\/page\\.html");
-        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*example.org", "*test.com"]);
-        XCTAssertEqual(decoded[0].action.type, "css-display-none");
-        XCTAssertEqual(decoded[0].action.selector, ".textad");
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*\\/page\\.html")
+        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*example.org", "*test.com"])
+        XCTAssertEqual(decoded[0].action.type, "css-display-none")
+        XCTAssertEqual(decoded[0].action.selector, ".textad")
 
-        rules = ["[$domain=example.org,path=/page.html]##.textad"];
-        result = converter.convertArray(rules: rules);
-        XCTAssertEqual(result.convertedCount, 1);
-        XCTAssertEqual(result.totalConvertedCount, 1);
-        XCTAssertEqual(result.errorsCount, 0);
+        rules = ["[$domain=example.org,path=/page.html]##.textad"]
+        result = converter.convertArray(rules: rules)
+        XCTAssertEqual(result.convertedCount, 1)
+        XCTAssertEqual(result.totalConvertedCount, 1)
+        XCTAssertEqual(result.errorsCount, 0)
 
-        decoded = try! parseJsonString(json: result.converted);
-        XCTAssertEqual(decoded.count, 1);
+        decoded = try! parseJsonString(json: result.converted)
+        XCTAssertEqual(decoded.count, 1)
 
-        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*\\/page\\.html");
-        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*example.org"]);
-        XCTAssertEqual(decoded[0].action.type, "css-display-none");
-        XCTAssertEqual(decoded[0].action.selector, ".textad");
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*\\/page\\.html")
+        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*example.org"])
+        XCTAssertEqual(decoded[0].action.type, "css-display-none")
+        XCTAssertEqual(decoded[0].action.selector, ".textad")
 
-        rules = ["[$domain=example.org|test.com,path=/page.html]website.com##.textad"];
-        result = converter.convertArray(rules: rules);
-        XCTAssertEqual(result.convertedCount, 1);
-        XCTAssertEqual(result.totalConvertedCount, 1);
-        XCTAssertEqual(result.errorsCount, 0);
+        rules = ["[$domain=example.org|test.com,path=/page.html]website.com##.textad"]
+        result = converter.convertArray(rules: rules)
+        XCTAssertEqual(result.convertedCount, 1)
+        XCTAssertEqual(result.totalConvertedCount, 1)
+        XCTAssertEqual(result.errorsCount, 0)
 
-        decoded = try! parseJsonString(json: result.converted);
-        XCTAssertEqual(decoded.count, 1);
+        decoded = try! parseJsonString(json: result.converted)
+        XCTAssertEqual(decoded.count, 1)
 
-        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*\\/page\\.html");
-        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*example.org", "*test.com", "*website.com"]);
-        XCTAssertEqual(decoded[0].action.type, "css-display-none");
-        XCTAssertEqual(decoded[0].action.selector, ".textad");
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*\\/page\\.html")
+        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*example.org", "*test.com", "*website.com"])
+        XCTAssertEqual(decoded[0].action.type, "css-display-none")
+        XCTAssertEqual(decoded[0].action.selector, ".textad")
 
-        rules = ["[$path=/page*.html]##.textad"];
-        result = converter.convertArray(rules: rules);
-        XCTAssertEqual(result.convertedCount, 1);
-        XCTAssertEqual(result.totalConvertedCount, 1);
-        XCTAssertEqual(result.errorsCount, 0);
+        rules = ["[$path=/page*.html]##.textad"]
+        result = converter.convertArray(rules: rules)
+        XCTAssertEqual(result.convertedCount, 1)
+        XCTAssertEqual(result.totalConvertedCount, 1)
+        XCTAssertEqual(result.errorsCount, 0)
 
-        decoded = try! parseJsonString(json: result.converted);
-        XCTAssertEqual(decoded.count, 1);
+        decoded = try! parseJsonString(json: result.converted)
+        XCTAssertEqual(decoded.count, 1)
 
-        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*\\/page.*\\.html");
-        XCTAssertNil(decoded[0].trigger.ifDomain);
-        XCTAssertEqual(decoded[0].action.type, "css-display-none");
-        XCTAssertEqual(decoded[0].action.selector, ".textad");
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*\\/page.*\\.html")
+        XCTAssertNil(decoded[0].trigger.ifDomain)
+        XCTAssertEqual(decoded[0].action.type, "css-display-none")
+        XCTAssertEqual(decoded[0].action.selector, ".textad")
 
-        rules = ["[$path=/\\/sub\\/.*\\/page\\.html/]##.textad"];
-        result = converter.convertArray(rules: rules);
-        XCTAssertEqual(result.convertedCount, 1);
-        XCTAssertEqual(result.totalConvertedCount, 1);
-        XCTAssertEqual(result.errorsCount, 0);
+        rules = ["[$path=/\\/sub\\/.*\\/page\\.html/]##.textad"]
+        result = converter.convertArray(rules: rules)
+        XCTAssertEqual(result.convertedCount, 1)
+        XCTAssertEqual(result.totalConvertedCount, 1)
+        XCTAssertEqual(result.errorsCount, 0)
 
-        decoded = try! parseJsonString(json: result.converted);
-        XCTAssertEqual(decoded.count, 1);
+        decoded = try! parseJsonString(json: result.converted)
+        XCTAssertEqual(decoded.count, 1)
 
-        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*\\/sub\\/.*\\/page\\.html");
-        XCTAssertNil(decoded[0].trigger.ifDomain);
-        XCTAssertEqual(decoded[0].action.type, "css-display-none");
-        XCTAssertEqual(decoded[0].action.selector, ".textad");
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*\\/sub\\/.*\\/page\\.html")
+        XCTAssertNil(decoded[0].trigger.ifDomain)
+        XCTAssertEqual(decoded[0].action.type, "css-display-none")
+        XCTAssertEqual(decoded[0].action.selector, ".textad")
+        
+        // Supported regex in path
+        rules = ["[$path=/^\\/$/]##.textad"]
+        result = converter.convertArray(rules: rules)
+        XCTAssertEqual(result.convertedCount, 1)
+        XCTAssertEqual(result.totalConvertedCount, 1)
+        XCTAssertEqual(result.errorsCount, 0)
 
-        rules = ["[$path=/\\/(sub1|sub2)\\/page\\.html/]##.textad"];
-        result = converter.convertArray(rules: rules);
-        XCTAssertEqual(result.convertedCount, 0);
-        XCTAssertEqual(result.totalConvertedCount, 0);
-        XCTAssertEqual(result.errorsCount, 1);
-        XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON);
+        decoded = try! parseJsonString(json: result.converted)
+        XCTAssertEqual(decoded.count, 1)
+
+        XCTAssertEqual(decoded[0].trigger.urlFilter, "^(https?:\\/\\/)([^\\/]+)\\/$")
+        XCTAssertNil(decoded[0].trigger.ifDomain)
+        XCTAssertEqual(decoded[0].action.type, "css-display-none")
+        XCTAssertEqual(decoded[0].action.selector, ".textad")
+
+        // Not supported regex in $path.
+        rules = ["[$path=/\\/(sub1|sub2)\\/page\\.html/]##.textad"]
+        result = converter.convertArray(rules: rules)
+        XCTAssertEqual(result.convertedCount, 0)
+        XCTAssertEqual(result.totalConvertedCount, 0)
+        XCTAssertEqual(result.errorsCount, 1)
+        XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON)
     }
 
     func testAdvancedCosmeticRulesWithPathModifier() {

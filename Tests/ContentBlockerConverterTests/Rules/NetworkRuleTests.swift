@@ -97,14 +97,11 @@ final class NetworkRuleTests: XCTestCase {
         XCTAssertEqual(result.restrictedContentType, [])
     }
     
-    func testReplaceModifier() {
-        let result = try? NetworkRule(ruleText: "/example/$replace=/test/test2/")
-        XCTAssertNil(result)
-    }
-    
-    func testUnexpectedOptionValue() {
-        let result = try? NetworkRule(ruleText: "||example.org^$doc=test")
-        XCTAssertNil(result)
+    func testUnsupportedOptions() {
+        XCTAssertThrowsError(try NetworkRule(ruleText: "/example/$replace=/test/test2/"))
+        XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org^$doc=test"))
+        XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org^$domain="))
+        XCTAssertThrowsError(try NetworkRule(ruleText: "//$domain=example.com"))
     }
     
     func testRuleWithModifierThatLooksLikeRegex() {

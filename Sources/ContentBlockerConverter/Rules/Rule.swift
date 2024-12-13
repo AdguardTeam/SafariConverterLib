@@ -24,11 +24,13 @@ class Rule {
     /// Parses the list of domains separated by the separator character and populates
     /// permittedDomains and restrictedDomains collections.
     ///
+    /// Note, that it does not clear its state and can be called multiple times.
+    ///
     /// - Parameters:
     ///   - domainsStr: a string with domains to be parsed.
     ///   - separator: a separator for the list of domains.
     /// - Throws: SyntaxError if encountered an invalid domain.
-    func setDomains(domainsStr: String, separator: UInt8) throws -> Void {
+    func addDomains(domainsStr: String, separator: UInt8) throws -> Void {
         let utfString = domainsStr.utf8
         
         let maxIndex = utfString.count - 1
