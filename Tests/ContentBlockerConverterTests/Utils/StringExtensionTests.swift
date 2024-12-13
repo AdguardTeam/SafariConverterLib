@@ -4,7 +4,7 @@ import XCTest
 @testable import ContentBlockerConverter
 
 final class StringExtensionTests: XCTestCase {
-
+    
     func testEscapeForJSON() {
         XCTAssertEqual("test".escapeForJSON(), "test")
         XCTAssertEqual(#"test \ test"#.escapeForJSON(), #"test \\ test"#)
@@ -20,8 +20,4 @@ final class StringExtensionTests: XCTestCase {
         XCTAssertEqual("test \u{11} test".escapeForJSON(), "test \\u0011 test")
         XCTAssertEqual("test \u{15} test".escapeForJSON(), "test \\u0015 test")
     }
-    
-    static var allTests = [
-        ("testEscapeForJSON", testEscapeForJSON),
-    ]
 }

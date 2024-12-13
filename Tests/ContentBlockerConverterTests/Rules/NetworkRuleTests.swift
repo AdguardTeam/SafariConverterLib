@@ -121,9 +121,15 @@ final class NetworkRuleTests: XCTestCase {
         XCTAssertNil(result)
     }
 
-    func testPunycodeDomain() {
+    func testPunycodeDomainInPattern() {
         let result = try! NetworkRule(ruleText: "||почта.рф^")
         XCTAssertEqual(result.urlRuleText, "||xn--80a1acny.xn--p1ai^")
+    }
+    
+    func testPunycodeDomainInDomainModifier() {
+        let result = try! NetworkRule(ruleText: "||example.org^$domain=почта.рф|example.net")
+        XCTAssertEqual(result.urlRuleText, "||example.org^")
+        XCTAssertEqual(result.permittedDomains, ["xn--80a1acny.xn--p1ai", "example.net"])
     }
     
     func testExtractDomain() {

@@ -18,7 +18,7 @@ final class SimpleRegexTests: XCTestCase {
             ("test", "test", false),
             ("//test.png", "\\/\\/test\\.png", false),
         ]
-
+        
         for (pattern, expectedRegex, expectedError) in testPatterns {
             if expectedError {
                 XCTAssertThrowsError(try SimpleRegex.createRegexText(pattern: pattern))

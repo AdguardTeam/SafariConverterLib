@@ -78,7 +78,7 @@ class NetworkRule: Rule {
             urlRuleText = NetworkRuleParser.encodeDomainIfRequired(pattern: urlRuleText)!
 
             if (!urlRuleText.isEmpty) {
-                urlRegExpSource = try! SimpleRegex.createRegexText(pattern: urlRuleText)
+                urlRegExpSource = try SimpleRegex.createRegexText(pattern: urlRuleText)
             }
         }
 

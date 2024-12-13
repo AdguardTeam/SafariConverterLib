@@ -374,6 +374,7 @@ final class CosmeticRuleTests: XCTestCase {
         XCTAssertEqual(result.isScriptlet, false)
         XCTAssertEqual(result.isDocumentWhiteList, false)
         
+        XCTAssertEqual(result.pathModifier, "/^\\/$/")
         XCTAssertEqual(result.permittedDomains, ["mail.ru"])
         XCTAssertEqual(result.restrictedDomains, [])
         
@@ -385,19 +386,17 @@ final class CosmeticRuleTests: XCTestCase {
         XCTAssertEqual(result.isInjectCss, false)
 
     }
+    
+    func testRuleWithPunycodeDomain() {
+        let result = try! CosmeticRule(ruleText: "example.net,почта.рф##.banner")
+        
+        XCTAssertEqual(result.content, ".banner")
+        XCTAssertEqual(result.permittedDomains, ["example.net", "xn--80a1acny.xn--p1ai"])
+    }
 
-    static var allTests = [
-        ("testElemhidingRules", testElemhidingRules),
-        ("testElemhidingRulesWhitelist", testElemhidingRulesWhitelist),
-        ("testCssRules", testCssRules),
-        ("testCssRulesWhitelist", testCssRulesWhitelist),
-        ("testExtendedCssRules", testExtendedCssRules),
-        ("testScriptRules", testScriptRules),
-        ("testScriptRulesWhitelist", testScriptRulesWhitelist),
-        ("testScriptletRules", testScriptletRules),
-        ("testScriptletRulesWhitelist", testScriptletRulesWhitelist),
-        ("testDomains", testDomains),
-        ("testGenericWildcardRules", testGenericWildcardRules),
-        ("testRulesWithPseudoClassHas", testRulesWithPseudoClassHas),
-    ]
+    func testForbiddenCSSRules() {
+        XCTAssertThrowsError(try CosmeticRule(ruleText: "#$#.banner { background: url(test.png) }"))
+        XCTAssertThrowsError(try CosmeticRule(ruleText: "#?$#.banner { background: url(test.png) }"))
+    }
+
 }

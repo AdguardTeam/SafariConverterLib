@@ -104,11 +104,15 @@ class CosmeticRule: Rule {
             }
         }
         
-        self.isWhiteList = CosmeticRule.isWhitelist(marker: markerInfo.marker!)
-        self.isExtendedCss = CosmeticRule.isExtCssMarker(marker: markerInfo.marker!)
-        if (!self.isExtendedCss && CosmeticRule.hasExtCSSIndicators(content: self.content)) {
+        isWhiteList = CosmeticRule.isWhitelist(marker: markerInfo.marker!)
+        isExtendedCss = CosmeticRule.isExtCssMarker(marker: markerInfo.marker!)
+        if (!isExtendedCss && CosmeticRule.hasExtCSSIndicators(content: self.content)) {
             // Additional check if rule is extended css rule by pseudo class indicators.
-            self.isExtendedCss = true
+            isExtendedCss = true
+        }
+        
+        if isInjectCss && content.range(of: "url(") != nil {
+            throw SyntaxError.invalidRule(message: "Forbidden style in a CSS rule")
         }
     }
     
@@ -262,7 +266,6 @@ class CosmeticRule: Rule {
 
     func setCosmeticRuleDomains(domains: String) throws -> Void {
         // TODO(ameshkov): !!! Add tests for cosmetic rule modifiers !!!
-        // TODO(ameshkov): !!! Implement logic here
         if domains.utf8.first == Chars.SQUARE_BRACKET_OPEN {
             try parseCosmeticOptions(domains: domains)
         } else {

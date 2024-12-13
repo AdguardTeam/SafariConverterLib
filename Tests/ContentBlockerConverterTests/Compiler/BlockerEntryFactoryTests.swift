@@ -262,17 +262,6 @@ final class BlockerEntryFactoryTests: XCTestCase {
         XCTAssertEqual(result!.action.css, ".body { overflow: visible!important; }");
     }
 
-    func testConvertInvalidCssRule() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter());
-
-        let rule = try! CosmeticRule(ruleText: "##url(test)");
-        rule.isExtendedCss = true;
-        rule.restrictedDomains = ["test_domain_one", "test_domain_two"];
-
-        let result = converter.createBlockerEntry(rule: rule);
-        XCTAssertNil(result);
-    }
-
     func testConvertInvalidRegexNetworkRule() {
         let converter = BlockerEntryFactory(advancedBlockingEnabled: false, errorsCounter: ErrorsCounter());
 
@@ -409,27 +398,4 @@ final class BlockerEntryFactoryTests: XCTestCase {
 
         return rule;
     }
-
-    static var allTests = [
-        ("testConvertNetworkRule", testConvertNetworkRule),
-        ("testConvertNetworkRuleRegExp", testConvertNetworkRuleRegExp),
-        ("testConvertNetworkRulePath", testConvertNetworkRulePath),
-        ("testConvertNetworkRuleWhitelist", testConvertNetworkRuleWhitelist),
-        ("testConvertScriptRule", testConvertScriptRule),
-        ("testConvertScriptRulesForNonAdvancedBlocking", testConvertScriptRulesForNonAdvancedBlocking),
-        ("testConvertScriptRuleWhitelist", testConvertScriptRuleWhitelist),
-        ("testConvertScriptletRule", testConvertScriptletRule),
-        ("testConvertScriptletRuleWhitelist", testConvertScriptletRuleWhitelist),
-        ("testConvertCssRule", testConvertCssRule),
-        ("testConvertCssRuleExtendedCss", testConvertCssRuleExtendedCss),
-        ("testConvertCssRuleCssInject", testConvertCssRuleCssInject),
-        ("testConvertInvalidCssRule", testConvertInvalidCssRule),
-        ("testConvertInvalidNetworkRule", testConvertInvalidNetworkRule),
-        ("testConvertInvalidRegexNetworkRule", testConvertInvalidRegexNetworkRule),
-        ("testTldDomains", testTldDomains),
-        ("testDomainsRestrictions", testDomainsRestrictions),
-        ("testThirdParty", testThirdParty),
-        ("testMatchCase", testMatchCase),
-        ("testResourceTypes", testResourceTypes),
-    ]
 }

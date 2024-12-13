@@ -10,7 +10,6 @@ class Rule {
     var isWhiteList = false
     var isImportant = false
 
-    // TODO(ameshkov): !!! Cosmetic???
     var isScript = false
     var isScriptlet = false
     var isDocumentWhiteList = false
@@ -32,6 +31,7 @@ class Rule {
     /// - Parameters:
     ///   - domainsStr: a string with domains to be parsed.
     ///   - separator: a separator for the list of domains.
+    /// - Throws: SyntaxError if encountered an invalid domain.
     func setDomains(domainsStr: String, separator: UInt8) throws -> Void {
         let utfString = domainsStr.utf8
         
@@ -79,7 +79,6 @@ class Rule {
                 previousSeparator = i + 1
                 nonASCIIFound = false
             } else {
-                // TODO(ameshkov): !!! Test for non-ASCII domains.
                 if char > 127 {
                     // Record that a non-ASCII character was found in the domain name.
                     nonASCIIFound = true

@@ -66,16 +66,6 @@ extension String {
     }
     
     // TODO(ameshkov): !!! Remove
-    func lastIndexOf(target: String) -> Int {
-        let range = self.range(of: target, options: .backwards)
-        if let range = range {
-            return distance(from: self.startIndex, to: range.lowerBound)
-        } else {
-            return -1
-        }
-    }
-    
-    // TODO(ameshkov): !!! Remove
     func subString(startIndex: Int) -> String {
         let start = self.index(self.startIndex, offsetBy: startIndex);
         let end = self.index(self.endIndex, offsetBy: 0);

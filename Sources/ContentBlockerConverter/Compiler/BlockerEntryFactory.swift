@@ -160,7 +160,7 @@ class BlockerEntryFactory {
                 case .failure(let error): throw ConversionError.unsupportedRegExp(message: "Unsupported regexp in $path: \(error)")
                 }
             } else {
-                pathRegex = try! SimpleRegex.createRegexText(pattern: rule.pathModifier!)
+                pathRegex = try SimpleRegex.createRegexText(pattern: rule.pathModifier!)
             }
 
             if pathRegex.starts(with: BlockerEntryFactory.START_OF_STRING) {
@@ -173,25 +173,24 @@ class BlockerEntryFactory {
             }
         }
 
-        var action = BlockerEntry.Action(type:"css-display-none");
+        var action = BlockerEntry.Action(type:"css-display-none")
 
         if (rule.isExtendedCss) {
-            action.type = "css-extended";
-            action.css = rule.content;
+            action.type = "css-extended"
+            action.css = rule.content
         } else if (rule.isInjectCss) {
-            action.type = "css-inject";
-            action.css = rule.content;
+            action.type = "css-inject"
+            action.css = rule.content
         } else {
-            action.selector = rule.content;
+            action.selector = rule.content
         }
 
-        setWhiteList(rule: rule, action: &action);
-        try addDomainOptions(rule: rule, trigger: &trigger);
+        setWhiteList(rule: rule, action: &action)
+        try addDomainOptions(rule: rule, trigger: &trigger)
 
         let result = BlockerEntry(trigger: trigger, action: action)
-        try validateCssFilterRule(entry: result);
 
-        return result;
+        return result
     }
 
     /// Builds the "url-filter" property of a Safari content blocking rule.
@@ -504,24 +503,10 @@ class BlockerEntryFactory {
         }
     }
 
-    /**
-     * Validates css rule and discards rules considered dangerous or invalid.
-     */
-    private func validateCssFilterRule(entry: BlockerEntry) throws -> Void {
-        if (entry.action.type != "css-extended" && entry.action.type != "css-inject") {
-            return;
-        }
-
-        if (entry.action.css!.indexOf(target: "url(") >= 0) {
-            throw ConversionError.dangerousCss(message: "Urls are not allowed in css styles");
-        }
-    };
-
     enum ConversionError: Error {
         case unsupportedRule(message: String)
         case unsupportedRegExp(message: String)
         case unsupportedContentType(message: String)
         case invalidDomains(message: String)
-        case dangerousCss(message: String)
     }
 }
