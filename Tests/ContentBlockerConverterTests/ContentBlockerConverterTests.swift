@@ -28,6 +28,11 @@ final class ContentBlockerConverterTests: XCTestCase {
             condition($0)
         }
     }
+    
+    override func tearDown() {
+        // Restore the default state.
+        SafariService.current.version = DEFAULT_SAFARI_VERSION
+    }
 
     func testEmpty() {
         var result = converter.convertArray(rules: []);
@@ -72,124 +77,120 @@ final class ContentBlockerConverterTests: XCTestCase {
             "||example1.com$document",
             "||example2.com$document,popup",
             "||example5.com$popup,document",
-        ];
+        ]
 
-        var result = converter.convertArray(rules: ruleText);
+        var result = converter.convertArray(rules: ruleText)
 
-        XCTAssertEqual(result.totalConvertedCount, 3);
-        XCTAssertEqual(result.convertedCount, 3);
-        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.totalConvertedCount, 3)
+        XCTAssertEqual(result.convertedCount, 3)
+        XCTAssertEqual(result.errorsCount, 0)
 
-        var decoded = try! parseJsonString(json: result.converted);
-        XCTAssertEqual(decoded.count, 3);
+        var decoded = try! parseJsonString(json: result.converted)
+        XCTAssertEqual(decoded.count, 3)
 
-        XCTAssertEqual(decoded[0].trigger.urlFilter, START_URL_UNESCAPED + "example1\\.com");
-        XCTAssertEqual(decoded[0].trigger.resourceType, ["document"]);
-        XCTAssertEqual(decoded[0].action.type, "block");
+        XCTAssertEqual(decoded[0].trigger.urlFilter, START_URL_UNESCAPED + "example1\\.com")
+        XCTAssertEqual(decoded[0].trigger.resourceType, ["document"])
+        XCTAssertEqual(decoded[0].action.type, "block")
 
-        var regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!);
-        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://example1.com"));
-        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://example1.com/test"));
+        var regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!)
+        XCTAssertNotNil("https://example1.com".firstMatch(for: regex))
+        XCTAssertNotNil("https://example1.com/test".firstMatch(for: regex))
 
-        XCTAssertEqual(decoded[1].trigger.urlFilter, START_URL_UNESCAPED + "example2\\.com");
-        XCTAssertEqual(decoded[1].trigger.resourceType, ["document"]);
-        XCTAssertEqual(decoded[1].action.type, "block");
+        XCTAssertEqual(decoded[1].trigger.urlFilter, START_URL_UNESCAPED + "example2\\.com")
+        XCTAssertEqual(decoded[1].trigger.resourceType, ["document"])
+        XCTAssertEqual(decoded[1].action.type, "block")
 
-        regex = try! NSRegularExpression(pattern: decoded[1].trigger.urlFilter!);
-        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://example2.com"));
+        regex = try! NSRegularExpression(pattern: decoded[1].trigger.urlFilter!)
+        XCTAssertNotNil("https://example2.com".firstMatch(for: regex))
 
-        XCTAssertEqual(decoded[2].trigger.urlFilter, START_URL_UNESCAPED + "example5\\.com");
-        XCTAssertEqual(decoded[2].trigger.resourceType, ["document"]);
-        XCTAssertEqual(decoded[2].action.type, "block");
+        XCTAssertEqual(decoded[2].trigger.urlFilter, START_URL_UNESCAPED + "example5\\.com")
+        XCTAssertEqual(decoded[2].trigger.resourceType, ["document"])
+        XCTAssertEqual(decoded[2].action.type, "block")
 
-        regex = try! NSRegularExpression(pattern: decoded[2].trigger.urlFilter!);
-        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://example5.com"));
+        regex = try! NSRegularExpression(pattern: decoded[2].trigger.urlFilter!)
+        XCTAssertNotNil("https://example5.com".firstMatch(for: regex))
 
         // conversion of $document rule
-        ruleText = ["||example.com$document"];
-        result = converter.convertArray(rules: ruleText);
+        ruleText = ["||example.com$document"]
+        result = converter.convertArray(rules: ruleText)
 
-        XCTAssertEqual(result.totalConvertedCount, 1);
-        XCTAssertEqual(result.convertedCount, 1);
-        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.totalConvertedCount, 1)
+        XCTAssertEqual(result.convertedCount, 1)
+        XCTAssertEqual(result.errorsCount, 0)
 
-        decoded = try! parseJsonString(json: result.converted);
-        XCTAssertEqual(decoded[0].trigger.urlFilter, "\(START_URL_UNESCAPED)example\\.com");
-        XCTAssertEqual(decoded[0].trigger.resourceType, ["document"]);
-        XCTAssertEqual(decoded[0].action.type, "block");
+        decoded = try! parseJsonString(json: result.converted)
+        XCTAssertEqual(decoded[0].trigger.urlFilter, "\(START_URL_UNESCAPED)example\\.com")
+        XCTAssertEqual(decoded[0].trigger.resourceType, ["document"])
+        XCTAssertEqual(decoded[0].action.type, "block")
 
-        regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!);
-        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://example.com"));
-
+        regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!)
+        XCTAssertNotNil("https://example.com".firstMatch(for: regex))
 
         // conversion of $document and $popup rule
-        ruleText = ["||test.com$document,popup"];
-        result = converter.convertArray(rules: ruleText);
+        ruleText = ["||test.com$document,popup"]
+        result = converter.convertArray(rules: ruleText)
 
-        XCTAssertEqual(result.totalConvertedCount, 1);
-        XCTAssertEqual(result.convertedCount, 1);
-        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.totalConvertedCount, 1)
+        XCTAssertEqual(result.convertedCount, 1)
+        XCTAssertEqual(result.errorsCount, 0)
 
-        decoded = try! parseJsonString(json: result.converted);
-        XCTAssertEqual(decoded[0].trigger.urlFilter, "\(START_URL_UNESCAPED)test\\.com");
-        XCTAssertEqual(decoded[0].trigger.resourceType, ["document"]);
-        XCTAssertEqual(decoded[0].action.type, "block");
+        decoded = try! parseJsonString(json: result.converted)
+        XCTAssertEqual(decoded[0].trigger.urlFilter, "\(START_URL_UNESCAPED)test\\.com")
+        XCTAssertEqual(decoded[0].trigger.resourceType, ["document"])
+        XCTAssertEqual(decoded[0].action.type, "block")
 
-        regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!);
-        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://test.com"));
-
+        regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!)
+        XCTAssertNotNil("https://test.com".firstMatch(for: regex))
 
         // conversion of $popup rule
-        ruleText = ["||example.com^$popup"];
-        result = converter.convertArray(rules: ruleText);
+        ruleText = ["||example.com^$popup"]
+        result = converter.convertArray(rules: ruleText)
 
-        XCTAssertEqual(result.totalConvertedCount, 1);
-        XCTAssertEqual(result.convertedCount, 1);
-        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.totalConvertedCount, 1)
+        XCTAssertEqual(result.convertedCount, 1)
+        XCTAssertEqual(result.errorsCount, 0)
 
-        decoded = try! parseJsonString(json: result.converted);
-        XCTAssertEqual(decoded[0].trigger.urlFilter, "\(START_URL_UNESCAPED)example\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
-        XCTAssertEqual(decoded[0].trigger.resourceType, ["document"]);
-        XCTAssertEqual(decoded[0].action.type, "block");
+        decoded = try! parseJsonString(json: result.converted)
+        XCTAssertEqual(decoded[0].trigger.urlFilter, "\(START_URL_UNESCAPED)example\\.com" + URL_FILTER_REGEXP_END_SEPARATOR)
+        XCTAssertEqual(decoded[0].trigger.resourceType, ["document"])
+        XCTAssertEqual(decoded[0].action.type, "block")
 
-        regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!);
-        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://example.com"));
-
+        regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!)
+        XCTAssertNotNil("https://example.com".firstMatch(for: regex))
 
         // conversion of $popup and third-party rule
-        ruleText = ["||getsecuredfiles.com^$popup,third-party"];
-        result = converter.convertArray(rules: ruleText);
+        ruleText = ["||getsecuredfiles.com^$popup,third-party"]
+        result = converter.convertArray(rules: ruleText)
 
-        XCTAssertEqual(result.totalConvertedCount, 1);
-        XCTAssertEqual(result.convertedCount, 1);
-        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.totalConvertedCount, 1)
+        XCTAssertEqual(result.convertedCount, 1)
+        XCTAssertEqual(result.errorsCount, 0)
 
-        decoded = try! parseJsonString(json: result.converted);
-        XCTAssertEqual(decoded[0].trigger.urlFilter, "\(START_URL_UNESCAPED)getsecuredfiles\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
-        XCTAssertEqual(decoded[0].trigger.resourceType, ["document"]);
-        XCTAssertEqual(decoded[0].trigger.loadType, ["third-party"]);
-        XCTAssertEqual(decoded[0].action.type, "block");
+        decoded = try! parseJsonString(json: result.converted)
+        XCTAssertEqual(decoded[0].trigger.urlFilter, "\(START_URL_UNESCAPED)getsecuredfiles\\.com" + URL_FILTER_REGEXP_END_SEPARATOR)
+        XCTAssertEqual(decoded[0].trigger.resourceType, ["document"])
+        XCTAssertEqual(decoded[0].trigger.loadType, ["third-party"])
+        XCTAssertEqual(decoded[0].action.type, "block")
 
-        regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!);
-        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://getsecuredfiles.com"));
-
+        regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!)
+        XCTAssertNotNil("https://getsecuredfiles.com".firstMatch(for: regex))
     }
 
     func testConvertFirstPartyRule() {
-        let result = converter.convertArray(rules: ["@@||adriver.ru^$~third-party"]);
+        let result = converter.convertArray(rules: ["@@||adriver.ru^$~third-party"])
 
-        XCTAssertEqual(result.totalConvertedCount, 1);
-        XCTAssertEqual(result.convertedCount, 1);
-        XCTAssertEqual(result.errorsCount, 0);
-        XCTAssertEqual(result.overLimit, false);
+        XCTAssertEqual(result.totalConvertedCount, 1)
+        XCTAssertEqual(result.convertedCount, 1)
+        XCTAssertEqual(result.errorsCount, 0)
+        XCTAssertEqual(result.overLimit, false)
 
-        let decoded = try! parseJsonString(json: result.converted);
-        XCTAssertEqual(decoded[0].trigger.urlFilter, "\(START_URL_UNESCAPED)adriver\\.ru" + URL_FILTER_REGEXP_END_SEPARATOR);
-        XCTAssertEqual(decoded[0].trigger.loadType, ["first-party"]);
-        XCTAssertEqual(decoded[0].action.type, "ignore-previous-rules");
+        let decoded = try! parseJsonString(json: result.converted)
+        XCTAssertEqual(decoded[0].trigger.urlFilter, "\(START_URL_UNESCAPED)adriver\\.ru" + URL_FILTER_REGEXP_END_SEPARATOR)
+        XCTAssertEqual(decoded[0].trigger.loadType, ["first-party"])
+        XCTAssertEqual(decoded[0].action.type, "ignore-previous-rules")
 
-        let regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!);
-        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://adriver.ru"));
+        let regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!)
+        XCTAssertNotNil("https://adriver.ru".firstMatch(for: regex))
     }
 
     func testConvertWebsocketRules() {
@@ -206,7 +207,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(entry.trigger.resourceType, ["raw"])
 
         let regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!)
-        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://test.com"))
+        XCTAssertNotNil("https://test.com".firstMatch(for: regex))
 
         result = converter.convertArray(rules: ["$websocket,domain=123movies.is"])
         XCTAssertEqual(result.convertedCount, 1)
@@ -258,264 +259,263 @@ final class ContentBlockerConverterTests: XCTestCase {
     }
 
     func testConvertScriptRestrictRules() {
-        let result = converter.convertArray(rules: ["||test.com^$~script,domain=example.com"]);
-        XCTAssertEqual(result.convertedCount, 1);
+        let result = converter.convertArray(rules: ["||test.com^$~script,domain=example.com"])
+        XCTAssertEqual(result.convertedCount, 1)
 
-        let decoded = try! parseJsonString(json: result.converted);
-        XCTAssertEqual(decoded.count, 1);
-        let entry = decoded[0];
-        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
-        XCTAssertEqual(entry.trigger.ifDomain, ["*example.com"]);
-        XCTAssertEqual(entry.trigger.unlessDomain, nil);
-        XCTAssertEqual(entry.trigger.resourceType, ["image", "style-sheet", "media", "raw", "font", "document"]);
+        let decoded = try! parseJsonString(json: result.converted)
+        XCTAssertEqual(decoded.count, 1)
+        let entry = decoded[0]
+        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR)
+        XCTAssertEqual(entry.trigger.ifDomain, ["*example.com"])
+        XCTAssertEqual(entry.trigger.unlessDomain, nil)
+        XCTAssertEqual(entry.trigger.resourceType, ["image", "style-sheet", "media", "raw", "font", "document"])
 
-        let regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!);
-        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://test.com"));
+        let regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!)
+        XCTAssertNotNil("https://test.com".firstMatch(for: regex))
     }
 
     func testConvertSubdocumentFirstParty() {
-        let result = converter.convertArray(rules: ["||test.com^$subdocument,~third-party"]);
-        XCTAssertEqual(result.convertedCount, 0);
+        let result = converter.convertArray(rules: ["||test.com^$subdocument,~third-party"])
+        XCTAssertEqual(result.convertedCount, 0)
     }
 
     func testConvertSubdocumentThirdParty() {
-        let result = converter.convertArray(rules: ["||test.com^$subdocument,domain=example.com"]);
-        XCTAssertEqual(result.convertedCount, 1);
+        let result = converter.convertArray(rules: ["||test.com^$subdocument,domain=example.com"])
+        XCTAssertEqual(result.convertedCount, 1)
 
-        let decoded = try! parseJsonString(json: result.converted);
-        XCTAssertEqual(decoded.count, 1);
-        let entry = decoded[0];
-        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
-        XCTAssertEqual(entry.trigger.ifDomain, ["*example.com"]);
-        XCTAssertEqual(entry.trigger.unlessDomain, nil);
-        XCTAssertEqual(entry.trigger.resourceType, ["document"]);
-        XCTAssertEqual(entry.action.type, "block");
+        let decoded = try! parseJsonString(json: result.converted)
+        XCTAssertEqual(decoded.count, 1)
+        let entry = decoded[0]
+        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR)
+        XCTAssertEqual(entry.trigger.ifDomain, ["*example.com"])
+        XCTAssertEqual(entry.trigger.unlessDomain, nil)
+        XCTAssertEqual(entry.trigger.resourceType, ["document"])
+        XCTAssertEqual(entry.action.type, "block")
 
-        let regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!);
-        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://test.com"));
+        let regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!)
+        XCTAssertNotNil("https://test.com".firstMatch(for: regex))
     }
 
     func testSubdocumentRuleProperConversion() {
-        var result = converter.convertArray(rules: ["||test.com^$subdocument,domain=example.com"], safariVersion: .safari15);
-        XCTAssertEqual(result.convertedCount, 1);
+        var result = converter.convertArray(rules: ["||test.com^$subdocument,domain=example.com"], safariVersion: .safari15)
+        XCTAssertEqual(result.convertedCount, 1)
 
-        var decoded = try! parseJsonString(json: result.converted);
-        XCTAssertEqual(decoded.count, 1);
-        var entry = decoded[0];
-        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
-        XCTAssertEqual(entry.trigger.ifDomain, ["*example.com"]);
-        XCTAssertEqual(entry.trigger.unlessDomain, nil);
-        XCTAssertEqual(entry.trigger.loadContext, ["child-frame"]);
-        XCTAssertEqual(entry.action.type, "block");
+        var decoded = try! parseJsonString(json: result.converted)
+        XCTAssertEqual(decoded.count, 1)
+        var entry = decoded[0]
+        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR)
+        XCTAssertEqual(entry.trigger.ifDomain, ["*example.com"])
+        XCTAssertEqual(entry.trigger.unlessDomain, nil)
+        XCTAssertEqual(entry.trigger.loadContext, ["child-frame"])
+        XCTAssertEqual(entry.action.type, "block")
 
-        result = converter.convertArray(rules: ["||test.com^$~subdocument,domain=example.com"], safariVersion: SafariVersion.safari15);
-        XCTAssertEqual(result.convertedCount, 1);
+        result = converter.convertArray(rules: ["||test.com^$~subdocument,domain=example.com"], safariVersion: SafariVersion.safari15)
+        XCTAssertEqual(result.convertedCount, 1)
 
-        decoded = try! parseJsonString(json: result.converted);
-        XCTAssertEqual(decoded.count, 1);
-        entry = decoded[0];
-        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
-        XCTAssertEqual(entry.trigger.ifDomain, ["*example.com"]);
-        XCTAssertEqual(entry.trigger.unlessDomain, nil);
-        XCTAssertEqual(entry.trigger.resourceType, ["image", "style-sheet", "script", "media", "fetch", "other", "websocket", "font", "ping", "document"]);
-        XCTAssertEqual(entry.trigger.loadContext, ["top-frame"]);
-        XCTAssertEqual(entry.action.type, "block");
+        decoded = try! parseJsonString(json: result.converted)
+        XCTAssertEqual(decoded.count, 1)
+        entry = decoded[0]
+        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR)
+        XCTAssertEqual(entry.trigger.ifDomain, ["*example.com"])
+        XCTAssertEqual(entry.trigger.unlessDomain, nil)
+        XCTAssertEqual(entry.trigger.resourceType, ["image", "style-sheet", "script", "media", "fetch", "other", "websocket", "font", "ping", "document"])
+        XCTAssertEqual(entry.trigger.loadContext, ["top-frame"])
+        XCTAssertEqual(entry.action.type, "block")
     }
 
     func testAddUnlessDomainsForThirdParty() {
-        var result = converter.convertArray(rules: ["||test.com^$third-party"]);
-        XCTAssertEqual(result.convertedCount, 1);
+        var result = converter.convertArray(rules: ["||test.com^$third-party"])
+        XCTAssertEqual(result.convertedCount, 1)
 
-        var decoded = try! parseJsonString(json: result.converted);
-        XCTAssertEqual(decoded.count, 1);
-        var entry = decoded[0];
-        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
-        XCTAssertEqual(entry.trigger.ifDomain, nil);
-        XCTAssertEqual(entry.trigger.unlessDomain, ["*test.com"]);
-        XCTAssertEqual(entry.trigger.loadType, ["third-party"]);
+        var decoded = try! parseJsonString(json: result.converted)
+        XCTAssertEqual(decoded.count, 1)
+        var entry = decoded[0]
+        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR)
+        XCTAssertEqual(entry.trigger.ifDomain, nil)
+        XCTAssertEqual(entry.trigger.unlessDomain, ["*test.com"])
+        XCTAssertEqual(entry.trigger.loadType, ["third-party"])
 
-        var regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!);
+        var regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!)
         XCTAssertNotNil("https://test.com".firstMatch(for: regex))
 
-        result = converter.convertArray(rules: ["||test.com$third-party,domain=~example.com"]);
-        XCTAssertEqual(result.convertedCount, 1);
+        result = converter.convertArray(rules: ["||test.com$third-party,domain=~example.com"])
+        XCTAssertEqual(result.convertedCount, 1)
 
-        decoded = try! parseJsonString(json: result.converted);
-        XCTAssertEqual(decoded.count, 1);
-        entry = decoded[0];
-        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com");
-        XCTAssertEqual(entry.trigger.ifDomain, nil);
-        XCTAssertEqual(entry.trigger.unlessDomain, ["*example.com", "*test.com"]);
-        XCTAssertEqual(entry.trigger.loadType, ["third-party"]);
+        decoded = try! parseJsonString(json: result.converted)
+        XCTAssertEqual(decoded.count, 1)
+        entry = decoded[0]
+        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com")
+        XCTAssertEqual(entry.trigger.ifDomain, nil)
+        XCTAssertEqual(entry.trigger.unlessDomain, ["*example.com", "*test.com"])
+        XCTAssertEqual(entry.trigger.loadType, ["third-party"])
 
-        regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!);
-        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://test.com"));
+        regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!)
+        XCTAssertNotNil("https://test.com".firstMatch(for: regex))
 
 
         // Only for third-party rules
-        result = converter.convertArray(rules: ["||test.com^$important"]);
-        XCTAssertEqual(result.convertedCount, 1);
+        result = converter.convertArray(rules: ["||test.com^$important"])
+        XCTAssertEqual(result.convertedCount, 1)
 
-        decoded = try! parseJsonString(json: result.converted);
-        XCTAssertEqual(decoded.count, 1);
-        entry = decoded[0];
-        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
-        XCTAssertEqual(entry.trigger.ifDomain, nil);
-        XCTAssertEqual(entry.trigger.unlessDomain, nil);
+        decoded = try! parseJsonString(json: result.converted)
+        XCTAssertEqual(decoded.count, 1)
+        entry = decoded[0]
+        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR)
+        XCTAssertEqual(entry.trigger.ifDomain, nil)
+        XCTAssertEqual(entry.trigger.unlessDomain, nil)
 
-        regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!);
-        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://test.com"));
-
+        regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!)
+        XCTAssertNotNil("https://test.com".firstMatch(for: regex))
 
         // Add domains only
-        result = converter.convertArray(rules: ["not_a_domain$third-party"]);
-        XCTAssertEqual(result.convertedCount, 1);
+        result = converter.convertArray(rules: ["not_a_domain$third-party"])
+        XCTAssertEqual(result.convertedCount, 1)
 
-        decoded = try! parseJsonString(json: result.converted);
-        XCTAssertEqual(decoded.count, 1);
-        entry = decoded[0];
-        XCTAssertEqual(entry.trigger.urlFilter, "not_a_domain");
-        XCTAssertEqual(entry.trigger.ifDomain, nil);
-        XCTAssertEqual(entry.trigger.unlessDomain, nil);
-        XCTAssertEqual(entry.trigger.loadType, ["third-party"]);
+        decoded = try! parseJsonString(json: result.converted)
+        XCTAssertEqual(decoded.count, 1)
+        entry = decoded[0]
+        XCTAssertEqual(entry.trigger.urlFilter, "not_a_domain")
+        XCTAssertEqual(entry.trigger.ifDomain, nil)
+        XCTAssertEqual(entry.trigger.unlessDomain, nil)
+        XCTAssertEqual(entry.trigger.loadType, ["third-party"])
 
 
         // Skip rules with permitted domains
-        result = converter.convertArray(rules: ["||test.com^$third-party,domain=example.com"]);
-        XCTAssertEqual(result.convertedCount, 1);
+        result = converter.convertArray(rules: ["||test.com^$third-party,domain=example.com"])
+        XCTAssertEqual(result.convertedCount, 1)
 
-        decoded = try! parseJsonString(json: result.converted);
-        XCTAssertEqual(decoded.count, 1);
-        entry = decoded[0];
-        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
-        XCTAssertEqual(entry.trigger.ifDomain, ["*example.com"]);
-        XCTAssertEqual(entry.trigger.unlessDomain, nil);
-        XCTAssertEqual(entry.trigger.loadType, ["third-party"]);
+        decoded = try! parseJsonString(json: result.converted)
+        XCTAssertEqual(decoded.count, 1)
+        entry = decoded[0]
+        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR)
+        XCTAssertEqual(entry.trigger.ifDomain, ["*example.com"])
+        XCTAssertEqual(entry.trigger.unlessDomain, nil)
+        XCTAssertEqual(entry.trigger.loadType, ["third-party"])
 
-        regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!);
-        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://test.com"));
+        regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!)
+        XCTAssertNotNil("https://test.com".firstMatch(for: regex))
     }
 
     func testConvertEmptyRegex() {
-        let result = converter.convertArray(rules: ["@@$image,domain=moonwalk.cc"]);
-        XCTAssertEqual(result.convertedCount, 1);
+        let result = converter.convertArray(rules: ["@@$image,domain=moonwalk.cc"])
+        XCTAssertEqual(result.convertedCount, 1)
 
-        let decoded = try! parseJsonString(json: result.converted);
-        XCTAssertEqual(decoded.count, 1);
-        let entry = decoded[0];
-        XCTAssertEqual(entry.trigger.urlFilter, URL_FILTER_ANY_URL);
-        XCTAssertEqual(entry.trigger.ifDomain, ["*moonwalk.cc"]);
-        XCTAssertEqual(entry.trigger.unlessDomain, nil);
-        XCTAssertEqual(entry.trigger.resourceType, ["image"]);
-        XCTAssertEqual(entry.action.type, "ignore-previous-rules");
+        let decoded = try! parseJsonString(json: result.converted)
+        XCTAssertEqual(decoded.count, 1)
+        let entry = decoded[0]
+        XCTAssertEqual(entry.trigger.urlFilter, URL_FILTER_ANY_URL)
+        XCTAssertEqual(entry.trigger.ifDomain, ["*moonwalk.cc"])
+        XCTAssertEqual(entry.trigger.unlessDomain, nil)
+        XCTAssertEqual(entry.trigger.resourceType, ["image"])
+        XCTAssertEqual(entry.action.type, "ignore-previous-rules")
     }
 
     func testConvertInvertedWhitelistRule() {
-        let result = converter.convertArray(rules: ["@@||*$document,domain=~whitelisted.domain.com|~whitelisted.domain2.com"]);
-        XCTAssertEqual(result.convertedCount, 1);
+        let result = converter.convertArray(rules: ["@@||*$document,domain=~whitelisted.domain.com|~whitelisted.domain2.com"])
+        XCTAssertEqual(result.convertedCount, 1)
 
-        let decoded = try! parseJsonString(json: result.converted);
-        XCTAssertEqual(decoded.count, 1);
-        let entry = decoded[0];
-        XCTAssertEqual(entry.trigger.urlFilter, URL_FILTER_ANY_URL);
-        XCTAssertEqual(entry.trigger.ifDomain, nil);
-        XCTAssertEqual(entry.trigger.unlessDomain, ["*whitelisted.domain.com", "*whitelisted.domain2.com"]);
-        XCTAssertEqual(entry.action.type, "ignore-previous-rules");
+        let decoded = try! parseJsonString(json: result.converted)
+        XCTAssertEqual(decoded.count, 1)
+        let entry = decoded[0]
+        XCTAssertEqual(entry.trigger.urlFilter, URL_FILTER_ANY_URL)
+        XCTAssertEqual(entry.trigger.ifDomain, nil)
+        XCTAssertEqual(entry.trigger.unlessDomain, ["*whitelisted.domain.com", "*whitelisted.domain2.com"])
+        XCTAssertEqual(entry.action.type, "ignore-previous-rules")
     }
 
     func testConvertGenerichide() {
-        var result = converter.convertArray(rules: ["@@||hulu.com/page$generichide"]);
-        XCTAssertEqual(result.convertedCount, 1);
+        var result = converter.convertArray(rules: ["@@||hulu.com/page$generichide"])
+        XCTAssertEqual(result.convertedCount, 1)
 
-        var decoded = try! parseJsonString(json: result.converted);
-        XCTAssertEqual(decoded.count, 1);
-        let entry = decoded[0];
-        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "hulu\\.com\\/page");
-        XCTAssertEqual(entry.action.type, "ignore-previous-rules");
+        var decoded = try! parseJsonString(json: result.converted)
+        XCTAssertEqual(decoded.count, 1)
+        let entry = decoded[0]
+        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "hulu\\.com\\/page")
+        XCTAssertEqual(entry.action.type, "ignore-previous-rules")
 
-        let regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!);
-        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://hulu.com/page"));
+        let regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!)
+        XCTAssertNotNil("https://hulu.com/page".firstMatch(for: regex))
 
         let rules = [
             "@@||example.org^$generichide,genericblock",
             "##.ad-banner",
             "||example.org^"
         ]
-        result = ContentBlockerConverter().convertArray(rules: rules);
+        result = ContentBlockerConverter().convertArray(rules: rules)
 
-        XCTAssertEqual(result.totalConvertedCount, 3);
-        XCTAssertEqual(result.convertedCount, 3);
-        XCTAssertEqual(result.errorsCount, 0);
+        XCTAssertEqual(result.totalConvertedCount, 3)
+        XCTAssertEqual(result.convertedCount, 3)
+        XCTAssertEqual(result.errorsCount, 0)
 
-        decoded = try! parseJsonString(json: result.converted);
-        XCTAssertEqual(decoded.count, 3);
+        decoded = try! parseJsonString(json: result.converted)
+        XCTAssertEqual(decoded.count, 3)
 
-        XCTAssertNil(decoded[0].trigger.ifDomain);
-        XCTAssertNil(decoded[0].trigger.unlessDomain);
-        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
-        XCTAssertEqual(decoded[0].action.type, "css-display-none");
-        XCTAssertEqual(decoded[0].action.selector, ".ad-banner");
+        XCTAssertNil(decoded[0].trigger.ifDomain)
+        XCTAssertNil(decoded[0].trigger.unlessDomain)
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*")
+        XCTAssertEqual(decoded[0].action.type, "css-display-none")
+        XCTAssertEqual(decoded[0].action.selector, ".ad-banner")
 
-        XCTAssertNil(decoded[1].trigger.ifDomain);
-        XCTAssertNil(decoded[1].trigger.unlessDomain);
-        XCTAssertEqual(decoded[1].trigger.urlFilter, "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$");
-        XCTAssertNil(decoded[1].trigger.resourceType);
-        XCTAssertEqual(decoded[1].action.type, "block");
+        XCTAssertNil(decoded[1].trigger.ifDomain)
+        XCTAssertNil(decoded[1].trigger.unlessDomain)
+        XCTAssertEqual(decoded[1].trigger.urlFilter, "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$")
+        XCTAssertNil(decoded[1].trigger.resourceType)
+        XCTAssertEqual(decoded[1].action.type, "block")
 
-        XCTAssertNil(decoded[2].trigger.ifDomain);
-        XCTAssertNil(decoded[2].trigger.unlessDomain);
-        XCTAssertEqual(decoded[2].trigger.urlFilter, "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$");
-        XCTAssertEqual(decoded[2].trigger.resourceType, ["document"]);
-        XCTAssertEqual(decoded[2].action.type, "ignore-previous-rules");
+        XCTAssertNil(decoded[2].trigger.ifDomain)
+        XCTAssertNil(decoded[2].trigger.unlessDomain)
+        XCTAssertEqual(decoded[2].trigger.urlFilter, "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$")
+        XCTAssertEqual(decoded[2].trigger.resourceType, ["document"])
+        XCTAssertEqual(decoded[2].action.type, "ignore-previous-rules")
     }
 
     func testConvertGenericDomainSensitive() {
-        let result = converter.convertArray(rules: ["~google.com##banner"]);
-        XCTAssertEqual(result.convertedCount, 1);
+        let result = converter.convertArray(rules: ["~google.com##banner"])
+        XCTAssertEqual(result.convertedCount, 1)
 
-        let decoded = try! parseJsonString(json: result.converted);
-        XCTAssertEqual(decoded.count, 1);
-        let entry = decoded[0];
-        XCTAssertEqual(entry.trigger.urlFilter, URL_FILTER_CSS_RULES);
-        XCTAssertEqual(entry.action.type, "css-display-none");
-        XCTAssertEqual(entry.trigger.unlessDomain, ["*google.com"]);
+        let decoded = try! parseJsonString(json: result.converted)
+        XCTAssertEqual(decoded.count, 1)
+        let entry = decoded[0]
+        XCTAssertEqual(entry.trigger.urlFilter, URL_FILTER_CSS_RULES)
+        XCTAssertEqual(entry.action.type, "css-display-none")
+        XCTAssertEqual(entry.trigger.unlessDomain, ["*google.com"])
     }
 
     func testConvertGenericDomainSensitiveSortingOrder() {
-        let result = converter.convertArray(rules: ["~example.org##generic", "##wide1", "##specific", "@@||example.org^$generichide"]);
-        XCTAssertEqual(result.convertedCount, 3);
+        let result = converter.convertArray(rules: ["~example.org##generic", "##wide1", "##specific", "@@||example.org^$generichide"])
+        XCTAssertEqual(result.convertedCount, 3)
 
-        let decoded = try! parseJsonString(json: result.converted);
-        XCTAssertEqual(decoded.count, 3);
+        let decoded = try! parseJsonString(json: result.converted)
+        XCTAssertEqual(decoded.count, 3)
 
-        XCTAssertEqual(decoded[0].trigger.urlFilter, URL_FILTER_CSS_RULES);
-        XCTAssertEqual(decoded[0].action.type, "css-display-none");
-        XCTAssertEqual(decoded[0].action.selector, "wide1, specific");
+        XCTAssertEqual(decoded[0].trigger.urlFilter, URL_FILTER_CSS_RULES)
+        XCTAssertEqual(decoded[0].action.type, "css-display-none")
+        XCTAssertEqual(decoded[0].action.selector, "wide1, specific")
 
-        XCTAssertEqual(decoded[1].trigger.urlFilter, URL_FILTER_CSS_RULES);
-        XCTAssertEqual(decoded[1].action.type, "css-display-none");
-        XCTAssertEqual(decoded[1].action.selector, "generic");
-        XCTAssertEqual(decoded[1].trigger.unlessDomain, ["*example.org"]);
+        XCTAssertEqual(decoded[1].trigger.urlFilter, URL_FILTER_CSS_RULES)
+        XCTAssertEqual(decoded[1].action.type, "css-display-none")
+        XCTAssertEqual(decoded[1].action.selector, "generic")
+        XCTAssertEqual(decoded[1].trigger.unlessDomain, ["*example.org"])
 
-        XCTAssertEqual(decoded[2].trigger.urlFilter, URL_FILTER_URL_RULES_EXCEPTIONS);
-        XCTAssertEqual(decoded[2].action.type, "ignore-previous-rules");
-        XCTAssertEqual(decoded[2].trigger.ifDomain, ["*example.org"]);
+        XCTAssertEqual(decoded[2].trigger.urlFilter, URL_FILTER_URL_RULES_EXCEPTIONS)
+        XCTAssertEqual(decoded[2].action.type, "ignore-previous-rules")
+        XCTAssertEqual(decoded[2].trigger.ifDomain, ["*example.org"])
     }
 
     func testConvertGenericDomainSensitiveSortingOrderGenerichide() {
-        let result = converter.convertArray(rules: ["###generic", "@@||example.org^$generichide"]);
-        XCTAssertEqual(result.convertedCount, 2);
+        let result = converter.convertArray(rules: ["###generic", "@@||example.org^$generichide"])
+        XCTAssertEqual(result.convertedCount, 2)
 
-        let decoded = try! parseJsonString(json: result.converted);
-        XCTAssertEqual(decoded.count, 2);
+        let decoded = try! parseJsonString(json: result.converted)
+        XCTAssertEqual(decoded.count, 2)
 
-        XCTAssertEqual(decoded[0].trigger.urlFilter, URL_FILTER_CSS_RULES);
-        XCTAssertEqual(decoded[0].action.type, "css-display-none");
-        XCTAssertEqual(decoded[0].action.selector, "#generic");
+        XCTAssertEqual(decoded[0].trigger.urlFilter, URL_FILTER_CSS_RULES)
+        XCTAssertEqual(decoded[0].action.type, "css-display-none")
+        XCTAssertEqual(decoded[0].action.selector, "#generic")
 
-        XCTAssertEqual(decoded[1].trigger.urlFilter, URL_FILTER_URL_RULES_EXCEPTIONS);
-        XCTAssertEqual(decoded[1].action.type, "ignore-previous-rules");
-        XCTAssertEqual(decoded[1].trigger.ifDomain, ["*example.org"]);
+        XCTAssertEqual(decoded[1].trigger.urlFilter, URL_FILTER_URL_RULES_EXCEPTIONS)
+        XCTAssertEqual(decoded[1].action.type, "ignore-previous-rules")
+        XCTAssertEqual(decoded[1].trigger.ifDomain, ["*example.org"])
     }
 
     func testConvertAdvancedBlockingRulesSortingOrderGenerichide() {
@@ -523,18 +523,18 @@ final class ContentBlockerConverterTests: XCTestCase {
             "test.com#%#//scriptlet('set-constant', 'test', 'true')",
             "@@||test.com^$generichide",
         ]
-        var result = converter.convertArray(rules: rules, advancedBlocking: true);
-        XCTAssertEqual(result.totalConvertedCount, 3);
-        XCTAssertEqual(result.convertedCount, 1);
-        XCTAssertEqual(result.advancedBlockingConvertedCount, 2);
+        var result = converter.convertArray(rules: rules, advancedBlocking: true)
+        XCTAssertEqual(result.totalConvertedCount, 3)
+        XCTAssertEqual(result.convertedCount, 1)
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 2)
 
-        var decoded = try! parseJsonString(json: result.advancedBlocking!);
-        XCTAssertEqual(decoded.count, 2);
+        var decoded = try! parseJsonString(json: result.advancedBlocking!)
+        XCTAssertEqual(decoded.count, 2)
 
         // generichide exception rule doesn't disable domain sensitive scriptlet rule
-        XCTAssertEqual(decoded[0].trigger.urlFilter, URL_FILTER_CSS_RULES);
-        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*test.com"]);
-        XCTAssertEqual(decoded[0].action.type, "ignore-previous-rules");
+        XCTAssertEqual(decoded[0].trigger.urlFilter, URL_FILTER_CSS_RULES)
+        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*test.com"])
+        XCTAssertEqual(decoded[0].action.type, "ignore-previous-rules")
 
         XCTAssertEqual(decoded[1].trigger.urlFilter, URL_FILTER_CSS_RULES);
         XCTAssertEqual(decoded[1].trigger.ifDomain, ["*test.com"]);
@@ -618,21 +618,21 @@ final class ContentBlockerConverterTests: XCTestCase {
     }
 
     func testCyrillicRules() {
-        let result = converter.convertArray(rules: ["меил.рф", "||меил.рф"]);
-        XCTAssertEqual(result.convertedCount, 2);
+        let result = converter.convertArray(rules: ["меил.рф", "||меил.рф"])
+        XCTAssertEqual(result.convertedCount, 2)
 
-        let decoded = try! parseJsonString(json: result.converted);
-        XCTAssertEqual(decoded.count, 2);
+        let decoded = try! parseJsonString(json: result.converted)
+        XCTAssertEqual(decoded.count, 2)
 
-        XCTAssertEqual(decoded[0].trigger.urlFilter, "xn--e1agjb\\.xn--p1ai");
+        XCTAssertEqual(decoded[0].trigger.urlFilter, "xn--e1agjb\\.xn--p1ai")
 
-        var regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!);
-        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://xn--e1agjb.xn--p1ai"));
+        var regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!)
+        XCTAssertNotNil("https://xn--e1agjb.xn--p1ai".firstMatch(for: regex))
 
-        XCTAssertEqual(decoded[1].trigger.urlFilter, START_URL_UNESCAPED + "xn--e1agjb\\.xn--p1ai");
+        XCTAssertEqual(decoded[1].trigger.urlFilter, START_URL_UNESCAPED + "xn--e1agjb\\.xn--p1ai")
 
-        regex = try! NSRegularExpression(pattern: decoded[1].trigger.urlFilter!);
-        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://xn--e1agjb.xn--p1ai"));
+        regex = try! NSRegularExpression(pattern: decoded[1].trigger.urlFilter!)
+        XCTAssertNotNil("https://xn--e1agjb.xn--p1ai".firstMatch(for: regex))
     }
 
     func testRegexRules() {
@@ -675,27 +675,27 @@ final class ContentBlockerConverterTests: XCTestCase {
             "https://icdn.lenta.ru/images/2017/04/10/16/20170410160659586/top7_f07b6db166774abba29e0de2e335f50a.jpg",
             "@@||lenta.ru^$elemhide",
             "@@||lenta.ru^$elemhide,genericblock"
-        ]);
-        XCTAssertEqual(result.convertedCount, 4);
+        ])
+        XCTAssertEqual(result.convertedCount, 4)
 
-        let decoded = try! parseJsonString(json: result.converted);
-        XCTAssertEqual(decoded.count, 4);
+        let decoded = try! parseJsonString(json: result.converted)
+        XCTAssertEqual(decoded.count, 4)
 
-        XCTAssertEqual(decoded[0].action.type, "css-display-none");
-        XCTAssertEqual(decoded[0].action.selector, "#root > section.b-header.b-header-main.js-header:nth-child(4) > div.g-layout > div.row");
+        XCTAssertEqual(decoded[0].action.type, "css-display-none")
+        XCTAssertEqual(decoded[0].action.selector, "#root > section.b-header.b-header-main.js-header:nth-child(4) > div.g-layout > div.row")
 
-        XCTAssertEqual(decoded[1].trigger.urlFilter, URL_FILTER_URL_RULES_EXCEPTIONS);
-        XCTAssertEqual(decoded[1].action.type, "ignore-previous-rules");
-        XCTAssertEqual(decoded[1].trigger.ifDomain, ["*lenta.ru"]);
+        XCTAssertEqual(decoded[1].trigger.urlFilter, URL_FILTER_URL_RULES_EXCEPTIONS)
+        XCTAssertEqual(decoded[1].action.type, "ignore-previous-rules")
+        XCTAssertEqual(decoded[1].trigger.ifDomain, ["*lenta.ru"])
 
-        XCTAssertEqual(decoded[2].trigger.urlFilter, "https:\\/\\/icdn\\.lenta\\.ru\\/images\\/2017\\/04\\/10\\/16\\/20170410160659586\\/top7_f07b6db166774abba29e0de2e335f50a\\.jpg");
-        XCTAssertEqual(decoded[2].action.type, "block");
+        XCTAssertEqual(decoded[2].trigger.urlFilter, "https:\\/\\/icdn\\.lenta\\.ru\\/images\\/2017\\/04\\/10\\/16\\/20170410160659586\\/top7_f07b6db166774abba29e0de2e335f50a\\.jpg")
+        XCTAssertEqual(decoded[2].action.type, "block")
 
-        XCTAssertEqual(decoded[3].trigger.urlFilter, START_URL_UNESCAPED + "lenta\\.ru" + URL_FILTER_REGEXP_END_SEPARATOR);
-        XCTAssertEqual(decoded[3].action.type, "ignore-previous-rules");
+        XCTAssertEqual(decoded[3].trigger.urlFilter, START_URL_UNESCAPED + "lenta\\.ru" + URL_FILTER_REGEXP_END_SEPARATOR)
+        XCTAssertEqual(decoded[3].action.type, "ignore-previous-rules")
 
-        let regex = try! NSRegularExpression(pattern: decoded[3].trigger.urlFilter!);
-        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://lenta.ru"));
+        let regex = try! NSRegularExpression(pattern: decoded[3].trigger.urlFilter!)
+        XCTAssertNotNil("https://lenta.ru".firstMatch(for: regex))
     }
 
     func testImportantModifierRules() {
@@ -705,39 +705,39 @@ final class ContentBlockerConverterTests: XCTestCase {
             "@@||example-url-block-exception.org^",
             "@@||example-url-block-exception-important.org^$important",
             "@@||example-url-block-exception-document.org^$document"
-        ]);
-        XCTAssertEqual(result.convertedCount, 5);
+        ])
+        XCTAssertEqual(result.convertedCount, 5)
 
-        let decoded = try! parseJsonString(json: result.converted);
-        XCTAssertEqual(decoded.count, 5);
+        let decoded = try! parseJsonString(json: result.converted)
+        XCTAssertEqual(decoded.count, 5)
 
-        XCTAssertEqual(decoded[0].action.type, "block");
-        XCTAssertEqual(decoded[0].trigger.urlFilter, START_URL_UNESCAPED + "example-url-block\\.org" + URL_FILTER_REGEXP_END_SEPARATOR);
+        XCTAssertEqual(decoded[0].action.type, "block")
+        XCTAssertEqual(decoded[0].trigger.urlFilter, START_URL_UNESCAPED + "example-url-block\\.org" + URL_FILTER_REGEXP_END_SEPARATOR)
 
-        var regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!);
-        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://example-url-block.org"));
+        var regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!)
+        XCTAssertNotNil("https://example-url-block.org".firstMatch(for: regex))
 
-        XCTAssertEqual(decoded[1].action.type, "ignore-previous-rules");
-        XCTAssertEqual(decoded[1].trigger.urlFilter, START_URL_UNESCAPED + "example-url-block-exception\\.org" + URL_FILTER_REGEXP_END_SEPARATOR);
+        XCTAssertEqual(decoded[1].action.type, "ignore-previous-rules")
+        XCTAssertEqual(decoded[1].trigger.urlFilter, START_URL_UNESCAPED + "example-url-block-exception\\.org" + URL_FILTER_REGEXP_END_SEPARATOR)
 
-        regex = try! NSRegularExpression(pattern: decoded[1].trigger.urlFilter!);
-        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://example-url-block-exception.org"));
+        regex = try! NSRegularExpression(pattern: decoded[1].trigger.urlFilter!)
+        XCTAssertNotNil("https://example-url-block-exception.org".firstMatch(for: regex))
 
-        XCTAssertEqual(decoded[2].action.type, "block");
-        XCTAssertEqual(decoded[2].trigger.urlFilter, START_URL_UNESCAPED + "example-url-block-important\\.org" + URL_FILTER_REGEXP_END_SEPARATOR);
+        XCTAssertEqual(decoded[2].action.type, "block")
+        XCTAssertEqual(decoded[2].trigger.urlFilter, START_URL_UNESCAPED + "example-url-block-important\\.org" + URL_FILTER_REGEXP_END_SEPARATOR)
 
-        regex = try! NSRegularExpression(pattern: decoded[2].trigger.urlFilter!);
-        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://example-url-block-important.org"));
+        regex = try! NSRegularExpression(pattern: decoded[2].trigger.urlFilter!)
+        XCTAssertNotNil("https://example-url-block-important.org".firstMatch(for: regex))
 
-        XCTAssertEqual(decoded[3].action.type, "ignore-previous-rules");
-        XCTAssertEqual(decoded[3].trigger.urlFilter, START_URL_UNESCAPED + "example-url-block-exception-important\\.org" + URL_FILTER_REGEXP_END_SEPARATOR);
+        XCTAssertEqual(decoded[3].action.type, "ignore-previous-rules")
+        XCTAssertEqual(decoded[3].trigger.urlFilter, START_URL_UNESCAPED + "example-url-block-exception-important\\.org" + URL_FILTER_REGEXP_END_SEPARATOR)
 
-        regex = try! NSRegularExpression(pattern: decoded[2].trigger.urlFilter!);
-        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://example-url-block-important.org"));
+        regex = try! NSRegularExpression(pattern: decoded[2].trigger.urlFilter!)
+        XCTAssertNotNil("https://example-url-block-important.org".firstMatch(for: regex))
 
-        XCTAssertEqual(decoded[4].action.type, "ignore-previous-rules");
-        XCTAssertEqual(decoded[4].trigger.urlFilter, URL_FILTER_URL_RULES_EXCEPTIONS);
-        XCTAssertEqual(decoded[4].trigger.ifDomain, ["*example-url-block-exception-document.org"]);
+        XCTAssertEqual(decoded[4].action.type, "ignore-previous-rules")
+        XCTAssertEqual(decoded[4].trigger.urlFilter, URL_FILTER_URL_RULES_EXCEPTIONS)
+        XCTAssertEqual(decoded[4].trigger.ifDomain, ["*example-url-block-exception-document.org"])
     }
 
     func testBadfilterRules() {
@@ -745,16 +745,16 @@ final class ContentBlockerConverterTests: XCTestCase {
             "||example.org^$image",
             "||test.org^",
             "||example.org^$badfilter,image"
-        ]);
-        XCTAssertEqual(result.convertedCount, 1);
+        ])
+        XCTAssertEqual(result.convertedCount, 1)
 
-        let decoded = try! parseJsonString(json: result.converted);
-        XCTAssertEqual(decoded.count, 1);
+        let decoded = try! parseJsonString(json: result.converted)
+        XCTAssertEqual(decoded.count, 1)
 
-        XCTAssertEqual(decoded[0].trigger.urlFilter, START_URL_UNESCAPED + "test\\.org" + URL_FILTER_REGEXP_END_SEPARATOR);
+        XCTAssertEqual(decoded[0].trigger.urlFilter, START_URL_UNESCAPED + "test\\.org" + URL_FILTER_REGEXP_END_SEPARATOR)
 
-        let regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!);
-        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://test.org"));
+        let regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!)
+        XCTAssertNotNil("https://test.org".firstMatch(for: regex))
     }
     
     func testBadfilterWithDomainsRules() {
@@ -778,48 +778,45 @@ final class ContentBlockerConverterTests: XCTestCase {
     }
 
     func testTldWildcardRules() {
-        var result = converter.convertArray(rules: ["surge.*,testcases.adguard.*###case-5-wildcard-for-tld > .test-banner"]);
-        XCTAssertEqual(result.convertedCount, 1);
+        var result = converter.convertArray(rules: ["surge.*,testcases.adguard.*###case-5-wildcard-for-tld > .test-banner"])
+        XCTAssertEqual(result.convertedCount, 1)
 
-        var decoded = try! parseJsonString(json: result.converted);
-        XCTAssertEqual(decoded.count, 1);
-        XCTAssertEqual(decoded[0].trigger.urlFilter, URL_FILTER_CSS_RULES);
-        XCTAssertEqual(decoded[0].trigger.ifDomain?[0], "*surge.com");
-        XCTAssertEqual(decoded[0].trigger.ifDomain?[1], "*surge.ru");
-        XCTAssertEqual(decoded[0].trigger.ifDomain?[2], "*surge.net");
-        XCTAssertEqual(decoded[0].trigger.ifDomain?.count, 400);
+        var decoded = try! parseJsonString(json: result.converted)
+        XCTAssertEqual(decoded.count, 1)
+        XCTAssertEqual(decoded[0].trigger.urlFilter, URL_FILTER_CSS_RULES)
+        XCTAssertEqual(decoded[0].trigger.ifDomain?[0], "*surge.com")
+        XCTAssertEqual(decoded[0].trigger.ifDomain?[1], "*surge.ru")
+        XCTAssertEqual(decoded[0].trigger.ifDomain?[2], "*surge.net")
+        XCTAssertEqual(decoded[0].trigger.ifDomain?.count, 400)
 
 
-        result = converter.convertArray(rules: ["||*/test-files/adguard.png$domain=surge.*|testcases.adguard.*"]);
-        XCTAssertEqual(result.convertedCount, 1);
+        result = converter.convertArray(rules: ["||*/test-files/adguard.png$domain=surge.*|testcases.adguard.*"])
+        XCTAssertEqual(result.convertedCount, 1)
 
-        decoded = try! parseJsonString(json: result.converted);
-        XCTAssertEqual(decoded.count, 1);
-        XCTAssertEqual(decoded[0].trigger.urlFilter, START_URL_UNESCAPED + ".*\\/test-files\\/adguard\\.png");
-        XCTAssertEqual(decoded[0].trigger.ifDomain?[0], "*surge.com");
-        XCTAssertEqual(decoded[0].trigger.ifDomain?[1], "*surge.ru");
-        XCTAssertEqual(decoded[0].trigger.ifDomain?[2], "*surge.net");
-        XCTAssertEqual(decoded[0].trigger.ifDomain?.count, 400);
+        decoded = try! parseJsonString(json: result.converted)
+        XCTAssertEqual(decoded.count, 1)
+        XCTAssertEqual(decoded[0].trigger.urlFilter, START_URL_UNESCAPED + ".*\\/test-files\\/adguard\\.png")
+        XCTAssertEqual(decoded[0].trigger.ifDomain?[0], "*surge.com")
+        XCTAssertEqual(decoded[0].trigger.ifDomain?[1], "*surge.ru")
+        XCTAssertEqual(decoded[0].trigger.ifDomain?[2], "*surge.net")
+        XCTAssertEqual(decoded[0].trigger.ifDomain?.count, 400)
 
-        var regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!);
-        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://test.com/test-files/adguard.png"));
+        var regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!)
+        XCTAssertNotNil("https://test.com/test-files/adguard.png".firstMatch(for: regex))
 
-        regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!);
-        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://test.com/test-files/adguard.png"));
+        result = converter.convertArray(rules: ["|http$script,domain=forbes.*"])
+        XCTAssertEqual(result.convertedCount, 1)
 
-        result = converter.convertArray(rules: ["|http$script,domain=forbes.*"]);
-        XCTAssertEqual(result.convertedCount, 1);
-
-        decoded = try! parseJsonString(json: result.converted);
-        XCTAssertEqual(decoded.count, 1);
-        XCTAssertEqual(decoded[0].action.type, "block");
-        XCTAssertEqual(decoded[0].trigger.urlFilter, "^http");
-        XCTAssertEqual(decoded[0].trigger.resourceType, ["script"]);
-        XCTAssertEqual(decoded[0].trigger.ifDomain?[0], "*forbes.com");
-        XCTAssertEqual(decoded[0].trigger.ifDomain?[1], "*forbes.ru");
-        XCTAssertEqual(decoded[0].trigger.ifDomain?[2], "*forbes.net");
-        XCTAssertEqual(decoded[0].trigger.ifDomain?[199], "*forbes.sh");
-        XCTAssertEqual(decoded[0].trigger.ifDomain?.count, 200);
+        decoded = try! parseJsonString(json: result.converted)
+        XCTAssertEqual(decoded.count, 1)
+        XCTAssertEqual(decoded[0].action.type, "block")
+        XCTAssertEqual(decoded[0].trigger.urlFilter, "^http")
+        XCTAssertEqual(decoded[0].trigger.resourceType, ["script"])
+        XCTAssertEqual(decoded[0].trigger.ifDomain?[0], "*forbes.com")
+        XCTAssertEqual(decoded[0].trigger.ifDomain?[1], "*forbes.ru")
+        XCTAssertEqual(decoded[0].trigger.ifDomain?[2], "*forbes.net")
+        XCTAssertEqual(decoded[0].trigger.ifDomain?[199], "*forbes.sh")
+        XCTAssertEqual(decoded[0].trigger.ifDomain?.count, 200)
     }
 
     func testUboScriptletRules() {

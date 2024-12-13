@@ -79,7 +79,7 @@ class NetworkRule: Rule {
 
             if (!urlRuleText.isEmpty) {
                 // TODO(ameshkov): !!! Check urlRuleText for ASCII here or inside createRegexText
-                urlRegExpSource = SimpleRegex2.createRegexText(str: urlRuleText as String)
+                urlRegExpSource = SimpleRegex.createRegexText(str: urlRuleText as String)
             }
         }
 

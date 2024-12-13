@@ -162,7 +162,7 @@ class BlockerEntryFactory {
                 case .failure(let error): throw ConversionError.unsupportedRegExp(message: "Unsupported regexp in $path: \(error.localizedDescription)")
                 }
             } else {
-                pathRegex = SimpleRegex2.createRegexText(str: rule.pathModifier!)
+                pathRegex = SimpleRegex.createRegexText(str: rule.pathModifier!)
             }
 
             if pathRegex.starts(with: BlockerEntryFactory.START_OF_STRING) {
@@ -484,15 +484,14 @@ class BlockerEntryFactory {
         var result = [String]()
 
         for domain in domains {
-            let nsDomain = domain as NSString
-            if (nsDomain.hasSuffix(".*")) {
+            // TODO(ameshkov): !!! Should be .*
+            if domain.utf8.last == Chars.WILDCARD {
+                let prefix = domain.dropLast(2)
                 for tld in BlockerEntryFactory.TOP_LEVEL_DOMAINS_LIST {
-                    var modified = nsDomain.substring(to: nsDomain.length - 2)
-                    modified = modified + "." + tld
-                    result.append(modified.lowercased())
+                    result.append(prefix + "." + tld)
                 }
             } else {
-                result.append(domain.lowercased())
+                result.append(domain)
             }
         }
 

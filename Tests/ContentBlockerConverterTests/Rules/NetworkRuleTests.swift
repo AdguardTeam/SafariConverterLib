@@ -173,44 +173,44 @@ final class NetworkRuleTests: XCTestCase {
     }
 
     func testDomainWithSeparator() {
-        let result = try! NetworkRule(ruleText: "||a.a^");
+        let result = try! NetworkRule(ruleText: "||a.a^")
 
-        let urlRegExpSource = result.urlRegExpSource;
-        XCTAssertEqual(urlRegExpSource as String?, START_URL_UNESCAPED + "a\\.a" + URL_FILTER_REGEXP_END_SEPARATOR);
+        let urlRegExpSource = result.urlRegExpSource
+        XCTAssertEqual(urlRegExpSource as String?, START_URL_UNESCAPED + "a\\.a" + URL_FILTER_REGEXP_END_SEPARATOR)
 
-        let regex = try! NSRegularExpression(pattern: urlRegExpSource! as String);
-        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://a.a/test"));
-        XCTAssertFalse(SimpleRegex.isMatch(regex: regex, target: "https://a.allegroimg.com"));
+        let regex = try! NSRegularExpression(pattern: urlRegExpSource! as String)
+        XCTAssertNotNil("https://a.a/test".firstMatch(for: regex))
+        XCTAssertNil("https://a.allegroimg.com".firstMatch(for: regex))
     }
 
     func testVariousUrlRegex() {
         var result = try! NetworkRule(ruleText: "||example.com")
         XCTAssertEqual(result.urlRegExpSource as String?, START_URL_UNESCAPED + "example\\.com")
         var regex = try! NSRegularExpression(pattern: result.urlRegExpSource! as String)
-        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://example.com/path"))
-        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://example.com"))
-        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://example.com/"))
-        XCTAssertFalse(SimpleRegex.isMatch(regex: regex, target: "https://example.org"))
+        XCTAssertNotNil("https://example.com/path".firstMatch(for: regex))
+        XCTAssertNotNil("https://example.com".firstMatch(for: regex))
+        XCTAssertNotNil("https://example.com/".firstMatch(for: regex))
+        XCTAssertNil("https://example.org".firstMatch(for: regex))
 
         result = try! NetworkRule(ruleText: "||example.com^")
         XCTAssertEqual(result.urlRegExpSource as String?, START_URL_UNESCAPED + "example\\.com" + URL_FILTER_REGEXP_END_SEPARATOR)
         regex = try! NSRegularExpression(pattern: result.urlRegExpSource! as String)
-        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://example.com/path"))
-        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://example.com"))
-        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://example.com/"))
-        XCTAssertFalse(SimpleRegex.isMatch(regex: regex, target: "https://example.org"))
-
+        XCTAssertNotNil("https://example.com/path".firstMatch(for: regex))
+        XCTAssertNotNil("https://example.com".firstMatch(for: regex))
+        XCTAssertNotNil("https://example.com/".firstMatch(for: regex))
+        XCTAssertNil("https://example.org".firstMatch(for: regex))
+ 
         result = try! NetworkRule(ruleText: "||example.com/path")
         XCTAssertEqual(result.urlRegExpSource as String?, START_URL_UNESCAPED + "example\\.com\\/path")
         regex = try! NSRegularExpression(pattern: result.urlRegExpSource! as String)
-        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://example.com/path"))
-        XCTAssertFalse(SimpleRegex.isMatch(regex: regex, target: "https://example.com"))
+        XCTAssertNotNil("https://example.com/path".firstMatch(for: regex))
+        XCTAssertNil("https://example.com".firstMatch(for: regex))
 
         result = try! NetworkRule(ruleText: "||example.com^path")
         XCTAssertEqual(result.urlRegExpSource as String?, START_URL_UNESCAPED + "example\\.com[/:&?]?path")
         regex = try! NSRegularExpression(pattern: result.urlRegExpSource! as String)
-        XCTAssertTrue(SimpleRegex.isMatch(regex: regex, target: "https://example.com/path"))
-        XCTAssertFalse(SimpleRegex.isMatch(regex: regex, target: "https://example.com"))
+        XCTAssertNotNil("https://example.com/path".firstMatch(for: regex))
+        XCTAssertNil("https://example.com".firstMatch(for: regex))
     }
 
     func testNoopModifier() {

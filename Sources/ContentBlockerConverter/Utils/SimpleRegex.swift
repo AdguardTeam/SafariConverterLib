@@ -1,115 +1,104 @@
 import Foundation
 
-/**
- * Regex helper
- */
+/// This class provides logic for converting network rules patterns to regular expressions.
+///
+/// AdGuard's network rules mostly use a simplified syntax for matching URLs instead
+/// of full-scale regular expressions. These patterns can be converted to regular expressions
+/// that are supported by Safari content blocking rules.
 class SimpleRegex {
-    /**
-     * Improved regular expression instead of UrlFilterRule.REGEXP_START_URL (||)
-     * Please note, that this regular expression matches only ONE level of subdomains
-     * Using ([a-z0-9-.]+\\.)? instead increases memory usage by 10Mb
-     */
-    private static let  URL_FILTER_REGEXP_START_URL = #"^[htpsw]+:\/\/([a-z0-9-]+\.)?"#;
-    /** Simplified separator (to fix an issue with $ restriction - it can be only in the end of regexp) */
-    private static let  URL_FILTER_REGEXP_END_SEPARATOR = "([\\/:&\\?].*)?$";
-    private static let  URL_FILTER_REGEXP_SEPARATOR = "[/:&?]?";
+    private static let maskStartUrl = "||"
+    private static let maskPipe = "|"
+    private static let maskSeparator = "^"
+    private static let maskAnySymbol = "*"
     
-    // Constants
-    private static let maskStartUrl = "||" as NSString;
-    private static let maskPipe = "|" as NSString;
-    private static let maskSeparator = "^" as NSString;
-    private static let maskAnySymbol = "*" as NSString;
+    private static let regexAnySymbol = ".*"
+    private static let regexAnySymbolChars = Array(".*".utf8)
+    private static let regexStartString = Array("^".utf8)
+    private static let regexEndString = Array("$".utf8)
 
-    private static let regexAnySymbol = ".*";
-    private static let regexStartUrl = URL_FILTER_REGEXP_START_URL;
-    private static let regexStartString = "^";
-    private static let regexEndString = "$";
+    /// Improved regular expression instead of UrlFilterRule.REGEXP_START_URL (||).
+    ///
+    /// Please note, that this regular expression matches only ONE level of subdomains.
+    /// Using ([a-z0-9-.]+\\.)? instead increases memory usage by 10Mb
+    private static let regexStartUrl = Array(#"^[htpsw]+:\/\/([a-z0-9-]+\.)?"#.utf8)
+    
+    /// Simplified separator (to fix an issue with $ restriction - it can be only in the end of regexp).
+    private static let regexEndSeparator = Array("([\\/:&\\?].*)?$".utf8)
+    private static let regexSeparator = Array("[/:&?]?".utf8)
 
-    /**
-     * Characters to be escaped in the regex
-     * https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/regexp
-     * should be escaped . * + ? ^ $ { } ( ) | [ ] / \
-     * except of * | ^
-     */
+    /// Characters to be escaped in the regular expressions.
+    ///
+    /// Source:
+    /// https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/regexp
+    ///
+    /// '\*', '|', '^' are processed differently.
     private static let CHARS_TO_ESCAPE = [
-        ".".utf16.first!,
-        "+".utf16.first!,
-        "?".utf16.first!,
-        "$".utf16.first!,
-        "{".utf16.first!,
-        "}".utf16.first!,
-        "(".utf16.first!,
-        ")".utf16.first!,
-        "[".utf16.first!,
-        "]".utf16.first!,
-        "/".utf16.first!,
-        "\\".utf16.first!
+        UInt8(ascii: "."),
+        UInt8(ascii: "+"),
+        UInt8(ascii: "?"),
+        UInt8(ascii: "$"),
+        UInt8(ascii: "{"),
+        UInt8(ascii: "}"),
+        UInt8(ascii: "("),
+        UInt8(ascii: ")"),
+        UInt8(ascii: "["),
+        UInt8(ascii: "]"),
+        UInt8(ascii: "/"),
+        UInt8(ascii: "\\"),
     ]
-    private static let charPipe = "|".utf16.first!
-    private static let charSeparator = "^".utf16.first!
-    private static let charWildcard = "*".utf16.first!
-
-    /**
-     * Creates regex
-     */
-    public static func createRegexText(str: NSString) -> NSString? {
-        if (str == maskStartUrl ||
-                str == maskPipe ||
-                str == maskAnySymbol) {
-            return regexAnySymbol as NSString;
+    
+    /// Creates a regular expression from a network rule pattern.
+    public static func createRegexText(str: String) -> String {
+        if (str == "" ||
+            str == maskStartUrl ||
+            str == maskPipe ||
+            str == maskAnySymbol) {
+            return regexAnySymbol
         }
+
+        var resultChars = [UInt8]()
         
-        var result = ""
-        
-        let maxIndex = str.length - 1
+        let maxIndex = str.utf8.count - 1
         var i = 0
         while i <= maxIndex {
-            let char = str.character(at: i)
-
+            let char = str.utf8[safeIndex: i]!
+            
             if CHARS_TO_ESCAPE.contains(char) {
-                result.append("\\")
-                result.append(Character(UnicodeScalar(char)!))
+                resultChars.append(Chars.BACKSLASH)
+                resultChars.append(char)
             } else {
                 switch char {
-                case charPipe:
+                case Chars.PIPE:
                     if i == 0 {
-                        let nextChar = str.character(at: i+1)
-                        if nextChar == charPipe {
-                            result.append(regexStartUrl)
+                        let nextChar = str.utf8[safeIndex: i+1]
+                        if nextChar == Chars.PIPE {
+                            resultChars.append(contentsOf: regexStartUrl)
                             i += 1 // increment i as we processed next char already
                         } else {
-                            result.append(regexStartString)
+                            resultChars.append(contentsOf: regexStartString)
                         }
                     } else if i == maxIndex {
-                        result.append(regexEndString)
+                        resultChars.append(contentsOf: regexEndString)
                     } else {
-                        result.append("\\")
-                        result.append(Character(UnicodeScalar(char)!))
+                        resultChars.append(Chars.BACKSLASH)
+                        resultChars.append(char)
                     }
-                case charSeparator:
+                case Chars.CARET:
                     if i == maxIndex {
-                        result.append(URL_FILTER_REGEXP_END_SEPARATOR)
+                        resultChars.append(contentsOf: regexEndSeparator)
                     } else {
-                        result.append(URL_FILTER_REGEXP_SEPARATOR)
+                        resultChars.append(contentsOf: regexSeparator)
                     }
-                case charWildcard:
-                    result.append(regexAnySymbol)
+                case Chars.WILDCARD:
+                    resultChars.append(contentsOf: regexAnySymbolChars)
                 default:
-                    result.append(Character(UnicodeScalar(char)!))
+                    resultChars.append(char)
                 }
             }
             
             i += 1
         }
 
-        return result as NSString;
-    }
-
-    /**
-     * Check if target string matches regex
-     */
-    static func isMatch(regex: NSRegularExpression, target: NSString) -> Bool {
-        let matchCount = regex.numberOfMatches(in: target as String, options: [], range: NSMakeRange(0, target.length))
-        return matchCount > 0;
+        return String(decoding: resultChars, as: UTF8.self)
     }
 }

@@ -89,6 +89,8 @@ class Distributor {
  
             // discard rules that exceed domains limit
             // https://github.com/AdguardTeam/SafariConverterLib/issues/51
+            
+            // TODO(ameshkov): !!! Check what's the actual limit, maybe can be increased (running into some issues with the current one)
             if ifDomainsAmount > MAX_DOMAINS_FOR_RULE
                 || unlessDomainsAmount > MAX_DOMAINS_FOR_RULE {
                 Logger.log("Domains limit exceeded: \(ifDomainsAmount > MAX_DOMAINS_FOR_RULE ? ifDomainsAmount : unlessDomainsAmount)")
