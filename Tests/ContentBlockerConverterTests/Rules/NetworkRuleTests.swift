@@ -6,137 +6,312 @@ import XCTest
 final class NetworkRuleTests: XCTestCase {
     let START_URL_UNESCAPED = "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?"
     let URL_FILTER_REGEXP_END_SEPARATOR = "([\\/:&\\?].*)?$"
+    
+    func testNetworkRule() {
+        // TODO(ameshkov): !!! Add SafariVersion tests here.
 
-    func testSimpleRules() {
-        var result = try! NetworkRule(ruleText: "||example.org^")
+        struct TestCase {
+            let ruleText: String
+            let expectedUrlRuleText: String
+            let expectedUrlRegExpSource: String?
+            var expectedWhiteList = false
+            var expectedThirdParty = false
+            var expectedCheckThirdParty = false
+            var expectedImportant = false
+            var expectedDocumentWhitelist = false
+            var expectedWebsocket = false
+            var expectedUrlBlock = false
+            var expectedCssExceptionRule = false
+            var expectedJsInject = false
+            var expectedMatchCase = false
+            var expectedBlockPopups = false
+            var expectedPermittedDomains: [String] = []
+            var expectedRestrictedDomains: [String] = []
+            var expectedPermittedContentTypes: [NetworkRule.ContentType] = [NetworkRule.ContentType.ALL]
+            var expectedRestrictedContentTypes: [NetworkRule.ContentType] = []
+            var expectedEnabledOptions: [NetworkRule.NetworkRuleOption] = []
+            var expectedDisabledOptions: [NetworkRule.NetworkRuleOption] = []
+            
+        }
+        
+        let testCases: [TestCase] = [
+            TestCase(
+                // Normal rule without modifiers.
+                ruleText: "||example.org^",
+                expectedUrlRuleText: "||example.org^",
+                expectedUrlRegExpSource: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$"),
+            TestCase(
+                // Whitelist rule.
+                ruleText: "@@||example.org^",
+                expectedUrlRuleText: "||example.org^",
+                expectedUrlRegExpSource: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedWhiteList: true),
+            TestCase(
+                // $match-case rule.
+                ruleText: "||example.org^$match-case",
+                expectedUrlRuleText: "||example.org^",
+                expectedUrlRegExpSource: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedMatchCase: true),
+            TestCase(
+                // $popup rule.
+                ruleText: "||example.org^$popup",
+                expectedUrlRuleText: "||example.org^",
+                expectedUrlRegExpSource: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedBlockPopups: true,
+                expectedPermittedContentTypes: [NetworkRule.ContentType.DOCUMENT]),
+            TestCase(
+                // $important rule.
+                ruleText: "||example.org^$important",
+                expectedUrlRuleText: "||example.org^",
+                expectedUrlRegExpSource: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedImportant: true),
+            TestCase(
+                // $document rule.
+                ruleText: "@@||example.org^$document",
+                expectedUrlRuleText: "||example.org^",
+                expectedUrlRegExpSource: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedWhiteList: true,
+                expectedDocumentWhitelist: true,
+                expectedPermittedContentTypes: [NetworkRule.ContentType.DOCUMENT],
+                expectedEnabledOptions: [NetworkRule.NetworkRuleOption.Document]),
+            TestCase(
+                // $elemhide rule.
+                ruleText: "@@||example.org^$elemhide",
+                expectedUrlRuleText: "||example.org^",
+                expectedUrlRegExpSource: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedWhiteList: true,
+                expectedCssExceptionRule: true,
+                expectedPermittedContentTypes: [NetworkRule.ContentType.DOCUMENT],
+                expectedEnabledOptions: [NetworkRule.NetworkRuleOption.Elemhide]),
+            TestCase(
+                // $jsinject rule.
+                ruleText: "@@||example.org^$jsinject",
+                expectedUrlRuleText: "||example.org^",
+                expectedUrlRegExpSource: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedWhiteList: true,
+                expectedJsInject: true,
+                expectedPermittedContentTypes: [NetworkRule.ContentType.DOCUMENT],
+                expectedEnabledOptions: [NetworkRule.NetworkRuleOption.Jsinject]),
+            TestCase(
+                // $jsinject rule.
+                ruleText: "@@||example.org^$urlblock",
+                expectedUrlRuleText: "||example.org^",
+                expectedUrlRegExpSource: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedWhiteList: true,
+                expectedUrlBlock: true,
+                expectedPermittedContentTypes: [NetworkRule.ContentType.DOCUMENT],
+                expectedEnabledOptions: [NetworkRule.NetworkRuleOption.Urlblock]),
+            TestCase(
+                // $jsinject rule.
+                ruleText: "@@||example.org^$specifichide",
+                expectedUrlRuleText: "||example.org^",
+                expectedUrlRegExpSource: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedWhiteList: true,
+                expectedPermittedContentTypes: [NetworkRule.ContentType.DOCUMENT],
+                expectedEnabledOptions: [NetworkRule.NetworkRuleOption.Specifichide]),
+            TestCase(
+                // Third-party rule.
+                ruleText: "||example.org^$third-party",
+                expectedUrlRuleText: "||example.org^",
+                expectedUrlRegExpSource: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedThirdParty: true,
+                expectedCheckThirdParty: true),
+            TestCase(
+                // Third-party alias.
+                ruleText: "||example.org^$3p",
+                expectedUrlRuleText: "||example.org^",
+                expectedUrlRegExpSource: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedThirdParty: true,
+                expectedCheckThirdParty: true),
+            TestCase(
+                // Third-party alias.
+                ruleText: "||example.org^$~1p",
+                expectedUrlRuleText: "||example.org^",
+                expectedUrlRegExpSource: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedThirdParty: true,
+                expectedCheckThirdParty: true),
+            TestCase(
+                // Third-party alias.
+                ruleText: "||example.org^$~first-party",
+                expectedUrlRuleText: "||example.org^",
+                expectedUrlRegExpSource: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedThirdParty: true,
+                expectedCheckThirdParty: true),
+            TestCase(
+                // $all for Safari is the same as a standard rule.
+                ruleText: "||example.org^$all",
+                expectedUrlRuleText: "||example.org^",
+                expectedUrlRegExpSource: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$"),
+            TestCase(
+                ruleText: "||example.org/this$is$path$image,font,media",
+                expectedUrlRuleText: "||example.org/this$is$path",
+                expectedUrlRegExpSource: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org\\/this\\$is\\$path",
+                expectedPermittedContentTypes: [NetworkRule.ContentType.IMAGE, NetworkRule.ContentType.FONT, NetworkRule.ContentType.MEDIA]),
+            TestCase(
+                // $websocket rule.
+                ruleText: "||example.org^$websocket",
+                expectedUrlRuleText: "||example.org^",
+                expectedUrlRegExpSource: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedWebsocket: true,
+                expectedPermittedContentTypes: [NetworkRule.ContentType.WEBSOCKET]),
+            TestCase(
+                // $document for blocking page load.
+                ruleText: "||example.org^$document",
+                expectedUrlRuleText: "||example.org^",
+                expectedUrlRegExpSource: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedPermittedContentTypes: [NetworkRule.ContentType.DOCUMENT],
+                expectedEnabledOptions: [NetworkRule.NetworkRuleOption.Document]),
+            TestCase(
+                ruleText: "||example.org\\$smth",
+                expectedUrlRuleText: "||example.org\\$smth",
+                // TODO(ameshkov): !!! Fix in SimpleRegex: this is a mistake, $ is escaped in the pattern, should've been "\\$smth""
+                expectedUrlRegExpSource: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org\\\\\\$smth"),
+            TestCase(
+                ruleText: "||example.org^$domain=example.org|~sub.example.org",
+                expectedUrlRuleText: "||example.org^",
+                expectedUrlRegExpSource: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedPermittedDomains: ["example.org"],
+                expectedRestrictedDomains: ["sub.example.org"]),
+            TestCase(
+                ruleText: "/regex/",
+                expectedUrlRuleText: "/regex/",
+                expectedUrlRegExpSource: "regex"),
+            TestCase(
+                ruleText: "@@/regex/",
+                expectedUrlRuleText: "/regex/",
+                expectedUrlRegExpSource: "regex",
+                expectedWhiteList: true),
+            TestCase(
+                ruleText: "@@/regex/$third-party",
+                expectedUrlRuleText: "/regex/",
+                expectedUrlRegExpSource: "regex",
+                expectedWhiteList: true,
+                expectedThirdParty: true,
+                expectedCheckThirdParty: true),
+            TestCase(
+                ruleText: "/example{/",
+                expectedUrlRuleText: "/example{/",
+                expectedUrlRegExpSource: "example{"),
+            TestCase(
+                ruleText: #"/^http:\/\/example\.org\/$/"#,
+                expectedUrlRuleText: #"/^http:\/\/example\.org\/$/"#,
+                expectedUrlRegExpSource: #"^http:\/\/example\.org\/$"#),
+            TestCase(
+                // Checking if correctly transformed to regex.
+                ruleText: "/addyn|*|adtech",
+                expectedUrlRuleText: "/addyn|*|adtech",
+                expectedUrlRegExpSource: #"\/addyn\|.*\|adtech"#),
+            TestCase(
+                // Rule that matches all URLs.
+                ruleText: "$image,frame,domain=a.com",
+                expectedUrlRuleText: "",
+                expectedUrlRegExpSource: nil,
+                expectedPermittedDomains: ["a.com"],
+                expectedPermittedContentTypes: [NetworkRule.ContentType.IMAGE, NetworkRule.ContentType.SUBDOCUMENT]),
+            TestCase(
+                // Testing egde case - the rule looks like it's a regex, but it has options.
+                ruleText: "/example/$domain=test.com/",
+                expectedUrlRuleText: "/example/",
+                expectedUrlRegExpSource: "example",
+                // Domain is invalid, but it doesn't break Safari.
+                expectedPermittedDomains: ["test.com/"]),
+            TestCase(
+                // Testing if we can correctly convert domain in the rule to punycode.
+                ruleText: "||почта.рф^",
+                expectedUrlRuleText: "||xn--80a1acny.xn--p1ai^",
+                expectedUrlRegExpSource: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?xn--80a1acny\\.xn--p1ai([\\/:&\\?].*)?$"),
+            TestCase(
+                // Testing if we can correctly convert domain in the $domain modifier to punycode.
+                ruleText: "||example.org^$domain=почта.рф|example.net",
+                expectedUrlRuleText: "||example.org^",
+                expectedUrlRegExpSource: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedPermittedDomains: ["xn--80a1acny.xn--p1ai", "example.net"]),
+            TestCase(
+                // Noop modifier
+                ruleText: "||example.org^$domain=example.org,__,_,image,__________,script,_,___,_,_,_,_,__",
+                expectedUrlRuleText: "||example.org^",
+                expectedUrlRegExpSource: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedPermittedDomains: ["example.org"],
+                expectedPermittedContentTypes: [NetworkRule.ContentType.IMAGE, NetworkRule.ContentType.SCRIPT]),
+        ]
+        
+        
 
-        XCTAssertEqual(result.ruleText, "||example.org^")
-        XCTAssertEqual(result.isWhiteList, false)
-        XCTAssertEqual(result.isImportant, false)
-        XCTAssertEqual(result.isScript, false)
-        XCTAssertEqual(result.isScriptlet, false)
-        XCTAssertEqual(result.isDocumentWhiteList, false)
+        for testCase in testCases {
+            let result = try! NetworkRule(ruleText: testCase.ruleText)
+            
+            let msg = "Rule (\(testCase.ruleText)) does not match expected"
 
-        XCTAssertEqual(result.permittedDomains, [])
-        XCTAssertEqual(result.restrictedDomains, [])
-
-        XCTAssertEqual(result.isWebSocket, false)
-        XCTAssertEqual(result.isUrlBlock, false)
-        XCTAssertEqual(result.isCssExceptionRule, false)
-        XCTAssertEqual(result.urlRuleText, "||example.org^")
-        XCTAssertEqual(result.isThirdParty, false)
-        XCTAssertEqual(result.isMatchCase, false)
-        XCTAssertEqual(result.isBlockPopups, false)
-        XCTAssertEqual(result.urlRegExpSource, "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$")
-
-        XCTAssertEqual(result.permittedContentType, [NetworkRule.ContentType.ALL])
-        XCTAssertEqual(result.restrictedContentType, [])
-
-        result = try! NetworkRule(ruleText: "||example.org^$third-party")
-        XCTAssertEqual(result.urlRuleText, "||example.org^")
-        XCTAssertEqual(result.isCheckThirdParty, true)
-        XCTAssertEqual(result.isThirdParty, true)
-
-        result = try! NetworkRule(ruleText: "@@||example.org^$third-party")
-        XCTAssertEqual(result.isWhiteList, true)
-
-        result = try! NetworkRule(ruleText: "||example.org/this$is$path$image,font,media")
-        XCTAssertEqual(result.urlRuleText, "||example.org/this$is$path")
-
-        XCTAssertEqual(result.permittedContentType, [NetworkRule.ContentType.IMAGE, NetworkRule.ContentType.FONT, NetworkRule.ContentType.MEDIA])
-        XCTAssertEqual(result.restrictedContentType, [])
-
-        result = try! NetworkRule(ruleText: "||example.org\\$smth")
-        XCTAssertEqual(result.urlRuleText, "||example.org\\$smth")
-    }
-
-    func testDomains() {
-        let result = try! NetworkRule(ruleText: "||example.org^$domain=example.org|~sub.example.org")
-
-        XCTAssertNotNil(result);
-        XCTAssertEqual(result.permittedDomains, ["example.org"])
-        XCTAssertEqual(result.restrictedDomains, ["sub.example.org"])
-    }
-
-    func testRegexRules() {
-        var result = try! NetworkRule(ruleText: "/regex/")
-        XCTAssertEqual(result.urlRuleText, "/regex/")
-        XCTAssertEqual(result.urlRegExpSource, "regex")
-
-        result = try! NetworkRule(ruleText: "@@/regex/")
-        XCTAssertEqual(result.urlRuleText, "/regex/")
-        XCTAssertEqual(result.urlRegExpSource, "regex")
-
-        result = try! NetworkRule(ruleText: "@@/regex/$third-party")
-        XCTAssertEqual(result.urlRuleText, "/regex/")
-        XCTAssertEqual(result.urlRegExpSource, "regex")
-
-        result = try! NetworkRule(ruleText: "/example{/")
-        XCTAssertEqual(result.urlRuleText, "/example{/")
-        XCTAssertEqual(result.urlRegExpSource, "example{")
-
-        result = try! NetworkRule(ruleText: #"/^http:\/\/example\.org\/$/"#)
-        XCTAssertEqual(result.urlRuleText, #"/^http:\/\/example\.org\/$/"#)
-        XCTAssertEqual(result.urlRegExpSource, #"^http:\/\/example\.org\/$"#)
-    }
-
-    func testUrlSlashRules() {
-        let result = try! NetworkRule(ruleText: "/addyn|*|adtech")
-        XCTAssertEqual(result.urlRuleText, "/addyn|*|adtech")
-        XCTAssertEqual(result.urlRegExpSource, #"\/addyn\|.*\|adtech"#)
+            XCTAssertEqual(result.urlRuleText, testCase.expectedUrlRuleText, msg)
+            XCTAssertEqual(result.urlRegExpSource, testCase.expectedUrlRegExpSource, msg)
+            XCTAssertEqual(result.isWhiteList, testCase.expectedWhiteList, msg)
+            XCTAssertEqual(result.isThirdParty, testCase.expectedThirdParty, msg)
+            XCTAssertEqual(result.isCheckThirdParty, testCase.expectedCheckThirdParty, msg)
+            XCTAssertEqual(result.isImportant, testCase.expectedImportant, msg)
+            XCTAssertEqual(result.isDocumentWhiteList, testCase.expectedDocumentWhitelist, msg)
+            XCTAssertEqual(result.isWebSocket, testCase.expectedWebsocket, msg)
+            XCTAssertEqual(result.isUrlBlock, testCase.expectedUrlBlock, msg)
+            XCTAssertEqual(result.isJsInject, testCase.expectedJsInject, msg)
+            XCTAssertEqual(result.isCssExceptionRule, testCase.expectedCssExceptionRule, msg)
+            XCTAssertEqual(result.isMatchCase, testCase.expectedMatchCase, msg)
+            XCTAssertEqual(result.isBlockPopups, testCase.expectedBlockPopups, msg)
+            XCTAssertEqual(result.permittedDomains, testCase.expectedPermittedDomains, msg)
+            XCTAssertEqual(result.restrictedDomains, testCase.expectedRestrictedDomains, msg)
+            XCTAssertEqual(result.permittedContentType, testCase.expectedPermittedContentTypes, msg)
+            XCTAssertEqual(result.restrictedContentType, testCase.expectedRestrictedContentTypes, msg)
+            XCTAssertEqual(result.enabledOptions, testCase.expectedEnabledOptions, msg)
+            XCTAssertEqual(result.disabledOptions, testCase.expectedDisabledOptions, msg)
+        }
     }
     
-    func testMatchAllUrlsPattern() {
-        let result = try! NetworkRule(ruleText: "$image,frame,domain=a.com")
+    // TODO(ameshkov): !!! Rework when SafariVersion tests are introduced.
+    func testPingModifier() {
+        var rule = "||example.com^$ping"
+        XCTAssertThrowsError(try NetworkRule(ruleText: rule))
 
-        XCTAssertEqual(result.urlRuleText, "")
-        XCTAssertEqual(result.urlRegExpSource, nil)
-        XCTAssertEqual(result.permittedDomains, ["a.com"])
-        XCTAssertEqual(result.restrictedDomains, [])
-        XCTAssertEqual(result.permittedContentType, [NetworkRule.ContentType.IMAGE, NetworkRule.ContentType.SUBDOCUMENT])
-        XCTAssertEqual(result.restrictedContentType, [])
+        rule = "||example.com^$~ping"
+        XCTAssertThrowsError(try NetworkRule(ruleText: rule))
     }
     
-    func testUnsupportedOptions() {
+    func testNetworkRuleWithInvalidRules() {
+        // $replace is not supported by Safari.
         XCTAssertThrowsError(try NetworkRule(ruleText: "/example/$replace=/test/test2/"))
+        // $elemhide is only allowed for whitelist rules.
+        XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org^$elemhide"))
+        // $jsinject is only allowed for whitelist rules.
+        XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org^$jsinject"))
+        // $specifichide is only allowed for whitelist rules.
+        XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org^$specifichide"))
+        // $urlblock is only allowed for whitelist rules.
+        XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org^$urlblock"))
+        // $csp is not supported by Safari.
         XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org^$csp=script-src self"))
+        // $redirect-rule is not supported by Safari.
         XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org^$redirect-rule=noopjs"))
+        // $redirect is not supported by Safari.
         XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org^$redirect=noopjs"))
+        // $empty is not supported by Safari.
         XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org^$empty"))
+        // $mp4 is not supported by Safari.
         XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org^$mp4"))
+        // $document cannot have a value.
         XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org^$doc=test"))
+        // $domain must have a valid value.
         XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org^$domain="))
+        // $domain must have a valid value.
         XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org^$domain=~"))
+        // $domain must have a valid value.
         XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org^$domain=e"))
+        // $domain must have a valid value.
         XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org^$domain=~e"))
+        // $domain with regexes are not supported.
         XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org^$domain=/example.org/"))
+        // $domain with regexes are not supported.
         XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org^$domain=example.org|/test.com/"))
+        // Empty regular expressions make no sense.
         XCTAssertThrowsError(try NetworkRule(ruleText: "//$domain=example.com"))
-    }
-    
-    func testRuleWithModifierThatLooksLikeRegex() {
-        let result = try! NetworkRule(ruleText: "/example/$domain=test.com/")
-
-        XCTAssertEqual(result.urlRuleText, "/example/")
-        XCTAssertEqual(result.urlRegExpSource, "example")
-        XCTAssertEqual(result.permittedDomains, ["test.com/"]) // It's invalid, but it doesn't break Safari.
-        XCTAssertEqual(result.restrictedDomains, [])
-    }
-    
-    func testDomainWithRegexModifier() {
-        let result = try? NetworkRule(ruleText: "/example/$domain=/test.com/")
-        XCTAssertNil(result)
-    }
-
-    func testPunycodeDomainInPattern() {
-        let result = try! NetworkRule(ruleText: "||почта.рф^")
-        XCTAssertEqual(result.urlRuleText, "||xn--80a1acny.xn--p1ai^")
-    }
-    
-    func testPunycodeDomainInDomainModifier() {
-        let result = try! NetworkRule(ruleText: "||example.org^$domain=почта.рф|example.net")
-        XCTAssertEqual(result.urlRuleText, "||example.org^")
-        XCTAssertEqual(result.permittedDomains, ["xn--80a1acny.xn--p1ai", "example.net"])
+        // Non-ASCII symbols outside the domain are not supported and not encoded.
+        XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org/почта"))
     }
     
     func testExtractDomain() {
@@ -183,105 +358,6 @@ final class NetworkRuleTests: XCTestCase {
             XCTAssertEqual(result.domain, testPattern.expectedDomain, "Pattern \(testPattern.pattern): expected domain \(testPattern.expectedDomain), but got \(result.domain)")
             XCTAssertEqual(result.patternMatchesPath, testPattern.expectedPatternMatchesPath, "Pattern \(testPattern.pattern): expected patternMatchesPath \(testPattern.expectedPatternMatchesPath), but got \(result.patternMatchesPath)")
         }
-    }
-
-    func testDomainWithSeparator() {
-        let result = try! NetworkRule(ruleText: "||a.a^")
-
-        let urlRegExpSource = result.urlRegExpSource
-        XCTAssertEqual(urlRegExpSource as String?, START_URL_UNESCAPED + "a\\.a" + URL_FILTER_REGEXP_END_SEPARATOR)
-
-        let regex = try! NSRegularExpression(pattern: urlRegExpSource! as String)
-        XCTAssertNotNil("https://a.a/test".firstMatch(for: regex))
-        XCTAssertNil("https://a.allegroimg.com".firstMatch(for: regex))
-    }
-
-    func testVariousUrlRegex() {
-        var result = try! NetworkRule(ruleText: "||example.com")
-        XCTAssertEqual(result.urlRegExpSource as String?, START_URL_UNESCAPED + "example\\.com")
-        var regex = try! NSRegularExpression(pattern: result.urlRegExpSource! as String)
-        XCTAssertNotNil("https://example.com/path".firstMatch(for: regex))
-        XCTAssertNotNil("https://example.com".firstMatch(for: regex))
-        XCTAssertNotNil("https://example.com/".firstMatch(for: regex))
-        XCTAssertNil("https://example.org".firstMatch(for: regex))
-
-        result = try! NetworkRule(ruleText: "||example.com^")
-        XCTAssertEqual(result.urlRegExpSource as String?, START_URL_UNESCAPED + "example\\.com" + URL_FILTER_REGEXP_END_SEPARATOR)
-        regex = try! NSRegularExpression(pattern: result.urlRegExpSource! as String)
-        XCTAssertNotNil("https://example.com/path".firstMatch(for: regex))
-        XCTAssertNotNil("https://example.com".firstMatch(for: regex))
-        XCTAssertNotNil("https://example.com/".firstMatch(for: regex))
-        XCTAssertNil("https://example.org".firstMatch(for: regex))
- 
-        result = try! NetworkRule(ruleText: "||example.com/path")
-        XCTAssertEqual(result.urlRegExpSource as String?, START_URL_UNESCAPED + "example\\.com\\/path")
-        regex = try! NSRegularExpression(pattern: result.urlRegExpSource! as String)
-        XCTAssertNotNil("https://example.com/path".firstMatch(for: regex))
-        XCTAssertNil("https://example.com".firstMatch(for: regex))
-
-        result = try! NetworkRule(ruleText: "||example.com^path")
-        XCTAssertEqual(result.urlRegExpSource as String?, START_URL_UNESCAPED + "example\\.com[/:&?]?path")
-        regex = try! NSRegularExpression(pattern: result.urlRegExpSource! as String)
-        XCTAssertNotNil("https://example.com/path".firstMatch(for: regex))
-        XCTAssertNil("https://example.com".firstMatch(for: regex))
-    }
-
-    func testNoopModifier() {
-        var rule = "||example.com^$domain=example.org,image,script,______,important"
-
-        var result = try! NetworkRule(ruleText: rule)
-        XCTAssertEqual(result.ruleText, rule)
-        XCTAssertEqual(result.isWhiteList, false)
-        XCTAssertEqual(result.isImportant, true)
-        XCTAssertEqual(result.isScript, false)
-        XCTAssertEqual(result.isScriptlet, false)
-        XCTAssertEqual(result.isDocumentWhiteList, false)
-        XCTAssertEqual(result.permittedDomains, ["example.org"])
-        XCTAssertEqual(result.restrictedDomains, [])
-        XCTAssertEqual(result.isWebSocket, false)
-        XCTAssertEqual(result.isUrlBlock, false)
-        XCTAssertEqual(result.isCssExceptionRule, false)
-        XCTAssertEqual(result.urlRuleText, "||example.com^")
-        XCTAssertEqual(result.isThirdParty, false)
-        XCTAssertEqual(result.isMatchCase, false)
-        XCTAssertEqual(result.isBlockPopups, false)
-
-        rule = "@@||example.com^$domain=example.org,__,_,image,__________,script,_,___,_,_,_,_,__,important"
-
-        result = try! NetworkRule(ruleText: rule)
-        XCTAssertEqual(result.ruleText, rule)
-        XCTAssertEqual(result.isWhiteList, true)
-        XCTAssertEqual(result.isImportant, true)
-        XCTAssertEqual(result.permittedDomains, ["example.org"])
-        XCTAssertEqual(result.restrictedDomains, [])
-        XCTAssertEqual(result.urlRuleText, "||example.com^")
-
-        let invalidNoopRule = "@@||example.com^$domain=example.org,__,_,image,________z__,script,important"
-
-        XCTAssertThrowsError(try NetworkRule(ruleText: invalidNoopRule))
-    }
-
-    func testPingModifier() {
-        var rule = "||example.com^$ping"
-        XCTAssertThrowsError(try NetworkRule(ruleText: rule))
-
-        rule = "||example.com^$~ping"
-        XCTAssertThrowsError(try NetworkRule(ruleText: rule))
-    }
-
-    func testSpecifichide() {
-        var rule = "@@||example.org^$specifichide"
-
-        let result = try! NetworkRule(ruleText: rule)
-
-        XCTAssertNotNil(result)
-        XCTAssertEqual(result.ruleText, "@@||example.org^$specifichide")
-        XCTAssertEqual(result.isCssExceptionRule, false)
-        XCTAssertEqual(result.urlRuleText, "||example.org^")
-        XCTAssertEqual(result.enabledOptions, [NetworkRule.NetworkRuleOption.Specifichide])
-
-        rule = "||example.org^$specifichide"
-        XCTAssertThrowsError(try NetworkRule(ruleText: rule))
     }
     
     func testNegatesBadfilter() {

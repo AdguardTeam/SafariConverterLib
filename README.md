@@ -138,3 +138,6 @@ For example:
 
 TODO(ameshkov): !!! Rework documentation
 TODO(ameshkov): !!! Explain how important it is to use contigious UTF-8 strings
+
+$generichide == $elemhide ???
+$genericblock == $urlblock, i.e. unblocks everything?

@@ -21,6 +21,8 @@ class NetworkRule: Rule {
     var isCheckThirdParty = false
     var isThirdParty = false
     var isMatchCase = false
+    
+    // TODO(ameshkov): !!! Do we really need this property?
     var isBlockPopups = false
     var isWebSocket = false
     var badfilter = false
@@ -28,6 +30,7 @@ class NetworkRule: Rule {
     var permittedContentType: [ContentType] = [ContentType.ALL]
     var restrictedContentType: [ContentType] = []
 
+    /// Lists of options that are enabled (or disabled) by modifiers in this rule.
     var enabledOptions: [NetworkRuleOption] = []
     var disabledOptions: [NetworkRuleOption] = []
 
@@ -35,6 +38,8 @@ class NetworkRule: Rule {
     var urlRuleText: String = ""
 
     /// Regular expression that's converted from the rule pattern.
+    ///
+    /// nil here means that the rule will match all URLs.
     var urlRegExpSource: String? = nil
 
     override init(ruleText: String) throws {
@@ -82,7 +87,7 @@ class NetworkRule: Rule {
             throw SyntaxError.invalidPattern(message: "Empty regular expression for URL")
         }
 
-        isDocumentWhiteList = isOptionEnabled(option: .Document)
+        isDocumentWhiteList = isWhiteList && isOptionEnabled(option: .Document)
         isUrlBlock = isSingleOption(option: .Urlblock) || isSingleOption(option: .Genericblock)
         isCssExceptionRule = isSingleOption(option: .Elemhide) || isSingleOption(option: .Generichide)
         isJsInject = isSingleOption(option: .Jsinject)
@@ -92,6 +97,7 @@ class NetworkRule: Rule {
         urlRuleText.utf8.first == Chars.SLASH && urlRuleText.utf8.last == Chars.SLASH
     }
 
+    /// Returns true if the rule has an option and that's the only specified option.
     func isSingleOption(option: NetworkRuleOption) -> Bool {
         enabledOptions.count == 1 && enabledOptions.firstIndex(of: option) != nil
     }
@@ -209,16 +215,15 @@ class NetworkRule: Rule {
         // Rules of these types can be applied to documents only
         // $jsinject, $elemhide, $urlblock, $genericblock, $generichide and $content for whitelist rules.
         // $popup - for url blocking
-        if (
-            isOptionEnabled(option: NetworkRuleOption.Document)
-            || isOptionEnabled(option: NetworkRuleOption.Jsinject)
-            || isOptionEnabled(option: NetworkRuleOption.Elemhide)
-            || isOptionEnabled(option: NetworkRuleOption.Content)
-            || isOptionEnabled(option: NetworkRuleOption.Urlblock)
-            || isOptionEnabled(option: NetworkRuleOption.Genericblock)
-            || isOptionEnabled(option: NetworkRuleOption.Generichide)
-            || isBlockPopups
-        ) {
+        if isOptionEnabled(option: .Document)
+            || isOptionEnabled(option: .Jsinject)
+            || isOptionEnabled(option: .Elemhide)
+            || isOptionEnabled(option: .Content)
+            || isOptionEnabled(option: .Urlblock)
+            || isOptionEnabled(option: .Genericblock)
+            || isOptionEnabled(option: .Generichide)
+            || isOptionEnabled(option: .Specifichide)
+            || isBlockPopups {
             self.permittedContentType = [ContentType.DOCUMENT];
         }
     }
@@ -259,18 +264,46 @@ class NetworkRule: Rule {
         case "domain":
             try setNetworkRuleDomains(domains: optionValue)
         case "elemhide", "ehide":
+            if !isWhiteList {
+                throw SyntaxError.invalidModifier(message: "$elemhide only allowed in whitelist rules")
+            }
+            
             try setOptionEnabled(option: NetworkRuleOption.Elemhide, value: true)
         case "generichide", "ghide":
+            if !isWhiteList {
+                throw SyntaxError.invalidModifier(message: "$generichide only allowed in whitelist rules")
+            }
+            
             try setOptionEnabled(option: NetworkRuleOption.Generichide, value: true)
         case "genericblock":
+            if !isWhiteList {
+                throw SyntaxError.invalidModifier(message: "$genericblock only allowed in whitelist rules")
+            }
+            
             try setOptionEnabled(option: NetworkRuleOption.Genericblock, value: true)
         case "specifichide", "shide":
+            if !isWhiteList {
+                throw SyntaxError.invalidModifier(message: "$specifichide only allowed in whitelist rules")
+            }
+            
             try setOptionEnabled(option: NetworkRuleOption.Specifichide, value: true)
         case "jsinject":
+            if !isWhiteList {
+                throw SyntaxError.invalidModifier(message: "$jsinject only allowed in whitelist rules")
+            }
+            
             try setOptionEnabled(option: NetworkRuleOption.Jsinject, value: true)
         case "urlblock":
+            if !isWhiteList {
+                throw SyntaxError.invalidModifier(message: "$urlblock only allowed in whitelist rules")
+            }
+            
             try setOptionEnabled(option: NetworkRuleOption.Urlblock, value: true)
         case "content":
+            if !isWhiteList {
+                throw SyntaxError.invalidModifier(message: "$content only allowed in whitelist rules")
+            }
+            
             try setOptionEnabled(option: NetworkRuleOption.Content, value: true)
         case "document", "doc":
             try setOptionEnabled(option: NetworkRuleOption.Document, value: true)
@@ -334,6 +367,7 @@ class NetworkRule: Rule {
         }
     }
 
+    /// Enables or disables the specified content type for this rule.
     private func setRequestType(contentType: ContentType, enabled: Bool) -> Void {
         if (enabled) {
             if (self.permittedContentType.firstIndex(of: ContentType.ALL) != nil) {
@@ -346,8 +380,8 @@ class NetworkRule: Rule {
         }
     }
 
+    /// Enables or disables the specified option.
     private func setOptionEnabled(option: NetworkRuleOption, value: Bool) throws -> Void {
-        // TODO: Respect options restrictions
         if (value) {
             self.enabledOptions.append(option);
         } else {
@@ -355,15 +389,12 @@ class NetworkRule: Rule {
         }
     }
 
+    /// Returns true if the specified option is enabled in this rule.
     private func isOptionEnabled(option: NetworkRuleOption) -> Bool {
         return self.enabledOptions.firstIndex(of: option) != nil;
     }
 
-    struct DomainInfo {
-        var domain: String?;
-        var path: String?;
-    }
-
+    // TODO(ameshkov): !!! Change to OptionSet to speed things up.
     enum ContentType {
         case ALL
         case IMAGE
@@ -379,6 +410,7 @@ class NetworkRule: Rule {
         case PING
     }
 
+    // TODO(ameshkov): Change to OptionSet to speed things up.
     enum NetworkRuleOption {
         case Elemhide
         case Generichide

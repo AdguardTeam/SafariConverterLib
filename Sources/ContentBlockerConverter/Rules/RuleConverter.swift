@@ -15,8 +15,6 @@ import Foundation
 /// - $all
 /// - $1p
 /// - $3p
-///
-/// TODO(ameshkov): Add tests with $1p, $3p, $all conversion
 class RuleConverter {
     private static let UBO_SCRIPTLET_MASK_REG = "#@?#\\+js"
     private static let UBO_SCRIPTLET_MASK_REGEXP = try! NSRegularExpression(pattern: UBO_SCRIPTLET_MASK_REG, options: [.caseInsensitive])
