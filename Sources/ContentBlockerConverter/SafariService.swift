@@ -1,6 +1,7 @@
 import Foundation
 
-let DEFAULT_SAFARI_VERSION = SafariVersion.safari13;
+/// Default Safari version for which the rules will be converted if other version is not explicitly specified.
+let DEFAULT_SAFARI_VERSION = SafariVersion.safari13
 
 public enum SafariVersion: CustomStringConvertible, CustomDebugStringConvertible, Equatable {
     public var description: String {

@@ -47,7 +47,7 @@ class CosmeticRule: Rule {
     var pathModifier: String?
     var pathRegExpSource: String?
     
-    override init(ruleText: String) throws {
+    override init(ruleText: String, for version: SafariVersion = SafariService.current.version) throws {
         try super.init(ruleText: ruleText)
 
         let markerInfo = CosmeticRuleMarker.findCosmeticRuleMarker(ruleText: ruleText)

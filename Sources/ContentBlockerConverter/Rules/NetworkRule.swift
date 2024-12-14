@@ -41,14 +41,20 @@ class NetworkRule: Rule {
     /// nil here means that the rule will match all URLs.
     var urlRegExpSource: String? = nil
 
-    override init(ruleText: String) throws {
+    /// Initializes a network rule by parsing its properties from the rule text.
+    ///
+    /// - Parameters:
+    ///   - ruleText: AdGuard rule text.
+    ///   - version: Safari version which will use that rule. Depending on the version some features may be available or not.
+    /// - Throws: SyntaxError if any issue with the rule is detected.
+    override init(ruleText: String, for version: SafariVersion = SafariService.current.version) throws {
         try super.init(ruleText: ruleText)
 
         let ruleParts = try NetworkRuleParser.parseRuleText(ruleText: ruleText)
         isWhiteList = ruleParts.whitelist
 
         if (ruleParts.options != nil && ruleParts.options != "") {
-            try loadOptions(options: ruleParts.options!)
+            try loadOptions(options: ruleParts.options!, version: version)
         }
 
         if (ruleParts.pattern == "||"
@@ -195,7 +201,7 @@ class NetworkRule: Rule {
     }
 
     /// Parses network rule options from the options string.
-    private func loadOptions(options: String) throws -> Void {
+    private func loadOptions(options: String, version: SafariVersion) throws -> Void {
         let optionParts = options.split(delimiter: Chars.COMMA, escapeChar: Chars.BACKSLASH);
         
         for option in optionParts {
@@ -208,7 +214,7 @@ class NetworkRule: Rule {
                 optionValue = String(option[option.utf8.index(after: valueIndex!)...])
             }
             
-            try loadOption(optionName: optionName, optionValue: optionValue);
+            try loadOption(optionName: optionName, optionValue: optionValue, version: version)
         }
         
         // Rules of these types can be applied to documents only
@@ -228,7 +234,7 @@ class NetworkRule: Rule {
     }
 
     /// Attempts to parse a single network rule option.
-    private func loadOption(optionName: String, optionValue: String) throws -> Void {
+    private func loadOption(optionName: String, optionValue: String, version: SafariVersion) throws -> Void {
         if optionName.utf8.first == Chars.UNDERSCORE {
             // A noop modifier does nothing and can be used to increase some rules readability.
             // It consists of the sequence of underscore characters (_) of any length
@@ -345,14 +351,14 @@ class NetworkRule: Rule {
             setRequestType(contentType: ContentType.OTHER, enabled: false)
         case "ping":
             // `ping` resource type is supported since Safari 14
-            if SafariService.current.version.isSafari14orGreater() {
+            if version.isSafari14orGreater() {
                 setRequestType(contentType: ContentType.PING, enabled: true)
             } else {
                 throw SyntaxError.invalidModifier(message: "$ping is not supported")
             }
         case "~ping":
             // `ping` resource type is supported since Safari 14
-            if SafariService.current.version.isSafari14orGreater() {
+            if version.isSafari14orGreater() {
                 setRequestType(contentType: ContentType.PING, enabled: false)
             } else {
                 throw SyntaxError.invalidModifier(message: "$~ping is not supported")

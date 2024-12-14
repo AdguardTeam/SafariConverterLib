@@ -8,10 +8,9 @@ final class NetworkRuleTests: XCTestCase {
     let URL_FILTER_REGEXP_END_SEPARATOR = "([\\/:&\\?].*)?$"
     
     func testNetworkRule() {
-        // TODO(ameshkov): !!! Add SafariVersion tests here.
-
         struct TestCase {
             let ruleText: String
+            var version: SafariVersion = DEFAULT_SAFARI_VERSION
             let expectedUrlRuleText: String
             let expectedUrlRegExpSource: String?
             var expectedWhiteList = false
@@ -209,6 +208,20 @@ final class NetworkRuleTests: XCTestCase {
                 expectedPermittedDomains: ["a.com"],
                 expectedPermittedContentTypes: [NetworkRule.ContentType.IMAGE, NetworkRule.ContentType.SUBDOCUMENT]),
             TestCase(
+                // $ping rule (supported starting with Safari 14 only).
+                ruleText: "||example.org^$ping",
+                version: SafariVersion.safari14,
+                expectedUrlRuleText: "||example.org^",
+                expectedUrlRegExpSource: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedPermittedContentTypes: [NetworkRule.ContentType.PING]),
+            TestCase(
+                // $~ping rule (supported starting with Safari 14 only).
+                ruleText: "||example.org^$~ping",
+                version: SafariVersion.safari14,
+                expectedUrlRuleText: "||example.org^",
+                expectedUrlRegExpSource: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedRestrictedContentTypes: [NetworkRule.ContentType.PING]),
+            TestCase(
                 // Testing egde case - the rule looks like it's a regex, but it has options.
                 ruleText: "/example/$domain=test.com/",
                 expectedUrlRuleText: "/example/",
@@ -242,7 +255,7 @@ final class NetworkRuleTests: XCTestCase {
         ]
 
         for testCase in testCases {
-            let result = try! NetworkRule(ruleText: testCase.ruleText)
+            let result = try! NetworkRule(ruleText: testCase.ruleText, for: testCase.version)
             
             let msg = "Rule (\(testCase.ruleText)) does not match expected"
 
@@ -268,15 +281,6 @@ final class NetworkRuleTests: XCTestCase {
             XCTAssertEqual(result.enabledOptions, testCase.expectedEnabledOptions, msg)
             XCTAssertEqual(result.disabledOptions, testCase.expectedDisabledOptions, msg)
         }
-    }
-    
-    // TODO(ameshkov): !!! Rework when SafariVersion tests are introduced.
-    func testPingModifier() {
-        var rule = "||example.com^$ping"
-        XCTAssertThrowsError(try NetworkRule(ruleText: rule))
-
-        rule = "||example.com^$~ping"
-        XCTAssertThrowsError(try NetworkRule(ruleText: rule))
     }
     
     func testNetworkRuleWithInvalidRules() {
@@ -320,6 +324,9 @@ final class NetworkRuleTests: XCTestCase {
         XCTAssertThrowsError(try NetworkRule(ruleText: "//$domain=example.com"))
         // Non-ASCII symbols outside the domain are not supported and not encoded.
         XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org/почта"))
+        // $ping is not supported in the older Safari versions
+        XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org^$ping", for: SafariVersion.safari13))
+        XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org^$~ping", for: SafariVersion.safari13))
     }
     
     func testExtractDomain() {
