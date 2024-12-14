@@ -96,9 +96,7 @@ class CosmeticRule: Rule {
             let markerIndex = ruleText.utf8.index(ruleText.utf8.startIndex, offsetBy: markerInfo.index)
             let domains = String(ruleText[..<markerIndex])
             
-            // TODO(ameshkov): !!! Add test for *##
-            
-            // support for *## for generic rules
+            // Support for *## for generic rules
             // https://github.com/AdguardTeam/SafariConverterLib/issues/11
             if (!(domains.utf8.count == 1 && domains.utf8.first == Chars.WILDCARD)) {
                 try setCosmeticRuleDomains(domains: domains)
@@ -233,7 +231,9 @@ class CosmeticRule: Rule {
             }
 
             pathModifier = value
-            if pathModifier!.utf8.first == Chars.SLASH && pathModifier!.utf8.last == Chars.SLASH {
+            if pathModifier!.utf8.count > 1 &&
+                pathModifier!.utf8.first == Chars.SLASH &&
+                pathModifier!.utf8.last == Chars.SLASH {
                 // Dealing with a regex.
                 let startIndex = pathModifier!.utf8.index(after: pathModifier!.utf8.startIndex)
                 let endIndex = pathModifier!.utf8.index(before: pathModifier!.utf8.endIndex)

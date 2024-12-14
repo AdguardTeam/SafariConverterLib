@@ -25,13 +25,13 @@ final class NetworkRuleTests: XCTestCase {
             var expectedJsInject = false
             var expectedMatchCase = false
             var expectedBlockPopups = false
+            var expectedBadfilter = false
             var expectedPermittedDomains: [String] = []
             var expectedRestrictedDomains: [String] = []
             var expectedPermittedContentTypes: [NetworkRule.ContentType] = [NetworkRule.ContentType.ALL]
             var expectedRestrictedContentTypes: [NetworkRule.ContentType] = []
             var expectedEnabledOptions: [NetworkRule.NetworkRuleOption] = []
             var expectedDisabledOptions: [NetworkRule.NetworkRuleOption] = []
-            
         }
         
         let testCases: [TestCase] = [
@@ -216,6 +216,12 @@ final class NetworkRuleTests: XCTestCase {
                 // Domain is invalid, but it doesn't break Safari.
                 expectedPermittedDomains: ["test.com/"]),
             TestCase(
+                // $badfilter rule.
+                ruleText: "||example.org^$badfilter",
+                expectedUrlRuleText: "||example.org^",
+                expectedUrlRegExpSource: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedBadfilter: true),
+            TestCase(
                 // Testing if we can correctly convert domain in the rule to punycode.
                 ruleText: "||почта.рф^",
                 expectedUrlRuleText: "||xn--80a1acny.xn--p1ai^",
@@ -234,14 +240,13 @@ final class NetworkRuleTests: XCTestCase {
                 expectedPermittedDomains: ["example.org"],
                 expectedPermittedContentTypes: [NetworkRule.ContentType.IMAGE, NetworkRule.ContentType.SCRIPT]),
         ]
-        
-        
 
         for testCase in testCases {
             let result = try! NetworkRule(ruleText: testCase.ruleText)
             
             let msg = "Rule (\(testCase.ruleText)) does not match expected"
 
+            XCTAssertEqual(result.ruleText, testCase.ruleText, msg)
             XCTAssertEqual(result.urlRuleText, testCase.expectedUrlRuleText, msg)
             XCTAssertEqual(result.urlRegExpSource, testCase.expectedUrlRegExpSource, msg)
             XCTAssertEqual(result.isWhiteList, testCase.expectedWhiteList, msg)
@@ -255,6 +260,7 @@ final class NetworkRuleTests: XCTestCase {
             XCTAssertEqual(result.isCssExceptionRule, testCase.expectedCssExceptionRule, msg)
             XCTAssertEqual(result.isMatchCase, testCase.expectedMatchCase, msg)
             XCTAssertEqual(result.isBlockPopups, testCase.expectedBlockPopups, msg)
+            XCTAssertEqual(result.badfilter, testCase.expectedBadfilter, msg)
             XCTAssertEqual(result.permittedDomains, testCase.expectedPermittedDomains, msg)
             XCTAssertEqual(result.restrictedDomains, testCase.expectedRestrictedDomains, msg)
             XCTAssertEqual(result.permittedContentType, testCase.expectedPermittedContentTypes, msg)

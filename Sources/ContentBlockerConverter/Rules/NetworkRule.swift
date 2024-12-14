@@ -94,7 +94,7 @@ class NetworkRule: Rule {
     }
 
     func isRegexRule() -> Bool {
-        urlRuleText.utf8.first == Chars.SLASH && urlRuleText.utf8.last == Chars.SLASH
+        urlRuleText.utf8.count > 1 && urlRuleText.utf8.first == Chars.SLASH && urlRuleText.utf8.last == Chars.SLASH
     }
 
     /// Returns true if the rule has an option and that's the only specified option.
