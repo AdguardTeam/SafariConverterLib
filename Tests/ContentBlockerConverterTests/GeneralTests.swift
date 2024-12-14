@@ -403,12 +403,4 @@ final class GeneralTests: XCTestCase {
             XCTAssertTrue(conversionResult.totalConvertedCount > 0, "Conversion failed for URL: \(listUrl)")
         }
     }
-
-    static var allTests = [
-        ("testGeneral", testGeneral),
-        ("testPerformanceSingleRun", testPerformanceSingleRun),
-        ("testPerformance", testPerformance),
-        ("testSpecifichidePerformance", testSpecifichidePerformance),
-        ("testAttemptToConvertPopularLists", testAttemptToConvertPopularLists)
-    ]
 }

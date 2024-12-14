@@ -116,10 +116,6 @@ final class SafariRegexTests: XCTestCase {
         }
         
     }
-    
-    static var allTests = [
-        ("testIsSafariSupportedRegex", testIsSupported),
-    ]
 }
 
 

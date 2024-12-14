@@ -94,20 +94,4 @@ final class CosmeticRuleMarkerTests: XCTestCase {
         XCTAssertEqual(result.index, 11);
         XCTAssertEqual(result.marker, CosmeticRuleMarker.HtmlException);
     }
-
-    static var allTests = [
-        ("testNoMarker", testNoMarker),
-        ("testElementHiding", testElementHiding),
-        ("testElementHidingException", testElementHidingException),
-        ("testElementHidingExtCSS", testElementHidingExtCSS),
-        ("testElementHidingExtCSSException", testElementHidingExtCSSException),
-        ("testCss", testCss),
-        ("testCssException", testCssException),
-        ("testCssExtCSS", testCssExtCSS),
-        ("testCssExtCSSException", testCssExtCSSException),
-        ("testJs", testJs),
-        ("testJsException", testJsException),
-        ("testHtml", testHtml),
-        ("testHtmlException", testHtmlException),
-    ]
 }

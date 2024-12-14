@@ -99,12 +99,4 @@ final class WebExtensionHelpersTests: XCTestCase {
         result = WebExtensionHelpers().convertInvertedAllowlistRuleToDomain("example.org");
         XCTAssertEqual(expected, result);
     }
-    
-    static var allTests = [
-        ("testUserRuleIsAssociated", testUserRuleIsAssociated),
-        ("testConvertDomainToAllowlistRule", testConvertDomainToAllowlistRule),
-        ("testConvertAllowlistRuleToDomain", testConvertAllowlistRuleToDomain),
-        ("testConvertDomainToInvertedAllowlistRule", testConvertDomainToInvertedAllowlistRule),
-        ("testConvertInvertedAllowlistRuleToDomain", testConvertInvertedAllowlistRuleToDomain),
-    ]
 }

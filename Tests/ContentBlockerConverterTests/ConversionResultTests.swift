@@ -95,11 +95,4 @@ final class ConversionResultTests: XCTestCase {
         assertEntry(actual: result.advancedBlocking);
 
     }
-
-    static var allTests = [
-        ("testEmpty", testEmpty),
-        ("testSimple", testSimple),
-        ("testOverlimit", testOverlimit),
-        ("testAdvancedBlocking", testAdvancedBlocking),
-    ]
 }

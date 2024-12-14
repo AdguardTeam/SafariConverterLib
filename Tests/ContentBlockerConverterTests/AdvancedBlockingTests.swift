@@ -484,27 +484,4 @@ final class AdvancedBlockingTests: XCTestCase {
         // because createRules method adds allowlist rules to the end of the list
         XCTAssertEqual(result.advancedBlockingText, (rules).joined(separator: "\n"));
     }
-
-    static var allTests = [
-        ("testAdvancedBlockingParam", testAdvancedBlockingParam),
-        ("testAdvancedBlockingScriptRules", testAdvancedBlockingScriptRules),
-        ("testScriptRulesExceptions", testScriptRulesExceptions),
-        ("testScriptRulesJsinject", testScriptRulesJsinject),
-        ("testScriptRulesDocument", testScriptRulesDocument),
-        ("testExtendedCssRules", testExtendedCssRules),
-        ("testExtendedCssRulesExceptionsElemhide", testExtendedCssRulesExceptionsElemhide),
-        ("testExtendedCssRulesExceptionsDocument", testExtendedCssRulesExceptionsDocument),
-        ("testCosmeticCssRules", testCosmeticCssRules),
-        ("testCosmeticCssRulesInvalids", testCosmeticCssRulesInvalids),
-        ("testCosmeticCssRulesExceptions", testCosmeticCssRulesExceptions),
-        ("testScriptletRules", testScriptletRules),
-        ("testScriptletRulesExceptions", testScriptletRulesExceptions),
-        ("testScriptletRulesArgumentWithComma", testScriptletRulesArgumentWithComma),
-        ("testCompileCssInjectRule", testCompileCssInjectRule),
-        ("testCompileExtendedCssRule", testCompileExtendedCssRule),
-        ("testAdvancedBlockingText", testAdvancedBlockingText),
-        ("testAdvancedBlockingParamFalse", testAdvancedBlockingParamFalse),
-        ("testAdvancedBlockingTextWithAllowlistRules", testAdvancedBlockingTextWithAllowlistRules),
-        ("testAdvancedBlockingTextWithExceptionModifiers", testAdvancedBlockingTextWithExceptionModifiers),
-    ]
 }

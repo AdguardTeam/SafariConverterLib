@@ -288,22 +288,4 @@ final class RuleConverterTests: XCTestCase {
         result = ruleConverter.convertRule(ruleText: rule);
         XCTAssertEqual(result, [nil]);
     }
-    
-    static var allTests = [
-        ("testEmpty", testEmpty),
-        ("testComment", testComment),
-        ("testScriptletAGRule", testScriptletAGRule),
-        ("testScriptletAGRuleException", testScriptletAGRuleException),
-        ("testScriptletUboRule", testScriptletUboRule),
-        ("testScriptletUboRuleCommas", testScriptletUboRuleCommas),
-        ("testScriptletUboRuleException", testScriptletUboRuleException),
-        ("testScriptletAbpRule", testScriptletAbpRule),
-        ("testScriptletAbpRuleMultiple", testScriptletAbpRuleMultiple),
-        ("testConvertCssAGRules", testConvertCssAGRules),
-        ("testUboCssStyleRule", testUboCssStyleRule),
-        ("testDenyallowModifierForGenericRules", testDenyallowModifierForGenericRules),
-        ("testDenyallowModifier", testDenyallowModifier),
-        ("testWrapInDoubleQuotesSpecialCases", testWrapInDoubleQuotesSpecialCases),
-        ("testGetStringInBracesSpecialCases", testGetStringInBracesSpecialCases),
-    ]
 }

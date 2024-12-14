@@ -15,8 +15,6 @@ public class ContentBlockerConverter {
     
     /// Converts filter rules in AdGuard format to the format supported by Safari.
     ///
-    /// TODO(ameshkov): Remove optimize argument, this logic is not used by anyone and is deprecated.
-    ///
     /// - Parameters:
     ///   - rules: array of filtering rules.
     ///   - safariVersion: version of Safari for which the conversion should be done.
@@ -30,6 +28,7 @@ public class ContentBlockerConverter {
     public func convertArray(
         rules: [String],
         safariVersion: SafariVersion = .safari13,
+        // TODO: [ameshkov] Remove optimize argument, this logic is not used by anyone and is deprecated.
         optimize: Bool = false,
         advancedBlocking: Bool = false,
         advancedBlockingFormat: AdvancedBlockingFormat = .json,

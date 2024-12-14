@@ -242,15 +242,4 @@ final class CompilerTests: XCTestCase {
 
         assertResultEmpty(result: result);
     }
-
-    static var allTests = [
-        ("testEmpty", testEmpty),
-        ("testCompactCss", testCompactCss),
-        ("testCompactIfDomainCss", testCompactIfDomainCss),
-        ("testCompactUnlessDomainCss", testCompactUnlessDomainCss),
-        ("testApplyActionExceptions", testApplyActionExceptions),
-        ("testApplyActionExceptionsForGenericRule", testApplyActionExceptionsForGenericRule),
-        ("testApplyActionExceptionsForMultiDomainRule", testApplyActionExceptionsForMultiDomainRule),
-        ("testIfDomainAndUnlessDomain", testIfDomainAndUnlessDomain),
-    ]
 }
