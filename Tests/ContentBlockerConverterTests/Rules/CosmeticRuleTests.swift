@@ -4,16 +4,11 @@ import XCTest
 @testable import ContentBlockerConverter
 
 final class CosmeticRuleTests: XCTestCase {
-    override func tearDown() {
-        // Restore the default state.
-        SafariService.current.version = DEFAULT_SAFARI_VERSION
-    }
     
     func testCosmeticRule() {
-        // TODO(ameshkov): !!! Add SafariVersion tests here.
-        
         struct TestCase {
             let ruleText: String
+            var version: SafariVersion = DEFAULT_SAFARI_VERSION
             let expectedContent: String
             var expectedIsWhitelist = false
             var expectedIsElemhide = false
@@ -89,6 +84,12 @@ final class CosmeticRuleTests: XCTestCase {
                 // Extended CSS cosmetic rule (auto-detect).
                 ruleText: "##.banner:contains(cookies)",
                 expectedContent: ".banner:contains(cookies)",
+                expectedIsElemhide: true,
+                expectedIsExtendedCss: true),
+            TestCase(
+                // Extended CSS cosmetic rule (auto-detect).
+                ruleText: "##.banner:-abp-has(div)",
+                expectedContent: ".banner:-abp-has(div)",
                 expectedIsElemhide: true,
                 expectedIsExtendedCss: true),
             TestCase(
@@ -184,13 +185,39 @@ final class CosmeticRuleTests: XCTestCase {
                 ruleText: "[$domain=mail.ru,path=/^\\/$/]##.banner",
                 expectedContent: ".banner",
                 expectedIsElemhide: true,
-                expectedPathModifier: "/^\\/$/",
-                expectedPathRegExpSource: "^\\/$",
+                expectedPathModifier: "/^/$/",
+                expectedPathRegExpSource: "^/$",
                 expectedPermittedDomains: ["mail.ru"]),
+            TestCase(
+                // :has is detected as extended CSS for Safari older than 16.4
+                ruleText: "##div:has(.banner)",
+                version: SafariVersion.safari16,
+                expectedContent: "div:has(.banner)",
+                expectedIsElemhide: true,
+                expectedIsExtendedCss: true),
+            TestCase(
+                // :has is considered normal CSS for Safari 16.4 or newer
+                ruleText: "##div:has(.banner)",
+                version: SafariVersion.safari16_4,
+                expectedContent: "div:has(.banner)",
+                expectedIsElemhide: true),
+            TestCase(
+                // :is is detected as extended CSS for Safari 13
+                ruleText: "##div:is(.banner)",
+                version: SafariVersion.safari13,
+                expectedContent: "div:is(.banner)",
+                expectedIsElemhide: true,
+                expectedIsExtendedCss: true),
+            TestCase(
+                // :is is detected as normal CSS for Safari 14 or newer
+                ruleText: "##div:is(.banner)",
+                version: SafariVersion.safari14,
+                expectedContent: "div:is(.banner)",
+                expectedIsElemhide: true),
         ]
 
         for testCase in testCases {
-            let result = try! CosmeticRule(ruleText: testCase.ruleText)
+            let result = try! CosmeticRule(ruleText: testCase.ruleText, for: testCase.version)
             
             let msg = "Rule (\(testCase.ruleText)) does not match expected"
             

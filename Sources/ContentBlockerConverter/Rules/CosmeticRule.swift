@@ -47,6 +47,14 @@ class CosmeticRule: Rule {
     var pathModifier: String?
     var pathRegExpSource: String?
     
+    /// Initializes a cosmetic rule by parsing its properties from the rule text.
+    ///
+    /// - Parameters:
+    ///   - ruleText: AdGuard rule text.
+    ///   - version: Safari version which will use that rule. Depending on the version some features may be available or not.
+    /// - Throws: SyntaxError if any issue with the rule is detected.
+    ///
+    /// TODO(ameshkov): !!! Change default value for version !!!
     override init(ruleText: String, for version: SafariVersion = SafariService.current.version) throws {
         try super.init(ruleText: ruleText)
 
@@ -105,7 +113,7 @@ class CosmeticRule: Rule {
         
         isWhiteList = CosmeticRule.isWhitelist(marker: markerInfo.marker!)
         isExtendedCss = CosmeticRule.isExtCssMarker(marker: markerInfo.marker!)
-        if (!isExtendedCss && CosmeticRule.hasExtCSSIndicators(content: self.content)) {
+        if (!isExtendedCss && CosmeticRule.hasExtCSSIndicators(content: self.content, version: version)) {
             // Additional check if rule is extended css rule by pseudo class indicators.
             isExtendedCss = true
         }
@@ -116,7 +124,7 @@ class CosmeticRule: Rule {
     }
     
     /// Checks if the rule contains any extended CSS pseudo-class indicators.
-    private static func hasExtCSSIndicators(content: String) -> Bool {
+    private static func hasExtCSSIndicators(content: String, version: SafariVersion) -> Bool {
         // Not enough for even minimal length pseudo.
         if (content.utf8.count < 6) {
             return false
@@ -157,14 +165,12 @@ class CosmeticRule: Rule {
                         // because `:has()` pseudo-class has native implementation since Safari 16.4
                         // https://www.webkit.org/blog/13966/webkit-features-in-safari-16-4/
                         // https://github.com/AdguardTeam/SafariConverterLib/issues/43
-                        if SafariService.current.version.isSafari16_4orGreater()
-                            && pseudo == EXT_CSS_PSEUDO_INDICATOR_HAS {
+                        if version.isSafari16_4orGreater() && pseudo == EXT_CSS_PSEUDO_INDICATOR_HAS {
                             continue
                         }
                         
                         // `:is()` pseudo-class has native implementation since Safari 14
-                        if SafariService.current.version.isSafari14orGreater()
-                            && pseudo == EXT_CSS_PSEUDO_INDICATOR_IS {
+                        if version.isSafari14orGreater() && pseudo == EXT_CSS_PSEUDO_INDICATOR_IS {
                             continue
                         }
                         

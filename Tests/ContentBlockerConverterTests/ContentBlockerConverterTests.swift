@@ -2153,7 +2153,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         var ifDomain = decoded[0].trigger.ifDomain;
         XCTAssertEqual(ifDomain, ["*mail.ru"])
         var urlFilter = decoded[0].trigger.urlFilter
-        XCTAssertEqual(urlFilter, "^(https?:\\/\\/)([^\\/]+)\\/$")
+        XCTAssertEqual(urlFilter, "^(https?:\\/\\/)([^\\/]+)/$")
         XCTAssertEqual(decoded[0].action.type, "css-extended")
         var css = decoded[0].action.css
         XCTAssertEqual(css, ".toolbar:has(> div.toolbar__inner > div.toolbar__aside > span.toolbar__close)")
@@ -2169,7 +2169,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         ifDomain = decoded[0].trigger.ifDomain;
         XCTAssertEqual(ifDomain, ["*mail.ru"]);
         urlFilter = decoded[0].trigger.urlFilter;
-        XCTAssertEqual(urlFilter, "^(https?:\\/\\/)([^\\/]+)\\/$");
+        XCTAssertEqual(urlFilter, "^(https?:\\/\\/)([^\\/]+)/$");
         
         rules = ["[$domain=facebook.com,path=/gaming]#$#body > .AdBox.Ad.advert ~ div[class] { display: block !important; }"]
         result = converter.convertArray(rules: rules, advancedBlocking: true)
@@ -2214,7 +2214,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         ifDomain = decoded[0].trigger.ifDomain;
         XCTAssertEqual(ifDomain, ["*lifebursa.com"]);
         urlFilter = decoded[0].trigger.urlFilter;
-        XCTAssertEqual(urlFilter, "^(https?:\\/\\/)([^\\/]+)\\/$");
+        XCTAssertEqual(urlFilter, "^(https?:\\/\\/)([^\\/]+)/$");
         XCTAssertEqual(decoded[0].action.type, "css-extended");
         css = decoded[0].action.css;
         XCTAssertEqual(css, ".container > div.row:has(> div[class^=\"col-\"] > div.banner)");
