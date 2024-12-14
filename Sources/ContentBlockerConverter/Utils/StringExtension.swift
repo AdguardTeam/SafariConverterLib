@@ -60,38 +60,62 @@ extension String {
     ///
     /// Takes into account if delimiter is escaped by the specified escape character.
     /// Ignores empty components.
-    ///
-    /// TODO(ameshkov): !!! Add tests for this method
     func split(delimiter: UInt8, escapeChar: UInt8) -> [String] {
-        let maxIndex = self.utf8.count - 1
+        let utf8 = self.utf8
         
-        var result = [String]()
-        var previousDelimiterIndex = -1
+        if utf8.count == 0 {
+            return []
+        }
         
-        for index in 0...maxIndex {
-            let char = self.utf8[safeIndex: index]!
-            
-            if char == delimiter || index == maxIndex {
-                // Ignore escaped delimiter.
-                if index > 0 && char == delimiter && self.utf8[safeIndex: index - 1] == escapeChar {
-                    continue
-                }
-                
-                var partEndIndex = index
-                if index == maxIndex {
-                    partEndIndex = index + 1
-                }
-                
-                if partEndIndex > previousDelimiterIndex+1 {
-                    let startIndex = self.utf8.index(self.startIndex, offsetBy: previousDelimiterIndex + 1)
-                    let endIndex = self.utf8.index(self.startIndex, offsetBy: partEndIndex)
+        // In case of AdGuard rules most of the rules have just one modifier
+        // so this tiny check despite looking strange allows to avoid
+        // quite a lot of unnecessary allocations.
+        if utf8.firstIndex(of: delimiter) == nil {
+            return [self]
+        }
 
-                    let part = String(self[startIndex..<endIndex])
-                    result.append(part)
+        var result = [String]()
+        var currentIndex = utf8.startIndex
+        var escaped = false
+        var buffer = [UInt8]()
+
+        while currentIndex < utf8.endIndex {
+            let char = utf8[currentIndex]
+
+            switch char {
+            case delimiter:
+                if escaped {
+                    // Add the delimiter to the buffer since it's escaped.
+                    buffer.append(char)
+                    escaped = false
+                } else {
+                    if !buffer.isEmpty {
+                        result.append(String(decoding: buffer, as: UTF8.self))
+                        buffer.removeAll()
+                    }
                 }
-                
-                previousDelimiterIndex = index
+            case escapeChar:
+                if escaped {
+                    // Add the escape character itself since it was escaped.
+                    buffer.append(char)
+                    escaped = false
+                } else {
+                    escaped = true
+                }
+            default:
+                if escaped {
+                    // Add the escape character for an escaped non-delimiter character.
+                    escaped = false
+                }
+                buffer.append(char)
             }
+
+            currentIndex = utf8.index(after: currentIndex)
+        }
+
+        // Add the last part if there are remaining characters in the buffer
+        if !buffer.isEmpty {
+            result.append(String(decoding: buffer, as: UTF8.self))
         }
 
         return result

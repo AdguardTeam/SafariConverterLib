@@ -20,4 +20,24 @@ final class StringExtensionTests: XCTestCase {
         XCTAssertEqual("test \u{11} test".escapeForJSON(), "test \\u0011 test")
         XCTAssertEqual("test \u{15} test".escapeForJSON(), "test \\u0015 test")
     }
+    
+    func testSplit() {
+        let testCases: [(input: String, expected: [String])] = [
+            ("apple,banana,grape", ["apple", "banana", "grape"]),
+            ("apple,banana\\,grape", ["apple", "banana,grape"]),
+            ("apple,,banana", ["apple", "banana"]),
+            ("apple,banana,", ["apple", "banana"]),
+            ("apple,banana\\\\,grape", ["apple", "banana\\", "grape"]),
+            ("", []),
+            ("apple", ["apple"]),
+            (",", []),
+            ("apple\\,banana\\,grape", ["apple,banana,grape"]),
+            ("apple,banana\\,grape\\\\,pear,peach", ["apple", "banana,grape\\", "pear", "peach"])
+        ]
+
+        for (input, expected) in testCases {
+            let result = input.split(delimiter: UInt8(ascii: ","), escapeChar: UInt8(ascii: "\\"))
+            XCTAssertEqual(result, expected, "Failed for input: \(input)")
+        }
+    }
 }

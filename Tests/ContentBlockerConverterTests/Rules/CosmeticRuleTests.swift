@@ -10,6 +10,8 @@ final class CosmeticRuleTests: XCTestCase {
     }
     
     func testCosmeticRule() {
+        // TODO(ameshkov): !!! Add SafariVersion tests here.
+        
         struct TestCase {
             let ruleText: String
             let expectedContent: String
