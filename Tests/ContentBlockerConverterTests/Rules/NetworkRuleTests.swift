@@ -306,6 +306,8 @@ final class NetworkRuleTests: XCTestCase {
         XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org^$domain="))
         // $domain must have a valid value.
         XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org^$domain=~"))
+        // $object not supported.
+        XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org^$object"))
         // $domain must have a valid value.
         XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org^$domain=e"))
         // $domain must have a valid value.

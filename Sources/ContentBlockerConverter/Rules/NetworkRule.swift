@@ -9,10 +9,9 @@ import Foundation
 /// Not supported:
 /// - $replace
 /// - $redirect
+/// - $redirect-rule
 /// - $csp
 /// - $object
-///
-/// TODO(ameshkov): !!! Add tests for not supported rules.
 class NetworkRule: Rule {
     var isUrlBlock = false
     var isCssExceptionRule = false
