@@ -27,8 +27,6 @@ class NetworkRule: Rule {
     var isThirdParty = false
     var isMatchCase = false
     
-    // TODO(ameshkov): !!! Do we really need this property?
-    var isBlockPopups = false
     var isWebSocket = false
     var badfilter = false
 
@@ -223,7 +221,7 @@ class NetworkRule: Rule {
         // Rules of these types can be applied to documents only:
         // $jsinject, $elemhide, $urlblock, $genericblock, $generichide and $content for whitelist rules.
         // $popup - for url blocking
-        if !enabledOptions.isDisjoint(with: .documentLevel) || isBlockPopups {
+        if !enabledOptions.isDisjoint(with: .documentLevel) {
             permittedContentType = .document
         }
     }
@@ -258,7 +256,7 @@ class NetworkRule: Rule {
         case "important":
             isImportant = true
         case "popup":
-            isBlockPopups = true
+            try setOptionEnabled(option: .popup, value: true)
         case "badfilter":
             badfilter = true
         case "domain":
@@ -356,6 +354,11 @@ class NetworkRule: Rule {
     func isSingleOption(option: Option) -> Bool {
         return enabledOptions == option
     }
+    
+    /// Returns true if the specified option is enabled in this rule.
+    func isOptionEnabled(option: Option) -> Bool {
+        return self.enabledOptions.contains(option)
+    }
 
     /// Enables or disables the specified option.
     private func setOptionEnabled(option: Option, value: Bool) throws -> Void {
@@ -364,11 +367,6 @@ class NetworkRule: Rule {
         } else {
             self.disabledOptions.insert(option)
         }
-    }
-
-    /// Returns true if the specified option is enabled in this rule.
-    private func isOptionEnabled(option: Option) -> Bool {
-        return self.enabledOptions.contains(option)
     }
     
     /// Represents content types the rule can be limited to.
@@ -415,10 +413,12 @@ class NetworkRule: Rule {
         static let urlblock      = Option(rawValue: 1 << 5)
         static let content       = Option(rawValue: 1 << 6)
         static let document      = Option(rawValue: 1 << 7)
+        static let popup         = Option(rawValue: 1 << 8)
         
         /// Document-level options cause the rule to be limited to "document" type.
         static let documentLevel: Option = [
             .document,
+            .popup,
             .whitelistOnly
         ]
         

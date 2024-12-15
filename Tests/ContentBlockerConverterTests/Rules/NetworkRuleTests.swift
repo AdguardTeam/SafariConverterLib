@@ -56,8 +56,8 @@ final class NetworkRuleTests: XCTestCase {
                 ruleText: "||example.org^$popup",
                 expectedUrlRuleText: "||example.org^",
                 expectedUrlRegExpSource: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
-                expectedBlockPopups: true,
-                expectedPermittedContentTypes: .document),
+                expectedPermittedContentTypes: .document,
+                expectedEnabledOptions: .popup),
             TestCase(
                 // $important rule.
                 ruleText: "||example.org^$important",
@@ -287,7 +287,6 @@ final class NetworkRuleTests: XCTestCase {
             XCTAssertEqual(result.isJsInject, testCase.expectedJsInject, msg)
             XCTAssertEqual(result.isCssExceptionRule, testCase.expectedCssExceptionRule, msg)
             XCTAssertEqual(result.isMatchCase, testCase.expectedMatchCase, msg)
-            XCTAssertEqual(result.isBlockPopups, testCase.expectedBlockPopups, msg)
             XCTAssertEqual(result.badfilter, testCase.expectedBadfilter, msg)
             XCTAssertEqual(result.permittedDomains, testCase.expectedPermittedDomains, msg)
             XCTAssertEqual(result.restrictedDomains, testCase.expectedRestrictedDomains, msg)

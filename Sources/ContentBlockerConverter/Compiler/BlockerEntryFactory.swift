@@ -332,7 +332,8 @@ class BlockerEntryFactory {
             }
         }
 
-        if (rule.isBlockPopups) {
+        if (rule.isOptionEnabled(option: .popup)) {
+            // Make sure that $popup only target document to avoid false positive blocking.
             types = ["document"]
         }
 
