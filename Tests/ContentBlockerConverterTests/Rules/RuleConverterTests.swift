@@ -108,15 +108,6 @@ final class RuleConverterTests: XCTestCase {
         XCTAssertEqual(actual, [expected]);
     }
   
-    // TODO(ameshkov): !!! $denyallow badfilter rule
-//    func testBadFilterModifier() {
-//        let rule = "||example.org/favicon.ico$domain=example.org,empty,important,badfilter";
-//        let exp = #"||example.org/favicon.ico$domain=example.org,redirect=nooptext,important,badfilter"#;
-//        
-//        let res = ruleConverter.convertRule(ruleText: rule);
-//        XCTAssertEqual(res, [exp]);
-//    }
-    
     func testUboCssStyleRule() {
         var exp = "example.com#$#h1 { background-color: blue !important }";
         var res = ruleConverter.convertRule(ruleText: "example.com##h1:style(background-color: blue !important)");
@@ -245,6 +236,16 @@ final class RuleConverterTests: XCTestCase {
         ];
         res = ruleConverter.convertRule(ruleText: ruleText);
         XCTAssertEqual(res, exp);
+    }
+
+    func testDenyallowModifierWithBadfilter() {
+        let ruleText = "*$image,denyallow=x.com,domain=a.com|~b.com,badfilter"
+        let exp: [String] = [
+            "*$image,domain=a.com|~b.com,badfilter",
+            "@@||x.com$image,domain=a.com|~b.com,badfilter"
+        ]
+        let res = ruleConverter.convertRule(ruleText: ruleText)
+        XCTAssertEqual(res, exp)
     }
     
     func testWrapInDoubleQuotesSpecialCases() {
