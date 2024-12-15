@@ -1,31 +1,18 @@
 import Foundation
 import Shared
 
-/**
- * Blocker entries factory class
- */
+/// BlockerEntryFactory creates Safari content blocking rules from AdGuard's NetworkRule and CosmeticRule.
 class BlockerEntryFactory {
-    /**
-     * It's important to mention why do we need these regular expressions.
-     * The thing is that on iOS it is crucial to use regexes as simple as possible.
-     * Otherwise, Safari takes too much memory on compiling a content blocker, and iOS simply kills the process.
-     *
-     * Angry users are here:
-     * https://github.com/AdguardTeam/AdguardForiOS/issues/550
-     */
+
+    /// For the patterns that match any URL we use simplified "url-filter" instead of simply converting
+    /// the pattern. The reason for that is to achieve higher performance in Safari.
+    ///
+    /// Otherwise, we may have complaints like the ones here:
+    /// https://github.com/AdguardTeam/AdguardForiOS/issues/550
     static let ANY_URL_TEMPLATES = ["||*", "", "*", "|*"]
     static let URL_FILTER_ANY_URL = ".*"
     static let URL_FILTER_WS_ANY_URL = "^wss?:\\/\\/"
-
-    /**
-     * Using .* for the css-display-none rules trigger.url-filter.
-     * Please note, that this is important to use ".*" for this kind of rules, otherwise performance is degraded:
-     * https://github.com/AdguardTeam/AdguardForiOS/issues/662
-     */
-    static let URL_FILTER_CSS_RULES = ".*"
-    static let URL_FILTER_SCRIPT_RULES = ".*"
-    static let URL_FILTER_SCRIPTLET_RULES = ".*"
-    
+   
     /// Regular expression for cosmetic rules.
     ///
     /// Please note, that this is important to use `.*` for this kind of rules, otherwise performance is degraded:
@@ -56,17 +43,29 @@ class BlockerEntryFactory {
         "co.nz", "rs", "ai", "website", "bg", "ua", "ma", "world", "pe", "link"
     ]
 
-    private static let REGEXP_SLASH = "/"
+    private let advancedBlockingEnabled: Bool
+    private let errorsCounter: ErrorsCounter
+    private let version: SafariVersion
 
-    let advancedBlockingEnabled: Bool
-    let errorsCounter: ErrorsCounter
-
-    init(advancedBlockingEnabled: Bool, errorsCounter: ErrorsCounter) {
+    /// Creates a new instance of BlockerEntryFactory.
+    ///
+    /// - Parameters:
+    ///   - advancedBlockingEnabled: if true, advanced rules (the ones interpreted by WebExtension) are also converted.
+    ///   - errorsCounter: object where we count the total number of conversion errors though the whole conversion process.
+    ///   - version: version of Safari for which the rules are being built.
+    ///
+    /// TODO(ameshkov): !!! Change default value for version !!!
+    init(advancedBlockingEnabled: Bool, errorsCounter: ErrorsCounter, version: SafariVersion = SafariService.current.version) {
         self.advancedBlockingEnabled = advancedBlockingEnabled
         self.errorsCounter = errorsCounter
+        self.version = version
     }
 
     /// Converts an AdGuard rule into a Safari content blocking rule.
+    ///
+    /// - Parameters:
+    ///   - rule: AdGuard rule (either `NetworkRule` or `CosmeticRule`).
+    /// - Returns: `BlockerEntry` or `nil` if the rule cannot be converted.
     func createBlockerEntry(rule: Rule) -> BlockerEntry? {
         do {
             if (rule is NetworkRule) {
@@ -119,7 +118,7 @@ class BlockerEntryFactory {
      * The result entry could be used in advanced blocking json only.
      */
     private func convertScriptRule(rule: CosmeticRule) throws -> BlockerEntry? {
-        var trigger = BlockerEntry.Trigger(urlFilter: BlockerEntryFactory.URL_FILTER_SCRIPT_RULES);
+        var trigger = BlockerEntry.Trigger(urlFilter: BlockerEntryFactory.URL_FILTER_COSMETIC_RULES);
         var action = BlockerEntry.Action(type: "script", script: rule.content);
 
         setWhiteList(rule: rule, action: &action);
@@ -134,7 +133,7 @@ class BlockerEntryFactory {
     * The result entry could be used in advanced blocking json only.
     */
     private func convertScriptletRule(rule: CosmeticRule) throws -> BlockerEntry? {
-        var trigger = BlockerEntry.Trigger(urlFilter: BlockerEntryFactory.URL_FILTER_SCRIPTLET_RULES);
+        var trigger = BlockerEntry.Trigger(urlFilter: BlockerEntryFactory.URL_FILTER_COSMETIC_RULES);
         var action = BlockerEntry.Action(type: "scriptlet", scriptlet: rule.scriptlet, scriptletParam: rule.scriptletParam);
 
         setWhiteList(rule: rule, action: &action);
@@ -198,7 +197,7 @@ class BlockerEntryFactory {
         }
         
         // In other cases just prepend "any URL" pattern.
-        return BlockerEntryFactory.URL_FILTER_CSS_RULES + pathRegex
+        return BlockerEntryFactory.URL_FILTER_COSMETIC_RULES + pathRegex
     }
 
     /// Builds the "url-filter" property of a Safari content blocking rule.
@@ -284,7 +283,7 @@ class BlockerEntryFactory {
         var rawAdded = false
         if rule.hasContentType(contentType: NetworkRule.ContentType.XMLHTTPREQUEST) {
             // `fetch` resource type is supported since Safari 15
-            if SafariService.current.version.isSafari15orGreater() {
+            if self.version.isSafari15orGreater() {
                 types.append("fetch")
             } else if !rawAdded {
                 rawAdded = true
@@ -294,7 +293,7 @@ class BlockerEntryFactory {
 
         if rule.hasContentType(contentType: NetworkRule.ContentType.OTHER) {
             // `other` resource type is supported since Safari 15
-            if SafariService.current.version.isSafari15orGreater() {
+            if self.version.isSafari15orGreater() {
                 types.append("other")
             } else if !rawAdded {
                 rawAdded = true
@@ -304,7 +303,7 @@ class BlockerEntryFactory {
 
         if rule.hasContentType(contentType: NetworkRule.ContentType.WEBSOCKET) {
             // `websocket` resource type is supported since Safari 15
-            if SafariService.current.version.isSafari15orGreater() {
+            if self.version.isSafari15orGreater() {
                 types.append("websocket")
             } else if !rawAdded {
                 rawAdded = true
@@ -318,7 +317,7 @@ class BlockerEntryFactory {
 
         if rule.hasContentType(contentType: NetworkRule.ContentType.PING) {
             // `ping` resource type is supported since Safari 14
-            if SafariService.current.version.isSafari14orGreater() {
+            if self.version.isSafari14orGreater() {
                 types.append("ping")
             }
         }
@@ -330,7 +329,7 @@ class BlockerEntryFactory {
         }
 
         if !documentAdded && rule.hasContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT) {
-            if !SafariService.current.version.isSafari15orGreater() {
+            if !self.version.isSafari15orGreater() {
                 documentAdded = true
                 types.append("document")
             }
@@ -355,7 +354,7 @@ class BlockerEntryFactory {
         var context = [String]()
 
         // `child-frame` and `top-frame` contexts are supported since Safari 15
-        if SafariService.current.version.isSafari15orGreater() {
+        if self.version.isSafari15orGreater() {
             if rule.hasContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT)
                 && !rule.isContentType(contentType:NetworkRule.ContentType.ALL) {
                 context.append("child-frame")
@@ -370,12 +369,14 @@ class BlockerEntryFactory {
         }
     }
 
+    /// Adds load-type property to the rule if required.
     private func addThirdParty(rule: NetworkRule, trigger: inout BlockerEntry.Trigger) -> Void {
         if (rule.isCheckThirdParty) {
             trigger.loadType = rule.isThirdParty ? ["third-party"] : ["first-party"]
         }
     }
 
+    /// Makes the url-filter case sensitive if required.
     private func addMatchCase(rule: NetworkRule, trigger: inout BlockerEntry.Trigger) -> Void {
         if (rule.isMatchCase) {
             trigger.caseSensitive = true
@@ -412,7 +413,7 @@ class BlockerEntryFactory {
     /// The issue was fixed later in WebKit so we only need it for older Safari versions.
     private func addUnlessDomainForThirdParty(rule: Rule, domains: inout [String]) {
         // TODO(ameshkov): !!! Add a test that checks if this is required.
-        if SafariService.current.version.isSafari16_4orGreater() {
+        if self.version.isSafari16_4orGreater() {
             return
         }
 
@@ -456,7 +457,12 @@ class BlockerEntryFactory {
             rule.permittedDomains.append(ruleDomain.domain)
             try addDomainOptions(rule: rule, trigger: &trigger)
 
-            trigger.urlFilter = BlockerEntryFactory.URL_FILTER_URL_RULES_EXCEPTIONS
+            // Note, that for some domains it is crucial to use `.*` pattern as otherwise
+            // Safari fails to match the page URL.
+            //
+            // Here's the example:
+            // https://github.com/AdguardTeam/AdGuardForSafari/issues/285
+            trigger.urlFilter = BlockerEntryFactory.URL_FILTER_ANY_URL
             trigger.resourceType = nil
         }
     }
@@ -491,7 +497,7 @@ class BlockerEntryFactory {
 
     private func validateUrlBlockingRule(rule: NetworkRule, entry: BlockerEntry) throws -> Void {
         // TODO(ameshkov): !!! Add a test that checks this with an older Safari version.
-        if !SafariService.current.version.isSafari16_4orGreater() &&
+        if !self.version.isSafari16_4orGreater() &&
             rule.hasContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT)
                 && !rule.isContentType(contentType:NetworkRule.ContentType.ALL) {
             if (entry.action.type == "block" &&

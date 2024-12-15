@@ -11,7 +11,9 @@ class RuleFactory {
     }
     
     /// Creates AdGuard rules from the specified lines.
-    func createRules(lines: [String], progress: Progress? = nil) -> [Rule] {
+    ///
+    /// TODO(ameshkov): !!! Change the default value here
+    func createRules(lines: [String], progress: Progress? = nil, for version: SafariVersion = SafariService.current.version) -> [Rule] {
         var shouldContinue: Bool {
             !(progress?.isCancelled ?? false)
         }
@@ -43,7 +45,7 @@ class RuleFactory {
                 guard shouldContinue else { return [] }
 
                 if convertedLine != nil {
-                    guard let rule = safeCreateRule(ruleText: convertedLine!) else { continue }
+                    guard let rule = safeCreateRule(ruleText: convertedLine!, version: version) else { continue }
                     if let networkRule = rule as? NetworkRule {
                         if networkRule.badfilter {
                             badfilterRules[networkRule.urlRuleText, default: []].append(networkRule)
@@ -78,9 +80,9 @@ class RuleFactory {
     }
     
     /// Helper for safely create a rule or increment an errors counter.
-    private func safeCreateRule(ruleText: String) -> Rule? {
+    private func safeCreateRule(ruleText: String, version: SafariVersion) -> Rule? {
         do {
-            return try RuleFactory.createRule(ruleText: ruleText)
+            return try RuleFactory.createRule(ruleText: ruleText, for: version)
         } catch {
             self.errorsCounter.add()
             return nil
@@ -88,7 +90,9 @@ class RuleFactory {
     }
     
     /// Creates an AdGuard rule from the rule text.
-    static func createRule(ruleText: String) throws -> Rule? {
+    ///
+    /// TODO(ameshkov): !!! Change the default value here !!!
+    static func createRule(ruleText: String, for version: SafariVersion = SafariService.current.version) throws -> Rule? {
         do {
             if ruleText.isEmpty || isComment(ruleText: ruleText) {
                 return nil
@@ -99,10 +103,10 @@ class RuleFactory {
             }
             
             if (RuleFactory.isCosmetic(ruleText: ruleText)) {
-                return try CosmeticRule(ruleText: ruleText)
+                return try CosmeticRule(ruleText: ruleText, for: version)
             }
 
-            return try NetworkRule(ruleText: ruleText)
+            return try NetworkRule(ruleText: ruleText, for: version)
         } catch {
             Logger.log("(RuleFactory) - Unexpected error: \(error) while creating rule from: \(String(describing: ruleText))")
             throw error

@@ -14,6 +14,7 @@ final class GeneralTests: XCTestCase {
         return parsedData
     }
 
+    // TODO(ameshkov): !!! Consider using description
     private func encodeJson(item: BlockerEntry) -> String {
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted,.sortedKeys]

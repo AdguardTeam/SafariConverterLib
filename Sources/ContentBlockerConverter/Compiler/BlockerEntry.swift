@@ -6,7 +6,7 @@ import Foundation
 /// https://developer.apple.com/documentation/safariservices/creating-a-content-blocker
 ///
 /// In addition to Safari normal syntax it adds some new fields that are interpreted by a custom extension.
-public struct BlockerEntry : Codable {
+public struct BlockerEntry : Codable, Equatable, CustomStringConvertible {
     public init(trigger: BlockerEntry.Trigger, action: BlockerEntry.Action) {
         self.trigger = trigger
         self.action = action
@@ -20,9 +20,22 @@ public struct BlockerEntry : Codable {
     
     public var trigger: Trigger
     public let action: Action
+
+    public var description: String {
+        let encoder = JSONEncoder()
+
+        encoder.outputFormatting = [.prettyPrinted,.sortedKeys]
+        let json = try? encoder.encode(self)
+        
+        if json == nil {
+            return "{}"
+        }
+
+        return String(data: json!, encoding: .utf8)!
+    }
     
     /// Trigger is the "trigger" field of a content blocking rule, i.e. defines conditions when the rule is applied.
-    public struct Trigger : Codable {
+    public struct Trigger : Codable, Equatable {
         public init(ifDomain: [String]? = nil, urlFilter: String? = nil, unlessDomain: [String]? = nil, shortcut: String? = nil, regex: NSRegularExpression? = nil, loadType: [String]? = nil, resourceType: [String]? = nil, caseSensitive: Bool? = nil, loadContext: [String]? = nil) {
             self.ifDomain = ifDomain
             self.urlFilter = urlFilter
@@ -73,10 +86,23 @@ public struct BlockerEntry : Codable {
         mutating func setUnlessDomain(domains: [String]?) {
             self.unlessDomain = domains;
         }
+        
+        // Custom Equatable implementation
+        public static func == (lhs: Trigger, rhs: Trigger) -> Bool {
+            return lhs.ifDomain == rhs.ifDomain &&
+                lhs.urlFilter == rhs.urlFilter &&
+                lhs.unlessDomain == rhs.unlessDomain &&
+                lhs.shortcut == rhs.shortcut &&
+                lhs.regex?.pattern == rhs.regex?.pattern && // Compare regex patterns
+                lhs.loadType == rhs.loadType &&
+                lhs.resourceType == rhs.resourceType &&
+                lhs.caseSensitive == rhs.caseSensitive &&
+                lhs.loadContext == rhs.loadContext
+        }
     }
     
     /// Action represents an action that this rule applies.
-    public struct Action : Codable {
+    public struct Action : Codable, Equatable {
         public init(type: String, selector: String? = nil, css: String? = nil, script: String? = nil, scriptlet: String? = nil, scriptletParam: String? = nil) {
             self.type = type
             self.selector = selector

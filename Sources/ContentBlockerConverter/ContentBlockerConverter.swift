@@ -30,6 +30,7 @@ public class ContentBlockerConverter {
         safariVersion: SafariVersion = .safari13,
         // TODO: [ameshkov] Remove optimize argument, this logic is not used by anyone and is deprecated.
         optimize: Bool = false,
+        // TODO: [ameshkov] Figure out how advancedBlocking is used now, maybe we don't need it?
         advancedBlocking: Bool = false,
         advancedBlockingFormat: AdvancedBlockingFormat = .json,
         maxJsonSizeBytes: Int? = nil,

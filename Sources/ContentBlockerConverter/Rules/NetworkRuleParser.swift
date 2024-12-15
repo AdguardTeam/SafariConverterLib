@@ -164,8 +164,7 @@ class NetworkRuleParser {
         }
         
         // Check if there's anything else important left in the pattern without domain.
-        let lastChar = utf8.last
-        let patternMatchesPath = endIndex < utf8.endIndex && lastChar != Chars.CARET && lastChar != Chars.SLASH && lastChar != Chars.DOLLAR
+        let patternMatchesPath = endIndex < utf8.endIndex && utf8.distance(from: endIndex, to: utf8.endIndex) > 1
 
         return (domain, patternMatchesPath)
     }

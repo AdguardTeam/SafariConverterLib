@@ -316,8 +316,8 @@ class Compiler {
 
     private static func createWideRule(wideSelectors: [String]) -> BlockerEntry {
         return BlockerEntry(
-                trigger: BlockerEntry.Trigger(urlFilter: BlockerEntryFactory.URL_FILTER_CSS_RULES),
-                action: BlockerEntry.Action(type: "css-display-none", selector: wideSelectors.joined(separator: ", "))
+            trigger: BlockerEntry.Trigger(urlFilter: BlockerEntryFactory.URL_FILTER_COSMETIC_RULES),
+            action: BlockerEntry.Action(type: "css-display-none", selector: wideSelectors.joined(separator: ", "))
         );
     };
 
@@ -337,7 +337,7 @@ class Compiler {
                 cssBlockingDomainSensitive.append(entry);
             } else if (entry.trigger.unlessDomain != nil) {
                 cssBlockingGenericDomainSensitive.append(entry);
-            } else if (entry.action.selector != nil && entry.trigger.urlFilter == BlockerEntryFactory.URL_FILTER_CSS_RULES) {
+            } else if (entry.action.selector != nil && entry.trigger.urlFilter == BlockerEntryFactory.URL_FILTER_COSMETIC_RULES) {
                 wideSelectors.append(entry.action.selector!);
                 if (wideSelectors.count >= Compiler.MAX_SELECTORS_PER_WIDE_RULE) {
                     cssBlockingWide.append(createWideRule(wideSelectors: wideSelectors));

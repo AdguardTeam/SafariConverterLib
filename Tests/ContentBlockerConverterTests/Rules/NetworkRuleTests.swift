@@ -337,6 +337,7 @@ final class NetworkRuleTests: XCTestCase {
             ("@@^", "", false),
             ("@@/", "", false),
             ("example", "example", false),
+            ("test.com/path^", "test.com", true),
             ("example.com", "example.com", false),
             ("||example.com", "example.com", false),
             ("||example.com/path", "example.com", true),
