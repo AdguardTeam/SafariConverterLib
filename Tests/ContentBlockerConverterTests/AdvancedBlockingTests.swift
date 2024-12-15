@@ -296,7 +296,8 @@ final class AdvancedBlockingTests: XCTestCase {
             let compiler = Compiler(
                 optimize: false,
                 advancedBlocking: true,
-                errorsCounter: ErrorsCounter()
+                errorsCounter: ErrorsCounter(),
+                version: SafariVersion.safari13
             )
             let rule = try! CosmeticRule(ruleText: "test.com#$#.banner { top: -9999px!important; }")
             let result = compiler.compileRules(rules: [rule as Rule])
@@ -314,7 +315,8 @@ final class AdvancedBlockingTests: XCTestCase {
         let compiler = Compiler(
             optimize: false,
             advancedBlocking: true,
-            errorsCounter: ErrorsCounter()
+            errorsCounter: ErrorsCounter(),
+            version: SafariVersion.safari13
         );
 
         let rule = try! CosmeticRule(ruleText: "test.com#?#.content:has(> .test_selector)");

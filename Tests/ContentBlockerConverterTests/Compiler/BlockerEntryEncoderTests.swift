@@ -12,7 +12,11 @@ final class BlockerEntryEncoderTests: XCTestCase {
     }
     
     func testSimpleEntry() throws {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: false, errorsCounter: ErrorsCounter())
+        let converter = BlockerEntryFactory(
+            advancedBlockingEnabled: false,
+            errorsCounter: ErrorsCounter(),
+            version: DEFAULT_SAFARI_VERSION
+        )
         let rule = try NetworkRule(ruleText: "||example.com/path$domain=test.com")
 
         let entry = converter.createBlockerEntry(rule: rule)

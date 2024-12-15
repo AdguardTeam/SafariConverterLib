@@ -25,11 +25,6 @@ final class ContentBlockerConverterTests: XCTestCase {
         }
     }
     
-    override func tearDown() {
-        // Restore the default state.
-        SafariService.current.version = DEFAULT_SAFARI_VERSION
-    }
-    
     func testEmpty() {
         var result = converter.convertArray(rules: []);
         

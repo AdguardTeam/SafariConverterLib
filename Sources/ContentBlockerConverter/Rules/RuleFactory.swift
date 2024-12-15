@@ -11,9 +11,7 @@ class RuleFactory {
     }
     
     /// Creates AdGuard rules from the specified lines.
-    ///
-    /// TODO(ameshkov): !!! Change the default value here
-    func createRules(lines: [String], progress: Progress? = nil, for version: SafariVersion = SafariService.current.version) -> [Rule] {
+    func createRules(lines: [String], for version: SafariVersion, progress: Progress? = nil) -> [Rule] {
         var shouldContinue: Bool {
             !(progress?.isCancelled ?? false)
         }
@@ -92,7 +90,7 @@ class RuleFactory {
     /// Creates an AdGuard rule from the rule text.
     ///
     /// TODO(ameshkov): !!! Change the default value here !!!
-    static func createRule(ruleText: String, for version: SafariVersion = SafariService.current.version) throws -> Rule? {
+    static func createRule(ruleText: String, for version: SafariVersion) throws -> Rule? {
         do {
             if ruleText.isEmpty || isComment(ruleText: ruleText) {
                 return nil

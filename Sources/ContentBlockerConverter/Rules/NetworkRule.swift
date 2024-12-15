@@ -47,9 +47,7 @@ class NetworkRule: Rule {
     ///   - ruleText: AdGuard rule text.
     ///   - version: Safari version which will use that rule. Depending on the version some features may be available or not.
     /// - Throws: SyntaxError if any issue with the rule is detected.
-    ///
-    /// TODO(ameshkov): !!! Change default value for version !!!
-    override init(ruleText: String, for version: SafariVersion = SafariService.current.version) throws {
+    override init(ruleText: String, for version: SafariVersion = DEFAULT_SAFARI_VERSION) throws {
         try super.init(ruleText: ruleText)
 
         let ruleParts = try NetworkRuleParser.parseRuleText(ruleText: ruleText)

@@ -646,7 +646,11 @@ final class BlockerEntryFactoryTests: XCTestCase {
     }
 
     func testTldDomains() throws {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter())
+        let converter = BlockerEntryFactory(
+            advancedBlockingEnabled: true,
+            errorsCounter: ErrorsCounter(),
+            version: DEFAULT_SAFARI_VERSION
+        )
         let rule = try CosmeticRule(ruleText: "example.*##.banner")
 
         let result = converter.createBlockerEntry(rule: rule)

@@ -24,14 +24,20 @@ class Compiler {
 
     private let blockerEntryFactory: BlockerEntryFactory
 
+    /// Initializes Safari content blocker compiler.
     init(
             optimize: Bool,
             advancedBlocking: Bool,
-            errorsCounter: ErrorsCounter
+            errorsCounter: ErrorsCounter,
+            version: SafariVersion
     ) {
         self.optimize = optimize
         advancedBlockedEnabled = advancedBlocking
-        blockerEntryFactory = BlockerEntryFactory(advancedBlockingEnabled: advancedBlocking, errorsCounter: errorsCounter)
+        blockerEntryFactory = BlockerEntryFactory(
+            advancedBlockingEnabled: advancedBlocking,
+            errorsCounter: errorsCounter,
+            version: version
+        )
     }
 
     /// Compiles the list of AdGuard rules into an intermediate compilation result object
@@ -321,10 +327,7 @@ class Compiler {
         );
     };
 
-    /**
-     * Compacts wide CSS rules
-     * @param cssBlocking unsorted css elemhide rules
-     */
+    /// Tries to compress CSS rules by combining generic rules into a single rule.
     static func compactCssRules(cssBlocking: [BlockerEntry]) -> CompactCssRulesData {
         var cssBlockingWide = [BlockerEntry]();
         var cssBlockingDomainSensitive = [BlockerEntry]();

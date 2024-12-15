@@ -53,9 +53,7 @@ class BlockerEntryFactory {
     ///   - advancedBlockingEnabled: if true, advanced rules (the ones interpreted by WebExtension) are also converted.
     ///   - errorsCounter: object where we count the total number of conversion errors though the whole conversion process.
     ///   - version: version of Safari for which the rules are being built.
-    ///
-    /// TODO(ameshkov): !!! Change default value for version !!!
-    init(advancedBlockingEnabled: Bool, errorsCounter: ErrorsCounter, version: SafariVersion = SafariService.current.version) {
+    init(advancedBlockingEnabled: Bool, errorsCounter: ErrorsCounter, version: SafariVersion) {
         self.advancedBlockingEnabled = advancedBlockingEnabled
         self.errorsCounter = errorsCounter
         self.version = version

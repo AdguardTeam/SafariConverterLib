@@ -40,8 +40,6 @@ public class ContentBlockerConverter {
             !(progress?.isCancelled ?? false)
         }
 
-        SafariService.current.version = safariVersion
-
         let rulesLimit = safariVersion.rulesLimit
 
         if rules.count == 0 || (rules.count == 1 && rules[0].isEmpty) {
@@ -56,24 +54,26 @@ public class ContentBlockerConverter {
             return ConversionResult.createEmptyResult()
         }
         
-        let parsedRules = RuleFactory(errorsCounter: errorsCounter).createRules(lines: rules, progress: progress)
+        let ruleFactory = RuleFactory(errorsCounter: errorsCounter)
+        let parsedRules = ruleFactory.createRules(lines: rules, for: safariVersion, progress: progress)
         
         let advancedBlockingJson = advancedBlocking && advancedBlockingFormat == AdvancedBlockingFormat.json
-        
+
         let compiler = Compiler(
             optimize: optimize,
             advancedBlocking: advancedBlockingJson,
-            errorsCounter: errorsCounter
+            errorsCounter: errorsCounter,
+            version: safariVersion
         )
-        
+
         var compilationResult: CompilationResult
         var advancedRulesTexts: String? = nil
-        
+
         guard shouldContinue else {
             Logger.log("(ContentBlockerConverter) - Cancelled before advanced converting")
             return ConversionResult.createEmptyResult()
         }
-        
+
         if advancedBlocking && advancedBlockingFormat == .txt {
             let vettedRules = vetRules(parsedRules)
             let advancedRules = vettedRules.advancedRules
