@@ -17,6 +17,8 @@ final class SimpleRegexTests: XCTestCase {
             ("экзампл.org", "", true),
             ("test", "test", false),
             ("//test.png", "\\/\\/test\\.png", false),
+            ("|test.png", "^test\\.png", false),
+            ("test.png|", "test\\.png$", false)
         ]
         
         for (pattern, expectedRegex, expectedError) in testPatterns {

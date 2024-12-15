@@ -178,7 +178,6 @@ final class NetworkRuleTests: XCTestCase {
             TestCase(
                 ruleText: "||example.org\\$smth",
                 expectedUrlRuleText: "||example.org\\$smth",
-                // TODO(ameshkov): !!! Fix in SimpleRegex: this is a mistake, $ is escaped in the pattern, should've been "\\$smth""
                 expectedUrlRegExpSource: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org\\\\\\$smth"),
             TestCase(
                 ruleText: "||example.org^$domain=example.org|~sub.example.org",

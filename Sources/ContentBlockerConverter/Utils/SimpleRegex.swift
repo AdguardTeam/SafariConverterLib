@@ -15,7 +15,7 @@ class SimpleRegex {
     private static let regexAnySymbolChars = Array(".*".utf8)
     private static let regexStartString = Array("^".utf8)
     private static let regexEndString = Array("$".utf8)
-
+    
     /// Improved regular expression instead of UrlFilterRule.REGEXP_START_URL (||).
     ///
     /// Please note, that this regular expression matches only ONE level of subdomains.
@@ -25,27 +25,6 @@ class SimpleRegex {
     /// Simplified separator (to fix an issue with $ restriction - it can be only in the end of regexp).
     private static let regexEndSeparator = Array("([\\/:&\\?].*)?$".utf8)
     private static let regexSeparator = Array("[/:&?]?".utf8)
-
-    /// Characters to be escaped in the regular expressions.
-    ///
-    /// Source:
-    /// https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/regexp
-    ///
-    /// '\*', '|', '^' are processed differently.
-    private static let CHARS_TO_ESCAPE = [
-        UInt8(ascii: "."),
-        UInt8(ascii: "+"),
-        UInt8(ascii: "?"),
-        UInt8(ascii: "$"),
-        UInt8(ascii: "{"),
-        UInt8(ascii: "}"),
-        UInt8(ascii: "("),
-        UInt8(ascii: ")"),
-        UInt8(ascii: "["),
-        UInt8(ascii: "]"),
-        UInt8(ascii: "/"),
-        UInt8(ascii: "\\"),
-    ]
     
     /// Creates a regular expression from a network rule pattern.
     ///
@@ -60,54 +39,76 @@ class SimpleRegex {
             pattern == maskAnySymbol) {
             return regexAnySymbol
         }
-
+        
         var resultChars = [UInt8]()
-
-        let maxIndex = pattern.utf8.count - 1
-        var i = 0
-        while i <= maxIndex {
-            let char = pattern.utf8[safeIndex: i]!
+        let utf8 = pattern.utf8
+        var currentIndex = utf8.startIndex
+        
+        @inline(__always) func peekNext() -> UInt8? {
+            let next = utf8.index(after: currentIndex)
+            guard next < utf8.endIndex else { return nil }
+            return utf8[next]
+        }
+        
+        while currentIndex < utf8.endIndex {
+            let char = utf8[currentIndex]
             
-            if CHARS_TO_ESCAPE.contains(char) {
+            switch char {
+            case UInt8(ascii: "."), UInt8(ascii: "+"), UInt8(ascii: "?"), UInt8(ascii: "$"),
+                UInt8(ascii: "{"), UInt8(ascii: "}"), UInt8(ascii: "("), UInt8(ascii: ")"),
+                UInt8(ascii: "["), UInt8(ascii: "]"), UInt8(ascii: "/"), UInt8(ascii: "\\"):
+
+                // Processing characters to be escaped in the regular expressions.
+                //
+                // Source for the characters:
+                // https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/regexp
+                //
+                // '\*', '|', '^', and `$` are processed differently.
                 resultChars.append(Chars.BACKSLASH)
                 resultChars.append(char)
-            } else {
-                switch char {
-                case Chars.PIPE:
-                    if i == 0 {
-                        let nextChar = pattern.utf8[safeIndex: i+1]
-                        if nextChar == Chars.PIPE {
-                            resultChars.append(contentsOf: regexStartUrl)
-                            i += 1 // increment i as we processed next char already
-                        } else {
-                            resultChars.append(contentsOf: regexStartString)
-                        }
-                    } else if i == maxIndex {
-                        resultChars.append(contentsOf: regexEndString)
+            case Chars.PIPE:
+                let nextChar = peekNext()
+                
+                if currentIndex == utf8.startIndex {
+                    if nextChar == Chars.PIPE {
+                        // This is a start URL mask: `||`
+                        resultChars.append(contentsOf: regexStartUrl)
+                        
+                        // Increment index since we already processed next char.
+                        currentIndex = utf8.index(after: currentIndex)
                     } else {
-                        resultChars.append(Chars.BACKSLASH)
-                        resultChars.append(char)
+                        // This is a string string mask.
+                        resultChars.append(contentsOf: regexStartString)
                     }
-                case Chars.CARET:
-                    if i == maxIndex {
-                        resultChars.append(contentsOf: regexEndSeparator)
-                    } else {
-                        resultChars.append(contentsOf: regexSeparator)
-                    }
-                case Chars.WILDCARD:
-                    resultChars.append(contentsOf: regexAnySymbolChars)
-                default:
-                    if char > 127 {
-                        throw SyntaxError.invalidPattern(message: "Non ASCII characters are not supported")
-                    }
-
+                } else if nextChar == nil {
+                    // This is the end of string so this is an end of URL mask.
+                    resultChars.append(contentsOf: regexEndString)
+                } else {
+                    // In other cases we just excape `|`.
+                    resultChars.append(Chars.BACKSLASH)
                     resultChars.append(char)
                 }
+            case Chars.CARET:
+                let nextChar = peekNext()
+                
+                if nextChar == nil {
+                    resultChars.append(contentsOf: regexEndSeparator)
+                } else {
+                    resultChars.append(contentsOf: regexSeparator)
+                }
+            case Chars.WILDCARD:
+                resultChars.append(contentsOf: regexAnySymbolChars)
+            default:
+                if char > 127 {
+                    throw SyntaxError.invalidPattern(message: "Non ASCII characters are not supported")
+                }
+                
+                resultChars.append(char)
             }
             
-            i += 1
+            currentIndex = utf8.index(after: currentIndex)
         }
-
+        
         return String(decoding: resultChars, as: UTF8.self)
     }
 }
