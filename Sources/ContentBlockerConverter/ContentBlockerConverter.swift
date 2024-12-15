@@ -74,6 +74,7 @@ public class ContentBlockerConverter {
             return ConversionResult.createEmptyResult()
         }
 
+        // TODO: [ameshkov]: The correct way would be to move this logic to Compiler.
         if advancedBlocking && advancedBlockingFormat == .txt {
             let vettedRules = vetRules(parsedRules)
             let advancedRules = vettedRules.advancedRules
