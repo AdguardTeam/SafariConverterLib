@@ -58,6 +58,7 @@ class Compiler {
         var scriptletsExceptions = [BlockerEntry]()
         var cosmeticCssExceptions = [BlockerEntry]()
 
+        // A list of domains disabled by $specifichide rules.
         var specifichideExceptionDomains = [String]()
 
         var compilationResult = CompilationResult()
@@ -65,6 +66,21 @@ class Compiler {
 
         for rule in rules {
             guard shouldContinue else { return CompilationResult() }
+            
+            if rule is NetworkRule {
+                let networkRule = rule as! NetworkRule
+
+                if networkRule.isSingleOption(option: .specifichide) {
+                    let res = NetworkRuleParser.extractDomain(pattern: networkRule.urlRuleText)
+                    if res.domain != "" {
+                        // Prepend wildcard as we'll be excluding wildcard domains.
+                        specifichideExceptionDomains.append("*" + res.domain)
+                        
+                        // There's no need to convert $specifichide rule.
+                        continue
+                    }
+                }
+            }
 
             guard let item = blockerEntryFactory.createBlockerEntry(rule: rule) else { continue }
 
@@ -93,12 +109,6 @@ class Compiler {
                     cssExceptions.append(item)
                 } else if item.action.css != nil && item.action.css! != "" {
                     cosmeticCssExceptions.append(item)
-                } else if (rule as! NetworkRule).isSingleOption(option: .specifichide) {
-                    let res = NetworkRuleParser.extractDomain(pattern: (rule as! NetworkRule).urlRuleText)
-                    if res.domain != "" {
-                        // Prepend wildcard as these domains will then be evaluated against
-                        specifichideExceptionDomains.append("*" + res.domain)
-                    }
                 } else {
                     compilationResult.addIgnorePreviousTypedEntry(entry: item, source: rule)
                 }
@@ -108,18 +118,33 @@ class Compiler {
         guard shouldContinue else { return CompilationResult() }
 
         // Applying CSS exceptions
-        cssBlocking = Compiler.applyActionExceptions(blockingItems: &cssBlocking, exceptions: cssExceptions, actionValue: "selector")
+        cssBlocking = Compiler.applyActionExceptions(
+            blockingItems: &cssBlocking,
+            exceptions: cssExceptions,
+            actionValue: "selector"
+        )
+
+        // Compacting cosmetic rules.
         let cssCompact = Compiler.compactCssRules(cssBlocking: cssBlocking)
         if !optimize {
             compilationResult.cssBlockingWide = cssCompact.cssBlockingWide
         }
-        compilationResult.cssBlockingGenericDomainSensitive = Compiler.compactDomainCssRules(entries: cssCompact.cssBlockingGenericDomainSensitive, useUnlessDomain: true)
-        compilationResult.cssBlockingDomainSensitive = Compiler.compactDomainCssRules(entries: cssCompact.cssBlockingDomainSensitive)
+
+        compilationResult.cssBlockingGenericDomainSensitive = Compiler.compactDomainCssRules(
+            entries: cssCompact.cssBlockingGenericDomainSensitive,
+            useUnlessDomain: true
+        )
+
+        compilationResult.cssBlockingDomainSensitive = Compiler.compactDomainCssRules(
+            entries: cssCompact.cssBlockingDomainSensitive
+        )
 
         guard shouldContinue else { return CompilationResult() }
 
         // Apply specifichide exceptions
-        compilationResult.cssBlockingDomainSensitive = Compiler.applySpecifichide(blockingItems: &compilationResult.cssBlockingDomainSensitive, specifichideExceptions: specifichideExceptionDomains)
+        compilationResult.cssBlockingDomainSensitive = Compiler.applySpecifichide(
+            blockingItems: &compilationResult.cssBlockingDomainSensitive,
+            specifichideExceptions: specifichideExceptionDomains)
 
         guard shouldContinue else { return CompilationResult() }
 
@@ -236,12 +261,15 @@ class Compiler {
         }
     }
 
-    /**
-     * Applies specifichide exceptions
-     */
-    private static func applySpecifichide(blockingItems: inout [BlockerEntry], specifichideExceptions: [String]) -> [BlockerEntry] {
+    /// Applies $specifichide exceptions by removing the domain from other rules' `if-domain`.
+    ///
+    /// TODO: [ameshkov]: The algorithm is very ineffective, reconsider later.
+    private static func applySpecifichide(
+        blockingItems: inout [BlockerEntry],
+        specifichideExceptions: [String]
+    ) -> [BlockerEntry] {
         for index in 0..<blockingItems.count {
-            var item = blockingItems[index];
+            var item = blockingItems[index]
 
             for exception in specifichideExceptions {
                 if (item.trigger.ifDomain?.contains(exception) != nil) {
@@ -267,53 +295,55 @@ class Compiler {
         return result;
     }
 
-    /**
-     * Applies exceptions
-     */
-    static func applyActionExceptions(blockingItems: inout [BlockerEntry], exceptions: [BlockerEntry], actionValue: String) -> [BlockerEntry] {
-        var exceptionsDictionary = [String: [BlockerEntry]]();
+    /// Applies cosmetic exceptions by modifying `if-domain` of the rules.
+    static func applyActionExceptions(
+        blockingItems: inout [BlockerEntry],
+        exceptions: [BlockerEntry],
+        actionValue: String
+    ) -> [BlockerEntry] {
+        var exceptionsDictionary = [String: [BlockerEntry]]()
         for exc in exceptions {
-            let key = Compiler.getActionValue(entry: exc, action: actionValue);
+            let key = Compiler.getActionValue(entry: exc, action: actionValue)
             if (key == nil) {
-                continue;
+                continue
             }
 
-            var current = exceptionsDictionary[key!];
+            var current = exceptionsDictionary[key!]
             if (current == nil) {
-                current = [BlockerEntry]();
+                current = [BlockerEntry]()
             }
 
-            current!.append(exc);
-            exceptionsDictionary.updateValue(current!, forKey: key!);
+            current!.append(exc)
+            exceptionsDictionary.updateValue(current!, forKey: key!)
         }
 
         for index in 0..<blockingItems.count {
-            let key = Compiler.getActionValue(entry: blockingItems[index], action: actionValue);
+            let key = Compiler.getActionValue(entry: blockingItems[index], action: actionValue)
             if (key == nil) {
-                continue;
+                continue
             }
 
-            let matchingExceptions = exceptionsDictionary[key!];
+            let matchingExceptions = exceptionsDictionary[key!]
             if (matchingExceptions == nil) {
-                continue;
+                continue
             }
 
             for exc in matchingExceptions! {
-                Compiler.applyExceptionDomains(exceptionTrigger: exc.trigger, ruleTrigger: &blockingItems[index].trigger);
+                Compiler.applyExceptionDomains(exceptionTrigger: exc.trigger, ruleTrigger: &blockingItems[index].trigger)
             }
         }
 
-        var result = [BlockerEntry]();
+        var result = [BlockerEntry]()
 
         for r in blockingItems {
             // skip cosmetic entries, that has been disabled by exclusion rules
             if ((r.trigger.ifDomain?.count == 0 && r.trigger.unlessDomain == nil) || (r.trigger.unlessDomain?.count == 0 && r.trigger.ifDomain == nil) && self.COSMETIC_ACTIONS.contains(r.action.type)) {
-                continue;
+                continue
             }
 
             if (r.trigger.ifDomain == nil || r.trigger.ifDomain?.count == 0 ||
                     r.trigger.unlessDomain == nil || r.trigger.unlessDomain?.count == 0) {
-                result.append(r);
+                result.append(r)
             }
         }
 

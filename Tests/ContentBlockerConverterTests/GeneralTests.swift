@@ -14,15 +14,6 @@ final class GeneralTests: XCTestCase {
         return parsedData
     }
 
-    // TODO(ameshkov): !!! Consider using description
-    private func encodeJson(item: BlockerEntry) -> String {
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = [.prettyPrinted,.sortedKeys]
-
-        let json = try! encoder.encode(item)
-        return String(data: json, encoding: .utf8)!.replacingOccurrences(of: "\\/", with: "/")
-    }
-
     let rules = [
         "||pics.rbc.ru/js/swf",
         "||tardangro.com^$third-party",
@@ -305,8 +296,9 @@ final class GeneralTests: XCTestCase {
 
         for (index, expectedEntry) in correct.enumerated() {
             let correspondingDecoded = decoded[index]
-            let resultJson = encodeJson(item: correspondingDecoded)
-            let expectedJson = encodeJson(item: expectedEntry)
+            let resultJson = String(describing: correspondingDecoded)
+            let expectedJson = String(describing: expectedEntry)
+
             XCTAssertEqual(resultJson, expectedJson)
         }
     }

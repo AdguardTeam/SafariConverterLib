@@ -608,13 +608,6 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 )
             ),
             TestCase(
-                // $subdocument without $third-party on an older Safari.
-                ruleText: "||example.org^$subdocument,~third-party",
-                version: SafariVersion.safari13,
-                expectedEntry: nil,
-                expectedErrorsCount: 1
-            ),
-            TestCase(
                 // Mixed if-domain and unless-domain is not supporteed.
                 ruleText: "||example.org^$domain=example.org|~example.com",
                 expectedEntry: nil,

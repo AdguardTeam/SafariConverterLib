@@ -93,11 +93,13 @@ public class ContentBlockerConverter {
         Logger.log("(ContentBlockerConverter) - Compilation result: " + message)
         compilationResult.message = message
         
-        var conversionResult = Distributor(
+        let distributor = Distributor(
             limit: rulesLimit,
             advancedBlocking: advancedBlockingJson,
             maxJsonSizeBytes: maxJsonSizeBytes
-        ).createConversionResult(data: compilationResult)
+        )
+        
+        var conversionResult = distributor.createConversionResult(data: compilationResult)
         
         conversionResult.advancedBlockingText = advancedRulesTexts
         

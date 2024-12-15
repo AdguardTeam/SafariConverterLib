@@ -245,9 +245,7 @@ class RuleConverter {
             // We can only support simple case like this: $denyallow=x.com,domain=y.com,
             // i.e. the rule that targets path (not domain) and it must have both
             // denyallow and domain modifier.
-
-            // TODO(ameshkov): !!! Why don't we support ||example.org^$denyallow=x.com,domain=y.com
-            
+           
             return nil
         }
 

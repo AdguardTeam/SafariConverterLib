@@ -80,24 +80,24 @@ struct CompilationResult {
         if (source is NetworkRule) {
             let networkRule = source as! NetworkRule;
             if (networkRule.isSingleOption(option: .generichide)) {
-                cssBlockingGenericHideExceptions.append(entry);
-                return;
+                cssBlockingGenericHideExceptions.append(entry)
+                return
             } else if (networkRule.isSingleOption(option: .elemhide)) {
                 cssElemhide.append(entry);
-                return;
+                return
             } else if (networkRule.isSingleOption(option: .jsinject)) {
                 scriptJsInjectExceptions.append(entry);
-                return;
+                return
             }
         }
 
-        // Other exceptions.
+        // Other exceptions
         if (source.isImportant) {
-            importantExceptions.append(entry);
+            importantExceptions.append(entry)
         } else if (source.isDocumentWhiteList) {
-            documentExceptions.append(entry);
+            documentExceptions.append(entry)
         } else {
-            other.append(entry);
+            other.append(entry)
         }
     }
 }

@@ -141,3 +141,5 @@ TODO(ameshkov): !!! Explain how important it is to use contigious UTF-8 strings
 
 $generichide == $elemhide ???
 $genericblock == $urlblock, i.e. unblocks everything?
+Why don't we support ||example.org^$denyallow=x.com,domain=y.com
+Does not support $elemhide,urlblock

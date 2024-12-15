@@ -169,23 +169,23 @@ final class AdvancedBlockingTests: XCTestCase {
         let result = converter.convertArray(rules: [
             "ksl.com#?#.queue:-abp-has(.sponsored)",
             "@@||ksl.com^$document"
-        ], advancedBlocking: true);
+        ], advancedBlocking: true)
 
         XCTAssertEqual(result.convertedCount, 1);
         XCTAssertEqual(result.errorsCount, 0);
         XCTAssertEqual(result.advancedBlockingConvertedCount, 2);
 
-        let decoded = try! parseJsonString(json: result.advancedBlocking!);
-        XCTAssertEqual(decoded.count, 2);
-        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
-        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*ksl.com"]);
-        XCTAssertEqual(decoded[0].action.type, "css-extended");
-        XCTAssertEqual(decoded[0].action.css, ".queue:-abp-has(.sponsored)");
+        let decoded = try! parseJsonString(json: result.advancedBlocking!)
+        XCTAssertEqual(decoded.count, 2)
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*")
+        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*ksl.com"])
+        XCTAssertEqual(decoded[0].action.type, "css-extended")
+        XCTAssertEqual(decoded[0].action.css, ".queue:-abp-has(.sponsored)")
 
-        XCTAssertEqual(decoded[1].trigger.urlFilter, ".*");
-        XCTAssertEqual(decoded[1].trigger.ifDomain, ["*ksl.com"]);
-        XCTAssertEqual(decoded[1].action.type, "ignore-previous-rules");
-        XCTAssertEqual(decoded[1].action.css, nil);
+        XCTAssertEqual(decoded[1].trigger.urlFilter, ".*")
+        XCTAssertEqual(decoded[1].trigger.ifDomain, ["*ksl.com"])
+        XCTAssertEqual(decoded[1].action.type, "ignore-previous-rules")
+        XCTAssertEqual(decoded[1].action.css, nil)
     }
 
     func testCosmeticCssRules() {
