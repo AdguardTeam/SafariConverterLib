@@ -324,7 +324,6 @@ final class BlockerEntryFactoryTests: XCTestCase {
             TestCase(
                 // Whitelist element hiding rule.
                 // IMPORTANT: This is not a valid rule yet, it will be interpreted later by the compiler.
-                // TODO(ameshkov): !!! Check that there are tests for that.
                 ruleText: "example.org#@#.banner",
                 expectedEntry: BlockerEntry(
                     trigger: BlockerEntry.Trigger(

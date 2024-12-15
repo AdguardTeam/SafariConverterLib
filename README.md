@@ -140,6 +140,9 @@ TODO(ameshkov): !!! Rework documentation
 
 Explain how important it is to use contigious UTF-8 strings
 
+Test using this:
+https://github.com/ameshkov/safari-blocker
+
 $generichide == $elemhide ???
 $genericblock == $urlblock, i.e. unblocks everything?
 Why don't we support ||example.org^$denyallow=x.com,domain=y.com

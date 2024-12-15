@@ -11,7 +11,7 @@ final class ContentBlockerConverterTests: XCTestCase {
     let converter = ContentBlockerConverter();
     
     func parseJsonString(json: String) throws -> [BlockerEntry] {
-        let data = json.data(using: String.Encoding.utf8, allowLossyConversion: false)!
+        let data = json.data(using: String.Encoding.utf8)!
         
         let decoder = JSONDecoder();
         let parsedData = try decoder.decode([BlockerEntry].self, from: data);
@@ -25,382 +25,591 @@ final class ContentBlockerConverterTests: XCTestCase {
         }
     }
     
-    func testEmpty() {
-        var result = converter.convertArray(rules: []);
+    /// Helper function that checks if the specified json matches the expected one.
+    private func assertContentBlockerJSON(_ json: String, _ expected: String, _ msg: String) {
+        if expected == "" && json == "" {
+            XCTAssertEqual(json, expected)
+        }
         
-        XCTAssertEqual(result.totalConvertedCount, 0);
-        XCTAssertEqual(result.convertedCount, 0);
-        XCTAssertEqual(result.errorsCount, 0);
-        XCTAssertEqual(result.overLimit, false);
-        XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON);
+        let expectedRules = try! parseJsonString(json: expected)
+        let actualRules = try! parseJsonString(json: json)
         
-        result = converter.convertArray(rules: [""]);
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted,.sortedKeys]
         
-        XCTAssertEqual(result.totalConvertedCount, 0);
-        XCTAssertEqual(result.convertedCount, 0);
-        XCTAssertEqual(result.errorsCount, 0);
-        XCTAssertEqual(result.overLimit, false);
-        XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON);
+        let expectedRulesJSON = String(data: try! encoder.encode(expectedRules), encoding: .utf8)!
+        let actualRulesJSON = String(data: try! encoder.encode(actualRules), encoding: .utf8)!
+        
+        XCTAssertEqual(expectedRulesJSON, actualRulesJSON, msg)
     }
     
-    func testConvertComment() {
-        let result = converter.convertArray(rules: ["! this is a comment"]);
-        
-        XCTAssertEqual(result.totalConvertedCount, 0);
-        XCTAssertEqual(result.convertedCount, 0);
-        XCTAssertEqual(result.errorsCount, 0);
-        XCTAssertEqual(result.overLimit, false);
-        XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON);
-    }
-    
-    func testConvertNetworkRule() {
-        let result = converter.convertArray(rules: ["127.0.0.1$network"]);
-        
-        XCTAssertEqual(result.totalConvertedCount, 0);
-        XCTAssertEqual(result.convertedCount, 0);
-        // XCTAssertEqual(result.errorsCount, 1);
-        XCTAssertEqual(result.overLimit, false);
-        XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON);
-    }
-    
-    func testPopupRules() {
-        var ruleText = [
-            "||example1.com$document",
-            "||example2.com$document,popup",
-            "||example5.com$popup,document",
+    // TODO: [ameshkov]: Most of the tests here should be replaced with testConverterBasicRules.
+    func testConverterBasicRules() {
+        struct TestCase {
+            let rules: [String]
+            let expectedConverted: String
+            var version: SafariVersion = DEFAULT_SAFARI_VERSION
+            var expectedTotalConvertedCount = 0
+            var expectedConvertedCount = 0
+            var expectedErrorsCount = 0
+        }
+
+        let testCases: [TestCase] = [
+            TestCase(
+                rules: [],
+                expectedConverted: ConversionResult.EMPTY_RESULT_JSON
+            ),
+            TestCase(
+                rules: [""],
+                expectedConverted: ConversionResult.EMPTY_RESULT_JSON
+            ),
+            TestCase(
+                rules: ["! just a comment"],
+                expectedConverted: ConversionResult.EMPTY_RESULT_JSON
+            ),
+            TestCase(
+                rules: [
+                    "||example1.com$document",
+                    "||example2.com$document,popup",
+                    "||example5.com$popup,document"
+                ],
+                expectedConverted: #"""
+                                   [
+                                     {
+                                       "action" : {
+                                         "type" : "block"
+                                       },
+                                       "trigger" : {
+                                         "resource-type" : [
+                                           "document"
+                                         ],
+                                         "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example1\\.com"
+                                       }
+                                     },
+                                     {
+                                       "action" : {
+                                         "type" : "block"
+                                       },
+                                       "trigger" : {
+                                         "resource-type" : [
+                                           "document"
+                                         ],
+                                         "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example2\\.com"
+                                       }
+                                     },
+                                     {
+                                       "action" : {
+                                         "type" : "block"
+                                       },
+                                       "trigger" : {
+                                         "resource-type" : [
+                                           "document"
+                                         ],
+                                         "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example5\\.com"
+                                       }
+                                     }
+                                   ]
+                                   """#,
+                expectedTotalConvertedCount: 3,
+                expectedConvertedCount: 3,
+                expectedErrorsCount: 0
+            ),
+            TestCase(
+                rules: ["||getsecuredfiles.com^$popup,third-party"],
+                expectedConverted: #"""
+                                    [
+                                      {
+                                        "action" : {
+                                          "type" : "block"
+                                        },
+                                        "trigger" : {
+                                          "load-type" : [
+                                            "third-party"
+                                          ],
+                                          "resource-type" : [
+                                            "document"
+                                          ],
+                                          "unless-domain" : [
+                                            "*getsecuredfiles.com"
+                                          ],
+                                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?getsecuredfiles\\.com([\\\/:&\\?].*)?$"
+                                        }
+                                      }
+                                    ]
+                                    """#,
+                expectedTotalConvertedCount: 1,
+                expectedConvertedCount: 1
+            ),
+            TestCase(
+                // Single invalid rule.
+                rules: ["|127.0.0.1^$network"],
+                expectedConverted: ConversionResult.EMPTY_RESULT_JSON,
+                expectedErrorsCount: 1
+            ),
+            TestCase(
+                rules: ["@@||adriver.ru^$~third-party"],
+                expectedConverted: #"""
+                                    [
+                                      {
+                                        "action" : {
+                                          "type" : "ignore-previous-rules"
+                                        },
+                                        "trigger" : {
+                                          "load-type" : [
+                                            "first-party"
+                                          ],
+                                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?adriver\\.ru([\\\/:&\\?].*)?$"
+                                        }
+                                      }
+                                    ]
+                                    """#,
+                expectedTotalConvertedCount: 1,
+                expectedConvertedCount: 1
+            ),
+            TestCase(
+                // $websocket conversion for old Safari versions.
+                rules: ["||test.com^$websocket"],
+                expectedConverted: #"""
+                                    [
+                                      {
+                                        "action" : {
+                                          "type" : "block"
+                                        },
+                                        "trigger" : {
+                                          "resource-type" : [
+                                            "raw"
+                                          ],
+                                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                                        }
+                                      }
+                                    ]
+                                    """#,
+                version: SafariVersion.safari13,
+                expectedTotalConvertedCount: 1,
+                expectedConvertedCount: 1
+            ),
+            TestCase(
+                // $websocket conversion for old Safari versions.
+                rules: ["$websocket,domain=123movies.is"],
+                expectedConverted: #"""
+                                    [
+                                      {
+                                        "action" : {
+                                          "type" : "block"
+                                        },
+                                        "trigger" : {
+                                          "if-domain" : [
+                                            "*123movies.is"
+                                          ],
+                                          "resource-type" : [
+                                            "raw"
+                                          ],
+                                          "url-filter" : "^wss?:\\\/\\\/"
+                                        }
+                                      }
+                                    ]
+                                    """#,
+                version: SafariVersion.safari13,
+                expectedTotalConvertedCount: 1,
+                expectedConvertedCount: 1
+            ),
+            TestCase(
+                // $websocket conversion for old Safari versions.
+                rules: [".rocks^$third-party,websocket"],
+                expectedConverted: #"""
+                                    [
+                                      {
+                                        "action" : {
+                                          "type" : "block"
+                                        },
+                                        "trigger" : {
+                                          "load-type" : [
+                                            "third-party"
+                                          ],
+                                          "resource-type" : [
+                                            "raw"
+                                          ],
+                                          "url-filter" : "^wss?:\\\/\\\/.*\\.rocks([\\\/:&\\?].*)?$"
+                                        }
+                                      }
+                                    ]
+                                    """#,
+                version: SafariVersion.safari13,
+                expectedTotalConvertedCount: 1,
+                expectedConvertedCount: 1
+            ),
+            TestCase(
+                // $websocket conversion for Safari 15+.
+                rules: ["||test.com^$websocket"],
+                expectedConverted: #"""
+                                    [
+                                      {
+                                        "action" : {
+                                          "type" : "block"
+                                        },
+                                        "trigger" : {
+                                          "resource-type" : [
+                                            "websocket"
+                                          ],
+                                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                                        }
+                                      }
+                                    ]
+                                    """#,
+                version: SafariVersion.safari15,
+                expectedTotalConvertedCount: 1,
+                expectedConvertedCount: 1
+            ),
+            TestCase(
+                // $~websocket conversion for Safari 15+.
+                rules: ["||test.com^$~websocket,domain=example.org"],
+                expectedConverted: #"""
+                                    [
+                                      {
+                                        "action" : {
+                                          "type" : "block"
+                                        },
+                                        "trigger" : {
+                                          "if-domain" : [
+                                            "*example.org"
+                                          ],
+                                          "resource-type" : [
+                                            "image",
+                                            "style-sheet",
+                                            "script",
+                                            "media",
+                                            "fetch",
+                                            "other",
+                                            "font",
+                                            "ping",
+                                            "document"
+                                          ],
+                                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                                        }
+                                      }
+                                    ]
+                                    """#,
+                version: SafariVersion.safari15,
+                expectedTotalConvertedCount: 1,
+                expectedConvertedCount: 1
+            ),
+            TestCase(
+                // $~script conversion for older Safari versions.
+                rules: ["||test.com^$~script,domain=example.com"],
+                expectedConverted: #"""
+                                    [
+                                      {
+                                        "action" : {
+                                          "type" : "block"
+                                        },
+                                        "trigger" : {
+                                          "if-domain" : [
+                                            "*example.com"
+                                          ],
+                                          "resource-type" : [
+                                            "image",
+                                            "style-sheet",
+                                            "media",
+                                            "raw",
+                                            "font",
+                                            "document"
+                                          ],
+                                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                                        }
+                                      }
+                                    ]
+                                    """#,
+                version: SafariVersion.safari13,
+                expectedTotalConvertedCount: 1,
+                expectedConvertedCount: 1
+            ),
+            TestCase(
+                // $~script conversion for newer Safari versions.
+                rules: ["||test.com^$~script,domain=example.com"],
+                expectedConverted: #"""
+                                    [
+                                      {
+                                        "action" : {
+                                          "type" : "block"
+                                        },
+                                        "trigger" : {
+                                          "if-domain" : [
+                                            "*example.com"
+                                          ],
+                                          "resource-type" : [
+                                            "image",
+                                            "style-sheet",
+                                            "media",
+                                            "fetch",
+                                            "other",
+                                            "websocket",
+                                            "font",
+                                            "ping",
+                                            "document"
+                                          ],
+                                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                                        }
+                                      }
+                                    ]
+                                    """#,
+                version: SafariVersion.safari16_4,
+                expectedTotalConvertedCount: 1,
+                expectedConvertedCount: 1
+            ),
+            TestCase(
+                // $subdocument without $third-party forbidden for old Safari versions.
+                rules: ["||test.com^$subdocument,~third-party"],
+                expectedConverted: ConversionResult.EMPTY_RESULT_JSON,
+                expectedErrorsCount: 1
+            ),
+            TestCase(
+                // $subdocument with $domain is allowed for old Safari versions.
+                rules: ["||test.com^$subdocument,domain=example.com"],
+                expectedConverted: #"""
+                                   [
+                                     {
+                                       "action" : {
+                                         "type" : "block"
+                                       },
+                                       "trigger" : {
+                                         "if-domain" : [
+                                           "*example.com"
+                                         ],
+                                         "resource-type" : [
+                                           "document"
+                                         ],
+                                         "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                                       }
+                                     }
+                                   ]
+                                   """#,
+                version: SafariVersion.safari13,
+                expectedTotalConvertedCount: 1,
+                expectedConvertedCount: 1
+            ),
+            TestCase(
+                // $subdocument,first-party is allowed in newer Safari versions
+                rules: ["||test.com^$subdocument,1p"],
+                expectedConverted: #"""
+                                    [
+                                      {
+                                        "action" : {
+                                          "type" : "block"
+                                        },
+                                        "trigger" : {
+                                          "load-context" : [
+                                            "child-frame"
+                                          ],
+                                          "load-type" : [
+                                            "first-party"
+                                          ],
+                                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                                        }
+                                      }
+                                    ]
+                                    """#,
+                version: SafariVersion.safari16_4,
+                expectedTotalConvertedCount: 1,
+                expectedConvertedCount: 1
+            ),
+            TestCase(
+                // $~subdocument in newer Safari versions changes load-context
+                rules: ["||test.com^$~subdocument"],
+                expectedConverted: #"""
+                                    [
+                                      {
+                                        "action" : {
+                                          "type" : "block"
+                                        },
+                                        "trigger" : {
+                                          "load-context" : [
+                                            "top-frame"
+                                          ],
+                                          "resource-type" : [
+                                            "image",
+                                            "style-sheet",
+                                            "script",
+                                            "media",
+                                            "fetch",
+                                            "other",
+                                            "websocket",
+                                            "font",
+                                            "ping",
+                                            "document"
+                                          ],
+                                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                                        }
+                                      }
+                                    ]
+                                    """#,
+                version: SafariVersion.safari16_4,
+                expectedTotalConvertedCount: 1,
+                expectedConvertedCount: 1
+            ),
+            TestCase(
+                // $third-party and "unless-domains" workaround for old Safari.
+                rules: ["||test.com^$third-party"],
+                expectedConverted: #"""
+                                    [
+                                      {
+                                        "action" : {
+                                          "type" : "block"
+                                        },
+                                        "trigger" : {
+                                          "load-type" : [
+                                            "third-party"
+                                          ],
+                                          "unless-domain" : [
+                                            "*test.com"
+                                          ],
+                                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                                        }
+                                      }
+                                    ]
+                                    """#,
+                version: SafariVersion.safari13,
+                expectedTotalConvertedCount: 1,
+                expectedConvertedCount: 1
+            ),
+            TestCase(
+                // $third-party and "unless-domains" workaround is not required in newer Safari.
+                rules: ["||test.com^$third-party"],
+                expectedConverted: #"""
+                                    [
+                                      {
+                                        "action" : {
+                                          "type" : "block"
+                                        },
+                                        "trigger" : {
+                                          "load-type" : [
+                                            "third-party"
+                                          ],
+                                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                                        }
+                                      }
+                                    ]
+                                    """#,
+                version: SafariVersion.safari16_4,
+                expectedTotalConvertedCount: 1,
+                expectedConvertedCount: 1
+            ),
+            TestCase(
+                // Convert empty regex (i.e. match all urls).
+                rules: ["@@$image,domain=moonwalk.cc"],
+                expectedConverted: #"""
+                                    [
+                                      {
+                                        "action" : {
+                                          "type" : "ignore-previous-rules"
+                                        },
+                                        "trigger" : {
+                                          "if-domain" : [
+                                            "*moonwalk.cc"
+                                          ],
+                                          "resource-type" : [
+                                            "image"
+                                          ],
+                                          "url-filter" : ".*"
+                                        }
+                                      }
+                                    ]
+                                    """#,
+                expectedTotalConvertedCount: 1,
+                expectedConvertedCount: 1
+            ),
+            TestCase(
+                // Convert whitelist element hiding rule.
+                // Disable generic rule on several websites.
+                rules: [
+                    "##.banner",
+                    "example.org,example.net#@#.banner",
+                    "example.com#@#.banner"
+                ],
+                expectedConverted: #"""
+                                    [
+                                      {
+                                        "action" : {
+                                          "selector" : ".banner",
+                                          "type" : "css-display-none"
+                                        },
+                                        "trigger" : {
+                                          "unless-domain" : [
+                                            "*example.org",
+                                            "*example.net",
+                                            "*example.com"
+                                          ],
+                                          "url-filter" : ".*"
+                                        }
+                                      }
+                                    ]
+                                    """#,
+                expectedTotalConvertedCount: 1,
+                expectedConvertedCount: 1
+            ),
+            TestCase(
+                // Convert whitelist element hiding rule.
+                // Cancel each other.
+                rules: [
+                    "example.org##.banner",
+                    "example.org#@#.banner"
+                ],
+                expectedConverted: ConversionResult.EMPTY_RESULT_JSON,
+                expectedTotalConvertedCount: 0,
+                expectedConvertedCount: 0
+            ),
+            TestCase(
+                // Convert whitelist element hiding rule.
+                // Cancel each other.
+                rules: [
+                    "example.net##.banner",
+                    "example.org##.banner",
+                    "#@#.banner"
+                ],
+                expectedConverted: ConversionResult.EMPTY_RESULT_JSON,
+                expectedTotalConvertedCount: 0,
+                expectedConvertedCount: 0
+            ),
+            TestCase(
+                // Convert whitelist element hiding rule.
+                // Whitelist rule is discarded because of the mixed if-domain / unless-domain issue.
+                rules: [
+                    "example.net##.banner",
+                    "example.org#@#.banner"
+                ],
+                expectedConverted: #"""
+                                   [
+                                     {
+                                       "action" : {
+                                         "selector" : ".banner",
+                                         "type" : "css-display-none"
+                                       },
+                                       "trigger" : {
+                                         "if-domain" : [
+                                           "*example.net"
+                                         ],
+                                         "url-filter" : ".*"
+                                       }
+                                     }
+                                   ]
+                                   """#,
+                expectedTotalConvertedCount: 1,
+                expectedConvertedCount: 1
+            ),
         ]
-        
-        var result = converter.convertArray(rules: ruleText)
-        
-        XCTAssertEqual(result.totalConvertedCount, 3)
-        XCTAssertEqual(result.convertedCount, 3)
-        XCTAssertEqual(result.errorsCount, 0)
-        
-        var decoded = try! parseJsonString(json: result.converted)
-        XCTAssertEqual(decoded.count, 3)
-        
-        XCTAssertEqual(decoded[0].trigger.urlFilter, START_URL_UNESCAPED + "example1\\.com")
-        XCTAssertEqual(decoded[0].trigger.resourceType, ["document"])
-        XCTAssertEqual(decoded[0].action.type, "block")
-        
-        var regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!)
-        XCTAssertNotNil("https://example1.com".firstMatch(for: regex))
-        XCTAssertNotNil("https://example1.com/test".firstMatch(for: regex))
-        
-        XCTAssertEqual(decoded[1].trigger.urlFilter, START_URL_UNESCAPED + "example2\\.com")
-        XCTAssertEqual(decoded[1].trigger.resourceType, ["document"])
-        XCTAssertEqual(decoded[1].action.type, "block")
-        
-        regex = try! NSRegularExpression(pattern: decoded[1].trigger.urlFilter!)
-        XCTAssertNotNil("https://example2.com".firstMatch(for: regex))
-        
-        XCTAssertEqual(decoded[2].trigger.urlFilter, START_URL_UNESCAPED + "example5\\.com")
-        XCTAssertEqual(decoded[2].trigger.resourceType, ["document"])
-        XCTAssertEqual(decoded[2].action.type, "block")
-        
-        regex = try! NSRegularExpression(pattern: decoded[2].trigger.urlFilter!)
-        XCTAssertNotNil("https://example5.com".firstMatch(for: regex))
-        
-        // conversion of $document rule
-        ruleText = ["||example.com$document"]
-        result = converter.convertArray(rules: ruleText)
-        
-        XCTAssertEqual(result.totalConvertedCount, 1)
-        XCTAssertEqual(result.convertedCount, 1)
-        XCTAssertEqual(result.errorsCount, 0)
-        
-        decoded = try! parseJsonString(json: result.converted)
-        XCTAssertEqual(decoded[0].trigger.urlFilter, "\(START_URL_UNESCAPED)example\\.com")
-        XCTAssertEqual(decoded[0].trigger.resourceType, ["document"])
-        XCTAssertEqual(decoded[0].action.type, "block")
-        
-        regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!)
-        XCTAssertNotNil("https://example.com".firstMatch(for: regex))
-        
-        // conversion of $document and $popup rule
-        ruleText = ["||test.com$document,popup"]
-        result = converter.convertArray(rules: ruleText)
-        
-        XCTAssertEqual(result.totalConvertedCount, 1)
-        XCTAssertEqual(result.convertedCount, 1)
-        XCTAssertEqual(result.errorsCount, 0)
-        
-        decoded = try! parseJsonString(json: result.converted)
-        XCTAssertEqual(decoded[0].trigger.urlFilter, "\(START_URL_UNESCAPED)test\\.com")
-        XCTAssertEqual(decoded[0].trigger.resourceType, ["document"])
-        XCTAssertEqual(decoded[0].action.type, "block")
-        
-        regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!)
-        XCTAssertNotNil("https://test.com".firstMatch(for: regex))
-        
-        // conversion of $popup rule
-        ruleText = ["||example.com^$popup"]
-        result = converter.convertArray(rules: ruleText)
-        
-        XCTAssertEqual(result.totalConvertedCount, 1)
-        XCTAssertEqual(result.convertedCount, 1)
-        XCTAssertEqual(result.errorsCount, 0)
-        
-        decoded = try! parseJsonString(json: result.converted)
-        XCTAssertEqual(decoded[0].trigger.urlFilter, "\(START_URL_UNESCAPED)example\\.com" + URL_FILTER_REGEXP_END_SEPARATOR)
-        XCTAssertEqual(decoded[0].trigger.resourceType, ["document"])
-        XCTAssertEqual(decoded[0].action.type, "block")
-        
-        regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!)
-        XCTAssertNotNil("https://example.com".firstMatch(for: regex))
-        
-        // conversion of $popup and third-party rule
-        ruleText = ["||getsecuredfiles.com^$popup,third-party"]
-        result = converter.convertArray(rules: ruleText)
-        
-        XCTAssertEqual(result.totalConvertedCount, 1)
-        XCTAssertEqual(result.convertedCount, 1)
-        XCTAssertEqual(result.errorsCount, 0)
-        
-        decoded = try! parseJsonString(json: result.converted)
-        XCTAssertEqual(decoded[0].trigger.urlFilter, "\(START_URL_UNESCAPED)getsecuredfiles\\.com" + URL_FILTER_REGEXP_END_SEPARATOR)
-        XCTAssertEqual(decoded[0].trigger.resourceType, ["document"])
-        XCTAssertEqual(decoded[0].trigger.loadType, ["third-party"])
-        XCTAssertEqual(decoded[0].action.type, "block")
-        
-        regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!)
-        XCTAssertNotNil("https://getsecuredfiles.com".firstMatch(for: regex))
+
+        for testCase in testCases {
+            let converter = ContentBlockerConverter()
+            let result = converter.convertArray(rules: testCase.rules, safariVersion: testCase.version)
+            
+            let msg = "Unexpected result for converting rules\n \(testCase.rules.joined(separator: "\n"))"
+            
+            XCTAssertEqual(result.totalConvertedCount, testCase.expectedTotalConvertedCount, msg)
+            XCTAssertEqual(result.convertedCount, testCase.expectedConvertedCount, msg)
+            XCTAssertEqual(result.errorsCount, testCase.expectedErrorsCount, msg)
+            assertContentBlockerJSON(result.converted, testCase.expectedConverted, msg)
+        }
     }
-    
-    func testConvertFirstPartyRule() {
-        let result = converter.convertArray(rules: ["@@||adriver.ru^$~third-party"])
-        
-        XCTAssertEqual(result.totalConvertedCount, 1)
-        XCTAssertEqual(result.convertedCount, 1)
-        XCTAssertEqual(result.errorsCount, 0)
-        XCTAssertEqual(result.overLimit, false)
-        
-        let decoded = try! parseJsonString(json: result.converted)
-        XCTAssertEqual(decoded[0].trigger.urlFilter, "\(START_URL_UNESCAPED)adriver\\.ru" + URL_FILTER_REGEXP_END_SEPARATOR)
-        XCTAssertEqual(decoded[0].trigger.loadType, ["first-party"])
-        XCTAssertEqual(decoded[0].action.type, "ignore-previous-rules")
-        
-        let regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!)
-        XCTAssertNotNil("https://adriver.ru".firstMatch(for: regex))
-    }
-    
-    func testConvertWebsocketRules() {
-        var result = converter.convertArray(rules: ["||test.com^$websocket"])
-        XCTAssertEqual(result.convertedCount, 1)
-        
-        var decoded = try! parseJsonString(json: result.converted)
-        XCTAssertEqual(decoded.count, 1)
-        var entry = decoded[0]
-        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR)
-        XCTAssertEqual(entry.trigger.ifDomain, nil)
-        XCTAssertEqual(entry.trigger.unlessDomain, nil)
-        XCTAssertEqual(entry.trigger.loadType, nil)
-        XCTAssertEqual(entry.trigger.resourceType, ["raw"])
-        
-        let regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!)
-        XCTAssertNotNil("https://test.com".firstMatch(for: regex))
-        
-        result = converter.convertArray(rules: ["$websocket,domain=123movies.is"])
-        XCTAssertEqual(result.convertedCount, 1)
-        
-        decoded = try! parseJsonString(json: result.converted)
-        XCTAssertEqual(decoded.count, 1)
-        entry = decoded[0]
-        XCTAssertEqual(entry.trigger.urlFilter, URL_FILTER_WS_ANY_URL_UNESCAPED)
-        XCTAssertEqual(entry.trigger.ifDomain, ["*123movies.is"])
-        XCTAssertEqual(entry.trigger.resourceType, ["raw"])
-        
-        result = converter.convertArray(rules: [".rocks^$third-party,websocket"])
-        XCTAssertEqual(result.convertedCount, 1)
-        
-        decoded = try! parseJsonString(json: result.converted)
-        XCTAssertEqual(decoded.count, 1)
-        entry = decoded[0]
-        XCTAssertEqual(entry.trigger.urlFilter, URL_FILTER_WS_ANY_URL_UNESCAPED + ".*\\.rocks" + URL_FILTER_REGEXP_END_SEPARATOR)
-        XCTAssertEqual(entry.trigger.ifDomain, nil)
-        XCTAssertEqual(entry.trigger.unlessDomain, nil)
-        XCTAssertEqual(entry.trigger.loadType, ["third-party"])
-        XCTAssertEqual(entry.trigger.resourceType, ["raw"])
-    }
-    
-    func testWebsocketRulesProperConversion() {
-        var result = converter.convertArray(rules: ["||test.com^$websocket"], safariVersion: SafariVersion.safari15);
-        XCTAssertEqual(result.convertedCount, 1);
-        
-        var decoded = try! parseJsonString(json: result.converted);
-        XCTAssertEqual(decoded.count, 1);
-        var entry = decoded[0];
-        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
-        XCTAssertEqual(entry.trigger.ifDomain, nil);
-        XCTAssertEqual(entry.trigger.unlessDomain, nil);
-        XCTAssertEqual(entry.trigger.loadType, nil);
-        XCTAssertEqual(entry.trigger.resourceType, ["websocket"]);
-        
-        result = converter.convertArray(rules: ["||test.com^$~websocket,domain=example.org"], safariVersion: SafariVersion.safari15);
-        XCTAssertEqual(result.convertedCount, 1);
-        
-        decoded = try! parseJsonString(json: result.converted);
-        XCTAssertEqual(decoded.count, 1);
-        entry = decoded[0];
-        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR);
-        XCTAssertEqual(entry.trigger.ifDomain, ["*example.org"]);
-        XCTAssertEqual(entry.trigger.unlessDomain, nil);
-        XCTAssertEqual(entry.trigger.loadType, nil);
-        XCTAssertEqual(entry.trigger.resourceType, ["image", "style-sheet", "script", "media", "fetch", "other", "font", "ping", "document"]);
-    }
-    
-    func testConvertScriptRestrictRules() {
-        let result = converter.convertArray(rules: ["||test.com^$~script,domain=example.com"])
-        XCTAssertEqual(result.convertedCount, 1)
-        
-        let decoded = try! parseJsonString(json: result.converted)
-        XCTAssertEqual(decoded.count, 1)
-        let entry = decoded[0]
-        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR)
-        XCTAssertEqual(entry.trigger.ifDomain, ["*example.com"])
-        XCTAssertEqual(entry.trigger.unlessDomain, nil)
-        XCTAssertEqual(entry.trigger.resourceType, ["image", "style-sheet", "media", "raw", "font", "document"])
-        
-        let regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!)
-        XCTAssertNotNil("https://test.com".firstMatch(for: regex))
-    }
-    
-    func testConvertSubdocumentFirstParty() {
-        let result = converter.convertArray(rules: ["||test.com^$subdocument,~third-party"])
-        XCTAssertEqual(result.convertedCount, 0)
-    }
-    
-    func testConvertSubdocumentThirdParty() {
-        let result = converter.convertArray(rules: ["||test.com^$subdocument,domain=example.com"])
-        XCTAssertEqual(result.convertedCount, 1)
-        
-        let decoded = try! parseJsonString(json: result.converted)
-        XCTAssertEqual(decoded.count, 1)
-        let entry = decoded[0]
-        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR)
-        XCTAssertEqual(entry.trigger.ifDomain, ["*example.com"])
-        XCTAssertEqual(entry.trigger.unlessDomain, nil)
-        XCTAssertEqual(entry.trigger.resourceType, ["document"])
-        XCTAssertEqual(entry.action.type, "block")
-        
-        let regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!)
-        XCTAssertNotNil("https://test.com".firstMatch(for: regex))
-    }
-    
-    func testSubdocumentRuleProperConversion() {
-        var result = converter.convertArray(rules: ["||test.com^$subdocument,domain=example.com"], safariVersion: .safari15)
-        XCTAssertEqual(result.convertedCount, 1)
-        
-        var decoded = try! parseJsonString(json: result.converted)
-        XCTAssertEqual(decoded.count, 1)
-        var entry = decoded[0]
-        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR)
-        XCTAssertEqual(entry.trigger.ifDomain, ["*example.com"])
-        XCTAssertEqual(entry.trigger.unlessDomain, nil)
-        XCTAssertEqual(entry.trigger.loadContext, ["child-frame"])
-        XCTAssertEqual(entry.action.type, "block")
-        
-        result = converter.convertArray(rules: ["||test.com^$~subdocument,domain=example.com"], safariVersion: SafariVersion.safari15)
-        XCTAssertEqual(result.convertedCount, 1)
-        
-        decoded = try! parseJsonString(json: result.converted)
-        XCTAssertEqual(decoded.count, 1)
-        entry = decoded[0]
-        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR)
-        XCTAssertEqual(entry.trigger.ifDomain, ["*example.com"])
-        XCTAssertEqual(entry.trigger.unlessDomain, nil)
-        XCTAssertEqual(entry.trigger.resourceType, ["image", "style-sheet", "script", "media", "fetch", "other", "websocket", "font", "ping", "document"])
-        XCTAssertEqual(entry.trigger.loadContext, ["top-frame"])
-        XCTAssertEqual(entry.action.type, "block")
-    }
-    
-    func testAddUnlessDomainsForThirdParty() {
-        var result = converter.convertArray(rules: ["||test.com^$third-party"])
-        XCTAssertEqual(result.convertedCount, 1)
-        
-        var decoded = try! parseJsonString(json: result.converted)
-        XCTAssertEqual(decoded.count, 1)
-        var entry = decoded[0]
-        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR)
-        XCTAssertEqual(entry.trigger.ifDomain, nil)
-        XCTAssertEqual(entry.trigger.unlessDomain, ["*test.com"])
-        XCTAssertEqual(entry.trigger.loadType, ["third-party"])
-        
-        var regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!)
-        XCTAssertNotNil("https://test.com".firstMatch(for: regex))
-        
-        result = converter.convertArray(rules: ["||test.com$third-party,domain=~example.com"])
-        XCTAssertEqual(result.convertedCount, 1)
-        
-        decoded = try! parseJsonString(json: result.converted)
-        XCTAssertEqual(decoded.count, 1)
-        entry = decoded[0]
-        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com")
-        XCTAssertEqual(entry.trigger.ifDomain, nil)
-        XCTAssertEqual(entry.trigger.unlessDomain, ["*example.com", "*test.com"])
-        XCTAssertEqual(entry.trigger.loadType, ["third-party"])
-        
-        regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!)
-        XCTAssertNotNil("https://test.com".firstMatch(for: regex))
-        
-        
-        // Only for third-party rules
-        result = converter.convertArray(rules: ["||test.com^$important"])
-        XCTAssertEqual(result.convertedCount, 1)
-        
-        decoded = try! parseJsonString(json: result.converted)
-        XCTAssertEqual(decoded.count, 1)
-        entry = decoded[0]
-        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR)
-        XCTAssertEqual(entry.trigger.ifDomain, nil)
-        XCTAssertEqual(entry.trigger.unlessDomain, nil)
-        
-        regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!)
-        XCTAssertNotNil("https://test.com".firstMatch(for: regex))
-        
-        // Add domains only
-        result = converter.convertArray(rules: ["not_a_domain$third-party"])
-        XCTAssertEqual(result.convertedCount, 1)
-        
-        decoded = try! parseJsonString(json: result.converted)
-        XCTAssertEqual(decoded.count, 1)
-        entry = decoded[0]
-        XCTAssertEqual(entry.trigger.urlFilter, "not_a_domain")
-        XCTAssertEqual(entry.trigger.ifDomain, nil)
-        XCTAssertEqual(entry.trigger.unlessDomain, nil)
-        XCTAssertEqual(entry.trigger.loadType, ["third-party"])
-        
-        
-        // Skip rules with permitted domains
-        result = converter.convertArray(rules: ["||test.com^$third-party,domain=example.com"])
-        XCTAssertEqual(result.convertedCount, 1)
-        
-        decoded = try! parseJsonString(json: result.converted)
-        XCTAssertEqual(decoded.count, 1)
-        entry = decoded[0]
-        XCTAssertEqual(entry.trigger.urlFilter, START_URL_UNESCAPED + "test\\.com" + URL_FILTER_REGEXP_END_SEPARATOR)
-        XCTAssertEqual(entry.trigger.ifDomain, ["*example.com"])
-        XCTAssertEqual(entry.trigger.unlessDomain, nil)
-        XCTAssertEqual(entry.trigger.loadType, ["third-party"])
-        
-        regex = try! NSRegularExpression(pattern: decoded[0].trigger.urlFilter!)
-        XCTAssertNotNil("https://test.com".firstMatch(for: regex))
-    }
-    
-    func testConvertEmptyRegex() {
-        let result = converter.convertArray(rules: ["@@$image,domain=moonwalk.cc"])
-        XCTAssertEqual(result.convertedCount, 1)
-        
-        let decoded = try! parseJsonString(json: result.converted)
-        XCTAssertEqual(decoded.count, 1)
-        let entry = decoded[0]
-        XCTAssertEqual(entry.trigger.urlFilter, ".*")
-        XCTAssertEqual(entry.trigger.ifDomain, ["*moonwalk.cc"])
-        XCTAssertEqual(entry.trigger.unlessDomain, nil)
-        XCTAssertEqual(entry.trigger.resourceType, ["image"])
-        XCTAssertEqual(entry.action.type, "ignore-previous-rules")
-    }
-    
+
     func testConvertInvertedWhitelistRule() {
         let result = converter.convertArray(rules: ["@@||*$document,domain=~whitelisted.domain.com|~whitelisted.domain2.com"])
         XCTAssertEqual(result.convertedCount, 1)
