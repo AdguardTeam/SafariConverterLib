@@ -565,7 +565,6 @@ final class BlockerEntryFactoryTests: XCTestCase {
             ),
             TestCase(
                 // $subdocument without $third-party on a newer Safari.
-                // TODO(ameshkov): !!! Check that this rule actually works as expected.
                 ruleText: "||example.org^$subdocument,~third-party",
                 version: SafariVersion.safari16_4,
                 expectedEntry: BlockerEntry(
@@ -581,7 +580,6 @@ final class BlockerEntryFactoryTests: XCTestCase {
             ),
             TestCase(
                 // ~$subdocument on a newer Safari.
-                // TODO(ameshkov): !!! Check that this rule actually works as expected.
                 ruleText: "||example.org^$~subdocument",
                 version: SafariVersion.safari16_4,
                 expectedEntry: BlockerEntry(
