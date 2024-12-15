@@ -93,7 +93,7 @@ class Compiler {
                     cssExceptions.append(item)
                 } else if item.action.css != nil && item.action.css! != "" {
                     cosmeticCssExceptions.append(item)
-                } else if (rule as! NetworkRule).isSingleOption(option: .Specifichide) {
+                } else if (rule as! NetworkRule).isSingleOption(option: .specifichide) {
                     let res = NetworkRuleParser.extractDomain(pattern: (rule as! NetworkRule).urlRuleText)
                     if res.domain != "" {
                         // Prepend wildcard as these domains will then be evaluated against

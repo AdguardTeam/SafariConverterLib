@@ -103,7 +103,7 @@ class BlockerEntryFactory {
         addMatchCase(rule: rule, trigger: &trigger)
         try addDomainOptions(rule: rule, trigger: &trigger)
 
-        try checkWhiteListExceptions(rule: rule, trigger: &trigger)
+        try updateTriggerForDocumentLevelExceptionRules(rule: rule, trigger: &trigger)
 
         let result = BlockerEntry(trigger: trigger, action: action)
         try validateUrlBlockingRule(rule: rule, entry: result)
@@ -256,30 +256,30 @@ class BlockerEntryFactory {
         // Using String array instead of Set makes the code a bit more clunkier, but saves time.
         var types: [String] = []
 
-        if (rule.isContentType(contentType:NetworkRule.ContentType.ALL) && rule.restrictedContentType.count == 0) {
+        if (rule.isContentType(contentType:.all) && rule.restrictedContentType.isEmpty) {
             // Safari does not support all other default content types, like subdocument etc.
             // So we can use default safari content types instead.
             return
         }
 
-        if rule.hasContentType(contentType: NetworkRule.ContentType.IMAGE) {
+        if rule.hasContentType(contentType: .image) {
             types.append("image")
         }
 
-        if rule.hasContentType(contentType: NetworkRule.ContentType.STYLESHEET) {
+        if rule.hasContentType(contentType: .stylesheet) {
             types.append("style-sheet")
         }
 
-        if rule.hasContentType(contentType: NetworkRule.ContentType.SCRIPT) {
+        if rule.hasContentType(contentType: .script) {
             types.append("script")
         }
 
-        if rule.hasContentType(contentType: NetworkRule.ContentType.MEDIA) {
+        if rule.hasContentType(contentType: .media) {
             types.append("media")
         }
 
         var rawAdded = false
-        if rule.hasContentType(contentType: NetworkRule.ContentType.XMLHTTPREQUEST) {
+        if rule.hasContentType(contentType: .xmlHttpRequest) {
             // `fetch` resource type is supported since Safari 15
             if self.version.isSafari15orGreater() {
                 types.append("fetch")
@@ -289,7 +289,7 @@ class BlockerEntryFactory {
             }
         }
 
-        if rule.hasContentType(contentType: NetworkRule.ContentType.OTHER) {
+        if rule.hasContentType(contentType: .other) {
             // `other` resource type is supported since Safari 15
             if self.version.isSafari15orGreater() {
                 types.append("other")
@@ -299,7 +299,7 @@ class BlockerEntryFactory {
             }
         }
 
-        if rule.hasContentType(contentType: NetworkRule.ContentType.WEBSOCKET) {
+        if rule.hasContentType(contentType: .websocket) {
             // `websocket` resource type is supported since Safari 15
             if self.version.isSafari15orGreater() {
                 types.append("websocket")
@@ -309,11 +309,11 @@ class BlockerEntryFactory {
             }
         }
 
-        if rule.hasContentType(contentType: NetworkRule.ContentType.FONT) {
+        if rule.hasContentType(contentType: .font) {
             types.append("font")
         }
 
-        if rule.hasContentType(contentType: NetworkRule.ContentType.PING) {
+        if rule.hasContentType(contentType: .ping) {
             // `ping` resource type is supported since Safari 14
             if self.version.isSafari14orGreater() {
                 types.append("ping")
@@ -321,12 +321,12 @@ class BlockerEntryFactory {
         }
 
         var documentAdded = false
-        if !documentAdded && rule.hasContentType(contentType: NetworkRule.ContentType.DOCUMENT) {
+        if !documentAdded && rule.hasContentType(contentType: .document) {
             documentAdded = true
             types.append("document")
         }
 
-        if !documentAdded && rule.hasContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT) {
+        if !documentAdded && rule.hasContentType(contentType: .subdocument) {
             if !self.version.isSafari15orGreater() {
                 documentAdded = true
                 types.append("document")
@@ -353,11 +353,11 @@ class BlockerEntryFactory {
 
         // `child-frame` and `top-frame` contexts are supported since Safari 15
         if self.version.isSafari15orGreater() {
-            if rule.hasContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT)
-                && !rule.isContentType(contentType:NetworkRule.ContentType.ALL) {
+            if rule.hasContentType(contentType: .subdocument)
+                && !rule.isContentType(contentType: .all) {
                 context.append("child-frame")
             }
-            if rule.hasRestrictedContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT) {
+            if rule.hasRestrictedContentType(contentType: .subdocument) {
                 context.append("top-frame")
             }
         }
@@ -410,7 +410,6 @@ class BlockerEntryFactory {
     ///
     /// The issue was fixed later in WebKit so we only need it for older Safari versions.
     private func addUnlessDomainForThirdParty(rule: Rule, domains: inout [String]) {
-        // TODO(ameshkov): !!! Add a test that checks if this is required.
         if self.version.isSafari16_4orGreater() {
             return
         }
@@ -433,25 +432,45 @@ class BlockerEntryFactory {
         }
     }
 
-    // TODO(ameshkov): !!! Add normal comment here.
-    private func checkWhiteListExceptions(rule: NetworkRule, trigger: inout BlockerEntry.Trigger) throws -> Void {
+    /// Applies additional post-processing to document-level whitelist rules ($document, $elemhide, $jsinject, $urlblock).
+    ///
+    /// The idea is that when such a rule targets a single domain, i.e. looks like "@@||example.org^$elemhide",
+    /// it would be much better from the performance point of view to use "if-domain" instead of "url-filter".
+    ///
+    /// So instead of:
+    /// ```
+    /// {
+    ///     "url-filter": "regex"
+    /// }
+    /// ```
+    ///
+    /// We will use something like this:
+    ///
+    /// ```
+    /// {
+    ///     "url-filter": ".*",
+    ///     "if-domain": ["*example.org*"]
+    /// }
+    /// ```
+    private func updateTriggerForDocumentLevelExceptionRules(rule: NetworkRule, trigger: inout BlockerEntry.Trigger) throws -> Void {
         if (!rule.isWhiteList) {
             return
         }
 
         if (rule.isDocumentWhiteList || rule.isUrlBlock || rule.isCssExceptionRule || rule.isJsInject) {
             if (rule.isDocumentWhiteList) {
+                // $document rules unblock everything so remove resourceType limitation.
                 trigger.resourceType = nil
             }
 
             let ruleDomain = NetworkRuleParser.extractDomain(pattern: rule.urlRuleText)
             if ruleDomain.domain == "" || ruleDomain.patternMatchesPath {
-                // Do not add exceptions when the rule does not target any domain.
-                // TODO(ameshkov): !!! Add test for that.
+                // Do not add if-domain limitation when the rule domain cannot be extracted
+                // or when the rule is more specific than just a domain, i.e. in the case
+                // of "@@||example.org/path" keep using "url-filter".
                 return
             }
 
-            // TODO(ameshkov): !!! Bad pattern, modifies state
             rule.permittedDomains.append(ruleDomain.domain)
             try addDomainOptions(rule: rule, trigger: &trigger)
 
@@ -496,8 +515,8 @@ class BlockerEntryFactory {
     private func validateUrlBlockingRule(rule: NetworkRule, entry: BlockerEntry) throws -> Void {
         // TODO(ameshkov): !!! Add a test that checks this with an older Safari version.
         if !self.version.isSafari16_4orGreater() &&
-            rule.hasContentType(contentType: NetworkRule.ContentType.SUBDOCUMENT)
-                && !rule.isContentType(contentType:NetworkRule.ContentType.ALL) {
+            rule.hasContentType(contentType: .subdocument) &&
+            !rule.isContentType(contentType: .all) {
             if (entry.action.type == "block" &&
                 entry.trigger.resourceType?.firstIndex(of: "document") != nil &&
                 entry.trigger.ifDomain == nil &&

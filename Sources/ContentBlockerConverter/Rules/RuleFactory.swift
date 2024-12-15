@@ -88,8 +88,6 @@ class RuleFactory {
     }
     
     /// Creates an AdGuard rule from the rule text.
-    ///
-    /// TODO(ameshkov): !!! Change the default value here !!!
     static func createRule(ruleText: String, for version: SafariVersion) throws -> Rule? {
         do {
             if ruleText.isEmpty || isComment(ruleText: ruleText) {

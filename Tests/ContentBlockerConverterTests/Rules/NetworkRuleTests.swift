@@ -27,10 +27,10 @@ final class NetworkRuleTests: XCTestCase {
             var expectedBadfilter = false
             var expectedPermittedDomains: [String] = []
             var expectedRestrictedDomains: [String] = []
-            var expectedPermittedContentTypes: [NetworkRule.ContentType] = [NetworkRule.ContentType.ALL]
-            var expectedRestrictedContentTypes: [NetworkRule.ContentType] = []
-            var expectedEnabledOptions: [NetworkRule.NetworkRuleOption] = []
-            var expectedDisabledOptions: [NetworkRule.NetworkRuleOption] = []
+            var expectedPermittedContentTypes: NetworkRule.ContentType = .all
+            var expectedRestrictedContentTypes: NetworkRule.ContentType = []
+            var expectedEnabledOptions: NetworkRule.Option = []
+            var expectedDisabledOptions: NetworkRule.Option = []
         }
         
         let testCases: [TestCase] = [
@@ -57,7 +57,7 @@ final class NetworkRuleTests: XCTestCase {
                 expectedUrlRuleText: "||example.org^",
                 expectedUrlRegExpSource: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
                 expectedBlockPopups: true,
-                expectedPermittedContentTypes: [NetworkRule.ContentType.DOCUMENT]),
+                expectedPermittedContentTypes: .document),
             TestCase(
                 // $important rule.
                 ruleText: "||example.org^$important",
@@ -71,8 +71,8 @@ final class NetworkRuleTests: XCTestCase {
                 expectedUrlRegExpSource: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
                 expectedWhiteList: true,
                 expectedDocumentWhitelist: true,
-                expectedPermittedContentTypes: [NetworkRule.ContentType.DOCUMENT],
-                expectedEnabledOptions: [NetworkRule.NetworkRuleOption.Document]),
+                expectedPermittedContentTypes: .document,
+                expectedEnabledOptions: [.document]),
             TestCase(
                 // $elemhide rule.
                 ruleText: "@@||example.org^$elemhide",
@@ -80,8 +80,8 @@ final class NetworkRuleTests: XCTestCase {
                 expectedUrlRegExpSource: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
                 expectedWhiteList: true,
                 expectedCssExceptionRule: true,
-                expectedPermittedContentTypes: [NetworkRule.ContentType.DOCUMENT],
-                expectedEnabledOptions: [NetworkRule.NetworkRuleOption.Elemhide]),
+                expectedPermittedContentTypes: .document,
+                expectedEnabledOptions: [.elemhide]),
             TestCase(
                 // $jsinject rule.
                 ruleText: "@@||example.org^$jsinject",
@@ -89,8 +89,8 @@ final class NetworkRuleTests: XCTestCase {
                 expectedUrlRegExpSource: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
                 expectedWhiteList: true,
                 expectedJsInject: true,
-                expectedPermittedContentTypes: [NetworkRule.ContentType.DOCUMENT],
-                expectedEnabledOptions: [NetworkRule.NetworkRuleOption.Jsinject]),
+                expectedPermittedContentTypes: .document,
+                expectedEnabledOptions: [.jsinject]),
             TestCase(
                 // $jsinject rule.
                 ruleText: "@@||example.org^$urlblock",
@@ -98,16 +98,16 @@ final class NetworkRuleTests: XCTestCase {
                 expectedUrlRegExpSource: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
                 expectedWhiteList: true,
                 expectedUrlBlock: true,
-                expectedPermittedContentTypes: [NetworkRule.ContentType.DOCUMENT],
-                expectedEnabledOptions: [NetworkRule.NetworkRuleOption.Urlblock]),
+                expectedPermittedContentTypes: .document,
+                expectedEnabledOptions: [.urlblock]),
             TestCase(
                 // $jsinject rule.
                 ruleText: "@@||example.org^$specifichide",
                 expectedUrlRuleText: "||example.org^",
                 expectedUrlRegExpSource: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
                 expectedWhiteList: true,
-                expectedPermittedContentTypes: [NetworkRule.ContentType.DOCUMENT],
-                expectedEnabledOptions: [NetworkRule.NetworkRuleOption.Specifichide]),
+                expectedPermittedContentTypes: .document,
+                expectedEnabledOptions: [.specifichide]),
             TestCase(
                 // Third-party rule.
                 ruleText: "||example.org^$third-party",
@@ -145,21 +145,21 @@ final class NetworkRuleTests: XCTestCase {
                 ruleText: "||example.org/this$is$path$image,font,media",
                 expectedUrlRuleText: "||example.org/this$is$path",
                 expectedUrlRegExpSource: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org\\/this\\$is\\$path",
-                expectedPermittedContentTypes: [NetworkRule.ContentType.IMAGE, NetworkRule.ContentType.FONT, NetworkRule.ContentType.MEDIA]),
+                expectedPermittedContentTypes: [.image, .font, .media]),
             TestCase(
                 // $websocket rule.
                 ruleText: "||example.org^$websocket",
                 expectedUrlRuleText: "||example.org^",
                 expectedUrlRegExpSource: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
                 expectedWebsocket: true,
-                expectedPermittedContentTypes: [NetworkRule.ContentType.WEBSOCKET]),
+                expectedPermittedContentTypes: .websocket),
             TestCase(
                 // $document for blocking page load.
                 ruleText: "||example.org^$document",
                 expectedUrlRuleText: "||example.org^",
                 expectedUrlRegExpSource: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
-                expectedPermittedContentTypes: [NetworkRule.ContentType.DOCUMENT],
-                expectedEnabledOptions: [NetworkRule.NetworkRuleOption.Document]),
+                expectedPermittedContentTypes: .document,
+                expectedEnabledOptions: [.document]),
             TestCase(
                 ruleText: "||example.org\\$smth",
                 expectedUrlRuleText: "||example.org\\$smth",
@@ -206,21 +206,21 @@ final class NetworkRuleTests: XCTestCase {
                 expectedUrlRuleText: "",
                 expectedUrlRegExpSource: nil,
                 expectedPermittedDomains: ["a.com"],
-                expectedPermittedContentTypes: [NetworkRule.ContentType.IMAGE, NetworkRule.ContentType.SUBDOCUMENT]),
+                expectedPermittedContentTypes: [.image, .subdocument]),
             TestCase(
                 // $ping rule (supported starting with Safari 14 only).
                 ruleText: "||example.org^$ping",
                 version: SafariVersion.safari14,
                 expectedUrlRuleText: "||example.org^",
                 expectedUrlRegExpSource: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
-                expectedPermittedContentTypes: [NetworkRule.ContentType.PING]),
+                expectedPermittedContentTypes: .ping),
             TestCase(
                 // $~ping rule (supported starting with Safari 14 only).
                 ruleText: "||example.org^$~ping",
                 version: SafariVersion.safari14,
                 expectedUrlRuleText: "||example.org^",
                 expectedUrlRegExpSource: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
-                expectedRestrictedContentTypes: [NetworkRule.ContentType.PING]),
+                expectedRestrictedContentTypes: .ping),
             TestCase(
                 // Testing egde case - the rule looks like it's a regex, but it has options.
                 ruleText: "/example/$domain=test.com/",
@@ -251,7 +251,7 @@ final class NetworkRuleTests: XCTestCase {
                 expectedUrlRuleText: "||example.org^",
                 expectedUrlRegExpSource: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
                 expectedPermittedDomains: ["example.org"],
-                expectedPermittedContentTypes: [NetworkRule.ContentType.IMAGE, NetworkRule.ContentType.SCRIPT]),
+                expectedPermittedContentTypes: [.image, .script]),
         ]
 
         for testCase in testCases {

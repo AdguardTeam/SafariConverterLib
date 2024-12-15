@@ -74,13 +74,13 @@ struct CompilationResult {
     mutating func addIgnorePreviousTypedEntry(entry: BlockerEntry, source: Rule) -> Void {
         if (source is NetworkRule) {
             let networkRule = source as! NetworkRule;
-            if (networkRule.isSingleOption(option: .Generichide)) {
+            if (networkRule.isSingleOption(option: .generichide)) {
                 cssBlockingGenericHideExceptions.append(entry);
                 return;
-            } else if (networkRule.isSingleOption(option: .Elemhide)) {
+            } else if (networkRule.isSingleOption(option: .elemhide)) {
                 cssElemhide.append(entry);
                 return;
-            } else if (networkRule.isSingleOption(option: .Jsinject)) {
+            } else if (networkRule.isSingleOption(option: .jsinject)) {
                 scriptJsInjectExceptions.append(entry);
                 return;
             }

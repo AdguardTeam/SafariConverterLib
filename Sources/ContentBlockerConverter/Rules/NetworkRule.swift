@@ -26,12 +26,12 @@ class NetworkRule: Rule {
     var isWebSocket = false
     var badfilter = false
 
-    var permittedContentType: [ContentType] = [ContentType.ALL]
-    var restrictedContentType: [ContentType] = []
+    var permittedContentType: ContentType = .all
+    var restrictedContentType: ContentType = []
 
     /// Lists of options that are enabled (or disabled) by modifiers in this rule.
-    var enabledOptions: [NetworkRuleOption] = []
-    var disabledOptions: [NetworkRuleOption] = []
+    var enabledOptions: Option = []
+    var disabledOptions: Option = []
 
     /// Network rule pattern.
     var urlRuleText: String = ""
@@ -92,50 +92,30 @@ class NetworkRule: Rule {
             throw SyntaxError.invalidPattern(message: "Empty regular expression for URL")
         }
 
-        isDocumentWhiteList = isWhiteList && isOptionEnabled(option: .Document)
-        isUrlBlock = isSingleOption(option: .Urlblock) || isSingleOption(option: .Genericblock)
-        isCssExceptionRule = isSingleOption(option: .Elemhide) || isSingleOption(option: .Generichide)
-        isJsInject = isSingleOption(option: .Jsinject)
+        isDocumentWhiteList = isWhiteList && isOptionEnabled(option: .document)
+        isUrlBlock = isSingleOption(option: .urlblock) || isSingleOption(option: .genericblock)
+        isCssExceptionRule = isSingleOption(option: .elemhide) || isSingleOption(option: .generichide)
+        isJsInject = isSingleOption(option: .jsinject)
     }
 
+    /// Returns true if rule pattern is a regular expression.
     func isRegexRule() -> Bool {
         urlRuleText.utf8.count > 1 && urlRuleText.utf8.first == Chars.SLASH && urlRuleText.utf8.last == Chars.SLASH
     }
 
-    /// Returns true if the rule has an option and that's the only specified option.
-    func isSingleOption(option: NetworkRuleOption) -> Bool {
-        enabledOptions.count == 1 && enabledOptions.firstIndex(of: option) != nil
-    }
-
     /// Checks if rule targets specified content type.
-    ///
-    /// TODO(ameshkov): Improve performance by changing permittedContentType/restrictedContentType to byte masks.
     func hasContentType(contentType: ContentType) -> Bool {
-        if (permittedContentType == [ContentType.ALL] &&
-                restrictedContentType.count == 0) {
-            // Rule does not contain any constraint.
-            return true
-        }
-
-        // Checking that either all content types are permitted or request content type is in the permitted list.
-        let matchesPermitted = permittedContentType == [ContentType.ALL] ||
-                permittedContentType.firstIndex(of: contentType) ?? -1 >= 0
-
-        // Checking that either no content types are restricted or request content type is not in the restricted list.
-        let notMatchesRestricted = restrictedContentType.count == 0 ||
-                restrictedContentType.firstIndex(of: contentType) == nil
-
-        return matchesPermitted && notMatchesRestricted
+        return permittedContentType.contains(contentType) && !restrictedContentType.contains(contentType)
     }
 
     /// Returns true if the rule targets only the specified content type and nothing else.
     func isContentType(contentType: ContentType) -> Bool {
-        permittedContentType.count == 1 && permittedContentType[0] == contentType
+        return permittedContentType == contentType
     }
 
     /// Returns true if the specified content type is restricted for this rule.
     func hasRestrictedContentType(contentType: ContentType) -> Bool {
-        restrictedContentType.contains(contentType)
+        return restrictedContentType.contains(contentType)
     }
 
     /// Checks if this rule negates the other rule.
@@ -216,20 +196,16 @@ class NetworkRule: Rule {
             
             try loadOption(optionName: optionName, optionValue: optionValue, version: version)
         }
-        
+
         // Rules of these types can be applied to documents only
         // $jsinject, $elemhide, $urlblock, $genericblock, $generichide and $content for whitelist rules.
         // $popup - for url blocking
-        if isOptionEnabled(option: .Document)
-            || isOptionEnabled(option: .Jsinject)
-            || isOptionEnabled(option: .Elemhide)
-            || isOptionEnabled(option: .Content)
-            || isOptionEnabled(option: .Urlblock)
-            || isOptionEnabled(option: .Genericblock)
-            || isOptionEnabled(option: .Generichide)
-            || isOptionEnabled(option: .Specifichide)
-            || isBlockPopups {
-            self.permittedContentType = [ContentType.DOCUMENT];
+        if !enabledOptions.isDisjoint(with: .documentLevel) || isBlockPopups {
+            permittedContentType = .document
+        }
+        
+        if !isWhiteList && !enabledOptions.isDisjoint(with: .whitelistOnly) {
+            throw SyntaxError.invalidModifier(message: "Blocking rule cannot use whitelist-only modifiers")
         }
     }
 
@@ -269,97 +245,69 @@ class NetworkRule: Rule {
         case "domain":
             try setNetworkRuleDomains(domains: optionValue)
         case "elemhide", "ehide":
-            if !isWhiteList {
-                throw SyntaxError.invalidModifier(message: "$elemhide only allowed in whitelist rules")
-            }
-            
-            try setOptionEnabled(option: NetworkRuleOption.Elemhide, value: true)
+            try setOptionEnabled(option: .elemhide, value: true)
         case "generichide", "ghide":
-            if !isWhiteList {
-                throw SyntaxError.invalidModifier(message: "$generichide only allowed in whitelist rules")
-            }
-            
-            try setOptionEnabled(option: NetworkRuleOption.Generichide, value: true)
+            try setOptionEnabled(option: .generichide, value: true)
         case "genericblock":
-            if !isWhiteList {
-                throw SyntaxError.invalidModifier(message: "$genericblock only allowed in whitelist rules")
-            }
-            
-            try setOptionEnabled(option: NetworkRuleOption.Genericblock, value: true)
+            try setOptionEnabled(option: .genericblock, value: true)
         case "specifichide", "shide":
-            if !isWhiteList {
-                throw SyntaxError.invalidModifier(message: "$specifichide only allowed in whitelist rules")
-            }
-            
-            try setOptionEnabled(option: NetworkRuleOption.Specifichide, value: true)
+            try setOptionEnabled(option: .specifichide, value: true)
         case "jsinject":
-            if !isWhiteList {
-                throw SyntaxError.invalidModifier(message: "$jsinject only allowed in whitelist rules")
-            }
-            
-            try setOptionEnabled(option: NetworkRuleOption.Jsinject, value: true)
+            try setOptionEnabled(option: .jsinject, value: true)
         case "urlblock":
-            if !isWhiteList {
-                throw SyntaxError.invalidModifier(message: "$urlblock only allowed in whitelist rules")
-            }
-            
-            try setOptionEnabled(option: NetworkRuleOption.Urlblock, value: true)
+            try setOptionEnabled(option: .urlblock, value: true)
         case "content":
-            if !isWhiteList {
-                throw SyntaxError.invalidModifier(message: "$content only allowed in whitelist rules")
-            }
-            
-            try setOptionEnabled(option: NetworkRuleOption.Content, value: true)
+            try setOptionEnabled(option: .content, value: true)
         case "document", "doc":
-            try setOptionEnabled(option: NetworkRuleOption.Document, value: true)
+            try setOptionEnabled(option: .document, value: true)
         case "script":
-            setRequestType(contentType: ContentType.SCRIPT, enabled: true)
+            setRequestType(contentType: .script, enabled: true)
         case "~script":
-            setRequestType(contentType: ContentType.SCRIPT, enabled: false)
+            setRequestType(contentType: .script, enabled: false)
         case "stylesheet", "css":
-            setRequestType(contentType: ContentType.STYLESHEET, enabled: true)
+            setRequestType(contentType: .stylesheet, enabled: true)
         case "~stylesheet", "~css":
-            setRequestType(contentType: ContentType.STYLESHEET, enabled: false)
+            setRequestType(contentType: .stylesheet, enabled: false)
         case "subdocument", "frame":
-            setRequestType(contentType: ContentType.SUBDOCUMENT, enabled: true)
+            setRequestType(contentType: .subdocument, enabled: true)
         case "~subdocument", "~frame":
-            setRequestType(contentType: ContentType.SUBDOCUMENT, enabled: false)
+            setRequestType(contentType: .subdocument, enabled: false)
         case "image":
-            setRequestType(contentType: ContentType.IMAGE, enabled: true)
+            setRequestType(contentType: .image, enabled: true)
         case "~image":
-            setRequestType(contentType: ContentType.IMAGE, enabled: false)
+            setRequestType(contentType: .image, enabled: false)
         case "xmlhttprequest", "xhr":
-            setRequestType(contentType: ContentType.XMLHTTPREQUEST, enabled: true)
+            setRequestType(contentType: .xmlHttpRequest, enabled: true)
         case "~xmlhttprequest", "~xhr":
-            setRequestType(contentType: ContentType.XMLHTTPREQUEST, enabled: false)
+            setRequestType(contentType: .xmlHttpRequest, enabled: false)
         case "media":
-            setRequestType(contentType: ContentType.MEDIA, enabled: true)
+            setRequestType(contentType: .media, enabled: true)
         case "~media":
-            setRequestType(contentType: ContentType.MEDIA, enabled: false)
+            setRequestType(contentType: .media, enabled: false)
         case "font":
-            setRequestType(contentType: ContentType.FONT, enabled: true)
+            setRequestType(contentType: .font, enabled: true)
         case "~font":
-            setRequestType(contentType: ContentType.FONT, enabled: false)
+            setRequestType(contentType: .font, enabled: false)
         case "websocket":
             self.isWebSocket = true
-            setRequestType(contentType: ContentType.WEBSOCKET, enabled: true)
+            setRequestType(contentType: .websocket, enabled: true)
         case "~websocket":
-            setRequestType(contentType: ContentType.WEBSOCKET, enabled: false)
+            setRequestType(contentType: .websocket, enabled: false)
         case "other":
-            setRequestType(contentType: ContentType.OTHER, enabled: true)
+            setRequestType(contentType: .other, enabled: true)
         case "~other":
-            setRequestType(contentType: ContentType.OTHER, enabled: false)
+            setRequestType(contentType: .other, enabled: false)
         case "ping":
             // `ping` resource type is supported since Safari 14
             if version.isSafari14orGreater() {
-                setRequestType(contentType: ContentType.PING, enabled: true)
+                setRequestType(contentType: .ping, enabled: true)
             } else {
                 throw SyntaxError.invalidModifier(message: "$ping is not supported")
             }
         case "~ping":
             // `ping` resource type is supported since Safari 14
             if version.isSafari14orGreater() {
-                setRequestType(contentType: ContentType.PING, enabled: false)
+                setRequestType(contentType: .ping, enabled: false)
             } else {
                 throw SyntaxError.invalidModifier(message: "$~ping is not supported")
             }
@@ -375,55 +323,95 @@ class NetworkRule: Rule {
     /// Enables or disables the specified content type for this rule.
     private func setRequestType(contentType: ContentType, enabled: Bool) -> Void {
         if (enabled) {
-            if (self.permittedContentType.firstIndex(of: ContentType.ALL) != nil) {
-                self.permittedContentType = [];
+            if permittedContentType == .all {
+                permittedContentType = []
             }
-
-            self.permittedContentType.append(contentType)
+            
+            permittedContentType.insert(contentType)
         } else {
-            self.restrictedContentType.append(contentType);
+            restrictedContentType.insert(contentType)
         }
+    }
+    
+    /// Returns true if the rule has an option and that's the only specified option.
+    func isSingleOption(option: Option) -> Bool {
+        return enabledOptions == option
     }
 
     /// Enables or disables the specified option.
-    private func setOptionEnabled(option: NetworkRuleOption, value: Bool) throws -> Void {
+    private func setOptionEnabled(option: Option, value: Bool) throws -> Void {
         if (value) {
-            self.enabledOptions.append(option);
+            self.enabledOptions.insert(option)
         } else {
-            self.disabledOptions.append(option);
+            self.disabledOptions.insert(option)
         }
     }
 
     /// Returns true if the specified option is enabled in this rule.
-    private func isOptionEnabled(option: NetworkRuleOption) -> Bool {
-        return self.enabledOptions.firstIndex(of: option) != nil;
+    private func isOptionEnabled(option: Option) -> Bool {
+        return self.enabledOptions.contains(option)
     }
+    
+    /// Represents content types the rule can be limited to.
+    struct ContentType: OptionSet {
+        let rawValue: Int
 
-    // TODO(ameshkov): !!! Change to OptionSet to speed things up.
-    enum ContentType {
-        case ALL
-        case IMAGE
-        case STYLESHEET
-        case SCRIPT
-        case MEDIA
-        case XMLHTTPREQUEST
-        case OTHER
-        case WEBSOCKET
-        case FONT
-        case DOCUMENT
-        case SUBDOCUMENT
-        case PING
+        static let image           = ContentType(rawValue: 1 << 0)
+        static let stylesheet      = ContentType(rawValue: 1 << 1)
+        static let script          = ContentType(rawValue: 1 << 2)
+        static let media           = ContentType(rawValue: 1 << 3)
+        static let xmlHttpRequest  = ContentType(rawValue: 1 << 4)
+        static let other           = ContentType(rawValue: 1 << 5)
+        static let websocket       = ContentType(rawValue: 1 << 6)
+        static let font            = ContentType(rawValue: 1 << 7)
+        static let document        = ContentType(rawValue: 1 << 8)
+        static let subdocument     = ContentType(rawValue: 1 << 9)
+        static let ping            = ContentType(rawValue: 1 << 10)
+
+        static let all: ContentType = [
+            .image,
+            .stylesheet,
+            .script,
+            .media,
+            .xmlHttpRequest,
+            .other,
+            .websocket,
+            .font,
+            .document,
+            .subdocument,
+            .ping
+        ]
+
     }
+    
+    /// Represents network rule options.
+    struct Option: OptionSet {
+        let rawValue: Int
 
-    // TODO(ameshkov): Change to OptionSet to speed things up.
-    enum NetworkRuleOption {
-        case Elemhide
-        case Generichide
-        case Genericblock
-        case Specifichide
-        case Jsinject
-        case Urlblock
-        case Content
-        case Document
+        static let elemhide      = Option(rawValue: 1 << 0)
+        static let generichide   = Option(rawValue: 1 << 1)
+        static let genericblock  = Option(rawValue: 1 << 2)
+        static let specifichide  = Option(rawValue: 1 << 3)
+        static let jsinject      = Option(rawValue: 1 << 4)
+        static let urlblock      = Option(rawValue: 1 << 5)
+        static let content       = Option(rawValue: 1 << 6)
+        static let document      = Option(rawValue: 1 << 7)
+        
+        /// Document-level options cause the rule to be limited to "document" type.
+        static let documentLevel: Option = [
+            .document,
+            .whitelistOnly
+        ]
+        
+        /// These options can only be used in whitelist rules.
+        static let whitelistOnly: Option = [
+            .jsinject,
+            .elemhide,
+            .content,
+            .urlblock,
+            .genericblock,
+            .generichide,
+            .specifichide
+        ]
     }
 }
