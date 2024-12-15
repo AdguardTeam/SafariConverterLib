@@ -154,6 +154,21 @@ final class NetworkRuleTests: XCTestCase {
                 expectedWebsocket: true,
                 expectedPermittedContentTypes: .websocket),
             TestCase(
+                // $subdocument blocking rule with $third-party.
+                ruleText: "||example.org^$subdocument,third-party",
+                expectedUrlRuleText: "||example.org^",
+                expectedUrlRegExpSource: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedThirdParty: true,
+                expectedCheckThirdParty: true,
+                expectedPermittedContentTypes: .subdocument),
+            TestCase(
+                // $subdocument blocking rule (allowed starting with Safari 15).
+                ruleText: "||example.org^$subdocument",
+                version: SafariVersion.safari15,
+                expectedUrlRuleText: "||example.org^",
+                expectedUrlRegExpSource: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedPermittedContentTypes: .subdocument),
+            TestCase(
                 // $document for blocking page load.
                 ruleText: "||example.org^$document",
                 expectedUrlRuleText: "||example.org^",
@@ -327,6 +342,9 @@ final class NetworkRuleTests: XCTestCase {
         // $ping is not supported in the older Safari versions
         XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org^$ping", for: SafariVersion.safari13))
         XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org^$~ping", for: SafariVersion.safari13))
+        // $subdocument blocking without $third-party is only allowed starting with
+        // Safari 15 when load-context was introduced.
+        XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org^$subdocument", for: SafariVersion.safari14))
     }
     
     func testExtractDomain() {

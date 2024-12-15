@@ -106,7 +106,6 @@ class BlockerEntryFactory {
         try updateTriggerForDocumentLevelExceptionRules(rule: rule, trigger: &trigger)
 
         let result = BlockerEntry(trigger: trigger, action: action)
-        try validateUrlBlockingRule(rule: rule, entry: result)
 
         return result
     };
@@ -512,28 +511,9 @@ class BlockerEntryFactory {
         return result
     }
 
-    private func validateUrlBlockingRule(rule: NetworkRule, entry: BlockerEntry) throws -> Void {
-        // TODO(ameshkov): !!! Add a test that checks this with an older Safari version.
-        if !self.version.isSafari16_4orGreater() &&
-            rule.hasContentType(contentType: .subdocument) &&
-            !rule.isContentType(contentType: .all) {
-            if (entry.action.type == "block" &&
-                entry.trigger.resourceType?.firstIndex(of: "document") != nil &&
-                entry.trigger.ifDomain == nil &&
-                entry.trigger.loadType?.firstIndex(of: "third-party") == nil) {
-
-                // TODO(ameshkov): !!! This limitation looks wrong and can be lifted for newer Safari versions
-
-                // Due to https://github.com/AdguardTeam/AdguardBrowserExtension/issues/145
-                throw ConversionError.unsupportedContentType(message: "Subdocument blocking rules are allowed only along with third-party or if-domain modifiers")
-            }
-        }
-    }
-
     enum ConversionError: Error {
         case unsupportedRule(message: String)
         case unsupportedRegExp(message: String)
-        case unsupportedContentType(message: String)
         case invalidDomains(message: String)
     }
 }

@@ -56,22 +56,6 @@ class NetworkRule: Rule {
         if (ruleParts.options != nil && ruleParts.options != "") {
             try loadOptions(options: ruleParts.options!, version: version)
         }
-
-        if (ruleParts.pattern == "||"
-                || ruleParts.pattern == "*"
-                || ruleParts.pattern == ""
-                || ruleParts.pattern.utf8.count < 3
-           ) {
-            if (permittedDomains.count < 1) {
-                // Rule matches too much and does not have any domain restriction
-                // We should not allow this kind of rules
-                throw SyntaxError.invalidPattern(message: "The rule is too wide, add domain restriction or make the pattern more specific")
-            }
-        }
-
-        if (ruleParts.options == "specifichide" && ruleParts.whitelist == false) {
-            throw SyntaxError.invalidModifier(message: "$pecifichide modifier must be used for exception rules only")
-        }
         
         urlRuleText = ruleParts.pattern
 
@@ -87,15 +71,13 @@ class NetworkRule: Rule {
                 urlRegExpSource = try SimpleRegex.createRegexText(pattern: urlRuleText)
             }
         }
-        
-        if urlRegExpSource == "" {
-            throw SyntaxError.invalidPattern(message: "Empty regular expression for URL")
-        }
 
         isDocumentWhiteList = isWhiteList && isOptionEnabled(option: .document)
         isUrlBlock = isSingleOption(option: .urlblock) || isSingleOption(option: .genericblock)
         isCssExceptionRule = isSingleOption(option: .elemhide) || isSingleOption(option: .generichide)
         isJsInject = isSingleOption(option: .jsinject)
+        
+        try validateRule(version: version)
     }
 
     /// Returns true if rule pattern is a regular expression.
@@ -179,6 +161,41 @@ class NetworkRule: Rule {
         
         try addDomains(domainsStr: domains, separator: Chars.PIPE)
     }
+    
+    /// Checks that the rule and its options is valid.
+    ///
+    /// - Throws: SyntaxError if the rule is not valid.
+    private func validateRule(version: SafariVersion) throws -> Void {
+        if (urlRuleText == "||"
+                || urlRuleText == "*"
+                || urlRuleText == ""
+                || urlRuleText.utf8.count < 3
+           ) {
+            if (permittedDomains.count < 1) {
+                // Rule matches too much and does not have any domain restriction
+                // We should not allow this kind of rules
+                throw SyntaxError.invalidPattern(message: "The rule is too wide, add domain restriction or make the pattern more specific")
+            }
+        }
+
+        if urlRegExpSource == "" {
+            throw SyntaxError.invalidPattern(message: "Empty regular expression for URL")
+        }
+        
+        if !isWhiteList && !enabledOptions.isDisjoint(with: .whitelistOnly) {
+            throw SyntaxError.invalidModifier(message: "Blocking rule cannot use whitelist-only modifiers")
+        }
+        
+        if !version.isSafari15orGreater() &&
+            !isContentType(contentType: .all) &&
+            hasContentType(contentType: .subdocument) &&
+            !isThirdParty &&
+            permittedDomains.isEmpty &&
+            !isWhiteList {
+            // Due to https://github.com/AdguardTeam/AdguardBrowserExtension/issues/145
+            throw SyntaxError.invalidRule(message: "$subdocument blocking rules are allowed only along with third-party or if-domain modifiers")
+        }
+    }
 
     /// Parses network rule options from the options string.
     private func loadOptions(options: String, version: SafariVersion) throws -> Void {
@@ -197,15 +214,11 @@ class NetworkRule: Rule {
             try loadOption(optionName: optionName, optionValue: optionValue, version: version)
         }
 
-        // Rules of these types can be applied to documents only
+        // Rules of these types can be applied to documents only:
         // $jsinject, $elemhide, $urlblock, $genericblock, $generichide and $content for whitelist rules.
         // $popup - for url blocking
         if !enabledOptions.isDisjoint(with: .documentLevel) || isBlockPopups {
             permittedContentType = .document
-        }
-        
-        if !isWhiteList && !enabledOptions.isDisjoint(with: .whitelistOnly) {
-            throw SyntaxError.invalidModifier(message: "Blocking rule cannot use whitelist-only modifiers")
         }
     }
 
