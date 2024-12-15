@@ -72,7 +72,7 @@ class Compiler {
 
                 if networkRule.isSingleOption(option: .specifichide) {
                     let res = NetworkRuleParser.extractDomain(pattern: networkRule.urlRuleText)
-                    if res.domain != "" {
+                    if res.domain != "" && !res.patternMatchesPath {
                         // Prepend wildcard as we'll be excluding wildcard domains.
                         specifichideExceptionDomains.append("*" + res.domain)
                         
@@ -110,7 +110,7 @@ class Compiler {
                 } else if item.action.css != nil && item.action.css! != "" {
                     cosmeticCssExceptions.append(item)
                 } else {
-                    compilationResult.addIgnorePreviousTypedEntry(entry: item, source: rule)
+                    compilationResult.addIgnorePreviousTypedEntry(entry: item, rule: rule)
                 }
             }
         }

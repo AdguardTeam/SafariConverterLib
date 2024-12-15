@@ -13,8 +13,14 @@ import Foundation
 /// - $csp
 /// - $object
 class NetworkRule: Rule {
+    
+    /// If true, the network rule unblocks everything on the website (cosmetic + network).
+    var isDocumentWhiteList = false
+    /// If true, the network rule unblocks all request from matching domains.
     var isUrlBlock = false
+    /// If true, the network rule unblocks cosmetics on matching domains.
     var isCssExceptionRule = false
+    /// If true, the network rule disables script rules and scriptlets on matching domains.
     var isJsInject = false
 
     var isCheckThirdParty = false

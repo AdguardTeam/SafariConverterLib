@@ -13,11 +13,6 @@ class Rule {
     var isScript = false
     var isScriptlet = false
     
-    /// Set to true if the network rule unblocks everything in the document.
-    ///
-    /// TODO(ameshkov): !!! Consider moving to NetworkRule.
-    var isDocumentWhiteList = false
-
     var permittedDomains = [String]()
     var restrictedDomains = [String]()
     

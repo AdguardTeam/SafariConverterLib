@@ -76,26 +76,23 @@ struct CompilationResult {
     }
 
     /// Adds a new entry with action `ignore-previous-rules`.
-    mutating func addIgnorePreviousTypedEntry(entry: BlockerEntry, source: Rule) -> Void {
-        if (source is NetworkRule) {
-            let networkRule = source as! NetworkRule;
+    mutating func addIgnorePreviousTypedEntry(entry: BlockerEntry, rule: Rule) -> Void {
+        if (rule is NetworkRule) {
+            let networkRule = rule as! NetworkRule
+
             if (networkRule.isSingleOption(option: .generichide)) {
                 cssBlockingGenericHideExceptions.append(entry)
-                return
             } else if (networkRule.isSingleOption(option: .elemhide)) {
-                cssElemhide.append(entry);
-                return
+                cssElemhide.append(entry)
             } else if (networkRule.isSingleOption(option: .jsinject)) {
-                scriptJsInjectExceptions.append(entry);
-                return
+                scriptJsInjectExceptions.append(entry)
+            } else if (networkRule.isImportant) {
+                importantExceptions.append(entry)
+            } else if (networkRule.isDocumentWhiteList) {
+                documentExceptions.append(entry)
+            } else {
+                other.append(entry)
             }
-        }
-
-        // Other exceptions
-        if (source.isImportant) {
-            importantExceptions.append(entry)
-        } else if (source.isDocumentWhiteList) {
-            documentExceptions.append(entry)
         } else {
             other.append(entry)
         }

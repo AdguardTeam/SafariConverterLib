@@ -124,10 +124,10 @@ public class ContentBlockerConverter {
         var result = VettedRules()
         
         for rule in rules {
-            var isException = rule.isDocumentWhiteList;
+            var isException = false
             
-            if !isException, let rule = rule as? NetworkRule {
-                isException = rule.isCssExceptionRule || rule.isJsInject
+            if let rule = rule as? NetworkRule {
+                isException = rule.isDocumentWhiteList || rule.isCssExceptionRule || rule.isJsInject
             }
             
             // exception rules with $document, $elemhide, $generichide, $jsinject modifiers
