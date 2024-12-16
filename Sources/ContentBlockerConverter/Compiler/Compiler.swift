@@ -6,7 +6,7 @@ class Compiler {
     /// Max number of CSS selectors per rule (look at compactCssRules function).
     private static let MAX_SELECTORS_PER_WIDE_RULE = 250
     private static let MAX_SELECTORS_PER_DOMAIN_RULE = 250
-    
+
     /// Cosmetic rule actions.
     ///
     /// "css-display-none" is natively supported by Safari, other types are custom
@@ -66,7 +66,7 @@ class Compiler {
 
         for rule in rules {
             guard shouldContinue else { return CompilationResult() }
-            
+
             if rule is NetworkRule {
                 let networkRule = rule as! NetworkRule
 
@@ -75,7 +75,7 @@ class Compiler {
                     if res.domain != "" && !res.patternMatchesPath {
                         // Prepend wildcard as we'll be excluding wildcard domains.
                         specifichideExceptionDomains.append("*" + res.domain)
-                        
+
                         // There's no need to convert $specifichide rule.
                         continue
                     }

@@ -5,11 +5,11 @@ import Shared
 class RuleFactory {
     private static let converter = RuleConverter()
     private var errorsCounter: ErrorsCounter
-    
+
     init(errorsCounter: ErrorsCounter) {
         self.errorsCounter = errorsCounter
     }
-    
+
     /// Creates AdGuard rules from the specified lines.
     func createRules(lines: [String], for version: SafariVersion, progress: Progress? = nil) -> [Rule] {
         var shouldContinue: Bool {
@@ -23,7 +23,7 @@ class RuleFactory {
 
         for line in lines {
             guard shouldContinue else { return [] }
-            
+
             var ruleLine = line
             if !ruleLine.isContiguousUTF8 {
                 // This is of UTMOST importance for the conversion performance.
@@ -32,7 +32,7 @@ class RuleFactory {
                 // slow.
                 ruleLine.makeContiguousUTF8()
             }
-            
+
             ruleLine = ruleLine.trimmingCharacters(in: .whitespacesAndNewlines)
             if ruleLine.isEmpty || RuleFactory.isComment(ruleText: ruleLine) {
                 continue
@@ -63,7 +63,7 @@ class RuleFactory {
 
         return result
     }
-    
+
     /// Filters out rules that are negated by $badfilter rules.
     static func applyBadFilterExceptions(rules: [NetworkRule], badfilterRules: [String: [NetworkRule]]) -> [Rule] {
         var result = [Rule]()
@@ -73,10 +73,10 @@ class RuleFactory {
                 result.append(rule)
             }
         }
-        
+
         return result
     }
-    
+
     /// Helper for safely create a rule or increment an errors counter.
     private func safeCreateRule(ruleText: String, version: SafariVersion) -> Rule? {
         do {
@@ -86,18 +86,18 @@ class RuleFactory {
             return nil
         }
     }
-    
+
     /// Creates an AdGuard rule from the rule text.
     static func createRule(ruleText: String, for version: SafariVersion) throws -> Rule? {
         do {
             if ruleText.isEmpty || isComment(ruleText: ruleText) {
                 return nil
             }
-            
+
             if (ruleText.utf8.count < 3) {
                 throw SyntaxError.invalidRule(message: "The rule is too short")
             }
-            
+
             if (RuleFactory.isCosmetic(ruleText: ruleText)) {
                 return try CosmeticRule(ruleText: ruleText, for: version)
             }
@@ -108,13 +108,13 @@ class RuleFactory {
             throw error
         }
     }
-   
+
     /// Checks if the rule is a cosmetic (CSS/JS) or not.
     static func isCosmetic(ruleText: String) -> Bool {
         let markerInfo = CosmeticRuleMarker.findCosmeticRuleMarker(ruleText: ruleText)
         return markerInfo.index != -1
     }
-    
+
     /// Checks if the rule is a comment.
     ///
     /// There are two types of comments:

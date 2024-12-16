@@ -278,7 +278,7 @@ final class GeneralTests: XCTestCase {
                                  ]
 
                                  """;
-   
+
     func testGeneral() {
         let conversionResult = ContentBlockerConverter().convertArray(rules: rules)
 

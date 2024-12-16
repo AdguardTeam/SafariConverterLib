@@ -6,19 +6,19 @@ enum CosmeticRuleMarker: String, CaseIterable {
     case ElementHidingException = "#@#"
     case ElementHidingExtCSS = "#?#"
     case ElementHidingExtCSSException = "#@?#"
-    
+
     case Css = "#$#"
     case CssException = "#@$#"
-    
+
     case CssExtCSS = "#$?#"
     case CssExtCSSException = "#@$?#"
-    
+
     case Js = "#%#"
     case JsException = "#@%#"
-    
+
     case Html = "$$"
     case HtmlException = "$@$"
-    
+
     /**
      * Parses marker from string source
      */
@@ -27,28 +27,28 @@ enum CosmeticRuleMarker: String, CaseIterable {
     ) {
         let length = ruleText.utf8.count
         let maxIndex = length - 2
-        
+
         if maxIndex <= 0 {
             return (-1, nil)
         }
-        
+
         // This is most likely a network rule as it starts with | or @,
         // something like ||example.org^ or @@||example.org^, so exit immediately.
         let firstChar = ruleText.utf8.first!
         if firstChar == Chars.PIPE || firstChar == Chars.AT_CHAR {
             return (-1, nil)
         }
-        
+
         for i in 0...maxIndex {
             let char = ruleText.utf8[safeIndex: i]
-            
+
             switch char {
             case 35:  // #
                 let nextChar = ruleText.utf8[safeIndex: i + 1]
                 let twoAhead = (i + 2 < length) ? ruleText.utf8[safeIndex: i + 2] : nil
                 let threeAhead = (i + 3 < length) ? ruleText.utf8[safeIndex: i + 3] : nil
                 let fourAhead = (i + 4 < length) ? ruleText.utf8[safeIndex: i + 4] : nil
-                
+
                 switch nextChar {
                 case Chars.AT_CHAR:  // #@
                     switch twoAhead {
@@ -100,11 +100,11 @@ enum CosmeticRuleMarker: String, CaseIterable {
                     return (i, ElementHiding)
                 default: break
                 }
-                
+
             case 36: // $
                 let nextChar = ruleText.utf8[safeIndex: i + 1]
                 let twoAhead = (i + 2 < length) ? ruleText.utf8[safeIndex: i + 2] : nil
-                
+
                 if nextChar == Chars.AT_CHAR && twoAhead == Chars.DOLLAR {
                     // $@$
                     return (i, HtmlException)
@@ -114,7 +114,7 @@ enum CosmeticRuleMarker: String, CaseIterable {
             default: break
             }
         }
-        
+
         return (-1, nil)
     }
 }

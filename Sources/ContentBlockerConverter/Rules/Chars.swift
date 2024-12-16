@@ -31,7 +31,7 @@ class Chars {
     static let EQUALS_SIGN: UInt8 = 61          // '='
     static let CARET: UInt8 = 94                // '^'
     static let PLUS:UInt8 = 43                  // '+'
-    
+
     static let TRIM_SINGLE_QUOTE = CharacterSet.whitespaces.union(CharacterSet(charactersIn: "'"))
     static let TRIM_DOUBLE_QUOTE = CharacterSet.whitespaces.union(CharacterSet(charactersIn: "\""))
 }

@@ -12,7 +12,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
             var expectedEntry: BlockerEntry?
             var expectedErrorsCount = 0
         }
-        
+
         let testCases: [TestCase] = [
             TestCase(
                 // Normal rule with domain modifier.
@@ -617,16 +617,16 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 expectedErrorsCount: 1
             ),
         ]
-        
+
         for testCase in testCases {
             let errorsCounter = ErrorsCounter()
-            
+
             let converter = BlockerEntryFactory(
                 advancedBlockingEnabled: testCase.advancedBlockingEnabled,
                 errorsCounter: errorsCounter,
                 version: testCase.version
             )
-            
+
             let rule = try! RuleFactory.createRule(ruleText: testCase.ruleText, for: testCase.version)
             let result = converter.createBlockerEntry(rule: rule!)
 

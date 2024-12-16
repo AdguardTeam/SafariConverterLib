@@ -10,9 +10,9 @@ struct VettedRules {
 
 /// Entry point into the SafariConverterLib, here the conversion process starts.
 public class ContentBlockerConverter {
-    
+
     public init() {}
-    
+
     /// Converts filter rules in AdGuard format to the format supported by Safari.
     ///
     /// - Parameters:
@@ -46,17 +46,17 @@ public class ContentBlockerConverter {
             Logger.log("(ContentBlockerConverter) - No rules passed")
             return ConversionResult.createEmptyResult()
         }
-        
+
         let errorsCounter = ErrorsCounter()
-        
+
         guard shouldContinue else {
             Logger.log("(ContentBlockerConverter) - Cancelled before rules parsing")
             return ConversionResult.createEmptyResult()
         }
-        
+
         let ruleFactory = RuleFactory(errorsCounter: errorsCounter)
         let parsedRules = ruleFactory.createRules(lines: rules, for: safariVersion, progress: progress)
-        
+
         let advancedBlockingJson = advancedBlocking && advancedBlockingFormat == AdvancedBlockingFormat.json
 
         let compiler = Compiler(
@@ -86,50 +86,50 @@ public class ContentBlockerConverter {
             // by default for .json format
             compilationResult = compiler.compileRules(rules: parsedRules, progress: progress)
         }
-        
+
         compilationResult.errorsCount = errorsCounter.getCount()
-        
+
         let message = createLogMessage(compilationResult: compilationResult)
         Logger.log("(ContentBlockerConverter) - Compilation result: " + message)
         compilationResult.message = message
-        
+
         let distributor = Distributor(
             limit: rulesLimit,
             advancedBlocking: advancedBlockingJson,
             maxJsonSizeBytes: maxJsonSizeBytes
         )
-        
+
         var conversionResult = distributor.createConversionResult(data: compilationResult)
-        
+
         conversionResult.advancedBlockingText = advancedRulesTexts
-        
+
         return conversionResult
     }
-    
+
     /// Creates allowlist rule for provided domain.
     public static func createAllowlistRule(by domain: String) -> String {
         return "@@||\(domain)$document";
     }
-    
+
     /// Creates inverted allowlist rule for provided domains.
     public static func createInvertedAllowlistRule(by domains: [String]) -> String? {
         let domainsString = domains.filter { !$0.isEmpty }.joined(separator: "|~")
         return domainsString.count > 0 ? "@@||*$document,domain=~\(domainsString)" : nil
     }
-    
+
     /// Creates two lists with:
     /// - advanced rules (extcss, script, scriptlet, css inject)
     /// - simple rules (network, css, other)
     private func vetRules(_ rules: [Rule]) -> VettedRules {
         var result = VettedRules()
-        
+
         for rule in rules {
             var isException = false
-            
+
             if let rule = rule as? NetworkRule {
                 isException = rule.isDocumentWhiteList || rule.isCssExceptionRule || rule.isJsInject
             }
-            
+
             // exception rules with $document, $elemhide, $generichide, $jsinject modifiers
             // are required in the both lists
             if (isException) {
@@ -137,23 +137,23 @@ public class ContentBlockerConverter {
                 result.simpleRules.append(rule)
                 continue;
             }
-            
+
             var isAdvanced = rule.isScript
-            
+
             if !isAdvanced, let rule = rule as? CosmeticRule {
                 isAdvanced = rule.isExtendedCss || rule.isInjectCss
             }
-            
+
             if (isAdvanced) {
                 result.advancedRules.append(rule)
             } else {
                 result.simpleRules.append(rule)
             }
         }
-        
+
         return result
     }
-    
+
     private func createLogMessage(compilationResult: CompilationResult) -> String {
         var message = "Rules converted:  \(compilationResult.rulesCount) (\(compilationResult.errorsCount) errors)";
         message += "\nBasic rules: \(String(describing: compilationResult.urlBlocking.count))";
@@ -173,7 +173,7 @@ public class ContentBlockerConverter {
         message += "\nExceptions (document): \(String(describing: compilationResult.documentExceptions.count))";
         message += "\nExceptions (jsinject): \(String(describing: compilationResult.scriptJsInjectExceptions.count))";
         message += "\nExceptions (other): \(String(describing: compilationResult.other.count))";
-        
+
         return message;
     }
 }

@@ -1,15 +1,8 @@
-//
-//  PrefixMatcherTests.swift
-//  ContentBlockerConverter
-//
-//  Created by Andrey Meshkov on 12/12/2024.
-//
-
 import XCTest
 @testable import ContentBlockerConverter
 
 final class PrefixMatcherTests: XCTestCase {
-    
+
     func testNoPrefixes() {
         let matcher = PrefixMatcher(prefixes: [])
         let input = "hello"
@@ -17,7 +10,7 @@ final class PrefixMatcherTests: XCTestCase {
         XCTAssertNil(result.idx, "Expected no match with empty prefix list.")
         XCTAssertNil(result.prefix, "Expected no prefix with empty prefix list.")
     }
-    
+
     func testSinglePrefixExactMatch() {
         let matcher = PrefixMatcher(prefixes: ["hello"])
         let input = "hello world"
@@ -27,7 +20,7 @@ final class PrefixMatcherTests: XCTestCase {
         XCTAssertEqual(result.idx, expectedIndex, "Index should point to the last character of the matched prefix.")
         XCTAssertEqual(result.prefix, "hello", "Matched prefix should be 'hello'.")
     }
-    
+
     func testSinglePrefixNoMatch() {
         let matcher = PrefixMatcher(prefixes: ["goodbye"])
         let input = "hello"
@@ -35,7 +28,7 @@ final class PrefixMatcherTests: XCTestCase {
         XCTAssertNil(result.idx, "No match expected.")
         XCTAssertNil(result.prefix, "No prefix expected.")
     }
-    
+
     func testMultiplePrefixesFirstMatches() {
         let matcher = PrefixMatcher(prefixes: ["he", "hello", "h"])
         let input = "hello"
@@ -44,12 +37,12 @@ final class PrefixMatcherTests: XCTestCase {
         // Once "h" node is found and isEnd = true, it returns immediately.
         // So it should match "h" at index 0.
         let result = matcher.matchPrefix(in: input)
-        
+
         let expectedIndex = input.utf8.index(input.utf8.startIndex, offsetBy: 0)
         XCTAssertEqual(result.idx, expectedIndex, "Should match 'h' at index 0.")
         XCTAssertEqual(result.prefix, "h", "Should return the shortest matching prefix found at the earliest opportunity.")
     }
-    
+
     func testMultiplePrefixesLongerMatch() {
         // let matcher = PrefixMatcher(prefixes: ["he", "hello", "h"])
         let input = "hello"
@@ -60,7 +53,7 @@ final class PrefixMatcherTests: XCTestCase {
         // To specifically test a scenario where a longer prefix can be matched, let's remove the shortest prefix that would return early.
         let matcher2 = PrefixMatcher(prefixes: ["he", "hello"])
         let result = matcher2.matchPrefix(in: input)
-        
+
         // The traversal: 'h' -> no immediate return unless isEnd is true there.
         // Check how trie is built:
         // 'h' -> node, not isEnd? Actually "he" and "hello" both start with 'h',
@@ -74,7 +67,7 @@ final class PrefixMatcherTests: XCTestCase {
         XCTAssertEqual(result.idx, expectedIndex, "Should match 'he' at index 1.")
         XCTAssertEqual(result.prefix, "he", "Longest match not guaranteed. Should return first complete prefix encountered.")
     }
-    
+
     func testNoMatchWhenPrefixNotAtStart() {
         let matcher = PrefixMatcher(prefixes: ["world"])
         let input = "hello world"
@@ -84,7 +77,7 @@ final class PrefixMatcherTests: XCTestCase {
         XCTAssertNil(result.idx, "No match expected since prefix not at start.")
         XCTAssertNil(result.prefix, "No prefix expected.")
     }
-    
+
     func testEmptyStringInput() {
         let matcher = PrefixMatcher(prefixes: ["h", "he", "hello"])
         let input = ""
@@ -92,7 +85,7 @@ final class PrefixMatcherTests: XCTestCase {
         XCTAssertNil(result.idx, "Empty string can't match any prefix.")
         XCTAssertNil(result.prefix, "No prefix expected.")
     }
-    
+
     func testEmptyPrefix() {
         // It's unusual but let's see what happens if an empty prefix is added.
         // According to the code: inserting empty prefix means isEnd will be set at the root.
@@ -118,7 +111,7 @@ final class PrefixMatcherTests: XCTestCase {
         XCTAssertNil(result.idx, "Empty prefix might not trigger a match under current logic.")
         XCTAssertNil(result.prefix, "No prefix returned.")
     }
-    
+
     func testPrefixWithSpecialCharacters() {
         let matcher = PrefixMatcher(prefixes: ["http://", "https://", "||", "@@||", "//"])
         let input1 = "https://www.example.com"
@@ -127,14 +120,14 @@ final class PrefixMatcherTests: XCTestCase {
         let idx1 = input1.utf8.index(input1.utf8.startIndex, offsetBy: 7)
         XCTAssertEqual(res1.idx, idx1)
         XCTAssertEqual(res1.prefix, "https://")
-        
+
         let input2 = "||pipe"
         let res2 = matcher.matchPrefix(in: input2)
         // "||" are two characters: index 1 is the last char
         let idx2 = input2.utf8.index(input2.utf8.startIndex, offsetBy: 1)
         XCTAssertEqual(res2.idx, idx2)
         XCTAssertEqual(res2.prefix, "||")
-        
+
         let input3 = "@@||test"
         let res3 = matcher.matchPrefix(in: input3)
         // "@@" (2 chars) + "||" (2 chars) = 4 chars total, last char index = 3
@@ -142,7 +135,7 @@ final class PrefixMatcherTests: XCTestCase {
         XCTAssertEqual(res3.idx, idx3)
         XCTAssertEqual(res3.prefix, "@@||")
     }
-    
+
     func testOverlappingPrefixes() {
         let matcher = PrefixMatcher(prefixes: ["a", "ab", "abc"])
         let input = "abc"
@@ -153,7 +146,7 @@ final class PrefixMatcherTests: XCTestCase {
         XCTAssertEqual(result.idx, expectedIndex, "Should match the shortest prefix first.")
         XCTAssertEqual(result.prefix, "a", "Should return 'a' and not longer ones.")
     }
-    
+
     func testMatchAtVeryStart() {
         let matcher = PrefixMatcher(prefixes: ["h"])
         let input = "hello"
@@ -162,18 +155,18 @@ final class PrefixMatcherTests: XCTestCase {
         XCTAssertEqual(result.idx, expectedIndex)
         XCTAssertEqual(result.prefix, "h")
     }
-    
+
     func testPrefixWithUnicodeCharacters() {
         // Unicode test: e.g. "hëllo"
         // Each special character might consist of multiple UTF-8 code units.
         // The prefix "hë" in UTF-8 is h(0x68), ë could be multiple bytes (depends on normalization),
         // Let's try a prefix that includes a unicode character.
         // Important: The code and logic rely on direct UTF8 iteration.
-        
+
         // Let's pick a stable Unicode character like "é" (U+00E9) which in UTF-8 is 0xC3 0xA9.
         let matcher = PrefixMatcher(prefixes: ["hé"])
         let input = "héllo"
-        
+
         // Checking the code logic:
         // prefix "hé" in utf8: 'h'(0x68), 'é'(0xC3,0xA9)
         // When constructing trie:

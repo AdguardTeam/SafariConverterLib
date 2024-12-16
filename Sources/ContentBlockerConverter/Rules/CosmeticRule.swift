@@ -6,10 +6,10 @@ import Foundation
 class CosmeticRule: Rule {
     private static let EXT_CSS_PSEUDO_INDICATOR_HAS = "has"
     private static let EXT_CSS_PSEUDO_INDICATOR_IS = "is"
-    
+
     /// Adblock Plus uses special prefix for their pseudo-classes.
     private static let EXT_CSS_ABP_PREFIX = "-abp-"
-    
+
     /**
      * Pseudo class indicators. They are used to detect if rule is extended or not even if rule does not
      * have extended css marker
@@ -29,24 +29,24 @@ class CosmeticRule: Rule {
         "matches-attr",
         "matches-property",
     ]
-    
+
     private static let EXT_CSS_ATTR_INDICATOR = "[-ext-";
-    
+
     private static let PATH_MODIFIER = "path="
     private static let DOMAIN_MODIFIER = "domain="
-    
+
     var content: String = ""
-    
+
     var scriptlet: String? = nil
     var scriptletParam: String? = nil
-    
+
     var isElemhide = false
     var isExtendedCss = false
     var isInjectCss = false
-    
+
     var pathModifier: String?
     var pathRegExpSource: String?
-    
+
     /// Initializes a cosmetic rule by parsing its properties from the rule text.
     ///
     /// - Parameters:
@@ -101,64 +101,64 @@ class CosmeticRule: Rule {
             // Now it's a good time to parse them.
             let markerIndex = ruleText.utf8.index(ruleText.utf8.startIndex, offsetBy: markerInfo.index)
             let domains = String(ruleText[..<markerIndex])
-            
+
             // Support for *## for generic rules
             // https://github.com/AdguardTeam/SafariConverterLib/issues/11
             if (!(domains.utf8.count == 1 && domains.utf8.first == Chars.WILDCARD)) {
                 try setCosmeticRuleDomains(domains: domains)
             }
         }
-        
+
         isWhiteList = CosmeticRule.isWhitelist(marker: markerInfo.marker!)
         isExtendedCss = CosmeticRule.isExtCssMarker(marker: markerInfo.marker!)
         if (!isExtendedCss && CosmeticRule.hasExtCSSIndicators(content: self.content, version: version)) {
             // Additional check if rule is extended css rule by pseudo class indicators.
             isExtendedCss = true
         }
-        
+
         if isInjectCss && content.range(of: "url(") != nil {
             throw SyntaxError.invalidRule(message: "Forbidden style in a CSS rule")
         }
     }
-    
+
     /// Checks if the rule contains any extended CSS pseudo-class indicators.
     private static func hasExtCSSIndicators(content: String, version: SafariVersion) -> Bool {
         // Not enough for even minimal length pseudo.
         if (content.utf8.count < 6) {
             return false
         }
-        
+
         let maxIndex = content.utf8.count - 1
         var insidePseudo = false
         var pseudoStartIndex = 0
-        
+
         // Going through all characters in the CSS selector and looking for
         for i in 0...maxIndex {
             let char = content.utf8[safeIndex: i]
-            
+
             switch char {
             case Chars.SQUARE_BRACKET_OPEN:
                 if content.utf8.dropFirst(i).starts(with: CosmeticRule.EXT_CSS_ATTR_INDICATOR.utf8) {
                     return true
                 }
-                
+
                 break
             case Chars.COLON:
                 insidePseudo = true
                 pseudoStartIndex = i + 1
-                
+
                 break
             case Chars.BRACKET_OPEN:
                 if insidePseudo {
                     insidePseudo = false
                     let pseudoEndIndex = i - 1
-                    
+
                     if pseudoEndIndex > pseudoStartIndex {
                         let startIndex = content.utf8.index(content.utf8.startIndex, offsetBy: pseudoStartIndex)
                         let endIndex = content.utf8.index(content.utf8.startIndex, offsetBy: pseudoEndIndex)
-                        
+
                         let pseudo = String(content[startIndex...endIndex])
-                        
+
                         // the rule with `##` marker and `:has()` pseudo-class should not be considered as ExtendedCss,
                         // because `:has()` pseudo-class has native implementation since Safari 16.4
                         // https://www.webkit.org/blog/13966/webkit-features-in-safari-16-4/
@@ -166,33 +166,33 @@ class CosmeticRule: Rule {
                         if version.isSafari16_4orGreater() && pseudo == EXT_CSS_PSEUDO_INDICATOR_HAS {
                             continue
                         }
-                        
+
                         // `:is()` pseudo-class has native implementation since Safari 14
                         if version.isSafari14orGreater() && pseudo == EXT_CSS_PSEUDO_INDICATOR_IS {
                             continue
                         }
-                        
+
                         if pseudo.utf8.starts(with: CosmeticRule.EXT_CSS_ABP_PREFIX.utf8) {
                             // This is an ext-css rule for Adblock Plus.
                             return true
                         }
-                        
+
                         if EXT_CSS_PSEUDO_INDICATORS.contains(pseudo) {
                             // This is a known pseudo class from AdGuard ExtendedCss library.
                             return true
                         }
                     }
                 }
-                
+
                 break
             default:
                 break
             }
         }
-        
+
         return false
     }
-    
+
     /// Returns true if the rule marker is for an exception rule.
     private static func isWhitelist(marker: CosmeticRuleMarker) -> Bool {
         switch (marker) {
@@ -207,7 +207,7 @@ class CosmeticRule: Rule {
             return false
         }
     }
-    
+
     /// Returns true if the rule is an extended CSS rule.
     private static func isExtCssMarker(marker: CosmeticRuleMarker) -> Bool {
         switch (marker) {
@@ -220,7 +220,7 @@ class CosmeticRule: Rule {
             return false
         }
     }
-    
+
     /// Parses a single cosmetic option.
     private func parseOption(name: String, value: String) throws -> Void {
         switch name {
@@ -241,21 +241,21 @@ class CosmeticRule: Rule {
                 // Dealing with a regex.
                 let startIndex = pathModifier!.utf8.index(after: pathModifier!.utf8.startIndex)
                 let endIndex = pathModifier!.utf8.index(before: pathModifier!.utf8.endIndex)
-                
+
                 pathRegExpSource = String(pathModifier![startIndex..<endIndex])
             } else {
                 pathRegExpSource = try SimpleRegex.createRegexText(pattern: pathModifier!)
             }
-            
+
             if pathRegExpSource == "" {
                 throw SyntaxError.invalidModifier(message: "Empty regular expression for path")
             }
-            
+
         default:
             throw SyntaxError.invalidModifier(message: "Unsupported modifier \(name)")
         }
     }
-    
+
     /// Parses cosmetic rule options.
     ///
     /// The rule can look like this:
@@ -268,7 +268,7 @@ class CosmeticRule: Rule {
     private func parseCosmeticOptions(domains: String) throws -> String? {
         let startIndex = domains.utf8.index(domains.utf8.startIndex, offsetBy: 2)
         let endIndex = domains.utf8.lastIndex(of: Chars.SQUARE_BRACKET_CLOSE)
-        
+
         if domains.utf8.count < 3 ||
             domains.utf8[safeIndex: 1] != Chars.DOLLAR ||
             endIndex == nil {
@@ -281,16 +281,16 @@ class CosmeticRule: Rule {
         for option in options {
             var optionName = option
             var optionValue = ""
-            
+
             let valueIndex = option.utf8.firstIndex(of: Chars.EQUALS_SIGN)
             if valueIndex != nil {
                 optionName = String(option[..<valueIndex!])
                 optionValue = String(option[option.utf8.index(after: valueIndex!)...])
             }
-            
+
             try parseOption(name: optionName, value: optionValue)
         }
-        
+
         // Parse what's left after the options string.
         let domainsIndex = domains.index(after: endIndex!)
         if domainsIndex < domains.endIndex {

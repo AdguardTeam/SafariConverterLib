@@ -12,13 +12,13 @@ class BlockerEntryFactory {
     static let ANY_URL_TEMPLATES = ["||*", "", "*", "|*"]
     static let URL_FILTER_ANY_URL = ".*"
     static let URL_FILTER_WS_ANY_URL = "^wss?:\\/\\/"
-   
+
     /// Regular expression for cosmetic rules.
     ///
     /// Please note, that this is important to use `.*` for this kind of rules, otherwise performance is degraded:
     /// https://github.com/AdguardTeam/AdguardForiOS/issues/662
     static let URL_FILTER_COSMETIC_RULES = ".*"
-    
+
     /// Prefix for the regular expression that we prepend to the regexp from the $path modifier.
     static let URL_FILTER_PREFIX_CSS_RULES_PATH_START_STRING = "^(https?:\\/\\/)([^\\/]+)"
 
@@ -165,21 +165,21 @@ class BlockerEntryFactory {
 
         return result
     }
-    
+
     /// Builds the "url-filter" property of a Safari content blocking rule from a cosmetic rule.
     private func createUrlFilterStringForCosmetic(rule: CosmeticRule) throws -> String {
         if rule.pathRegExpSource == nil || rule.pathModifier == nil {
             return BlockerEntryFactory.URL_FILTER_COSMETIC_RULES
         }
-        
+
         // Special treatment for $path
         let pathRegex = rule.pathRegExpSource!
         let path = rule.pathModifier!
-        
+
         // First, validate custom regular expressions.
         if path.utf8.first == Chars.SLASH && path.utf8.last == Chars.SLASH {
             let result = SafariRegex.isSupported(pattern: pathRegex)
-            
+
             switch result {
             case .success: break
             case .failure(let error): throw ConversionError.unsupportedRegExp(message: "Unsupported regexp in $path: \(error)")
@@ -192,7 +192,7 @@ class BlockerEntryFactory {
             // which is applied to the full URL and not just to path.
             return BlockerEntryFactory.URL_FILTER_PREFIX_CSS_RULES_PATH_START_STRING + pathRegex.dropFirst()
         }
-        
+
         // In other cases just prepend "any URL" pattern.
         return BlockerEntryFactory.URL_FILTER_COSMETIC_RULES + pathRegex
     }
@@ -212,7 +212,7 @@ class BlockerEntryFactory {
                 return BlockerEntryFactory.URL_FILTER_ANY_URL
             }
         }
-        
+
         if rule.urlRegExpSource == nil {
             // Rule with empty regexp, matches any URL.
             return BlockerEntryFactory.URL_FILTER_ANY_URL
@@ -224,7 +224,7 @@ class BlockerEntryFactory {
         // But if this is a regex rule, we can't be sure.
         if rule.isRegexRule() {
             let result = SafariRegex.isSupported(pattern: urlFilter)
-            
+
             switch result {
             case .success: break
             case .failure(let error): throw ConversionError.unsupportedRegExp(message: "Unsupported regexp rule: \(error)")
@@ -483,7 +483,7 @@ class BlockerEntryFactory {
             trigger.resourceType = nil
         }
     }
-    
+
     /// Resolve domains prepares a list of domains to be used in the "if-domain" and "unless-domain"
     /// Safari rule properties.
     ///
@@ -495,7 +495,7 @@ class BlockerEntryFactory {
     ///     transformed to `*domain.com` to signal that subdomains are included.
     private func resolveDomains(domains: [String]) -> [String] {
         var result = [String]()
-        
+
         for domain in domains {
             if domain.utf8.last == Chars.WILDCARD {
                 // This is most likely a TLD domain, replace '.*' with popular TLDs.
@@ -508,7 +508,7 @@ class BlockerEntryFactory {
                 result.append("*" + domain)
             }
         }
-        
+
         return result
     }
 

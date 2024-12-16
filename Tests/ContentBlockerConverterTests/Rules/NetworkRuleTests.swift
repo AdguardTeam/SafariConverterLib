@@ -6,7 +6,7 @@ import XCTest
 final class NetworkRuleTests: XCTestCase {
     let START_URL_UNESCAPED = "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?"
     let URL_FILTER_REGEXP_END_SEPARATOR = "([\\/:&\\?].*)?$"
-    
+
     func testNetworkRule() {
         struct TestCase {
             let ruleText: String
@@ -32,7 +32,7 @@ final class NetworkRuleTests: XCTestCase {
             var expectedEnabledOptions: NetworkRule.Option = []
             var expectedDisabledOptions: NetworkRule.Option = []
         }
-        
+
         let testCases: [TestCase] = [
             TestCase(
                 // Normal rule without modifiers.
@@ -277,7 +277,7 @@ final class NetworkRuleTests: XCTestCase {
 
         for testCase in testCases {
             let result = try! NetworkRule(ruleText: testCase.ruleText, for: testCase.version)
-            
+
             let msg = "Rule (\(testCase.ruleText)) does not match expected"
 
             XCTAssertEqual(result.ruleText, testCase.ruleText, msg)
@@ -302,7 +302,7 @@ final class NetworkRuleTests: XCTestCase {
             XCTAssertEqual(result.disabledOptions, testCase.expectedDisabledOptions, msg)
         }
     }
-    
+
     func testNetworkRuleWithInvalidRules() {
         // $replace is not supported by Safari.
         XCTAssertThrowsError(try NetworkRule(ruleText: "/example/$replace=/test/test2/"))
@@ -351,7 +351,7 @@ final class NetworkRuleTests: XCTestCase {
         // Safari 15 when load-context was introduced.
         XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org^$subdocument", for: SafariVersion.safari14))
     }
-    
+
     func testExtractDomain() {
         let testPatterns: [(pattern: String, expectedDomain: String, expectedPatternMatchesPath: Bool)] = [
             ("", "", false),
@@ -368,14 +368,14 @@ final class NetworkRuleTests: XCTestCase {
             ("http://example.org$", "example.org", false),
             ("https://example.org^someother", "example.org", true),
         ]
-        
+
         for testPattern in testPatterns {
             let result = NetworkRuleParser.extractDomain(pattern: testPattern.pattern)
             XCTAssertEqual(result.domain, testPattern.expectedDomain, "Pattern \(testPattern.pattern): expected domain \(testPattern.expectedDomain), but got \(result.domain)")
             XCTAssertEqual(result.patternMatchesPath, testPattern.expectedPatternMatchesPath, "Pattern \(testPattern.pattern): expected patternMatchesPath \(testPattern.expectedPatternMatchesPath), but got \(result.patternMatchesPath)")
         }
     }
-    
+
     func testExtractDomainAndValidate() {
         let testPatterns: [(pattern: String, expectedDomain: String, expectedPatternMatchesPath: Bool)] = [
             ("", "", false),
@@ -398,7 +398,7 @@ final class NetworkRuleTests: XCTestCase {
             XCTAssertEqual(result.patternMatchesPath, testPattern.expectedPatternMatchesPath, "Pattern \(testPattern.pattern): expected patternMatchesPath \(testPattern.expectedPatternMatchesPath), but got \(result.patternMatchesPath)")
         }
     }
-    
+
     func testNegatesBadfilter() {
         let testRules: [(rule: String, badfilter: String, expected: Bool)] = [
             ("||example.org^", "||example.org^$badfilter", true),
@@ -413,7 +413,7 @@ final class NetworkRuleTests: XCTestCase {
             ("||example.org^$domain=example.com", "||example.org^$badfilter,domain=example.com", true),
             ("||example.org^$domain=example.com|example.net", "||example.org^$badfilter,domain=example.org|example.com", true),
         ]
-        
+
         for (rule, badfilter, expected) in testRules {
             let networkRule = try! NetworkRule(ruleText: rule)
             let badfilterRule = try! NetworkRule(ruleText: badfilter)

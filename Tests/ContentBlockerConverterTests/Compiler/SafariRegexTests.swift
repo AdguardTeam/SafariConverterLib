@@ -1,15 +1,8 @@
-//
-//  SafariRegexTests.swift
-//  ContentBlockerConverter
-//
-//  Created by Andrey Meshkov on 11/12/2024.
-//
-
 import XCTest
 @testable import ContentBlockerConverter
 
 final class SafariRegexTests: XCTestCase {
-    
+
     func testIsSupported() {
         let testPatterns: [(pattern: String, expected: Bool)] = [
             // Basic allowed patterns
@@ -54,17 +47,17 @@ final class SafariRegexTests: XCTestCase {
             ("[abc)(]", true),    // Mixed bracket/parenthesis inside character class is okay
             ("[(]", true),        // Bracket inside character class is ignored
             ("([(])", true),      // Bracket inside character class is ignored
-            
+
             // Real-life examples
             ("\\.com\\/[_0-9a-zA-Z]+\\.jpg$", true),
             ("^\\/$", true),
             (#"@@/:\/\/.*[.]wp[.]pl\/[a-z0-9_]+[.][a-z]+\/"#, true),
             ("\\/(sub1|sub2)\\/page\\.html", false),
             ("^https?\\:\\/\\/", false),
-            
+
             // Edge cases allowed due to simplicity of logic
             ("[a-]", true),       // In our simplified logic, we allowed this
-          
+
             // Explicitly invalid patterns
             (")", false),         // Closing parenthesis without opening
             ("(", false),         // Opening parenthesis not closed
@@ -98,7 +91,7 @@ final class SafariRegexTests: XCTestCase {
             (".*?", false),        // .* followed by ?, in our logic not allowed
             ("[$^{}()|*+?.\\]", false), // Unescaped '\' is not allowed even inside character range
         ]
-        
+
         for (pattern, expected) in testPatterns {
             let result = SafariRegex.isSupported(pattern: pattern)
 
@@ -114,7 +107,7 @@ final class SafariRegexTests: XCTestCase {
                 }
             }
         }
-        
+
     }
 }
 

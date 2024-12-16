@@ -13,7 +13,7 @@ import Foundation
 /// - $csp
 /// - $object
 class NetworkRule: Rule {
-    
+
     /// If true, the network rule unblocks everything on the website (cosmetic + network).
     var isDocumentWhiteList = false
     /// If true, the network rule unblocks all request from matching domains.
@@ -26,7 +26,7 @@ class NetworkRule: Rule {
     var isCheckThirdParty = false
     var isThirdParty = false
     var isMatchCase = false
-    
+
     // TODO: [ameshkov]: Modifying url-filter for WebSocket was required until Safari 15, it can be removed now.
     var isWebSocket = false
     var badfilter = false
@@ -61,13 +61,13 @@ class NetworkRule: Rule {
         if (ruleParts.options != nil && ruleParts.options != "") {
             try loadOptions(options: ruleParts.options!, version: version)
         }
-        
+
         urlRuleText = ruleParts.pattern
 
         if (isRegexRule()) {
             let startIndex = urlRuleText.utf8.index(after: urlRuleText.utf8.startIndex)
             let endIndex = urlRuleText.utf8.index(before: urlRuleText.utf8.endIndex)
-            
+
             urlRegExpSource = String(urlRuleText[startIndex..<endIndex])
         } else {
             urlRuleText = NetworkRuleParser.encodeDomainIfRequired(pattern: urlRuleText)!
@@ -81,7 +81,7 @@ class NetworkRule: Rule {
         isUrlBlock = isSingleOption(option: .urlblock) || isSingleOption(option: .genericblock)
         isCssExceptionRule = isSingleOption(option: .elemhide) || isSingleOption(option: .generichide)
         isJsInject = isSingleOption(option: .jsinject)
-        
+
         try validateRule(version: version)
     }
 
@@ -157,16 +157,16 @@ class NetworkRule: Rule {
 
         return false
     }
-    
+
     /// Sets rule domains from the $domain modifier.
     private func setNetworkRuleDomains(domains: String) throws -> Void {
         if (domains == "") {
             throw SyntaxError.invalidModifier(message: "$domain cannot be empty")
         }
-        
+
         try addDomains(domainsStr: domains, separator: Chars.PIPE)
     }
-    
+
     /// Checks that the rule and its options is valid.
     ///
     /// - Throws: SyntaxError if the rule is not valid.
@@ -186,11 +186,11 @@ class NetworkRule: Rule {
         if urlRegExpSource == "" {
             throw SyntaxError.invalidPattern(message: "Empty regular expression for URL")
         }
-        
+
         if !isWhiteList && !enabledOptions.isDisjoint(with: .whitelistOnly) {
             throw SyntaxError.invalidModifier(message: "Blocking rule cannot use whitelist-only modifiers")
         }
-        
+
         if !version.isSafari15orGreater() &&
             !isContentType(contentType: .all) &&
             hasContentType(contentType: .subdocument) &&
@@ -205,17 +205,17 @@ class NetworkRule: Rule {
     /// Parses network rule options from the options string.
     private func loadOptions(options: String, version: SafariVersion) throws -> Void {
         let optionParts = options.split(delimiter: Chars.COMMA, escapeChar: Chars.BACKSLASH);
-        
+
         for option in optionParts {
             var optionName = option
             var optionValue = ""
-            
+
             let valueIndex = option.utf8.firstIndex(of: Chars.EQUALS_SIGN)
             if valueIndex != nil {
                 optionName = String(option[..<valueIndex!])
                 optionValue = String(option[option.utf8.index(after: valueIndex!)...])
             }
-            
+
             try loadOption(optionName: optionName, optionValue: optionValue, version: version)
         }
 
@@ -344,18 +344,18 @@ class NetworkRule: Rule {
             if permittedContentType == .all {
                 permittedContentType = []
             }
-            
+
             permittedContentType.insert(contentType)
         } else {
             restrictedContentType.insert(contentType)
         }
     }
-    
+
     /// Returns true if the rule has an option and that's the only specified option.
     func isSingleOption(option: Option) -> Bool {
         return enabledOptions == option
     }
-    
+
     /// Returns true if the specified option is enabled in this rule.
     func isOptionEnabled(option: Option) -> Bool {
         return self.enabledOptions.contains(option)
@@ -369,7 +369,7 @@ class NetworkRule: Rule {
             self.disabledOptions.insert(option)
         }
     }
-    
+
     /// Represents content types the rule can be limited to.
     struct ContentType: OptionSet {
         let rawValue: Int
@@ -401,7 +401,7 @@ class NetworkRule: Rule {
         ]
 
     }
-    
+
     /// Represents network rule options.
     struct Option: OptionSet {
         let rawValue: Int
@@ -415,14 +415,14 @@ class NetworkRule: Rule {
         static let content       = Option(rawValue: 1 << 6)
         static let document      = Option(rawValue: 1 << 7)
         static let popup         = Option(rawValue: 1 << 8)
-        
+
         /// Document-level options cause the rule to be limited to "document" type.
         static let documentLevel: Option = [
             .document,
             .popup,
             .whitelistOnly
         ]
-        
+
         /// These options can only be used in whitelist rules.
         static let whitelistOnly: Option = [
             .jsinject,

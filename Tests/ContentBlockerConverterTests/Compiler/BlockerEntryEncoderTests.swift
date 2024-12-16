@@ -5,12 +5,12 @@ import XCTest
 
 final class BlockerEntryEncoderTests: XCTestCase {
     private let encoder = BlockerEntryEncoder();
-    
+
     func testEmpty() {
         let (result, _) = encoder.encode(entries: [BlockerEntry]());
         XCTAssertEqual(result, "[]");
     }
-    
+
     func testSimpleEntry() throws {
         let converter = BlockerEntryFactory(
             advancedBlockingEnabled: false,

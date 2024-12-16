@@ -4,7 +4,7 @@ import Shared
 /// Represents the final conversion result.
 public struct ConversionResult {
     public static let EMPTY_RESULT_JSON: String = "[{\"trigger\": {\"url-filter\": \".*\",\"if-domain\": [\"domain.com\"]},\"action\":{\"type\": \"ignore-previous-rules\"}}]"
-    
+
     static func createEmptyResult() -> ConversionResult {
         return ConversionResult(
             totalConvertedCount: 0,
@@ -16,7 +16,7 @@ public struct ConversionResult {
             message: ""
         )
     }
-    
+
     public init(
         totalConvertedCount: Int,
         convertedCount: Int,
@@ -38,25 +38,25 @@ public struct ConversionResult {
         self.advancedBlockingText = advancedBlockingText
         self.message = message
     }
-    
+
     /// Total entries count in the compilation result (before removing overlimit).
     public var totalConvertedCount: Int
 
     /// Entries count in the result after reducing to limit.
     public var convertedCount: Int
-    
+
     /// Count of conversion errors (i.e. count of rules that we could not convert).
     public let errorsCount: Int
-    
+
     /// If true, the provided limit was exceeded.
     public let overLimit: Bool
-    
+
     /// JSON string with Safari content blocker rules.
     public var converted: String
 
     /// Count of advanced blocking rules.
     public var advancedBlockingConvertedCount = 0
-    
+
     /// JSON with advanced content blocker rules.
     public var advancedBlocking: String? = nil
 

@@ -4,7 +4,7 @@ import XCTest
 @testable import ContentBlockerConverter
 
 final class CompilerTests: XCTestCase {
-    
+
     func testEmpty() {
         let compiler = Compiler(
             optimize: false,

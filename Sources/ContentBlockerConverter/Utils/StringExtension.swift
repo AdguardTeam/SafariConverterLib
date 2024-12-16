@@ -2,7 +2,7 @@ import Foundation
 
 /// Useful string extensions.
 extension String {
-    
+
     /// Escapes special characters so that the string could be used in a JSON.
     func escapeForJSON() -> String {
         var result = ""
@@ -29,44 +29,44 @@ extension String {
                 lastNotEscapedIndex = utf8.index(after: lastNotEscapedIndex)
                 continue
             }
-            
+
             if lastNotEscapedIndex != startNonEscapedIndex {
                 result.append(String(self[startNonEscapedIndex..<lastNotEscapedIndex]))
             }
             result.append(escapedSequence!)
-            
+
             lastNotEscapedIndex = utf8.index(after: lastNotEscapedIndex)
             startNonEscapedIndex = lastNotEscapedIndex
         }
-        
+
         if escapedSequence == nil {
             // If nothing was escaped in the string, we can simply return the String itself.
             return self
         }
-        
+
         if startNonEscapedIndex != utf8.endIndex {
             result.append(String(self[startNonEscapedIndex..<utf8.endIndex]))
         }
-        
+
         return result
     }
-    
+
     /// Replaces all occuriences of the target string with the specified string.
     func replace(target: String, withString: String) -> String {
         return self.replacingOccurrences(of: target, with: withString, options: NSString.CompareOptions.literal, range: nil)
     }
-    
+
     /// Splits the string into parts by the specified delimiter.
     ///
     /// Takes into account if delimiter is escaped by the specified escape character.
     /// Ignores empty components.
     func split(delimiter: UInt8, escapeChar: UInt8) -> [String] {
         let utf8 = self.utf8
-        
+
         if utf8.count == 0 {
             return []
         }
-        
+
         // In case of AdGuard rules most of the rules have just one modifier
         // so this tiny check despite looking strange allows to avoid
         // quite a lot of unnecessary allocations.
@@ -120,7 +120,7 @@ extension String {
 
         return result
     }
-    
+
     /// Returns range of the first regex match in the string.
     func firstMatch(for regex: NSRegularExpression) -> Range<String.Index>? {
         let range = NSMakeRange(0, self.utf16.count)
@@ -130,7 +130,7 @@ extension String {
 
         return nil
     }
-    
+
     /// Returns all regex matches found in the string.
     func matches(regex: NSRegularExpression) -> [String] {
         let range = NSMakeRange(0, self.utf16.count)
@@ -168,23 +168,23 @@ extension Collection where Element == UInt8 {
             // Empty subsequence is trivially included
             return true
         }
-        
+
         // If other is longer than self, it can’t be included
         guard count >= other.count else {
             return false
         }
-        
+
         var start = startIndex
         while start != endIndex {
             // Check if there’s enough space left for other
             if distance(from: start, to: endIndex) < other.count {
                 break
             }
-            
+
             var currentIndex = start
             var otherIndex = other.startIndex
             var matched = true
-            
+
             while otherIndex != other.endIndex {
                 if self[currentIndex] != other[otherIndex] {
                     matched = false
@@ -193,14 +193,14 @@ extension Collection where Element == UInt8 {
                 formIndex(after: &currentIndex)
                 other.formIndex(after: &otherIndex)
             }
-            
+
             if matched {
                 return true
             }
-            
+
             formIndex(after: &start)
         }
-        
+
         return false
     }
 }

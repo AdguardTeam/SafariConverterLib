@@ -4,7 +4,7 @@ import XCTest
 @testable import ContentBlockerConverter
 
 final class CosmeticRuleTests: XCTestCase {
-    
+
     func testCosmeticRule() {
         struct TestCase {
             let ruleText: String
@@ -23,7 +23,7 @@ final class CosmeticRuleTests: XCTestCase {
             var expectedPermittedDomains: [String] = []
             var expectedRestrictedDomains: [String] = []
         }
-        
+
         let testCases: [TestCase] = [
             TestCase(ruleText: "##.banner", expectedContent: ".banner", expectedIsElemhide: true),
             TestCase(ruleText: "*###banner", expectedContent: "#banner", expectedIsElemhide: true),
@@ -225,9 +225,9 @@ final class CosmeticRuleTests: XCTestCase {
 
         for testCase in testCases {
             let result = try! CosmeticRule(ruleText: testCase.ruleText, for: testCase.version)
-            
+
             let msg = "Rule (\(testCase.ruleText)) does not match expected"
-            
+
             XCTAssertEqual(result.ruleText, testCase.ruleText, msg)
             XCTAssertEqual(result.content, testCase.expectedContent, msg)
             XCTAssertEqual(result.isWhiteList, testCase.expectedIsWhitelist, msg)

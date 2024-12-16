@@ -60,7 +60,7 @@ class RuleConverter {
             if (isUboScriptletRule(ruleText: ruleText, marker: markerInfo.marker!, index: markerInfo.index)) {
                 return [convertUboScriptletRule(rule: ruleText)]
             }
-           
+
             if (isAbpSnippetRule(ruleText: ruleText, marker: markerInfo.marker!, index: markerInfo.index)) {
                 return convertAbpSnippetRule(ruleText: ruleText, marker: markerInfo.marker!, index: markerInfo.index)
             }
@@ -82,7 +82,7 @@ class RuleConverter {
 
         return [ruleText]
     }
-    
+
     /// Returns true if the rule is a uBO scriptlet rule.
     /// In this case the rule needs to be converted.
     private func isUboScriptletRule(ruleText: String, marker: CosmeticRuleMarker, index: Int) -> Bool {
@@ -90,10 +90,10 @@ class RuleConverter {
             // uBO uses standard element hiding marker for scriptlet rules.
             return false
         }
-        
+
         let contentIndex = ruleText.utf8.index(ruleText.startIndex, offsetBy: index)
         let ruleContent = ruleText[contentIndex...]
-        
+
         return (
             ruleContent.utf8.starts(with: UBO_SCRIPTLET_MASK.utf8)
             || ruleContent.utf8.starts(with: UBO_SCRIPTLET_EXCEPTION_MASK.utf8)
@@ -106,7 +106,7 @@ class RuleConverter {
         if range == nil {
             return nil
         }
-        
+
         let mask = rule[range!];
         let domains = String(rule[..<range!.lowerBound]);
 
@@ -120,7 +120,7 @@ class RuleConverter {
         guard let arguments: String = extractArgumentsString(str: rule) else {
             return nil
         }
-        
+
         var parsedArgs = arguments.components(separatedBy: ", ")
         if (parsedArgs.count == 1) {
             // Most probably this is not correct separator, in this case we use ','
@@ -148,7 +148,7 @@ class RuleConverter {
             // Adblock Plus uses the same marker as the one AdGuard uses for CSS rules (#$#, #@$#).
             return false
         }
-        
+
         let contentIndex = ruleText.utf8.index(ruleText.startIndex, offsetBy: index)
         let ruleContent = String(ruleText[contentIndex...])
 
@@ -158,10 +158,10 @@ class RuleConverter {
     /// Convert string of ABP scriptlet rule to AdGuard scriptlet rule.
     private func convertAbpSnippetRule(ruleText: String, marker: CosmeticRuleMarker, index: Int) -> [String] {
         let template = marker == CosmeticRuleMarker.Css ? ADGUARD_SCRIPTLET_MASK : ADGUARD_SCRIPTLET_EXCEPTION_MASK
-        
+
         let maskIndex = ruleText.utf8.index(ruleText.startIndex, offsetBy: index)
         let domains = String(ruleText[..<maskIndex])
-        
+
         let argsIndex = ruleText.utf8.index(ruleText.startIndex, offsetBy: index + marker.rawValue.utf8.count)
         let args = ruleText[argsIndex...]
 
@@ -206,7 +206,7 @@ class RuleConverter {
         if !ruleText.utf8.includes(UBO_CSS_STYLE_MASK.utf8) {
             return nil
         }
-        
+
         let uboToInjectCssMarkersDictionary: [String: String] = [
             "##": "#$#",
             "#@#": "#@$#",
@@ -226,7 +226,7 @@ class RuleConverter {
 
         return nil;
     }
-    
+
     /// Validates and converts rule with $denyallow modifier into blocking rule and additional exception rules.
     ///
     /// Learn more about it here:
@@ -237,15 +237,15 @@ class RuleConverter {
         }
 
         let ruleParts = try! NetworkRuleParser.parseRuleText(ruleText: ruleText)
-        
+
         if ruleParts.pattern.utf8.first == Chars.PIPE ||
             ruleParts.options == nil ||
             !ruleParts.options!.utf8.includes(RuleConverter.DOMAIN_MODIFIER_MASK.utf8) {
-            
+
             // We can only support simple case like this: $denyallow=x.com,domain=y.com,
             // i.e. the rule that targets path (not domain) and it must have both
             // denyallow and domain modifier.
-           
+
             return nil
         }
 
@@ -309,16 +309,16 @@ class RuleConverter {
     private func extractArgumentsString(str: String) -> String? {
         var firstIndex = str.utf8.firstIndex(of: Chars.BRACKET_OPEN)
         let lastIndex = str.utf8.lastIndex(of: Chars.BRACKET_CLOSE)
-        
+
         if firstIndex == nil || lastIndex == nil {
             return nil
         }
-        
+
         str.utf8.formIndex(after: &firstIndex!)
         if firstIndex! >= lastIndex! {
             return nil
         }
-        
+
         return String(str[firstIndex!..<lastIndex!])
     }
 
@@ -337,7 +337,7 @@ class RuleConverter {
                 .trimmingCharacters(in: Chars.TRIM_DOUBLE_QUOTE)
                 .replacingOccurrences(of: "'", with: "\'")
         }
-        
+
         return "\"\(modified)\""
     }
 

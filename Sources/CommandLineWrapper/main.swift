@@ -43,7 +43,7 @@ struct ConverterTool: ParsableCommand {
 
     @Option(name: .shortAndLong, help: "Advanced blocking.")
     var advancedBlocking = false
-    
+
     @Option(name: .shortAndLong, help: "Maximum json size in bytes. Leave empty for no limit.")
     var maxJsonSizeBytes: Int = 0
 
@@ -59,14 +59,14 @@ struct ConverterTool: ParsableCommand {
         guard let advancedBlockingFormat = AdvancedBlockingFormat(rawValue: advancedBlockingFormat) else {
             throw AdvancedBlockingFormatError.unsupportedFormat()
         }
-        
+
         let maxJsonSizeBytesOption: Int? = (maxJsonSizeBytes <= 0) ? nil : maxJsonSizeBytes
-        
+
         Logger.log("(ConverterTool) - Safari version: \(safariVersionResolved)")
         Logger.log("(ConverterTool) - Optimize: \(optimize)")
         Logger.log("(ConverterTool) - Advanced blocking: \(advancedBlocking)")
         Logger.log("(ConverterTool) - Advanced blocking format: \(advancedBlockingFormat)")
-        
+
         if let size = maxJsonSizeBytesOption {
             Logger.log("(ConverterTool) - Max json limit: \(size)")
         } else {
@@ -95,7 +95,7 @@ struct ConverterTool: ParsableCommand {
                 advancedBlockingFormat: advancedBlockingFormat,
                 maxJsonSizeBytes: maxJsonSizeBytesOption
             )
-        
+
         Logger.log("(ConverterTool) - Conversion done.")
 
         let encoded = try encodeJson(result)
