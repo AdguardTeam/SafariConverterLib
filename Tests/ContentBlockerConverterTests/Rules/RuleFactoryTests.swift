@@ -4,11 +4,10 @@ import XCTest
 @testable import ContentBlockerConverter
 
 final class RuleFactoryTests: XCTestCase {
-    func testInvalids() {
 
+    func testInvalids() {
         XCTAssertNil(try! RuleFactory.createRule(ruleText: "", for: DEFAULT_SAFARI_VERSION))
         XCTAssertNil(try! RuleFactory.createRule(ruleText: "! test", for: DEFAULT_SAFARI_VERSION))
-
         XCTAssertNil(try? RuleFactory.createRule(ruleText: "test$domain=", for: DEFAULT_SAFARI_VERSION))
     }
 

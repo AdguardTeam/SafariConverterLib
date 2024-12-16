@@ -65,7 +65,7 @@ final public class ContentBlockerEngine: ContentBlockerEngineProtocol {
         let data: BlockerData = try contentBlockerContainer.getData(url: url)
 
         let encoder = JSONEncoder()
-        encoder.outputFormatting = .prettyPrinted
+        encoder.outputFormatting = [.prettyPrinted,.sortedKeys]
 
         let json = try encoder.encode(data)
         return String(data: json, encoding: .utf8)!

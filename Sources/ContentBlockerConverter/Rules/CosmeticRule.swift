@@ -132,7 +132,7 @@ class CosmeticRule: Rule {
         var insidePseudo = false
         var pseudoStartIndex = 0
 
-        // Going through all characters in the CSS selector and looking for
+        // Going through all characters in the CSS selector and looking for CSS pseudo-classes.
         for i in 0...maxIndex {
             let char = content.utf8[safeIndex: i]
 

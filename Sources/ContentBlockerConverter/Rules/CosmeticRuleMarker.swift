@@ -43,7 +43,7 @@ enum CosmeticRuleMarker: String, CaseIterable {
             let char = ruleText.utf8[safeIndex: i]
 
             switch char {
-            case 35:  // #
+            case Chars.HASH:  // #
                 let nextChar = ruleText.utf8[safeIndex: i + 1]
                 let twoAhead = (i + 2 < length) ? ruleText.utf8[safeIndex: i + 2] : nil
                 let threeAhead = (i + 3 < length) ? ruleText.utf8[safeIndex: i + 3] : nil
@@ -101,7 +101,7 @@ enum CosmeticRuleMarker: String, CaseIterable {
                 default: break
                 }
 
-            case 36: // $
+            case Chars.DOLLAR: // $
                 let nextChar = ruleText.utf8[safeIndex: i + 1]
                 let twoAhead = (i + 2 < length) ? ruleText.utf8[safeIndex: i + 2] : nil
 
