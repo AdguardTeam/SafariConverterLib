@@ -12,11 +12,11 @@ final class ContentBlockerConverterTests: XCTestCase {
     
     func parseJsonString(json: String) throws -> [BlockerEntry] {
         let data = json.data(using: String.Encoding.utf8)!
-        
-        let decoder = JSONDecoder();
-        let parsedData = try decoder.decode([BlockerEntry].self, from: data);
-        
-        return parsedData;
+
+        let decoder = JSONDecoder()
+        let parsedData = try decoder.decode([BlockerEntry].self, from: data)
+
+        return parsedData
     }
     
     private func checkEntriesByCondition(entries: [BlockerEntry], condition: (BlockerEntry) -> Bool) -> Bool {
@@ -595,6 +595,53 @@ final class ContentBlockerConverterTests: XCTestCase {
                 expectedTotalConvertedCount: 1,
                 expectedConvertedCount: 1
             ),
+            TestCase(
+                // Convert whitelist rule with domain restrictions.
+                rules: [
+                    "@@||*$document,domain=~whitelisted.domain.com|~whitelisted.domain2.com"
+                ],
+                expectedConverted: #"""
+                                   [
+                                     {
+                                       "action" : {
+                                         "type" : "ignore-previous-rules"
+                                       },
+                                       "trigger" : {
+                                         "unless-domain" : [
+                                           "*whitelisted.domain.com",
+                                           "*whitelisted.domain2.com"
+                                         ],
+                                         "url-filter" : ".*"
+                                       }
+                                     }
+                                   ]
+                                   """#,
+                expectedTotalConvertedCount: 1,
+                expectedConvertedCount: 1
+            ),
+            TestCase(
+                // Single $generichide rule.
+                rules: [
+                    "@@||hulu.com/page$generichide"
+                ],
+                expectedConverted: #"""
+                                   [
+                                     {
+                                       "action" : {
+                                         "type" : "ignore-previous-rules"
+                                       },
+                                       "trigger" : {
+                                         "resource-type" : [
+                                           "document"
+                                         ],
+                                         "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?hulu\\.com\\\/page"
+                                       }
+                                     }
+                                   ]
+                                   """#,
+                expectedTotalConvertedCount: 1,
+                expectedConvertedCount: 1
+            ),
         ]
 
         for testCase in testCases {
@@ -608,19 +655,6 @@ final class ContentBlockerConverterTests: XCTestCase {
             XCTAssertEqual(result.errorsCount, testCase.expectedErrorsCount, msg)
             assertContentBlockerJSON(result.converted, testCase.expectedConverted, msg)
         }
-    }
-
-    func testConvertInvertedWhitelistRule() {
-        let result = converter.convertArray(rules: ["@@||*$document,domain=~whitelisted.domain.com|~whitelisted.domain2.com"])
-        XCTAssertEqual(result.convertedCount, 1)
-        
-        let decoded = try! parseJsonString(json: result.converted)
-        XCTAssertEqual(decoded.count, 1)
-        let entry = decoded[0]
-        XCTAssertEqual(entry.trigger.urlFilter, ".*")
-        XCTAssertEqual(entry.trigger.ifDomain, nil)
-        XCTAssertEqual(entry.trigger.unlessDomain, ["*whitelisted.domain.com", "*whitelisted.domain2.com"])
-        XCTAssertEqual(entry.action.type, "ignore-previous-rules")
     }
     
     func testConvertGenerichide() {

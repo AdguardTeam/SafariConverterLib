@@ -13,57 +13,73 @@ struct CompilationResult {
     /// Log message with conversion status details.
     var message = "";
 
-    /// Elemhide rules (##) - wide generic rules
+    /// Elemhide rules (##) - wide generic rules.
+    ///
+    /// Example: `##.banner`
     var cssBlockingWide: [BlockerEntry] = []
     
     /// Elemhide rules (##) - generic domain sensitive
+    ///
+    /// Example: `~example.org##.banner`
     var cssBlockingGenericDomainSensitive: [BlockerEntry] = []
     
-    /// Elemhide rules (##) with domain restrictions
+    /// Elemhide rules (##) with domain restrictions.
+    ///
+    /// Example: `example.org##.banner`.
     var cssBlockingDomainSensitive: [BlockerEntry] = []
     
-    /// Generic hide exceptions
+    /// Generic hide exceptions.
+    ///
+    /// Example: `example.org#@#.banner`
     var cssBlockingGenericHideExceptions: [BlockerEntry] = []
     
-    /// Elemhide exceptions ($elemhide)
+    /// Elemhide exceptions (`$elemhide`)
     var cssElemhide: [BlockerEntry] = []
     
-    /// Url blocking rules
+    /// Url blocking rules.
     var urlBlocking: [BlockerEntry] = []
     
     /// Other exceptions
     var other: [BlockerEntry] = []
     
-    /// $important url blocking rules
+    /// `$important` url blocking rules.
     var important: [BlockerEntry] = []
     
-    /// $important url blocking exceptions
+    /// `$important` url blocking exceptions.
     var importantExceptions: [BlockerEntry] = []
     
-    /// Document url blocking exceptions
+    /// `$document` url blocking exceptions.
     var documentExceptions: [BlockerEntry] = []
 
     // Advanced blocking entries
 
-    /// Script rules (#%#)
+    /// Script rules (`#%#`)
     var script: [BlockerEntry] = []
 
-    /// Scriptlet rules (#%#//scriptlet)
+    /// Scriptlet rules (`#%#//scriptlet`)
     var scriptlets: [BlockerEntry] = []
 
-    /// JsInject exception ($jsinject)
+    /// JsInject exception (`$jsinject`)
     var scriptJsInjectExceptions: [BlockerEntry] = []
 
-    /// Css injecting rules
+    /// Css injecting rules.
+    ///
+    /// Example: `#$#.banner { visitibilty: hidden; }`
     var сssInjects: [BlockerEntry] = []
 
-    /// Extended css Elemhide rules (##) - wide generic rules
+    /// Extended css Elemhide rules (`##`, `#?#`) - wide generic rules.
+    ///
+    /// Example: `#?#.banner`.
     var extendedCssBlockingWide: [BlockerEntry] = []
 
-    /// Extended css Elemhide rules (##) - generic domain sensitive
+    /// Extended css Elemhide rules (`##`, `#?#`) - generic domain sensitive.
+    ///
+    /// Example: `~example.org#?#.banner`.
     var extendedCssBlockingGenericDomainSensitive: [BlockerEntry] = []
 
-    /// Elemhide rules (##) with domain restrictions
+    /// Elemhide rules (`##`, `#?#`) with domain restrictions.
+    ///
+    /// Example: `example.org#?#.banner`.
     var extendedCssBlockingDomainSensitive: [BlockerEntry] = []
 
     /// Adds a new entry with action`block`.

@@ -70,7 +70,7 @@ class Compiler {
             if rule is NetworkRule {
                 let networkRule = rule as! NetworkRule
 
-                if networkRule.isSingleOption(option: .specifichide) {
+                if networkRule.isOptionEnabled(option: .specifichide) {
                     let res = NetworkRuleParser.extractDomain(pattern: networkRule.urlRuleText)
                     if res.domain != "" && !res.patternMatchesPath {
                         // Prepend wildcard as we'll be excluding wildcard domains.

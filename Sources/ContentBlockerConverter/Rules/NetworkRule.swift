@@ -27,6 +27,7 @@ class NetworkRule: Rule {
     var isThirdParty = false
     var isMatchCase = false
     
+    // TODO: [ameshkov]: Modifying url-filter for WebSocket was required until Safari 15, it can be removed now.
     var isWebSocket = false
     var badfilter = false
 
