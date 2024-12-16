@@ -259,7 +259,7 @@ class NetworkRule: Rule {
             try setOptionEnabled(option: .popup, value: true)
         case "badfilter":
             badfilter = true
-        case "domain":
+        case "domain", "from":
             try setNetworkRuleDomains(domains: optionValue)
         case "elemhide", "ehide":
             try setOptionEnabled(option: .elemhide, value: true)
@@ -332,7 +332,7 @@ class NetworkRule: Rule {
             throw SyntaxError.invalidModifier(message: "Unsupported modifier: \(optionName)")
         }
 
-        if optionName != "domain" && optionValue != "" {
+        if optionName != "domain" && optionName != "from" && optionValue != "" {
             throw SyntaxError.invalidModifier(message: "Option \(optionName) must not have value")
         }
     }

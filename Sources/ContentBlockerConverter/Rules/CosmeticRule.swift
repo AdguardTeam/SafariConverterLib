@@ -224,7 +224,7 @@ class CosmeticRule: Rule {
     /// Parses a single cosmetic option.
     private func parseOption(name: String, value: String) throws -> Void {
         switch name {
-        case "domain":
+        case "domain", "from":
             if value.isEmpty {
                 throw SyntaxError.invalidModifier(message: "$domain modifier cannot be empty")
             }

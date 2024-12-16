@@ -180,11 +180,18 @@ final class NetworkRuleTests: XCTestCase {
                 expectedUrlRuleText: "||example.org\\$smth",
                 expectedUrlRegExpSource: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org\\\\\\$smth"),
             TestCase(
+                // Test $domain modifier.
                 ruleText: "||example.org^$domain=example.org|~sub.example.org",
                 expectedUrlRuleText: "||example.org^",
                 expectedUrlRegExpSource: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
                 expectedPermittedDomains: ["example.org"],
                 expectedRestrictedDomains: ["sub.example.org"]),
+            TestCase(
+                // Test $from alias.
+                ruleText: "||example.org^$from=example.org",
+                expectedUrlRuleText: "||example.org^",
+                expectedUrlRegExpSource: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedPermittedDomains: ["example.org"]),
             TestCase(
                 ruleText: "/regex/",
                 expectedUrlRuleText: "/regex/",

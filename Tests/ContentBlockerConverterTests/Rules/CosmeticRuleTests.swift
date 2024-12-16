@@ -160,18 +160,25 @@ final class CosmeticRuleTests: XCTestCase {
                 expectedScriptletParam: "{\"name\":\"noeval\",\"args\":[]}",
                 expectedPermittedDomains: ["example.org"]),
             TestCase(
-                // Cosmetic rule with domain modifier options.
+                // Cosmetic rule with $domain modifier options.
                 ruleText: "[$domain=example.org|~example.com]##.banner",
                 expectedContent: ".banner",
                 expectedIsElemhide: true,
                 expectedPermittedDomains: ["example.org"],
                 expectedRestrictedDomains: ["example.com"]),
             TestCase(
-                // Cosmetic rule with mixed domain options.
+                // Cosmetic rule with mixed $domain options.
                 ruleText: "[$domain=example.org|~example.com]example.net##.banner",
                 expectedContent: ".banner",
                 expectedIsElemhide: true,
                 expectedPermittedDomains: ["example.org", "example.net"],
+                expectedRestrictedDomains: ["example.com"]),
+            TestCase(
+                // Cosmetic rule with $from (alias of $domain).
+                ruleText: "[$from=example.org|~example.com]##.banner",
+                expectedContent: ".banner",
+                expectedIsElemhide: true,
+                expectedPermittedDomains: ["example.org"],
                 expectedRestrictedDomains: ["example.com"]),
             TestCase(
                 // Cosmetic rule with path modifier.
