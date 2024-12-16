@@ -1,7 +1,5 @@
 # Safari Converter
 
-TODO(ameshkov): !!! Rework documentation
-
 This is a library that provides a compatibility layer between
 [AdGuard filtering rules][adguardrules] and [Safari content blocking rules][safarirules].
 

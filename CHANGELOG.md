@@ -76,9 +76,9 @@ Here's how it was achieved:
 
   - Removed `SafariService`; `SafariVersion` is now passed down to the
     underlying code instead of relying on a singleton.
-  
+
   - Removed `allTests`; it's not required anymore in modern Swift.
-  
+
   - Moved the logic from `ConversionResult` to `Distributor`.
 
   - Improved unit tests, adding quite a lot of cases that were not covered by
