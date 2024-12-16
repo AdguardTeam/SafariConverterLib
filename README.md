@@ -12,7 +12,11 @@ This is a library that provides a compatibility layer between
   - [Using as a library](#using-as-a-library)
   - [Command-line interface](#command-line-interface)
   - [Using as a node module](#using-as-a-node-module)
-- [Limitations](#limitations)
+- [Supported rules and limitations](#supported-rules-and-limitations)
+  - [Basic (network) rules](#basic-network-rules)
+  - [Cosmetic rules](#cosmetic-rules)
+  - [Script/scriptlet rules](#scriptscriptlet-rules)
+  - [HTML filtering rules](#html-filtering-rules)
 - [For developers](#for-developers)
   - [How to build, test, debug](#how-to-build-test-debug)
   - [Releasing new version](#releasing-new-version)
@@ -57,28 +61,71 @@ either a [WebExtension][safariwebextension], or a [Safari App Extension][safaria
 ### Using as a library
 
 ```swift
-    let result: ConversionResult? = ContentBlockerConverter.convertArray(
-        rules: [String],
-        safariVersion: SafariVersions = .DEFAULT,
-        optimize: Bool = false,
-        advancedBlocking: Bool = false
-        advancedBlockingFormat: AdvancedBlockingFormat = .json
+    let result: ConversionResult = ContentBlockerConverter().convertArray(
+        rules: lines,
+        safariVersion: SafariVersion(18.1),
+        optimize: false,
+        advancedBlocking: true,
+        advancedBlockingFormat: .txt,
+        maxJsonSizeBytes: nil,
+        progress: nil
     )
 ```
 
-Please note, that `safariVersion` must be an instance of enum SafariVersions.
+#### `convertArray()` parameters
 
-The result contains following properties:
+- `rules`: `[String]` - array of [AdGuard rules][adguardrules] to convert.
+- `safariVersion`: `SafariVersion` - for which the conversion should be done.
+  The minimum supported version if `13`. Depending on the version the result
+  may be different, newer Safari versions add more capabilities.
 
-- totalConvertedCount: length of content blocker
-- convertedCount: length after reducing to limit (depends on provided Safari version)
-- errorsCount: errors count
-- overLimit: is limit exceeded flag (the limit depends on provided Safari version)
-- converted: json string of content blocker rules
-- advancedBlocking: json string of advanced blocking rules
-- advancedBlockingText: txt string of advanced blocking rules
+  Depending on `SafariVersion` the converter also will limit the number of
+  entries in JSON. Safari 15 supports up to 150k rules, older Safari versions
+  support up to 50k rules.
+- `optimize`: `Bool` - **Deprecated**. Removes generic cosmetic rules from the
+  output.
+- `advancedBlocking`: `Bool` - if `true`, convert rules that need to be
+  interpreted by an additional extension (either a [WebExtension][safariwebextension], or a [Safari App Extension][safariappextension]).
+- `advancedBlockingFormat`: `AdvancedBlockingFormat` - format for advanced
+  rules output. Can be `.json` or `.txt` format. `.txt` is basically unchanged
+  AdGuard format that is supposed to be interpreted by [tsurlfilter]-based web
+  extension. `.json` is a "Safari content blocker"-like JSON syntax that is
+  better suited for native Safari App Extension.
+- `maxJsonSizeBytes`: `Int?` - provides a way to limit the size of the output
+  JSON. This was required due to a [nasty iOS bug][#56] in iOS 17.
+- `progress`: `Progress?` instance that can be used to report the amount of work
+  that has been done, or cancel the process in the middle.
 
-TODO: Explain how important it is to use contigious UTF-8 strings
+#### `convertArray()` return value
+
+Returns an instance of `ConversionResult` with the following fields.
+
+- `totalConvertedCount`: `Int` - total entries count in the compilation result
+  (before removing overlimit).
+- `convertedCount`: `Int` - Entries count in the result after reducing to the
+  limit defined by `SafariVersion`.
+- `errorsCount`: `Int` - Count of conversion errors (i.e. count of rules that we
+  could not convert).
+- `overLimit`: `Bool` - If `true`, the limit was exceeded.
+- `converted`: `String` - Resulting JSON with Safari content blocker rules.
+- `advancedBlockingConvertedCount`: `Int` - Count of advanced blocking rules.
+- `advancedBlocking`: `String?` - JSON with advanced content blocking rules. It
+  is only set when `advancedBlockingFormat` is set to `.json`.
+- `advancedBlockingText`: `String?` - plain text list of advanced content
+  blocking rules. It is only set when `advancedBlockingFormat` is set to `.txt`.
+- `message`: `String` - message with the overall conversion status.
+
+> [!TIP]
+> In order to keep parsing fast, we heavily rely on `UTF8View`. Users need to
+> avoid extra conversion to UTF-8. Please make sure that the filter's content
+> is stored with this encoding. You can ensure this by calling
+> [`makeContiguousUTF8`][makecontiguousutf8] before splitting the filter
+> content into rules to pass them to the converter. If the `String` is already
+> contiguous, this call does not cost anything.
+
+[tsurlfilter]: https://github.com/AdguardTeam/tsurlfilter
+[#56]: https://github.com/AdguardTeam/SafariConverterLib/issues/56
+[makecontiguousutf8]: https://developer.apple.com/documentation/swift/string/makecontiguousutf8()
 
 ### Command-line interface
 
@@ -96,66 +143,73 @@ cat rules.txt | ./ConverterTool --safari-version 13 --optimize false --advanced-
 
 ### Using as a node module
 
-##### Requirements
+Run `yarn install` to prepare the node module. This command will automatically
+trigger compilation of the `ConverterTool` command-line tool as node module
+relies on it.
 
-- Swift 5 or higher
+Node module provides the following methods.
 
-After installation the build process occurs and binary file will be copied to bin directory
+#### `jsonFromRules(rules, advancedBlocking, safariVersion, converterToolPath)`
 
-#### API
+Converts an array of [AdGuard rules][adguardrules] to JSON with Safari rules.
 
-`jsonFromRules(rules, advancedBlocking, safariVersion, converterToolPath)` - method to convert rules into JSON
+- `rules` - array of rules to convert.
+- `advancedBlocking` - if `true`, advanced content blocking rules will also be
+  provided in the result.
+- `safariVersion` - target Safari version.
+- `converterToolPath` - (optional) path to the `ConverterTool` binary. If not
+  set, it will use the version packed with the node module.
 
-- rules - array of rules
-- advancedBlocking - if we need advanced blocking content (boolean)
-- safariVersion
-- converterToolPath - path to ConverterTool binary
+### `getConverterVersion`
 
-`getConverterVersion` - returns Safari Converter Lib version
+Returns the Safari Converter version.
 
-## Limitations
+## Supported rules and limitations
 
-TODO: Describe limitations of the conversion process.
+Safari Converter aims to support [AdGuard filtering rules syntax][adguardrules]
+as much as possible, but still there are limitations and shortcomings that are
+hard to overcome.
 
-### Supported AdGuard rules types
+### Basic (network) rules
 
-#### Basic content blocker format
+Safari Converter supports a substantial subset of [basic rules][basicrules] and
+certainly supports the most important types of those rules.
 
-- Elemhide rules (##)
-- Elemhide exceptions
-- Url blocking rules
-- Url blocking exceptions
+[basicrules]: https://adguard.com/kb/general/ad-filtering/create-own-filters/#basic-rules
 
-#### Extended Advanced blocking types
+#### Supported with limitations
 
-- Script rules (#%#)
-- Script rules exceptions
-- Extended css elemhide rules (#?#)
-- Scriptlet rules (#%#//scriptlet)
-- Scriptlet rules exceptions
+- [Regular expression rules][regexrules] are limited to the subset of regex that
+  is [supported by Safari][safariregex].
 
-### Limitations
+- `$domain` - [domain modifier][domainmodifier] is supported with several
+  limitations.
 
-- Safari does not support both `if-domain` and `unless-domain` triggers. That's why rules like `example.org,~foo.example.orgs` are invalid. [Feature request](https://bugs.webkit.org/show_bug.cgi?id=226076) to WebKit to allow such rules.
-- Cosmetic exception rules will only affect the rules with **the very same domain**. I.e. the rule example.org#@##banner will result in removing example.org from example.org,example.net###banner, but will have **no result** on subdomain.example.org###banner.
-- Rules with `ping` modifier are ignored (until [#18](https://github.com/AdguardTeam/SafariConverterLib/issues/18) is solved)
-- Exception rule with `specifichide` modifier disables all specific element hiding rules for the same level domain and doesn't influence on subdomains or top-level domains, i.e. the rule `@@||sub.example.org^$specifichide` doesn't disable `test.sub.example.org##.banner` and  `example.org##.banner`
-- `generichide`, `elemhide`, `specifichide` and `jsinject` modifiers can be used only as a single modifier in a rule.
+  - It's impossible to mix allowed and disallowed domains (like
+    `$domain=example.org|~sub.example.org`). Please upvote the
+    [feature request][webkitmixeddomainsissue] to WebKit to lift this
+    limitation.
+  - "Any TLD" (i.e. `domain.*`) is not fully supported. In the current
+    implementation the converter just replaces `.*` with top 100 popular TLDs.
+    This implementation will be improved [in the future][iftopurlissue].
+  - Using regular expressions in `$domain` is not supported, but it also will
+    be improved [in the future][iftopurlissue].
 
-#### `denyallow` rules
+- `$denyallow` - this modifier is supported via converting `$denyallow` rule to
+  a set of rules (one blocking rule + several unblocking rules).
 
-A rule with the `denyallow` modifier will be converted into a blocking rule and additional exception rules.
+  Due to that limitation `$denyallow` is only allowed when the rule also has
+  `$domain` modifier.
 
-For example:
-
-- Generic rule `*$denyallow=x.com,image,domain=a.com`  will be converted to:
+  - Generic rule `*$denyallow=x.com,image,domain=a.com` will be converted to:
 
     ```adblock
     *$image,domain=a.com
     @@||x.com$image,domain=a.com
     ```
 
-- Blocking rule `/banner.png$image,denyallow=test1.com|test2.com,domain=example.org` will be converted to
+  - Rule `/banner.png$image,denyallow=test1.com|test2.com,domain=example.org`
+    will be converted to:
 
     ```adblock
     /banner.png$image,domain=example.org
@@ -165,18 +219,139 @@ For example:
     @@||test2.com/*/banner.png$image,domain=example.org
     ```
 
-- Exception rule `@@/banner.png$image,denyallow=test.com,domain=example.org` will be converted to
+  - Rule without `$domain` is **not supported**: `$denyallow=a.com|b.com`.
 
-    ```adblock
-    @@/banner.png$image,domain=example.org
-    ||test.com/banner.png$image,domain=example.org,important
-    ||test.com/*/banner.png$image,domain=example.org,important
-    ```
+- `$popup` - popup rules are supported, but they're basically the same as
+  `$document`-blocking rules and will not attempt to close the tab.
 
-$generichide == $elemhide ???
-$genericblock == $urlblock, i.e. unblocks everything?
-Why don't we support ||example.org^$denyallow=x.com,domain=y.com
-Does not support $elemhide,urlblock
+- Exception rules (`@@`) disable cosmetic filtering on matching domains.
+
+  Exception rules in Safari rely on the rule type `ignore-previous-rules` so to
+  make it work we have to order the rules in a specific order. Exception rules
+  without modifiers are placed at the end of the list and therefore they disable
+  not just URL blocking, but cosmetic rules as well.
+
+  This limitation may be lifted if [#70] is implemented.
+
+- `$urlblock`, `$genericblock` is basically the same as `$document`, i.e. it
+  disable all kinds of filtering on websites.
+
+  These limitations may be lifted when [#69] and [#71] are implemented.
+
+- `$content` makes no sense in the case of Safari since HTML filtering rules
+  are not supported so it's there for compatibility purposes only. Rules with
+  `$content` modifier are limited to `document` resource type.
+
+- `$specifichide` is implemented by scanning existing element hiding rules and
+  removing the target domain from their `if-domain` array.
+
+  - `$specifichide` rules MUST target a domain, i.e. be like this:
+    `||example.org^$specifichide`. Rules with more specific patterns will be
+    discarded, i.e. `||example.org/path$specifichide` will not be supported.
+  - `$specifichide` rules only cover rules that target the same domain as the
+    rule itself, subdomains are ignored. I.e. the rule
+    `@@||example.org^$specifichide` will disable `example.org##.banner`, but
+    will ignore `sub.example.org##.banner`. This limitation may be lifted if
+    [#72] is implemented.
+
+- `urlblock`, `genericblock`, `generichide`, `elemhide`, `specifichide`, and
+  `jsinject` modifiers can be used only as a single modifier in a rule. This
+  limitation may be lifted in the future: [#73].
+
+- `$websocket` (fully supported starting with Safari 15).
+
+- `$ping` (fully supported starting with Safari 14).
+
+[regexrules]: https://adguard.com/kb/general/ad-filtering/create-own-filters/#regexp-support
+[safariregex]: https://developer.apple.com/documentation/safariservices/creating-a-content-blocker#Capture-URLs-by-pattern
+[webkitmixeddomainsissue]: https://bugs.webkit.org/show_bug.cgi?id=226076
+[domainmodifier]: https://adguard.com/kb/general/ad-filtering/create-own-filters/#domain-modifier
+[iftopurlissue]: https://github.com/AdguardTeam/SafariConverterLib/issues/20#issuecomment-2532818732
+[#69]: https://github.com/AdguardTeam/SafariConverterLib/issues/69
+[#70]: https://github.com/AdguardTeam/SafariConverterLib/issues/70
+[#71]: https://github.com/AdguardTeam/SafariConverterLib/issues/71
+[#72]: https://github.com/AdguardTeam/SafariConverterLib/issues/72
+[#73]: https://github.com/AdguardTeam/SafariConverterLib/issues/73
+
+#### Not supported
+
+- `$app`
+- `$header`
+- `$method`
+- `$strict-first-party` (to be supported in the future: [#64])
+- `$strict-third-party` (to be supported in the future: [#65])
+- `$to` (to be supported in the future: [#60])
+- `$extension`
+- `$stealth`
+- `$cookie` (partial support in the future: [#54])
+- `$csp`
+- `$hls`
+- `$inline-script`
+- `$inline-font`
+- `$jsonprune`
+- `$xmlprune`
+- `$network`
+- `$permissions`
+- `$redirect`
+- `$redirect-rule`
+- `$referrerpolicy`
+- `$removeheader`
+- `$removeparam`
+- `$replace`
+- `$urltransform`
+
+[#64]: https://github.com/AdguardTeam/SafariConverterLib/issues/64
+[#65]: https://github.com/AdguardTeam/SafariConverterLib/issues/65
+[#60]: https://github.com/AdguardTeam/SafariConverterLib/issues/60
+[#54]: https://github.com/AdguardTeam/SafariConverterLib/issues/54
+
+### Cosmetic rules
+
+Safari Converter supports most of the [cosmetic rules][cosmeticrules] although
+only element hiding rules with basic CSS selectors are supported natively via
+Safari Content Blocking, everything else needs to be interpreted by an
+additional extension.
+
+[cosmeticrules]: https://adguard.com/kb/general/ad-filtering/create-own-filters/#cosmetic-rules
+
+#### Limitations of cosmetic rules
+
+- Specifying domains is subject of the same limitations as the `$domain`
+  modifier of basic rules.
+
+- [Non-basic rules modifiers][nonbasicmodifiers] are supported with some
+  limitations:
+
+  - `$domain` - the same limitations as everywhere else.
+  - `$path` - supported, but if you use regular expressions, they will be
+    limited to the subset of regex that is [supported by Safari][safariregex].
+  - `$url` - to be supported in the future: [#68]
+
+[nonbasicmodifiers]: https://adguard.com/kb/general/ad-filtering/create-own-filters/#non-basic-rules-modifiers
+[#68]: https://github.com/AdguardTeam/SafariConverterLib/issues/68
+
+### Script/scriptlet rules
+
+Safari Converter fully supports both [script rules][scriptrules] and
+[scriptlet rules][scriptletrules]. However, these rules can only be interpreted
+by a separate extension.
+
+> [!WARNING]
+> For scriptlet rules it is **very important** to run them as soon as possible
+> when the page is loaded. The reason for that is that it's important to run
+> earlier than the page scripts do. Unfortunately, with Safari there will always
+> be a slight delay that can decrease the quality of blocking.
+
+[scriptrules]: https://adguard.com/kb/general/ad-filtering/create-own-filters/#javascript-rules
+[scriptletrules]: https://adguard.com/kb/general/ad-filtering/create-own-filters/#scriptlets
+
+### HTML filtering rules
+
+[HTML filtering rules][htmlfilteringrules] are **not supported** and will not be
+supported in the future. Unfortunately, Safari does not provide necessary
+technical capabilities to implement them.
+
+[htmlfilteringrules]: https://adguard.com/kb/general/ad-filtering/create-own-filters/#html-filtering-rules
 
 ## For developers
 
@@ -196,7 +371,8 @@ the library itself, and even individual Safari content blocking rules.
 
 ### Releasing new version
 
-Push a new tag in `v*.*.*` format, then provided github action is intended to build and publish new release with an asset binary.
+Push a new tag in `v*.*.*` format, then provided github action is intended to
+build and publish new release with an asset binary.
 
 ### Third-party dependencies
 
