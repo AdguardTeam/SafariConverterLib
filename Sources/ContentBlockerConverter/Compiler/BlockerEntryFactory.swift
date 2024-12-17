@@ -126,7 +126,7 @@ class BlockerEntryFactory {
 
     /**
     * Creates blocker entry object from source Cosmetic scriptlet rule.
-    * Scriptetlets are functions those will be inserted to page content scripts and could be accessed by name with parameters.
+    * Scriptlets are functions those will be inserted to page content scripts and could be accessed by name with parameters.
     * The result entry could be used in advanced blocking json only.
     */
     private func convertScriptletRule(rule: CosmeticRule) throws -> BlockerEntry? {
