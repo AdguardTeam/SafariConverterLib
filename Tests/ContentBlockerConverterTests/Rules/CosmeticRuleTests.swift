@@ -10,7 +10,7 @@ final class CosmeticRuleTests: XCTestCase {
             let ruleText: String
             var version: SafariVersion = DEFAULT_SAFARI_VERSION
             let expectedContent: String
-            var expectedIsWhitelist = false
+            var expectedIsWhiteList = false
             var expectedIsElemhide = false
             var expectedIsExtendedCss = false
             var expectedIsInjectCss = false
@@ -44,7 +44,7 @@ final class CosmeticRuleTests: XCTestCase {
                 // Whitelist cosmetic rule.
                 ruleText: "example.org#@#.banner",
                 expectedContent: ".banner",
-                expectedIsWhitelist: true,
+                expectedIsWhiteList: true,
                 expectedIsElemhide: true,
                 expectedPermittedDomains: ["example.org"]),
             TestCase(
@@ -63,7 +63,7 @@ final class CosmeticRuleTests: XCTestCase {
                 // CSS injection cosmetic whitelist rule.
                 ruleText: "example.org#@$#.textad { visibility: hidden; }",
                 expectedContent: ".textad { visibility: hidden; }",
-                expectedIsWhitelist: true,
+                expectedIsWhiteList: true,
                 expectedIsInjectCss: true,
                 expectedPermittedDomains: ["example.org"]),
             TestCase(
@@ -76,7 +76,7 @@ final class CosmeticRuleTests: XCTestCase {
                 // Extended CSS whitelist cosmetic rule.
                 ruleText: "example.org#@?#.banner",
                 expectedContent: ".banner",
-                expectedIsWhitelist: true,
+                expectedIsWhiteList: true,
                 expectedIsElemhide: true,
                 expectedIsExtendedCss: true,
                 expectedPermittedDomains: ["example.org"]),
@@ -96,14 +96,14 @@ final class CosmeticRuleTests: XCTestCase {
                 // Extended CSS whitelist cosmetic rule (auto-detect).
                 ruleText: "#@#.sponsored[-ext-contains=test]",
                 expectedContent: ".sponsored[-ext-contains=test]",
-                expectedIsWhitelist: true,
+                expectedIsWhiteList: true,
                 expectedIsElemhide: true,
                 expectedIsExtendedCss: true),
             TestCase(
                 // Extended CSS whitelist cosmetic rule (auto-detect).
                 ruleText: "example.org#@#.banner:contains(cookies)",
                 expectedContent: ".banner:contains(cookies)",
-                expectedIsWhitelist: true,
+                expectedIsWhiteList: true,
                 expectedIsElemhide: true,
                 expectedIsExtendedCss: true,
                 expectedPermittedDomains: ["example.org"]),
@@ -117,7 +117,7 @@ final class CosmeticRuleTests: XCTestCase {
                 // Extended CSS injection whitelist cosmetic rule.
                 ruleText: "example.org#@$?#.banner { display: none; }",
                 expectedContent: ".banner { display: none; }",
-                expectedIsWhitelist: true,
+                expectedIsWhiteList: true,
                 expectedIsExtendedCss: true,
                 expectedIsInjectCss: true,
                 expectedPermittedDomains: ["example.org"]),
@@ -130,7 +130,7 @@ final class CosmeticRuleTests: XCTestCase {
                 // Script whitelist rule.
                 ruleText: "example.org#@%#test = 1;",
                 expectedContent: "test = 1;",
-                expectedIsWhitelist: true,
+                expectedIsWhiteList: true,
                 expectedIsScript: true,
                 expectedPermittedDomains: ["example.org"]),
             TestCase(
@@ -153,7 +153,7 @@ final class CosmeticRuleTests: XCTestCase {
                 // Scriptlet whitelist rule.
                 ruleText: "example.org#@%#//scriptlet(\"noeval\")",
                 expectedContent: "//scriptlet(\"noeval\")",
-                expectedIsWhitelist: true,
+                expectedIsWhiteList: true,
                 expectedIsScript: true,
                 expectedIsScriptlet: true,
                 expectedScriptlet: "noeval",
@@ -230,7 +230,7 @@ final class CosmeticRuleTests: XCTestCase {
 
             XCTAssertEqual(result.ruleText, testCase.ruleText, msg)
             XCTAssertEqual(result.content, testCase.expectedContent, msg)
-            XCTAssertEqual(result.isWhiteList, testCase.expectedIsWhitelist, msg)
+            XCTAssertEqual(result.isWhiteList, testCase.expectedIsWhiteList, msg)
             XCTAssertEqual(result.isElemhide, testCase.expectedIsElemhide, msg)
             XCTAssertEqual(result.isExtendedCss, testCase.expectedIsExtendedCss, msg)
             XCTAssertEqual(result.isInjectCss, testCase.expectedIsInjectCss, msg)

@@ -109,7 +109,7 @@ class CosmeticRule: Rule {
             }
         }
 
-        isWhiteList = CosmeticRule.isWhitelist(marker: markerInfo.marker!)
+        isWhiteList = CosmeticRule.isWhiteList(marker: markerInfo.marker!)
         isExtendedCss = CosmeticRule.isExtCssMarker(marker: markerInfo.marker!)
         if (!isExtendedCss && CosmeticRule.hasExtCSSIndicators(content: self.content, version: version)) {
             // Additional check if rule is extended css rule by pseudo class indicators.
@@ -194,7 +194,7 @@ class CosmeticRule: Rule {
     }
 
     /// Returns true if the rule marker is for an exception rule.
-    private static func isWhitelist(marker: CosmeticRuleMarker) -> Bool {
+    private static func isWhiteList(marker: CosmeticRuleMarker) -> Bool {
         switch (marker) {
         case CosmeticRuleMarker.ElementHidingException,
             CosmeticRuleMarker.ElementHidingExtCSSException,
