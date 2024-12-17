@@ -1,33 +1,47 @@
 import Foundation
 
-/**
- * Compiler class
- */
+/// Compiler accepts a list of Rule objects (AdGuard rules representations)
+/// and converts them to Safari content blocking format.
 class Compiler {
-    // Max number of CSS selectors per rule (look at compactCssRules function)
-    private static let MAX_SELECTORS_PER_WIDE_RULE = 250;
-    private static let MAX_SELECTORS_PER_DOMAIN_RULE = 250;
+    /// Max number of CSS selectors per rule (look at compactCssRules function).
+    private static let MAX_SELECTORS_PER_WIDE_RULE = 250
+    private static let MAX_SELECTORS_PER_DOMAIN_RULE = 250
+
+    /// Cosmetic rule actions.
+    ///
+    /// "css-display-none" is natively supported by Safari, other types are custom
+    /// actions that can only be supported by a different Safari extension.
+    private static let COSMETIC_ACTIONS: [String] = [
+        "css-display-none",
+        "css-inject",
+        "css-extended",
+        "scriptlet",
+        "script",
+    ]
 
     private let optimize: Bool
     private let advancedBlockedEnabled: Bool
 
-    private let blockerEntryFactory: BlockerEntryFactory;
+    private let blockerEntryFactory: BlockerEntryFactory
 
-    private static let COSMETIC_ACTIONS: [String] = ["css-display-none", "css-inject", "css-extended", "scriptlet", "script"];
-
+    /// Initializes Safari content blocker compiler.
     init(
             optimize: Bool,
             advancedBlocking: Bool,
-            errorsCounter: ErrorsCounter
+            errorsCounter: ErrorsCounter,
+            version: SafariVersion
     ) {
         self.optimize = optimize
         advancedBlockedEnabled = advancedBlocking
-        blockerEntryFactory = BlockerEntryFactory(advancedBlockingEnabled: advancedBlocking, errorsCounter: errorsCounter);
+        blockerEntryFactory = BlockerEntryFactory(
+            advancedBlockingEnabled: advancedBlocking,
+            errorsCounter: errorsCounter,
+            version: version
+        )
     }
 
-    /**
-     * Compiles array of AG rules to intermediate compilation result
-     */
+    /// Compiles the list of AdGuard rules into an intermediate compilation result object
+    /// that later will be converted to JSON.
     func compileRules(rules: [Rule], progress: Progress? = nil) -> CompilationResult {
         var shouldContinue: Bool {
             !(progress?.isCancelled ?? false)
@@ -44,6 +58,7 @@ class Compiler {
         var scriptletsExceptions = [BlockerEntry]()
         var cosmeticCssExceptions = [BlockerEntry]()
 
+        // A list of domains disabled by $specifichide rules.
         var specifichideExceptionDomains = [String]()
 
         var compilationResult = CompilationResult()
@@ -52,10 +67,24 @@ class Compiler {
         for rule in rules {
             guard shouldContinue else { return CompilationResult() }
 
+            if rule is NetworkRule {
+                let networkRule = rule as! NetworkRule
+
+                if networkRule.isOptionEnabled(option: .specifichide) {
+                    let res = NetworkRuleParser.extractDomain(pattern: networkRule.urlRuleText)
+                    if res.domain != "" && !res.patternMatchesPath {
+                        // Prepend wildcard as we'll be excluding wildcard domains.
+                        specifichideExceptionDomains.append("*" + res.domain)
+
+                        // There's no need to convert $specifichide rule.
+                        continue
+                    }
+                }
+            }
+
             guard let item = blockerEntryFactory.createBlockerEntry(rule: rule) else { continue }
 
             if item.action.type == "block" {
-                // Url blocking rules
                 compilationResult.addBlockTypedEntry(entry: item, source: rule)
             } else if item.action.type == "css-display-none" {
                 cssBlocking.append(item)
@@ -80,11 +109,8 @@ class Compiler {
                     cssExceptions.append(item)
                 } else if item.action.css != nil && item.action.css! != "" {
                     cosmeticCssExceptions.append(item)
-                } else if (rule as! NetworkRule).isSingleOption(option: .Specifichide) {
-                    let exceptionDomain = NetworkRuleParser.parseRuleDomain(pattern: rule.ruleText)
-                    specifichideExceptionDomains.append(exceptionDomain)
                 } else {
-                    compilationResult.addIgnorePreviousTypedEntry(entry: item, source: rule)
+                    compilationResult.addIgnorePreviousTypedEntry(entry: item, rule: rule)
                 }
             }
         }
@@ -92,18 +118,33 @@ class Compiler {
         guard shouldContinue else { return CompilationResult() }
 
         // Applying CSS exceptions
-        cssBlocking = Compiler.applyActionExceptions(blockingItems: &cssBlocking, exceptions: cssExceptions, actionValue: "selector")
+        cssBlocking = Compiler.applyActionExceptions(
+            blockingItems: &cssBlocking,
+            exceptions: cssExceptions,
+            actionValue: "selector"
+        )
+
+        // Compacting cosmetic rules.
         let cssCompact = Compiler.compactCssRules(cssBlocking: cssBlocking)
         if !optimize {
             compilationResult.cssBlockingWide = cssCompact.cssBlockingWide
         }
-        compilationResult.cssBlockingGenericDomainSensitive = Compiler.compactDomainCssRules(entries: cssCompact.cssBlockingGenericDomainSensitive, useUnlessDomain: true)
-        compilationResult.cssBlockingDomainSensitive = Compiler.compactDomainCssRules(entries: cssCompact.cssBlockingDomainSensitive)
+
+        compilationResult.cssBlockingGenericDomainSensitive = Compiler.compactDomainCssRules(
+            entries: cssCompact.cssBlockingGenericDomainSensitive,
+            useUnlessDomain: true
+        )
+
+        compilationResult.cssBlockingDomainSensitive = Compiler.compactDomainCssRules(
+            entries: cssCompact.cssBlockingDomainSensitive
+        )
 
         guard shouldContinue else { return CompilationResult() }
 
         // Apply specifichide exceptions
-        compilationResult.cssBlockingDomainSensitive = Compiler.applySpecifichide(blockingItems: &compilationResult.cssBlockingDomainSensitive, specifichideExceptions: specifichideExceptionDomains)
+        compilationResult.cssBlockingDomainSensitive = Compiler.applySpecifichide(
+            blockingItems: &compilationResult.cssBlockingDomainSensitive,
+            specifichideExceptions: specifichideExceptionDomains)
 
         guard shouldContinue else { return CompilationResult() }
 
@@ -220,12 +261,15 @@ class Compiler {
         }
     }
 
-    /**
-     * Applies specifichide exceptions
-     */
-    private static func applySpecifichide(blockingItems: inout [BlockerEntry], specifichideExceptions: [String]) -> [BlockerEntry] {
+    /// Applies $specifichide exceptions by removing the domain from other rules' `if-domain`.
+    ///
+    /// TODO: [ameshkov]: The algorithm is very ineffective, reconsider later.
+    private static func applySpecifichide(
+        blockingItems: inout [BlockerEntry],
+        specifichideExceptions: [String]
+    ) -> [BlockerEntry] {
         for index in 0..<blockingItems.count {
-            var item = blockingItems[index];
+            var item = blockingItems[index]
 
             for exception in specifichideExceptions {
                 if (item.trigger.ifDomain?.contains(exception) != nil) {
@@ -251,53 +295,55 @@ class Compiler {
         return result;
     }
 
-    /**
-     * Applies exceptions
-     */
-    static func applyActionExceptions(blockingItems: inout [BlockerEntry], exceptions: [BlockerEntry], actionValue: String) -> [BlockerEntry] {
-        var exceptionsDictionary = [String: [BlockerEntry]]();
+    /// Applies cosmetic exceptions by modifying `if-domain` of the rules.
+    static func applyActionExceptions(
+        blockingItems: inout [BlockerEntry],
+        exceptions: [BlockerEntry],
+        actionValue: String
+    ) -> [BlockerEntry] {
+        var exceptionsDictionary = [String: [BlockerEntry]]()
         for exc in exceptions {
-            let key = Compiler.getActionValue(entry: exc, action: actionValue);
+            let key = Compiler.getActionValue(entry: exc, action: actionValue)
             if (key == nil) {
-                continue;
+                continue
             }
 
-            var current = exceptionsDictionary[key!];
+            var current = exceptionsDictionary[key!]
             if (current == nil) {
-                current = [BlockerEntry]();
+                current = [BlockerEntry]()
             }
 
-            current!.append(exc);
-            exceptionsDictionary.updateValue(current!, forKey: key!);
+            current!.append(exc)
+            exceptionsDictionary.updateValue(current!, forKey: key!)
         }
 
         for index in 0..<blockingItems.count {
-            let key = Compiler.getActionValue(entry: blockingItems[index], action: actionValue);
+            let key = Compiler.getActionValue(entry: blockingItems[index], action: actionValue)
             if (key == nil) {
-                continue;
+                continue
             }
 
-            let matchingExceptions = exceptionsDictionary[key!];
+            let matchingExceptions = exceptionsDictionary[key!]
             if (matchingExceptions == nil) {
-                continue;
+                continue
             }
 
             for exc in matchingExceptions! {
-                Compiler.applyExceptionDomains(exceptionTrigger: exc.trigger, ruleTrigger: &blockingItems[index].trigger);
+                Compiler.applyExceptionDomains(exceptionTrigger: exc.trigger, ruleTrigger: &blockingItems[index].trigger)
             }
         }
 
-        var result = [BlockerEntry]();
+        var result = [BlockerEntry]()
 
         for r in blockingItems {
             // skip cosmetic entries, that has been disabled by exclusion rules
             if ((r.trigger.ifDomain?.count == 0 && r.trigger.unlessDomain == nil) || (r.trigger.unlessDomain?.count == 0 && r.trigger.ifDomain == nil) && self.COSMETIC_ACTIONS.contains(r.action.type)) {
-                continue;
+                continue
             }
 
             if (r.trigger.ifDomain == nil || r.trigger.ifDomain?.count == 0 ||
                     r.trigger.unlessDomain == nil || r.trigger.unlessDomain?.count == 0) {
-                result.append(r);
+                result.append(r)
             }
         }
 
@@ -306,15 +352,12 @@ class Compiler {
 
     private static func createWideRule(wideSelectors: [String]) -> BlockerEntry {
         return BlockerEntry(
-                trigger: BlockerEntry.Trigger(urlFilter: BlockerEntryFactory.URL_FILTER_CSS_RULES),
-                action: BlockerEntry.Action(type: "css-display-none", selector: wideSelectors.joined(separator: ", "))
+            trigger: BlockerEntry.Trigger(urlFilter: BlockerEntryFactory.URL_FILTER_COSMETIC_RULES),
+            action: BlockerEntry.Action(type: "css-display-none", selector: wideSelectors.joined(separator: ", "))
         );
     };
 
-    /**
-     * Compacts wide CSS rules
-     * @param cssBlocking unsorted css elemhide rules
-     */
+    /// Tries to compress CSS rules by combining generic rules into a single rule.
     static func compactCssRules(cssBlocking: [BlockerEntry]) -> CompactCssRulesData {
         var cssBlockingWide = [BlockerEntry]();
         var cssBlockingDomainSensitive = [BlockerEntry]();
@@ -327,7 +370,7 @@ class Compiler {
                 cssBlockingDomainSensitive.append(entry);
             } else if (entry.trigger.unlessDomain != nil) {
                 cssBlockingGenericDomainSensitive.append(entry);
-            } else if (entry.action.selector != nil && entry.trigger.urlFilter == BlockerEntryFactory.URL_FILTER_CSS_RULES) {
+            } else if (entry.action.selector != nil && entry.trigger.urlFilter == BlockerEntryFactory.URL_FILTER_COSMETIC_RULES) {
                 wideSelectors.append(entry.action.selector!);
                 if (wideSelectors.count >= Compiler.MAX_SELECTORS_PER_WIDE_RULE) {
                     cssBlockingWide.append(createWideRule(wideSelectors: wideSelectors));

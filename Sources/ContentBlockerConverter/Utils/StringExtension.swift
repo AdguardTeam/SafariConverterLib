@@ -1,167 +1,206 @@
 import Foundation
 
-/**
- * Useful string extensions
- */
+/// Useful string extensions.
 extension String {
 
-    /**
-     Escapes special characters so that the string could be used in a JSON.
-     */
+    /// Escapes special characters so that the string could be used in a JSON.
     func escapeForJSON() -> String {
         var result = ""
 
-        let scalars = self.unicodeScalars
-        var start = scalars.startIndex
-        let end = scalars.endIndex
-        var idx = start
-        while idx < scalars.endIndex {
-            let s: String
-            let c = scalars[idx]
-            switch c {
-            case "\\": s = "\\\\"
-            case "\"": s = "\\\""
-            case "\n": s = "\\n"
-            case "\r": s = "\\r"
-            case "\t": s = "\\t"
-            case "\u{8}": s = "\\b"
-            case "\u{C}": s = "\\f"
-            case "\0"..<"\u{10}":
-                s = "\\u000\(String(c.value, radix: 16, uppercase: true))"
-            case "\u{10}"..<" ":
-                s = "\\u00\(String(c.value, radix: 16, uppercase: true))"
+        let utf8 = self.utf8
+        var escapedSequence: String?
+        var startNonEscapedIndex = utf8.startIndex
+        var lastNotEscapedIndex = startNonEscapedIndex
+        while lastNotEscapedIndex < utf8.endIndex {
+            let char = utf8[lastNotEscapedIndex]
+            switch char {
+            case 0x5C: escapedSequence = "\\\\"
+            case 0x22: escapedSequence = "\\\""
+            case 0x0A: escapedSequence = "\\n"
+            case 0x0D: escapedSequence = "\\r"
+            case 0x09: escapedSequence = "\\t"
+            case 0x08: escapedSequence = "\\b"
+            case 0x0C: escapedSequence = "\\f"
+            case 0x00..<0x10:
+                escapedSequence = "\\u000\(String(char, radix: 16, uppercase: true))"
+            case 0x10..<0x20:
+                escapedSequence = "\\u00\(String(char, radix: 16, uppercase: true))"
             default:
-                idx = scalars.index(after: idx)
+                lastNotEscapedIndex = utf8.index(after: lastNotEscapedIndex)
                 continue
             }
 
-            if idx != start {
-                result.append(String(scalars[start..<idx]))
+            if lastNotEscapedIndex != startNonEscapedIndex {
+                result.append(String(self[startNonEscapedIndex..<lastNotEscapedIndex]))
             }
-            result.append(s)
+            result.append(escapedSequence!)
 
-            idx = scalars.index(after: idx)
-            start = idx
+            lastNotEscapedIndex = utf8.index(after: lastNotEscapedIndex)
+            startNonEscapedIndex = lastNotEscapedIndex
         }
 
-        if start != end {
-            result.append(String(scalars[start..<end]))
+        if escapedSequence == nil {
+            // If nothing was escaped in the string, we can simply return the String itself.
+            return self
+        }
+
+        if startNonEscapedIndex != utf8.endIndex {
+            result.append(String(self[startNonEscapedIndex..<utf8.endIndex]))
         }
 
         return result
     }
 
-    func indexOf(target: String) -> Int {
-        let range = self.range(of: target)
-        if let range = range {
-            return distance(from: self.startIndex, to: range.lowerBound)
-        } else {
-            return -1
-        }
-    }
-
-    func indexOf(target: String, startIndex: Int) -> Int {
-        let startRange = self.index(target.startIndex, offsetBy: startIndex);
-        let range = self.range(of: target, options: NSString.CompareOptions.literal, range: (startRange..<self.endIndex))
-
-        if let range = range {
-            return distance(from: self.startIndex, to: range.lowerBound)
-        } else {
-            return -1
-        }
-    }
-
-    func lastIndexOf(target: String) -> Int {
-        let range = self.range(of: target, options: .backwards)
-        if let range = range {
-            return distance(from: self.startIndex, to: range.lowerBound)
-        } else {
-            return -1
-        }
-    }
-
-    func lastIndexOf(target: String, maxLength: Int) -> Int {
-        let cut = String(self.prefix(maxLength));
-        return cut.lastIndexOf(target: target);
-    }
-
-    func subString(startIndex: Int) -> String {
-        let start = self.index(self.startIndex, offsetBy: startIndex);
-        let end = self.index(self.endIndex, offsetBy: 0);
-        return String(self[start..<end])
-    }
-
-    func subString(startIndex: Int, toIndex: Int) -> String {
-        let start = self.index(self.startIndex, offsetBy: startIndex)
-        let end = self.index(self.startIndex, offsetBy: toIndex)
-        return String(self[start..<end])
-    }
-
-    func subString(from: Int, toSubstring s2: String) -> String? {
-        guard let r = self.range(of: s2) else {
-            return nil
-        }
-        var s = self.prefix(upTo: r.lowerBound)
-        s = s.dropFirst(from)
-        return String(s);
-    }
-
-    func subString(startIndex: Int, length: Int) -> String {
-        let start = self.index(self.startIndex, offsetBy: startIndex);
-        let end = self.index(self.startIndex, offsetBy: startIndex + length);
-        return String(self[start..<end])
-    }
-
+    /// Replaces all occuriences of the target string with the specified string.
     func replace(target: String, withString: String) -> String {
         return self.replacingOccurrences(of: target, with: withString, options: NSString.CompareOptions.literal, range: nil)
     }
 
-    func splitByDelimiterWithEscapeCharacter(delimiter: unichar, escapeChar: unichar) -> [String] {
-        let str = self as NSString
-        if str.length == 0 {
-            return [String]()
+    /// Splits the string into parts by the specified delimiter.
+    ///
+    /// Takes into account if delimiter is escaped by the specified escape character.
+    /// Ignores empty components.
+    func split(delimiter: UInt8, escapeChar: UInt8) -> [String] {
+        let utf8 = self.utf8
+
+        if utf8.count == 0 {
+            return []
         }
 
-        var delimiterIndexes = [Int]()
-        for index in 0...str.length - 1 {
-            let char = str.character(at: index)
-            switch char {
-            case delimiter:
-                // ignore escaped
-                if (index > 0 && str.character(at: index - 1) == escapeChar) {
-                    continue
-                }
-
-                delimiterIndexes.append(index)
-            default:
-                break
-            }
+        // In case of AdGuard rules most of the rules have just one modifier
+        // so this tiny check despite looking strange allows to avoid
+        // quite a lot of unnecessary allocations.
+        if utf8.firstIndex(of: delimiter) == nil {
+            return [self]
         }
 
         var result = [String]()
-        var previous = 0
-        for ind in delimiterIndexes {
-            if ind > previous {
-                let part = str.substring(with: NSRange(location: previous, length: ind - previous))
-                result.append(part)
-            } else {
-                result.append("")
+        var currentIndex = utf8.startIndex
+        var escaped = false
+        var buffer = [UInt8]()
+
+        while currentIndex < utf8.endIndex {
+            let char = utf8[currentIndex]
+
+            switch char {
+            case delimiter:
+                if escaped {
+                    // Add the delimiter to the buffer since it's escaped.
+                    buffer.append(char)
+                    escaped = false
+                } else {
+                    if !buffer.isEmpty {
+                        result.append(String(decoding: buffer, as: UTF8.self))
+                        buffer.removeAll()
+                    }
+                }
+            case escapeChar:
+                if escaped {
+                    // Add the escape character itself since it was escaped.
+                    buffer.append(char)
+                    escaped = false
+                } else {
+                    escaped = true
+                }
+            default:
+                if escaped {
+                    // Add the escape character for an escaped non-delimiter character.
+                    escaped = false
+                }
+                buffer.append(char)
             }
-            previous = ind + 1
+
+            currentIndex = utf8.index(after: currentIndex)
         }
 
-        result.append(str.substring(from: previous))
+        // Add the last part if there are remaining characters in the buffer
+        if !buffer.isEmpty {
+            result.append(String(decoding: buffer, as: UTF8.self))
+        }
 
         return result
     }
 
-    func isASCII() -> Bool {
-        for scalar in unicodeScalars {
-            if (!scalar.isASCII) {
-                return false;
-            }
+    /// Returns range of the first regex match in the string.
+    func firstMatch(for regex: NSRegularExpression) -> Range<String.Index>? {
+        let range = NSMakeRange(0, self.utf16.count)
+        if let match = regex.firstMatch(in: self, options: [], range: range) {
+            return Range(match.range, in: self)
         }
 
-        return true;
+        return nil
+    }
+
+    /// Returns all regex matches found in the string.
+    func matches(regex: NSRegularExpression) -> [String] {
+        let range = NSMakeRange(0, self.utf16.count)
+        let matches = regex.matches(in: self, options: [], range: range)
+        return matches.compactMap { match in
+            guard let substringRange = Range(match.range, in: self) else {
+                return nil
+            }
+            return String(self[substringRange])
+        }
+    }
+}
+
+extension StringProtocol {
+    func isASCII() -> Bool {
+        return utf8.allSatisfy { $0 < 128 }
+    }
+}
+
+extension Collection where Element == UInt8, Index == String.Index {
+    /// Access a UTF-8 code unit by integer index.
+    subscript(safeIndex index: Int) -> UInt8? {
+        guard index >= 0, let utf8Index = self.index(startIndex, offsetBy: index, limitedBy: endIndex) else {
+            return nil
+        }
+        return self[utf8Index]
+    }
+}
+
+/// Extending Collection with UInt8 elements as they're used when working with UTF8 String representations.
+extension Collection where Element == UInt8 {
+    /// Checks if the collection contains the specified one.
+    func includes<C: Collection>(_ other: C) -> Bool where C.Element == UInt8 {
+        guard !other.isEmpty else {
+            // Empty subsequence is trivially included
+            return true
+        }
+
+        // If other is longer than self, it can’t be included
+        guard count >= other.count else {
+            return false
+        }
+
+        var start = startIndex
+        while start != endIndex {
+            // Check if there’s enough space left for other
+            if distance(from: start, to: endIndex) < other.count {
+                break
+            }
+
+            var currentIndex = start
+            var otherIndex = other.startIndex
+            var matched = true
+
+            while otherIndex != other.endIndex {
+                if self[currentIndex] != other[otherIndex] {
+                    matched = false
+                    break
+                }
+                formIndex(after: &currentIndex)
+                other.formIndex(after: &otherIndex)
+            }
+
+            if matched {
+                return true
+            }
+
+            formIndex(after: &start)
+        }
+
+        return false
     }
 }

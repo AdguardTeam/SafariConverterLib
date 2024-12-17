@@ -7,7 +7,7 @@ protocol ContentBlockerEngineProtocol {
     func getData(url: URL) throws -> String
 }
 
-final public class ContentBlockerEngine: ContentBlockerEngineProtocol {    
+final public class ContentBlockerEngine: ContentBlockerEngineProtocol {
     private var contentBlockerContainer: ContentBlockerContainer
     private var blockerDataCache = NSCache<NSString, NSString>()
     private var version = "1"
@@ -65,7 +65,7 @@ final public class ContentBlockerEngine: ContentBlockerEngineProtocol {
         let data: BlockerData = try contentBlockerContainer.getData(url: url)
 
         let encoder = JSONEncoder()
-        encoder.outputFormatting = .prettyPrinted
+        encoder.outputFormatting = [.prettyPrinted,.sortedKeys]
 
         let json = try encoder.encode(data)
         return String(data: json, encoding: .utf8)!

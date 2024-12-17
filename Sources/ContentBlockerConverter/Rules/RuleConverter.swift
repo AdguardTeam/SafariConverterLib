@@ -1,153 +1,137 @@
 import Foundation
 
-/**
- * Rule converter class.
- * Converts third-party and some unsupported constructions to AG rules
- */
+/// Class responsible for converting third-party rules to AdGuard syntax.
+///
+/// Note, that the rules converter purposefully ignores some rules that AdGuard supports (and converts) on other platforms.
+/// The problem is that Safari content blocking API is not enough to support those rules.
+///
+/// Here's the list of what's ignored (but may be required if Safari adds support for that):
+///  - Adblock Plus $rewrite=abp-resource modifier
+///  - uBO HTML filtering, i.e. ##^scrpit:has-text
+///  - Options that are converted to $redirect rules: mp4, empty
+///  - Options that are converted to $csp rules: inline-font, inline-script
+///
+/// Some options that on other platforms we handle by the rule converter are supported by NetworkRule:
+/// - $all
+/// - $1p
+/// - $3p
 class RuleConverter {
-    private let COMMENT = "!".utf16.first!;
-    private static let UBO_SCRIPTLET_MASK_REG = "##script\\:inject|#@?#\\s*\\+js";
-    private static let UBO_SCRIPTLET_MASK_REGEXP = try! NSRegularExpression(pattern: UBO_SCRIPTLET_MASK_REG, options: [.caseInsensitive]);
-    private static let SENTENCES_REGEXP = try! NSRegularExpression(pattern: #"'.*?'|".*?"|\S+"#, options: [.caseInsensitive]);
-    private static let DENYALLOW_MODIFIER_MASK = "denyallow=";
-    private static let DOMAIN_MODIFIER_MASK = "domain=";
-    private static let IMPORTANT_MODIFIER_MASK = "important";
+    private static let UBO_SCRIPTLET_MASK_REG = "#@?#\\+js"
+    private static let UBO_SCRIPTLET_MASK_REGEXP = try! NSRegularExpression(pattern: UBO_SCRIPTLET_MASK_REG, options: [.caseInsensitive])
+    private static let SENTENCES_REGEXP = try! NSRegularExpression(pattern: #"'.*?'|".*?"|\S+"#, options: [.caseInsensitive])
+    private static let DENYALLOW_MODIFIER_MASK = "denyallow="
+    private static let DOMAIN_MODIFIER_MASK = "domain="
+    private static let IMPORTANT_MODIFIER_MASK = "important"
 
-    private static let MODIFIER_MASK = "$";
-    private static let EXCEPTION_MASK = "@@";
-    private static let EXCEPTION_SUFFIX = EXCEPTION_MASK + "||";
+    private static let MODIFIER_MASK = "$"
+    private static let EXCEPTION_MASK = "@@"
+    private static let EXCEPTION_SUFFIX = EXCEPTION_MASK + "||"
 
-    private let UBO_SCRIPTLET_MASK_1 = "##+js";
-    private let UBO_SCRIPTLET_MASK_2 = "##script:inject";
-    private let UBO_SCRIPTLET_EXCEPTION_MASK_1 = "#@#+js";
-    private let UBO_SCRIPTLET_EXCEPTION_MASK_2 = "#@#script:inject";
-    private let UBO_SCRIPT_TAG_MASK = "##^script";
-    private let UBO_CSS_STYLE_MASK = ":style(";
+    private let UBO_SCRIPTLET_MASK = "##+js"
+    private let UBO_SCRIPTLET_EXCEPTION_MASK = "#@#+js"
+    private let UBO_CSS_STYLE_MASK = ":style("
 
-    /**
-     * AdBlock Plus snippet rule mask
-     */
-    private let ABP_SCRIPTLET_MASK = "#$#";
-    private let ABP_SCRIPTLET_EXCEPTION_MASK = "#@$#";
+    // AdGuard CSS rule mask regex.
+    private static let ADG_CSS_MASK_REG = "#@?\\$#.+?\\s*\\{.*\\}\\s*$"
+    private static let ADG_CSS_MASK_REGEXP = try! NSRegularExpression(pattern: ADG_CSS_MASK_REG, options: [.caseInsensitive])
 
-    /**
-     * AdGuard CSS rule mask
-     */
-    private static let ADG_CSS_MASK_REG = "#@?\\$#.+?\\s*\\{.*\\}\\s*$";
-    private static let ADG_CSS_MASK_REGEXP = try! NSRegularExpression(pattern: ADG_CSS_MASK_REG, options: [.caseInsensitive]);
+    private static let delimeterChar = ",".utf16.first!
+    private static let escapeChar = "\\".utf16.first!
 
-    private static let delimeterChar = ",".utf16.first!;
-    private static let escapeChar = "\\".utf16.first!;
+    /// AdGuard script rules mask.
+    private let ADGUARD_SCRIPTLET_MASK = "${domains}#%#//scriptlet(${args})"
 
-    /**
-     * AdGuard scriptlet mask
-     */
-    private let ADGUARD_SCRIPTLET_MASK = "${domains}#%#//scriptlet(${args})";
+    /// AdGuard scriptlet exception mask.
+    private let ADGUARD_SCRIPTLET_EXCEPTION_MASK = "${domains}#@%#//scriptlet(${args})"
 
-    /**
-     * AdGuard scriptlet exception mask
-     */
-    private let ADGUARD_SCRIPTLET_EXCEPTION_MASK = "${domains}#@%#//scriptlet(${args})";
-
-    /**
-     * Converts text to AG supported rule format
-     */
-    func convertRule(rule: NSString) -> [NSString?] {
-        if (rule.length == 0 || isComment(rule: rule)) {
-            return [rule];
+    /// Converts a rule to AdGuard-compatible syntax.
+    ///
+    /// Note, that some rules are converted to a list of rules.
+    func convertRule(ruleText: String) -> [String?] {
+        if (ruleText.isEmpty) {
+            return [ruleText]
         }
 
-        let markerInfo = CosmeticRuleMarker.findCosmeticRuleMarker(ruleText: rule);
+        let markerInfo = CosmeticRuleMarker.findCosmeticRuleMarker(ruleText: ruleText)
+
         if markerInfo.index != -1 {
-            if (isUboScriptletRule(rule: rule, index: markerInfo.index)) {
-                return [convertUboScriptletRule(rule: rule)];
+            // If a cosmetic rule marker has been found, check for scriptlet rules
+            // conversions.
+            if (isUboScriptletRule(ruleText: ruleText, marker: markerInfo.marker!, index: markerInfo.index)) {
+                return [convertUboScriptletRule(rule: ruleText)]
             }
 
-            if (isAbpSnippetRule(rule: rule, index: markerInfo.index)) {
-                return convertAbpSnippetRule(rule: rule);
-            }
-
-            if markerInfo.marker == CosmeticRuleMarker.ElementHiding &&
-                       rule.substring(from: markerInfo.index).hasPrefix(UBO_SCRIPT_TAG_MASK) {
-
-                let uboScriptRules = convertUboScriptTagRule(ruleText: rule);
-                if (uboScriptRules != nil) {
-                    return uboScriptRules!;
-                }
+            if (isAbpSnippetRule(ruleText: ruleText, marker: markerInfo.marker!, index: markerInfo.index)) {
+                return convertAbpSnippetRule(ruleText: ruleText, marker: markerInfo.marker!, index: markerInfo.index)
             }
 
             if markerInfo.marker == CosmeticRuleMarker.ElementHiding ||
                        markerInfo.marker == CosmeticRuleMarker.ElementHidingException {
-                let uboCssStyleRule = convertUboCssStyleRule(ruleText: rule);
+                let uboCssStyleRule = convertUboCssStyleRule(ruleText: ruleText)
                 if (uboCssStyleRule != nil) {
-                    return [uboCssStyleRule!];
+                    return [uboCssStyleRule!]
                 }
             }
         } else {
-            // Convert abp redirect rule
-            let abpRedirectRule = convertAbpRedirectRule(rule: rule);
-            if (abpRedirectRule != nil) {
-                return [abpRedirectRule!];
-            }
-
-            // Convert options
-            let ruleWithConvertedOptions = convertOptions(rule: rule);
-            if (ruleWithConvertedOptions != nil) {
-                return ruleWithConvertedOptions!;
-            }
-
-            // Convert denyallow rule
-            let denyallowRules = convertDenyallowRule(ruleText: rule);
+            // Convert denyallow rule.
+            let denyallowRules = convertDenyallowRule(ruleText: ruleText)
             if (denyallowRules != nil) {
-                return denyallowRules!;
+                return denyallowRules!
             }
         }
 
-        return [rule];
+        return [ruleText]
     }
 
-    private func isComment(rule: NSString) -> Bool {
-        return rule.character(at: 0) == COMMENT;
-    }
+    /// Returns true if the rule is a uBO scriptlet rule.
+    /// In this case the rule needs to be converted.
+    private func isUboScriptletRule(ruleText: String, marker: CosmeticRuleMarker, index: Int) -> Bool {
+        if marker != CosmeticRuleMarker.ElementHiding && marker != CosmeticRuleMarker.ElementHidingException {
+            // uBO uses standard element hiding marker for scriptlet rules.
+            return false
+        }
 
-    private func isUboScriptletRule(rule: NSString, index: Int) -> Bool {
-        let ruleContent = rule.substring(from: index)
+        let contentIndex = ruleText.utf8.index(ruleText.startIndex, offsetBy: index)
+        let ruleContent = ruleText[contentIndex...]
 
         return (
-                ruleContent.hasPrefix(UBO_SCRIPTLET_MASK_1)
-                        || ruleContent.hasPrefix(UBO_SCRIPTLET_MASK_2)
-                        || ruleContent.hasPrefix(UBO_SCRIPTLET_EXCEPTION_MASK_1)
-                        || ruleContent.hasPrefix(UBO_SCRIPTLET_EXCEPTION_MASK_2)
-        ) && SimpleRegex.isMatch(regex: RuleConverter.UBO_SCRIPTLET_MASK_REGEXP, target: ruleContent as NSString);
+            ruleContent.utf8.starts(with: UBO_SCRIPTLET_MASK.utf8)
+            || ruleContent.utf8.starts(with: UBO_SCRIPTLET_EXCEPTION_MASK.utf8)
+        ) && String(ruleContent).firstMatch(for: RuleConverter.UBO_SCRIPTLET_MASK_REGEXP) != nil
     }
 
-    private func convertUboScriptletRule(rule: NSString) -> NSString? {
-        let mask = SimpleRegex.matches(regex: RuleConverter.UBO_SCRIPTLET_MASK_REGEXP, target: rule)[0];
-        let maskIndex = rule.range(of: mask).lowerBound;
-        let domains = rule.substring(to: maskIndex);
+    /// Converts a uBO scriptlet rule to AdGuard syntax.
+    private func convertUboScriptletRule(rule: String) -> String? {
+        let range = rule.firstMatch(for: RuleConverter.UBO_SCRIPTLET_MASK_REGEXP)
+        if range == nil {
+            return nil
+        }
+
+        let mask = rule[range!];
+        let domains = String(rule[..<range!.lowerBound]);
 
         let template: String;
-        if (mask.contains("@")) {
+        if (mask.utf8.contains(Chars.AT_CHAR)) {
             template = ADGUARD_SCRIPTLET_EXCEPTION_MASK;
         } else {
             template = ADGUARD_SCRIPTLET_MASK;
         }
 
-        guard let clean: String = getStringInBraces(str: rule as String) else {
+        guard let arguments: String = extractArgumentsString(str: rule) else {
             return nil
         }
 
-        var parsedArgs = clean.components(separatedBy: ", ");
+        var parsedArgs = arguments.components(separatedBy: ", ")
         if (parsedArgs.count == 1) {
             // Most probably this is not correct separator, in this case we use ','
-            parsedArgs = clean.components(separatedBy: ",");
+            parsedArgs = arguments.components(separatedBy: ",")
         }
 
-        var args = [String]();
+        var args = [String]()
         for i in (0..<parsedArgs.count) {
-            var arg = parsedArgs[i];
+            var arg = parsedArgs[i]
             if i == 0 {
-                arg = "ubo-" + arg;
+                arg = "ubo-" + arg
             }
 
             args.append(wrapInDoubleQuotes(str: arg));
@@ -158,40 +142,38 @@ class RuleConverter {
         return replacePlaceholders(str: template, domains: domains, args: argsString);
     }
 
-    private func isAbpSnippetRule(rule: NSString, index: Int) -> Bool {
-        let ruleContent = rule.substring(from: index)
+    /// Returns true if the rule most probably is a ABP snippet rule.
+    private func isAbpSnippetRule(ruleText: String, marker: CosmeticRuleMarker, index: Int) -> Bool {
+        if marker != CosmeticRuleMarker.Css && marker != CosmeticRuleMarker.CssException {
+            // Adblock Plus uses the same marker as the one AdGuard uses for CSS rules (#$#, #@$#).
+            return false
+        }
 
-        return (
-                ruleContent.hasPrefix(ABP_SCRIPTLET_MASK) ||
-                        ruleContent.hasPrefix(ABP_SCRIPTLET_EXCEPTION_MASK)) &&
-                !SimpleRegex.isMatch(regex: RuleConverter.ADG_CSS_MASK_REGEXP, target: rule);
+        let contentIndex = ruleText.utf8.index(ruleText.startIndex, offsetBy: index)
+        let ruleContent = String(ruleText[contentIndex...])
+
+        return ruleContent.firstMatch(for: RuleConverter.ADG_CSS_MASK_REGEXP) == nil
     }
 
-    /**
-     * Convert string of ABP scriptlet rule to AdGuard scriptlet rule
-     */
-    private func convertAbpSnippetRule(rule: NSString) -> [NSString] {
-        let mask = rule.contains(ABP_SCRIPTLET_MASK)
-                ? ABP_SCRIPTLET_MASK
-                : ABP_SCRIPTLET_EXCEPTION_MASK
+    /// Convert string of ABP scriptlet rule to AdGuard scriptlet rule.
+    private func convertAbpSnippetRule(ruleText: String, marker: CosmeticRuleMarker, index: Int) -> [String] {
+        let template = marker == CosmeticRuleMarker.Css ? ADGUARD_SCRIPTLET_MASK : ADGUARD_SCRIPTLET_EXCEPTION_MASK
 
-        let template = mask == ABP_SCRIPTLET_MASK
-                ? ADGUARD_SCRIPTLET_MASK
-                : ADGUARD_SCRIPTLET_EXCEPTION_MASK
+        let maskIndex = ruleText.utf8.index(ruleText.startIndex, offsetBy: index)
+        let domains = String(ruleText[..<maskIndex])
 
-        let maskIndex = rule.range(of: mask).lowerBound
-        let domains = rule.substring(to: maskIndex)
-        let args = rule.substring(from: maskIndex + mask.unicodeScalars.count)
+        let argsIndex = ruleText.utf8.index(ruleText.startIndex, offsetBy: index + marker.rawValue.utf8.count)
+        let args = ruleText[argsIndex...]
 
         let splitted = args.components(separatedBy: "; ")
 
-        var result = [NSString]()
+        var result = [String]()
 
         for s in splitted {
             var sentences = [String]()
-            let sen = getSentences(str: s);
+            let sen = s.matches(regex: RuleConverter.SENTENCES_REGEXP)
             for part in sen {
-                if (part != "") {
+                if part != "" {
                     sentences.append(part)
                 }
             }
@@ -203,64 +185,26 @@ class RuleConverter {
             }
 
             let converted = replacePlaceholders(str: template, domains: domains, args: wrapped.joined(separator: ", "))
-            result.append(converted as NSString)
+            result.append(converted)
         }
 
         return result;
     }
 
-    /**
-     * Converts UBO Script rule
-     * @param {string} ruleText rule text
-     * @returns {string} converted rule
-     */
-    private func convertUboScriptTagRule(ruleText: NSString) -> [NSString]? {
-        // We convert only one case ##^script:has-text at now
-        let uboHasTextRule = ":has-text";
-        let adgScriptTag = "$$script";
-        let uboScriptTag = "##^script";
-
-        var match = ruleText.components(separatedBy: uboHasTextRule);
-        if (match.count == 1) {
-            return nil;
-        }
-
-        let domains = match[0].replace(target: uboScriptTag, withString: "");
-        match.removeFirst();
-
-        var rules = [NSString]();
-        for m in match {
-            let attr = String(m.dropFirst().dropLast());
-            let isRegExp = attr.hasPrefix("/") && attr.hasSuffix("/");
-
-            var converted: String;
-            if (isRegExp) {
-                converted = domains + uboScriptTag + uboHasTextRule + "(" + attr + ")"
-
-            } else {
-                converted = domains + adgScriptTag + "[tag-content=\"" + attr + "\"]";
-            }
-
-            rules.append(converted as NSString);
-        }
-
-        return rules;
-    }
-
-    /**
-     * Converts CSS injection
-     * example.com##h1:style(background-color: blue !important)
-     * into
-     * example.com#$#h1 { background-color: blue !important }
-     * <p>
-     * OR (for exceptions):
-     * example.com#@#h1:style(background-color: blue !important)
-     * into
-     * example.com#@$#h1 { background-color: blue !important }
-     */
-    private func convertUboCssStyleRule(ruleText: NSString) -> NSString? {
-        if (!ruleText.contains(UBO_CSS_STYLE_MASK)) {
-            return nil;
+    /// Convers uBO-style CSS injection rule.
+    ///
+    /// Example:
+    /// example.com##h1:style(background-color: blue !important)
+    /// ->
+    /// example.com#$#h1 { background-color: blue !important }
+    ///
+    /// Exception rule example:
+    /// example.com#@#h1:style(background-color: blue !important)
+    /// ->
+    /// example.com#@$#h1 { background-color: blue !important }
+    private func convertUboCssStyleRule(ruleText: String) -> String? {
+        if !ruleText.utf8.includes(UBO_CSS_STYLE_MASK.utf8) {
+            return nil
         }
 
         let uboToInjectCssMarkersDictionary: [String: String] = [
@@ -268,267 +212,140 @@ class RuleConverter {
             "#@#": "#@$#",
             "#?#": "#$?#",
             "#@?#": "#@$?#",
-        ];
+        ]
 
         var replacedMarkerRule: String? = nil;
         for marker in uboToInjectCssMarkersDictionary.keys {
-            if (ruleText.contains(marker)) {
+            if (ruleText.utf8.includes(marker.utf8)) {
                 replacedMarkerRule = ruleText.replacingOccurrences(of: marker, with: uboToInjectCssMarkersDictionary[marker]!)
+                let result = replacedMarkerRule!.replacingOccurrences(of: UBO_CSS_STYLE_MASK, with: " { ")
 
-                let result = replacedMarkerRule!.replacingOccurrences(of: UBO_CSS_STYLE_MASK, with: " { ");
-                return (String(result.dropLast()) + " }") as NSString;
+                return result.dropLast() + " }"
             }
         }
 
         return nil;
     }
 
-    /**
-     * Converts abp rule into ag rule
-     * e.g.
-     * from:    "||example.org^$rewrite=abp-resource:blank-mp3"
-     * to:      "||example.org^$redirect:blank-mp3"
-     */
-    private func convertAbpRedirectRule(rule: NSString) -> NSString? {
-        let ABP_REDIRECT_KEYWORD = "rewrite=abp-resource:";
-        let AG_REDIRECT_KEYWORD = "redirect=";
-        if (!rule.contains(ABP_REDIRECT_KEYWORD)) {
-            return nil;
-        }
-        return rule.replacingOccurrences(of: ABP_REDIRECT_KEYWORD, with: AG_REDIRECT_KEYWORD) as NSString;
-    }
-
-    private static let EMPTY_OPTION = "empty";
-    private static let MP4_OPTION = "mp4";
-    private static let MEDIA_OPTION = "media";
-    private static let CSP_OPTION = "csp";
-    private static let INLINE_SCRIPT_OPTION = "inline-script";
-    private static let INLINE_FONT_OPTION = "inline-font";
-    private static let ALL_OPTION = "all";
-    private static let POPUP_OPTION = "popup";
-    private static let DOCUMENT_OPTION = "document";
-    private static let UBO_1P_OPTION = "1p";
-    private static let UBO_3P_OPTION = "3p";
-
-    private static let conversionMap: [String: String] = [
-        EMPTY_OPTION: "redirect=nooptext",
-        MP4_OPTION: "redirect=noopmp4-1s",
-        INLINE_SCRIPT_OPTION: CSP_OPTION + "=script-src 'self' 'unsafe-eval' http: https: data: blob: mediastream: filesystem:",
-        INLINE_FONT_OPTION: CSP_OPTION + "=font-src 'self' 'unsafe-eval' http: https: data: blob: mediastream: filesystem:",
-        UBO_1P_OPTION: "~third-party",
-        UBO_3P_OPTION: "third-party"
-    ]
-
-    private func convertOptions(rule: NSString) -> [NSString]? {
-        var pattern: String = ""
-        var options: String? = nil
-        do {
-            let parseResult = try NetworkRuleParser.parseRuleText(ruleText: rule)
-            options = parseResult.options
-            if (options == nil || options == "") {
-                return nil
-            }
-
-            pattern = NetworkRuleParser.getAsciiDomainRule(pattern: parseResult.pattern) ?? ""
-            if parseResult.whitelist {
-                pattern = RuleConverter.EXCEPTION_MASK + pattern
-            }
-        } catch {
-            return [rule]
-        }
-
-        let optionParts = options!.splitByDelimiterWithEscapeCharacter(delimiter: RuleConverter.delimeterChar, escapeChar: RuleConverter.escapeChar)
-
-        var optionsConverted = false
-
-        var updatedOptionsParts = [String]()
-        var cspOptions = [String]()
-        for part in optionParts {
-            var cursor = part;
-            var convertedOptionsPart = RuleConverter.conversionMap[part]
-
-            if (convertedOptionsPart != nil) {
-                // if option is $mp4, than it should go with $media option together
-                // https://github.com/AdguardTeam/AdguardBrowserExtension/issues/1452
-                if (part == RuleConverter.MP4_OPTION) {
-                    // check if media is not already among options
-                    if (optionParts.firstIndex(of: RuleConverter.MEDIA_OPTION) == nil) {
-                        convertedOptionsPart = convertedOptionsPart! + ",media"
-                    }
-                }
-
-                optionsConverted = true
-                cursor = convertedOptionsPart!
-            }
-
-            if (cursor.hasPrefix(RuleConverter.CSP_OPTION + "=")) {
-                cspOptions.append(cursor.subString(startIndex: RuleConverter.CSP_OPTION.unicodeScalars.count + 1))
-                continue
-            }
-
-            updatedOptionsParts.append(cursor)
-        }
-
-        if (cspOptions.count > 0) {
-            // if has more than one csp modifiers, we merge them into one
-            updatedOptionsParts.append(RuleConverter.CSP_OPTION + "=" + cspOptions.joined(separator: "; "));
-        }
-
-        // options with all modifier
-        let hasAllOption = updatedOptionsParts.firstIndex(of: RuleConverter.ALL_OPTION) != nil;
-        if (hasAllOption) {
-            let allOptionReplacers = [
-                RuleConverter.DOCUMENT_OPTION,
-                RuleConverter.POPUP_OPTION,
-                RuleConverter.INLINE_SCRIPT_OPTION,
-                RuleConverter.INLINE_FONT_OPTION,
-            ]
-
-            var rules = [NSString]();
-            for replacer in allOptionReplacers {
-                // remove replacer and all option from the list
-                var optionsButAllAndReplacer = [String]()
-                for o in updatedOptionsParts {
-                    if (o != replacer && o != RuleConverter.ALL_OPTION) {
-                        optionsButAllAndReplacer.append(o)
-                    }
-                }
-
-                // try get converted values, used for INLINE_SCRIPT_OPTION, INLINE_FONT_OPTION
-                let convertedReplacer = RuleConverter.conversionMap[replacer] ?? replacer
-
-                // add replacer to the list of options
-                optionsButAllAndReplacer.append(convertedReplacer)
-                let updatedOptionsString = optionsButAllAndReplacer.reversed().joined(separator: ",")
-
-                // create a new rule
-                let newRule = pattern + "$" + updatedOptionsString
-                rules.append(newRule as NSString)
-            }
-
-            return rules
-        }
-
-        if (optionsConverted) {
-            let newRule = pattern + "$" + updatedOptionsParts.joined(separator: ",")
-            return [newRule as NSString]
-        }
-
-        return nil
-    }
-
-    // Helpers
-
-    /**
-     * Return array of strings separated by space which not in quotes
-     */
-    private func getSentences(str: String) -> [String] {
-        return SimpleRegex.matches(regex: RuleConverter.SENTENCES_REGEXP, target: str as NSString)
-    }
-
-    private func getStringInBraces(str: String) -> String? {
-        let firstIndex = str.indexOf(target: "(")
-        let lastIndex = str.lastIndexOf(target: ")")
-        if firstIndex > lastIndex {
+    /// Validates and converts rule with $denyallow modifier into blocking rule and additional exception rules.
+    ///
+    /// Learn more about it here:
+    /// https://github.com/AdguardTeam/CoreLibs/issues/1304
+    private func convertDenyallowRule(ruleText: String) -> [String]? {
+        if !ruleText.utf8.includes(RuleConverter.DENYALLOW_MODIFIER_MASK.utf8) {
             return nil
         }
-        return str.subString(startIndex: firstIndex + 1, length: lastIndex - firstIndex - 1)
+
+        let ruleParts = try! NetworkRuleParser.parseRuleText(ruleText: ruleText)
+
+        if ruleParts.pattern.utf8.first == Chars.PIPE ||
+            ruleParts.options == nil ||
+            !ruleParts.options!.utf8.includes(RuleConverter.DOMAIN_MODIFIER_MASK.utf8) {
+
+            // We can only support simple case like this: $denyallow=x.com,domain=y.com,
+            // i.e. the rule that targets path (not domain) and it must have both
+            // denyallow and domain modifier.
+
+            return nil
+        }
+
+        var blockingElement: String = ruleParts.pattern;
+        if (blockingElement.starts(with: "/")) {
+            blockingElement = String(blockingElement.dropFirst());
+        }
+
+        let isGenericRule = blockingElement == "" || blockingElement == "*"
+
+        let ruleOptions = ruleParts.options!.components(separatedBy: ",")
+        let denyallowOption = ruleOptions.first(where: { $0.contains(RuleConverter.DENYALLOW_MODIFIER_MASK) })!
+
+        // Get denyallow domains list.
+        let denyallowDomains = denyallowOption.replace(target: RuleConverter.DENYALLOW_MODIFIER_MASK, withString: "").components(separatedBy: "|")
+
+        for domain in denyallowDomains {
+            if (domain.hasPrefix("~") || domain.contains("*")) {
+                // Modifier $denyallow cannot be negated or have a wildcard TLD
+                return nil
+            }
+        }
+
+        // Remove denyallow from options.
+        let optionsWithoutDenyallow = ruleOptions.filter { part in
+                    return part != denyallowOption
+                }
+                .joined(separator: ",")
+
+        var result = [String]()
+
+        let blockingRulePrefix: String = ruleParts.whitelist ? "@@" : ""
+        let exceptionRulePrefix: String = ruleParts.whitelist ? "||" : RuleConverter.EXCEPTION_SUFFIX
+        let exceptionRuleSuffix: String = ruleParts.whitelist ? "," + RuleConverter.IMPORTANT_MODIFIER_MASK : ""
+
+        // Blocking rule.
+        let blockingRule = blockingRulePrefix + ruleParts.pattern + RuleConverter.MODIFIER_MASK + optionsWithoutDenyallow
+        result.append(blockingRule)
+
+        // Exception rules.
+        for domain in denyallowDomains {
+            if (!isGenericRule) {
+                let exceptionRule = exceptionRulePrefix + domain + "/" + blockingElement + RuleConverter.MODIFIER_MASK + optionsWithoutDenyallow + exceptionRuleSuffix
+                result.append(exceptionRule)
+
+                let exceptionRuleWide = exceptionRulePrefix + domain + "/*/" + blockingElement + RuleConverter.MODIFIER_MASK + optionsWithoutDenyallow + exceptionRuleSuffix
+                result.append(exceptionRuleWide)
+
+            } else {
+                let exceptionRule = exceptionRulePrefix + domain + RuleConverter.MODIFIER_MASK + optionsWithoutDenyallow + exceptionRuleSuffix
+                result.append(exceptionRule)
+            }
+        }
+
+        return result
     }
 
+    /// Extracts arguments string from a scriptlet string.
+    ///
+    /// I.e. it will extract "1,2,3" from "func(1,2,3)".
+    private func extractArgumentsString(str: String) -> String? {
+        var firstIndex = str.utf8.firstIndex(of: Chars.BRACKET_OPEN)
+        let lastIndex = str.utf8.lastIndex(of: Chars.BRACKET_CLOSE)
+
+        if firstIndex == nil || lastIndex == nil {
+            return nil
+        }
+
+        str.utf8.formIndex(after: &firstIndex!)
+        if firstIndex! >= lastIndex! {
+            return nil
+        }
+
+        return String(str[firstIndex!..<lastIndex!])
+    }
+
+    /// Wraps the specified string in doublequotes escaping quotes inside if required.
     private func wrapInDoubleQuotes(str: String) -> String {
-        var modified = str as NSString
+        var modified = str
         // https://github.com/AdguardTeam/SafariConverterLib/issues/34
-        if str.unicodeScalars.count <= 1 {
+        if str.utf8.count <= 1 {
+            modified = modified.replacingOccurrences(of: "\"", with: "\\\"")
+        } else if str.utf8.first == Chars.QUOTE_SINGLE && str.utf8.last == Chars.QUOTE_SINGLE {
             modified = modified
-                    .replacingOccurrences(of: "\"", with: "\\\"")
-                    .replacingOccurrences(of: "'", with: "\'") as NSString
-        } else if str.hasPrefix("\'") && str.hasSuffix("\'") {
+                .trimmingCharacters(in: Chars.TRIM_SINGLE_QUOTE)
+                .replacingOccurrences(of: "\"", with: "\\\"")
+        } else if str.utf8.first == Chars.QUOTE_DOUBLE && str.utf8.last == Chars.QUOTE_DOUBLE {
             modified = modified
-                    .substring(with: NSRange(location: 1, length: modified.length - 2))
-                    .replacingOccurrences(of: "\"", with: "\\\"") as NSString
-        } else if str.hasPrefix("\"") && str.hasSuffix("\"") {
-            modified = modified
-                    .substring(with: NSRange(location: 1, length: modified.length - 1))
-                    .replacingOccurrences(of: "'", with: "\'") as NSString
+                .trimmingCharacters(in: Chars.TRIM_DOUBLE_QUOTE)
+                .replacingOccurrences(of: "'", with: "\'")
         }
 
         return "\"\(modified)\""
     }
 
-    private func replacePlaceholders(str: String, domains: String, args: String) -> NSString {
+    /// Replaces placeholders for domains and arguments in the specified template string.
+    private func replacePlaceholders(str: String, domains: String, args: String) -> String {
         var result = str.replace(target: "${domains}", withString: domains)
         result = result.replace(target: "${args}", withString: args)
 
-        return result as NSString
-    }
-
-    /**
-     * Validates and converts rule with $denyallow modifier into blocking rule and additional exception rules
-     * https:github.com/AdguardTeam/CoreLibs/issues/1304
-     */
-    private func convertDenyallowRule(ruleText: NSString) -> [NSString]? {
-        if (!ruleText.contains(RuleConverter.DENYALLOW_MODIFIER_MASK)) {
-            return nil;
-        }
-
-        let rule = try! NetworkRuleParser.parseRuleText(ruleText: ruleText);
-
-        if (rule.pattern!.hasPrefix("|") || rule.pattern!.hasPrefix("||") || !ruleText.contains(RuleConverter.DOMAIN_MODIFIER_MASK)) {
-            // Rule's matching pattern cannot target any domain or been used without $domain modifier
-            return nil;
-        }
-
-        var blockingElement: String = rule.pattern!;
-        if (blockingElement.starts(with: "/")) {
-            blockingElement = String(blockingElement.dropFirst());
-        }
-
-        let isGenericRule = blockingElement == "" || blockingElement == "*";
-
-        let ruleOptions = rule.options!.components(separatedBy: ",");
-        let denyallowOption = ruleOptions.first(where: { $0.contains(RuleConverter.DENYALLOW_MODIFIER_MASK) })!;
-
-        // get denyallow domains list
-        let denyallowDomains = denyallowOption.replace(target: RuleConverter.DENYALLOW_MODIFIER_MASK, withString: "").components(separatedBy: "|");
-
-        for domain in denyallowDomains {
-            if (domain.hasPrefix("~") || domain.contains("*")) {
-                // Modifier $denyallow cannot be negated or have a wildcard TLD
-                return nil;
-            }
-        }
-
-        // remove denyallow from options
-        let optionsWithoutDenyallow = ruleOptions.filter { part in
-                    return part != denyallowOption;
-                }
-                .joined(separator: ",");
-
-        var result = [NSString]();
-
-        let blockingRulePrefix: String = rule.whitelist ? "@@" : "";
-        let exceptionRulePrefix: String = rule.whitelist ? "||" : RuleConverter.EXCEPTION_SUFFIX;
-        let exceptionRuleSuffix: String = rule.whitelist ? "," + RuleConverter.IMPORTANT_MODIFIER_MASK : "";
-
-        // blocking rule
-        let blockingRule = blockingRulePrefix + rule.pattern! + RuleConverter.MODIFIER_MASK + optionsWithoutDenyallow;
-        result.append(blockingRule as NSString);
-
-        // exception rules
-        for domain in denyallowDomains {
-            if (!isGenericRule) {
-                let exceptionRule = exceptionRulePrefix + domain + "/" + blockingElement + RuleConverter.MODIFIER_MASK + optionsWithoutDenyallow + exceptionRuleSuffix;
-                result.append(exceptionRule as NSString);
-
-                let exceptionRuleWide = exceptionRulePrefix + domain + "/*/" + blockingElement + RuleConverter.MODIFIER_MASK + optionsWithoutDenyallow + exceptionRuleSuffix;
-                result.append(exceptionRuleWide as NSString);
-
-            } else {
-                let exceptionRule = exceptionRulePrefix + domain + RuleConverter.MODIFIER_MASK + optionsWithoutDenyallow + exceptionRuleSuffix;
-                result.append(exceptionRule as NSString);
-            }
-        }
-
-        return result;
+        return result
     }
 }

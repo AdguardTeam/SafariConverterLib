@@ -4,143 +4,131 @@ import XCTest
 @testable import ContentBlockerConverter
 
 final class DistributorTests: XCTestCase {
+    let testTrigger = BlockerEntry.Trigger(
+        ifDomain: ["test_if_domain"],
+        urlFilter: "test_url_filter",
+        unlessDomain: ["test_unless_domain"],
+        shortcut: "test_shortcut",
+        regex: nil
+    )
+
+    let testAction = BlockerEntry.Action(
+        type: "test_type",
+        selector: nil,
+        css: "test_css",
+        script: nil,
+        scriptlet: nil,
+        scriptletParam: nil
+    )
+
+    func assertEntry(actual: String?) -> Void {
+        XCTAssertNotNil(actual);
+
+        XCTAssertTrue(actual!.contains("\"url-filter\":\"test_url_filter\""));
+        XCTAssertTrue(actual!.contains("test_unless_domain"));
+        XCTAssertTrue(actual!.contains("test_if_domain"));
+        XCTAssertTrue(actual!.contains("\"url-shortcut\":\"test_shortcut\""));
+
+        XCTAssertTrue(actual!.contains("\"type\":\"test_type\""));
+        XCTAssertTrue(actual!.contains("\"css\":\"test_css\""));
+    }
+
     func testEmpty() {
         let builder = Distributor(
             limit: 0,
             advancedBlocking: true
-        );
-        
-        let result = builder.createConversionResult(data: CompilationResult());
-        
-        XCTAssertNotNil(result);
-        XCTAssertEqual(result.totalConvertedCount, 0);
-        XCTAssertEqual(result.convertedCount, 0);
+        )
+
+        let result = builder.createConversionResult(data: CompilationResult())
+
+        XCTAssertNotNil(result)
+        XCTAssertEqual(result.totalConvertedCount, 0)
+        XCTAssertEqual(result.convertedCount, 0)
+        XCTAssertEqual(result.errorsCount, 0)
+        XCTAssertEqual(result.overLimit, false)
+        XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON)
+    }
+
+    func testSimple() {
+        let builder = Distributor(
+            limit: 0,
+            advancedBlocking: true
+        )
+
+        let entries = [
+            BlockerEntry(trigger: testTrigger, action: testAction)
+        ]
+
+        let compilationResult = CompilationResult(
+            message: "test",
+            cssBlockingWide: entries
+        )
+
+        let result = builder.createConversionResult(data: compilationResult)
+
+        XCTAssertEqual(result.totalConvertedCount, 1);
+        XCTAssertEqual(result.convertedCount, 1);
         XCTAssertEqual(result.errorsCount, 0);
         XCTAssertEqual(result.overLimit, false);
-        XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON);
+        XCTAssertEqual(result.message, "test");
+
+        assertEntry(actual: result.converted);
     }
-    
-    func testApplyWildcards() {
-        
+
+    func testOverlimit() {
         let builder = Distributor(
-            limit: 0,
+            limit: 1,
             advancedBlocking: true
-        );
-        
-        let testTrigger = BlockerEntry.Trigger(
-            ifDomain: ["test_if_domain", "*wildcarded_if_domain"],
-            urlFilter: "test_url_filter",
-            unlessDomain: ["*test_unless_domain"],
-            shortcut: "test_shorcut",
-            regex: nil
-        );
-        
-        let testAction = BlockerEntry.Action(
-            type: "test_type",
-            selector: nil,
-            css: "test_css",
-            script: nil,
-            scriptlet: nil,
-            scriptletParam: nil
-        );
-        
-        var entries = [
+        )
+
+        let entries = [
+            BlockerEntry(trigger: testTrigger, action: testAction),
             BlockerEntry(trigger: testTrigger, action: testAction)
         ];
-        
-        entries = builder.updateDomains(entries: entries);
-        
-        XCTAssertEqual(entries[0].trigger.ifDomain![0], "*test_if_domain");
-        XCTAssertEqual(entries[0].trigger.ifDomain![1], "*wildcarded_if_domain");
-        
-        XCTAssertEqual(entries[0].trigger.unlessDomain![0], "*test_unless_domain");
+
+        let compilationResult = CompilationResult(
+            message: "test",
+            cssBlockingWide: entries
+        )
+
+        let result = builder.createConversionResult(data: compilationResult)
+
+        XCTAssertEqual(result.totalConvertedCount, 2)
+        XCTAssertEqual(result.convertedCount, 1)
+        XCTAssertEqual(result.errorsCount, 1)
+        XCTAssertEqual(result.overLimit, true)
+        XCTAssertEqual(result.message, "test")
+        assertEntry(actual: result.converted)
     }
 
-    func testHandleIfDomainsLimit() {
+    func testAdvancedBlocking() {
         let builder = Distributor(
-            limit: 0,
+            limit: 1,
             advancedBlocking: true
-        );
-
-        var testTrigger = BlockerEntry.Trigger(
-            ifDomain: [],
-            urlFilter: "test_url_filter",
-            unlessDomain: ["*test_unless_domain"],
-            shortcut: "test_shorcut",
-            regex: nil
-        );
-
-        let testAction = BlockerEntry.Action(
-            type: "test_type",
-            selector: nil,
-            css: "test_css",
-            script: nil,
-            scriptlet: nil,
-            scriptletParam: nil
-        );
-
-        var domains = [String]();
-        for index in (1...551) {
-            domains.append("test-domain-" + String(index));
-        }
-
-        testTrigger.setIfDomain(domains: domains);
+        )
 
         let entries = [
             BlockerEntry(trigger: testTrigger, action: testAction)
         ];
 
-        let result = builder.updateDomains(entries: entries);
-        XCTAssertNotNil(result);
-        XCTAssertEqual(result.count, 1);
-        XCTAssertEqual(result[0].trigger.ifDomain!.count, 551);
+        let compilationResult = CompilationResult(
+            message: "test",
+            cssBlockingWide: entries,
+            сssInjects: entries
+        )
+
+        let result = builder.createConversionResult(data: compilationResult)
+
+        XCTAssertEqual(result.totalConvertedCount, 2)
+        XCTAssertEqual(result.convertedCount, 1)
+        XCTAssertEqual(result.errorsCount, 0)
+        XCTAssertEqual(result.overLimit, false)
+        XCTAssertEqual(result.message, "test")
+        assertEntry(actual: result.converted)
+
+        XCTAssertEqual(result.advancedBlockingConvertedCount, 1);
+        assertEntry(actual: result.advancedBlocking);
+
     }
 
-    func testHandleUnlessDomainsLimit() {
-        let builder = Distributor(
-            limit: 0,
-            advancedBlocking: true
-        );
-
-        var testTrigger = BlockerEntry.Trigger(
-            ifDomain: ["test_if_domain"],
-            urlFilter: "test_url_filter",
-            unlessDomain: [],
-            shortcut: "test_shorcut",
-            regex: nil
-        );
-
-        let testAction = BlockerEntry.Action(
-            type: "test_type",
-            selector: nil,
-            css: "test_css",
-            script: nil,
-            scriptlet: nil,
-            scriptletParam: nil
-        );
-
-        var domains = [String]();
-        for index in (1...551) {
-            domains.append("test-unless-domain-" + String(index));
-        }
-
-        testTrigger.setUnlessDomain(domains: domains);
-
-        let entries = [
-            BlockerEntry(trigger: testTrigger, action: testAction)
-        ];
-
-        let result = builder.updateDomains(entries: entries);
-        XCTAssertNotNil(result);
-        XCTAssertEqual(result.count, 1);
-        XCTAssertEqual(result[0].trigger.unlessDomain!.count, 551);
-    }
-
-    static var allTests = [
-        ("testEmpty", testEmpty),
-        ("testApplyWildcards", testApplyWildcards),
-        ("testHandleIfDomainsLimit", testHandleIfDomainsLimit),
-        ("testHandleUnlessDomainsLimit", testHandleUnlessDomainsLimit),
-    ]
 }
-

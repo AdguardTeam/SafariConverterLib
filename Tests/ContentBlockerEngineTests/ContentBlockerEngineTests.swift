@@ -60,6 +60,7 @@ class ContentBlockerEngineTests: XCTestCase {
         let decoder = JSONDecoder()
         let secondEngine = try! decoder.decode(ContentBlockerEngine.self, from: encodedData)
         let secondEngineData = try! secondEngine.getData(url: URL(string: "http://example.org")!)
+
         XCTAssertEqual(firstEngineData, secondEngineData)
     }
 

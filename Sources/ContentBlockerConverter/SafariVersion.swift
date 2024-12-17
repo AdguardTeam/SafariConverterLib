@@ -1,7 +1,7 @@
-import Foundation
+/// Default Safari version for which the rules will be converted if another version is not explicitly specified.
+let DEFAULT_SAFARI_VERSION = SafariVersion.safari13
 
-private let DEFAULT_SAFARI_VERSION = SafariVersion.safari13;
-
+/// Represents Safari browser version for which the library will prepare a content blocker.
 public enum SafariVersion: CustomStringConvertible, CustomDebugStringConvertible, Equatable {
     public var description: String {
         return "\(self.doubleValue)"
@@ -11,20 +11,19 @@ public enum SafariVersion: CustomStringConvertible, CustomDebugStringConvertible
         return "Safari v\(self.description)"
     }
 
-    /**
-     * Returns rules limit for current Safari version:
-     * Safari allows up to 50k rules by default,
-     * but starting from 15 version it allows up to 150k rules
-     */
+    /// Returns rules limit for current Safari version:
+    ///
+    /// - Starting from Safari 15 it allows up to 150k rules in a single content blocker extension.
+    /// - Older Safari versions only allowed up to 50k rules by default.
     public var rulesLimit: Int {
         return self.doubleValue >= SafariVersion.safari15.doubleValue ? 150000 : 50000
     }
 
-    // AdGuard for iOS supports Safari from 11 version
-    // AdGuard for Safari doesn't support OS Sierra, so minimal Safari version is 13
-    @available (OSX, unavailable)
+    // AdGuard for iOS supports Safari from 11 version.
+    // AdGuard for Safari doesn't support OS Sierra, so minimal Safari version is 13.
+    @available(OSX, unavailable)
     case safari11
-    @available (OSX, unavailable)
+    @available(OSX, unavailable)
     case safari12
 
     case safari13
@@ -80,9 +79,4 @@ public enum SafariVersion: CustomStringConvertible, CustomDebugStringConvertible
     func isSafari16_4orGreater() -> Bool {
         return self.doubleValue >= SafariVersion.safari16_4.doubleValue;
     }
-}
-
-class SafariService {
-    var version: SafariVersion = DEFAULT_SAFARI_VERSION;
-    static let current: SafariService = SafariService();
 }

@@ -8,18 +8,10 @@ final class GeneralTests: XCTestCase {
     private func parseJsonString(json: String) throws -> [BlockerEntry] {
         let data = json.data(using: String.Encoding.utf8, allowLossyConversion: false)!
 
-        let decoder = JSONDecoder();
-        let parsedData = try decoder.decode([BlockerEntry].self, from: data);
+        let decoder = JSONDecoder()
+        let parsedData = try decoder.decode([BlockerEntry].self, from: data)
 
-        return parsedData;
-    }
-
-    private func encodeJson(item: BlockerEntry) -> String {
-        let encoder = JSONEncoder();
-        encoder.outputFormatting = .prettyPrinted
-
-        let json = try! encoder.encode(item);
-        return String(data: json, encoding: .utf8)!.replacingOccurrences(of: "\\/", with: "/");
+        return parsedData
     }
 
     let rules = [
@@ -117,29 +109,6 @@ final class GeneralTests: XCTestCase {
                                              "url-filter" : "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?tardangro\\.com([\\/:&\\?].*)?$",
                                              "load-type" : [
                                                  "third-party"
-                                             ]
-                                         },
-                                         "action" : {
-                                             "type" : "block"
-                                         }
-                                     },
-                                     {
-                                         "trigger" : {
-                                             "url-filter" : "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?videoplaza\\.com([\\/:&\\?].*)?$",
-                                             "unless-domain" : [
-                                                 "*videoplaza.com"
-                                             ],
-                                             "load-type" : [
-                                                 "third-party"
-                                             ],
-                                             "resource-type" : [
-                                                 "image",
-                                                 "style-sheet",
-                                                 "script",
-                                                 "media",
-                                                 "raw",
-                                                 "font",
-                                                 "document"
                                              ]
                                          },
                                          "action" : {
@@ -311,29 +280,30 @@ final class GeneralTests: XCTestCase {
                                  """;
 
     func testGeneral() {
-        let conversionResult = ContentBlockerConverter().convertArray(rules: rules);
+        let conversionResult = ContentBlockerConverter().convertArray(rules: rules)
 
-        XCTAssertEqual(conversionResult.totalConvertedCount, 22);
-        XCTAssertEqual(conversionResult.convertedCount, 22);
-        XCTAssertEqual(conversionResult.errorsCount, 3);
-        XCTAssertEqual(conversionResult.overLimit, false);
+        XCTAssertEqual(conversionResult.totalConvertedCount, 21)
+        XCTAssertEqual(conversionResult.convertedCount, 21)
+        XCTAssertEqual(conversionResult.errorsCount, 4)
+        XCTAssertEqual(conversionResult.overLimit, false)
 
-        print(conversionResult.converted);
+        print(conversionResult.converted)
 
-        let decoded = try! parseJsonString(json: conversionResult.converted);
-        let correct = try! parseJsonString(json: safariCorrectRulesJson.replacingOccurrences(of: "\\", with: "\\\\"));
+        let decoded = try! parseJsonString(json: conversionResult.converted)
+        let correct = try! parseJsonString(json: safariCorrectRulesJson.replacingOccurrences(of: "\\", with: "\\\\"))
 
-        XCTAssertEqual(decoded.count, correct.count);
+        XCTAssertEqual(decoded.count, correct.count)
 
-        for (index, entry) in correct.enumerated() {
-            let correspondingDecoded = decoded[index];
-            XCTAssertEqual(encodeJson(item: correspondingDecoded), encodeJson(item: entry));
+        for (index, expectedEntry) in correct.enumerated() {
+            let correspondingDecoded = decoded[index]
+            let resultJson = String(describing: correspondingDecoded)
+            let expectedJson = String(describing: expectedEntry)
+
+            XCTAssertEqual(resultJson, expectedJson)
         }
     }
 
-    /**
-     Single run of the rule converter so that it was easier to profile it.
-     */
+    /// Single run of the rule converter so that it was easier to profile it.
     func testPerformanceSingleRun() {
         let thisSourceFile = URL(fileURLWithPath: #file)
         let thisDirectory = thisSourceFile.deletingLastPathComponent()
@@ -345,9 +315,9 @@ final class GeneralTests: XCTestCase {
         let conversionResult = ContentBlockerConverter().convertArray(rules: rules)
         NSLog(conversionResult.message)
 
-        XCTAssertEqual(conversionResult.totalConvertedCount, 19999)
-        XCTAssertEqual(conversionResult.convertedCount, 19999)
-        XCTAssertEqual(conversionResult.errorsCount, 128)
+        XCTAssertEqual(conversionResult.totalConvertedCount, 19976)
+        XCTAssertEqual(conversionResult.convertedCount, 19976)
+        XCTAssertEqual(conversionResult.errorsCount, 106)
         XCTAssertEqual(conversionResult.overLimit, false)
     }
 
@@ -363,9 +333,9 @@ final class GeneralTests: XCTestCase {
             let conversionResult = ContentBlockerConverter().convertArray(rules: rules)
             NSLog(conversionResult.message)
 
-            XCTAssertEqual(conversionResult.totalConvertedCount, 19999)
-            XCTAssertEqual(conversionResult.convertedCount, 19999)
-            XCTAssertEqual(conversionResult.errorsCount, 128)
+            XCTAssertEqual(conversionResult.totalConvertedCount, 19976)
+            XCTAssertEqual(conversionResult.convertedCount, 19976)
+            XCTAssertEqual(conversionResult.errorsCount, 106)
             XCTAssertEqual(conversionResult.overLimit, false)
         }
     }
@@ -426,12 +396,4 @@ final class GeneralTests: XCTestCase {
             XCTAssertTrue(conversionResult.totalConvertedCount > 0, "Conversion failed for URL: \(listUrl)")
         }
     }
-
-    static var allTests = [
-        ("testGeneral", testGeneral),
-        ("testPerformanceSingleRun", testPerformanceSingleRun),
-        ("testPerformance", testPerformance),
-        ("testSpecifichidePerformance", testSpecifichidePerformance),
-        ("testAttemptToConvertPopularLists", testAttemptToConvertPopularLists)
-    ]
 }

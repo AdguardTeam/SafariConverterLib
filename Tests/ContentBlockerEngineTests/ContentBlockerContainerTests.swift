@@ -333,7 +333,7 @@ class ContentBlockerContainerTests: XCTestCase {
             }
         ]
         """;
-        
+
         try! contentBlockerContainer.setJson(json: contentBlockerJsonString);
         let data: BlockerData = try! contentBlockerContainer.getData(url: URL(string: "http://example.com")!)
 

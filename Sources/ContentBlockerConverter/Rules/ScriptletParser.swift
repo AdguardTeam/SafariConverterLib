@@ -1,44 +1,44 @@
 import Foundation
 
-/**
- * Scriptlets helper
- */
+/// Helper for working with scriptlet rules.
 class ScriptletParser {
     public static let SCRIPTLET_MASK = "//scriptlet("
     private static let SCRIPTLET_MASK_LEN = SCRIPTLET_MASK.count
 
-    /**
-     Parses and validates a scriptlet rule.
-     - Parameter data: the full scriptlet rule, i.e. "//scriptlet('scriptletName', 'arg1', 'arg2')"
-     - Returns: the scriptlet name and a json with it's arguments.
-     - Throws: SyntaxError.invalidRule
-     */
+    /// Parses and validates a scriptlet rule.
+    ///
+    /// - Parameters:
+    ///  - data: the full scriptlet rule, i.e. `//scriptlet('scriptletName', 'arg1', 'arg2')`
+    /// - Returns: the scriptlet name and a json with it's arguments.
+    /// - Throws: SyntaxError.invalidRule if failed to parse.
     static func parse(data: String) throws -> (name: String, json: String) {
-        if (data == "" || !data.hasPrefix(ScriptletParser.SCRIPTLET_MASK)) {
+        if (data.isEmpty || !data.utf8.starts(with: ScriptletParser.SCRIPTLET_MASK.utf8)) {
             throw SyntaxError.invalidRule(message: "Invalid scriptlet")
         }
 
-        let str = data as NSString
-
         // Without the scriptlet prefix the string looks like:
         // "scriptletname", "arg1", "arg2", etc
-        let argumentsStr = str.substring(with: NSRange(location: SCRIPTLET_MASK_LEN, length: str.length - SCRIPTLET_MASK_LEN - 1)) as NSString
+        let argumentsStrIndex = data.utf8.index(data.utf8.startIndex, offsetBy: SCRIPTLET_MASK_LEN)
+        // Do not include the last character as it's a bracket.
+        let argumentsEndIndex = data.utf8.index(data.utf8.endIndex, offsetBy: -1)
+        let argumentsStr = data[argumentsStrIndex..<argumentsEndIndex]
 
         // Now we just get an array of these arguments
-        let params = ScriptletParser.splitByDelimiterNotQuoted(str: argumentsStr as NSString, delimiter: ",".utf16.first!)
+        var params = try ScriptletParser.extractArguments(str: argumentsStr, delimiter: Chars.COMMA)
 
-        var unquotedParams = try ScriptletParser.unquoteStrings(items: params);
-        if (unquotedParams.count < 1) {
+        if (params.count < 1) {
             throw SyntaxError.invalidRule(message: "Invalid scriptlet params");
         }
 
-        let name = unquotedParams[0]
-        unquotedParams.remove(at: 0)
+        let name = params[0]
+        params.remove(at: 0)
 
-        let json = encodeScriptletParams(name: name, args: unquotedParams)
+        let json = encodeScriptletParams(name: name, args: params)
+
         return (name, json)
     }
 
+    /// Encodes scriptlet parameters as a JSON string with name and arguments.
     private static func encodeScriptletParams(name: String, args: [String]?) -> String {
         var result = "{\"name\":\""
         result.append(name.escapeForJSON())
@@ -48,97 +48,87 @@ class ScriptletParser {
             result.append(JsonUtils.encodeStringArray(arr: args!, escape: true))
         }
         result.append("}")
+
         return result
     }
 
-    /**
-     Splits the string using the specified delimiter. Ignores the delimiter if it's inside a
-     string enclosed in quotes.
-     - Parameters:
-       - str: the string to split.
-       - delimiter: the delimiter to use.
-     - Returns: an array of string parts. Note that string parts are trimmed.
-     */
-    private static func splitByDelimiterNotQuoted(str: NSString, delimiter: unichar) -> [String] {
-        if str.length == 0 {
+    /// Extracts the scriptlet arguments from the string.
+    ///
+    /// - Parameters:
+    ///    - str: the arguments string (i.e. "'arg1', 'arg2', 'arg3'")
+    ///    - delimiter: the delimiter for arguments.
+    /// - Returns: an array of arguments.
+    /// - Throws: SyntaxError.invalidRule
+    private static func extractArguments(str: Substring, delimiter: UInt8) throws -> [String] {
+        if str.isEmpty {
             return [String]()
         }
 
-        let quoteSingle: unichar = "'".utf16.first!
-        let quoteDouble: unichar = "\"".utf16.first!
-        let escapeChar: unichar = "\\".utf16.first!
-
+        let maxIndex = str.utf8.count - 1
         var pendingQuote = false
-        var pendingQuoteChar: unichar = quoteSingle // need at least some value here
-        var delimiterIndexes = [Int]()
-        for index in 0...str.length - 1 {
-            let char = str.character(at: index)
+        var pendingQuoteChar: UInt8 = 0
+
+        var result = [String]()
+        var argumentStartIndex: Int = 0;
+        var argumentEndIndex: Int;
+
+        for index in 0...maxIndex {
+            let char = str.utf8[safeIndex: index]!
+
             switch char {
-            case quoteSingle, quoteDouble:
+            case Chars.QUOTE_SINGLE, Chars.QUOTE_DOUBLE:
                 if !pendingQuote {
                     pendingQuote = true
                     pendingQuoteChar = char
+
+                    argumentStartIndex = index + 1;
                 } else if char == pendingQuoteChar {
-                    // ignore escaped
-                    if (index > 0 && str.character(at: index - 1) == escapeChar) {
+                    // Ignore escaped quotes.
+                    if (index > 0 && str.utf8[safeIndex: index - 1] == Chars.BACKSLASH) {
                         continue
                     }
 
+                    // Not inside an argument anymore.
                     pendingQuote = false
+
+                    // Now we can extract the quoted value (and drop the quotes).
+                    argumentEndIndex = index - 1;
+                    if argumentEndIndex > argumentStartIndex {
+                        let startIdx = str.utf8.index(str.utf8.startIndex, offsetBy: argumentStartIndex)
+                        let endIdx = str.utf8.index(str.utf8.startIndex, offsetBy: argumentEndIndex)
+                        result.append(String(str[startIdx...endIdx]))
+                    } else {
+                        result.append("")
+                    }
                 }
+
                 break
-            case delimiter:
-                // ignore if we're inside quotes
-                if !pendingQuote {
-                    delimiterIndexes.append(index)
-                }
+            case delimiter, Chars.WHITESPACE:
+                // Ignore delimiter and whitespace characters, they're allowed.
+                break
             default:
+                if !pendingQuote {
+                    throw SyntaxError.invalidRule(message: "Invalid scriptlet arguments string")
+                }
+
                 break
             }
         }
 
-        var result = [String]()
-        var previous = 0
-        for ind in delimiterIndexes {
-            if ind > previous {
-                let part = str.substring(with: NSRange(location: previous, length: ind - previous)).trimmingCharacters(in: .whitespaces)
-                result.append(part)
-            } else {
-                result.append("")
-            }
-            previous = ind + 1
-        }
-
-        result.append(str.substring(from: previous).trimmingCharacters(in: .whitespaces))
-
         return result
     }
 
-    /**
-     Unquotes every string from the specified array.
-     - Parameter items: strings to unquote.
-     - Returns: an array of unquoted strings.
-     - Throws: a SyntaxError.invalidRule in case if there's any string that's not enclosed in quotes.
-     */
-    private static func unquoteStrings(items: [String]) throws -> [String] {
-        var result = [String]()
-        for item in items {
-            let str = item as NSString
-            if item.hasPrefix("'") && item.hasSuffix("'") {
-                result.append(str.substring(with: NSRange(location: 1, length: str.length - 2)))
-            } else if item.hasPrefix("\"") && item.hasSuffix("\"") {
-                result.append(str.substring(with: NSRange(location: 1, length: str.length - 2)))
-            } else {
-                throw SyntaxError.invalidRule(message: "scriptlet argument not enclosed in quotes")
-            }
-        }
-
-        return result
-    }
-
+    /// Represents a scriptlet signature, i.e. the scriptlet name and its parameters.
+    ///
+    /// A normal scriptlet rule looks like this:
+    /// //scriptlet('scriptlet name', 'param1', 'param2')
+    ///
+    /// ScriptletParams object representing this will look like this:
+    ///
+    /// - name: "scriptlet name"
+    /// - args: [ "param1", "param2" ]
     struct ScriptletParams: Encodable {
         let name: String
         let args: [String]?
     }
-
 }

@@ -4,7 +4,7 @@ import Foundation
  Helper class for encoding JSON without using the standard encoder (which is extremely slow).
  */
 class JsonUtils {
-    
+
     /**
      Encodes string array to a JSON.
      - Parameter arr: array to encode
@@ -17,7 +17,7 @@ class JsonUtils {
             if (index > 0) {
                 result.append(",");
             }
-            
+
             result.append("\"");
             result.append(escape ? arr[index].escapeForJSON() : arr[index]);
             result.append("\"");

@@ -38,8 +38,4 @@ final class ScriptletParserTests: XCTestCase {
         XCTAssertEqual(result?.name, "ubo-rc.js")
         XCTAssertEqual(result?.json, "{\"name\":\"ubo-rc.js\",\"args\":[\"cookie--not-set\",\", stay\"]}")
     }
-
-    static var allTests = [
-        ("testParse", testParse),
-    ]
 }

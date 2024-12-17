@@ -169,23 +169,23 @@ final class AdvancedBlockingTests: XCTestCase {
         let result = converter.convertArray(rules: [
             "ksl.com#?#.queue:-abp-has(.sponsored)",
             "@@||ksl.com^$document"
-        ], advancedBlocking: true);
+        ], advancedBlocking: true)
 
         XCTAssertEqual(result.convertedCount, 1);
         XCTAssertEqual(result.errorsCount, 0);
         XCTAssertEqual(result.advancedBlockingConvertedCount, 2);
 
-        let decoded = try! parseJsonString(json: result.advancedBlocking!);
-        XCTAssertEqual(decoded.count, 2);
-        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*");
-        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*ksl.com"]);
-        XCTAssertEqual(decoded[0].action.type, "css-extended");
-        XCTAssertEqual(decoded[0].action.css, ".queue:-abp-has(.sponsored)");
+        let decoded = try! parseJsonString(json: result.advancedBlocking!)
+        XCTAssertEqual(decoded.count, 2)
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*")
+        XCTAssertEqual(decoded[0].trigger.ifDomain, ["*ksl.com"])
+        XCTAssertEqual(decoded[0].action.type, "css-extended")
+        XCTAssertEqual(decoded[0].action.css, ".queue:-abp-has(.sponsored)")
 
-        XCTAssertEqual(decoded[1].trigger.urlFilter, ".*");
-        XCTAssertEqual(decoded[1].trigger.ifDomain, ["*ksl.com"]);
-        XCTAssertEqual(decoded[1].action.type, "ignore-previous-rules");
-        XCTAssertEqual(decoded[1].action.css, nil);
+        XCTAssertEqual(decoded[1].trigger.urlFilter, ".*")
+        XCTAssertEqual(decoded[1].trigger.ifDomain, ["*ksl.com"])
+        XCTAssertEqual(decoded[1].action.type, "ignore-previous-rules")
+        XCTAssertEqual(decoded[1].action.css, nil)
     }
 
     func testCosmeticCssRules() {
@@ -296,25 +296,27 @@ final class AdvancedBlockingTests: XCTestCase {
             let compiler = Compiler(
                 optimize: false,
                 advancedBlocking: true,
-                errorsCounter: ErrorsCounter()
-            );
-            let rule = try! CosmeticRule(ruleText: "test.com#$#.banner { top: -9999px!important; }");
-            let result = compiler.compileRules(rules: [rule as Rule]);
+                errorsCounter: ErrorsCounter(),
+                version: SafariVersion.safari13
+            )
+            let rule = try! CosmeticRule(ruleText: "test.com#$#.banner { top: -9999px!important; }")
+            let result = compiler.compileRules(rules: [rule as Rule])
 
-            XCTAssertNotNil(result);
-            XCTAssertEqual(result.errorsCount, 0);
-            XCTAssertEqual(result.rulesCount, 1);
-            XCTAssertNotNil(result.сssInjects);
-            XCTAssertEqual(result.сssInjects[0].action.type, "css-inject");
-            XCTAssertEqual(result.сssInjects[0].trigger.ifDomain, ["test.com"]);
-            XCTAssertEqual(result.сssInjects[0].action.css, ".banner { top: -9999px!important; }");
+            XCTAssertNotNil(result)
+            XCTAssertEqual(result.errorsCount, 0)
+            XCTAssertEqual(result.rulesCount, 1)
+            XCTAssertNotNil(result.сssInjects)
+            XCTAssertEqual(result.сssInjects[0].action.type, "css-inject")
+            XCTAssertEqual(result.сssInjects[0].trigger.ifDomain, ["*test.com"])
+            XCTAssertEqual(result.сssInjects[0].action.css, ".banner { top: -9999px!important; }")
         }
 
     func testCompileExtendedCssRule() {
         let compiler = Compiler(
             optimize: false,
             advancedBlocking: true,
-            errorsCounter: ErrorsCounter()
+            errorsCounter: ErrorsCounter(),
+            version: SafariVersion.safari13
         );
 
         let rule = try! CosmeticRule(ruleText: "test.com#?#.content:has(> .test_selector)");
@@ -325,7 +327,7 @@ final class AdvancedBlockingTests: XCTestCase {
         XCTAssertEqual(result.rulesCount, 1)
         XCTAssertNotNil(result.extendedCssBlockingDomainSensitive)
         XCTAssertEqual(result.extendedCssBlockingDomainSensitive[0].action.type, "css-extended")
-        XCTAssertEqual(result.extendedCssBlockingDomainSensitive[0].trigger.ifDomain, ["test.com"])
+        XCTAssertEqual(result.extendedCssBlockingDomainSensitive[0].trigger.ifDomain, ["*test.com"])
         XCTAssertEqual(result.extendedCssBlockingDomainSensitive[0].action.css, ".content:has(> .test_selector)")
     }
 
@@ -484,27 +486,4 @@ final class AdvancedBlockingTests: XCTestCase {
         // because createRules method adds allowlist rules to the end of the list
         XCTAssertEqual(result.advancedBlockingText, (rules).joined(separator: "\n"));
     }
-
-    static var allTests = [
-        ("testAdvancedBlockingParam", testAdvancedBlockingParam),
-        ("testAdvancedBlockingScriptRules", testAdvancedBlockingScriptRules),
-        ("testScriptRulesExceptions", testScriptRulesExceptions),
-        ("testScriptRulesJsinject", testScriptRulesJsinject),
-        ("testScriptRulesDocument", testScriptRulesDocument),
-        ("testExtendedCssRules", testExtendedCssRules),
-        ("testExtendedCssRulesExceptionsElemhide", testExtendedCssRulesExceptionsElemhide),
-        ("testExtendedCssRulesExceptionsDocument", testExtendedCssRulesExceptionsDocument),
-        ("testCosmeticCssRules", testCosmeticCssRules),
-        ("testCosmeticCssRulesInvalids", testCosmeticCssRulesInvalids),
-        ("testCosmeticCssRulesExceptions", testCosmeticCssRulesExceptions),
-        ("testScriptletRules", testScriptletRules),
-        ("testScriptletRulesExceptions", testScriptletRulesExceptions),
-        ("testScriptletRulesArgumentWithComma", testScriptletRulesArgumentWithComma),
-        ("testCompileCssInjectRule", testCompileCssInjectRule),
-        ("testCompileExtendedCssRule", testCompileExtendedCssRule),
-        ("testAdvancedBlockingText", testAdvancedBlockingText),
-        ("testAdvancedBlockingParamFalse", testAdvancedBlockingParamFalse),
-        ("testAdvancedBlockingTextWithAllowlistRules", testAdvancedBlockingTextWithAllowlistRules),
-        ("testAdvancedBlockingTextWithExceptionModifiers", testAdvancedBlockingTextWithExceptionModifiers),
-    ]
 }

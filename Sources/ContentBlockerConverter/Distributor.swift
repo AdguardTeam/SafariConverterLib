@@ -1,21 +1,13 @@
 import Foundation
 import Shared
 
-/**
- * Maximum domains amount for css blocking rule
- */
-private let MAX_DOMAINS_FOR_RULE = 10000
-
-/**
- * Distributor class
- * Creates a distribution ready result object
- */
+/// Distributor creates a Safari JSON and checks for additional limitations while doing that.
 class Distributor {
 
     private let limit: Int;
     private let advancedBlockedEnabled: Bool;
     private let maxJsonSizeBytes: Int?;
-    
+
     init(
         limit: Int,
         advancedBlocking: Bool,
@@ -26,94 +18,103 @@ class Distributor {
         self.maxJsonSizeBytes = maxJsonSizeBytes
     }
 
-    /**
-     * Creates final conversion result from compilation result object
-     */
-    func createConversionResult(data: CompilationResult) -> ConversionResult {
-        var entries = [BlockerEntry]();
-        entries.append(contentsOf: data.cssBlockingWide);
-        entries.append(contentsOf: data.cssBlockingGenericDomainSensitive);
-        entries.append(contentsOf: data.cssBlockingGenericHideExceptions);
-        entries.append(contentsOf: data.cssBlockingDomainSensitive);
-        entries.append(contentsOf: data.cssElemhide);
-        entries.append(contentsOf: data.urlBlocking);
-        entries.append(contentsOf: data.other);
-        entries.append(contentsOf: data.important);
-        entries.append(contentsOf: data.importantExceptions);
-        entries.append(contentsOf: data.documentExceptions);
+    /// Creates an array of rules for Safari content blocker in the correct order.
+    private func createEntries(from result: CompilationResult) -> [BlockerEntry] {
+        var entries = [BlockerEntry]()
 
-        entries = updateDomains(entries: entries);
+        entries.append(contentsOf: result.cssBlockingWide)
+        entries.append(contentsOf: result.cssBlockingGenericDomainSensitive)
+        entries.append(contentsOf: result.cssBlockingGenericHideExceptions)
+        entries.append(contentsOf: result.cssBlockingDomainSensitive)
+        entries.append(contentsOf: result.cssElemhide)
+        entries.append(contentsOf: result.urlBlocking)
+        entries.append(contentsOf: result.other)
+        entries.append(contentsOf: result.important)
+        entries.append(contentsOf: result.importantExceptions)
+        entries.append(contentsOf: result.documentExceptions)
 
-        var advBlockingEntries = [BlockerEntry]();
-        if (advancedBlockedEnabled) {
-            advBlockingEntries.append(contentsOf: data.extendedCssBlockingWide);
-            advBlockingEntries.append(contentsOf: data.extendedCssBlockingGenericDomainSensitive);
-            advBlockingEntries.append(contentsOf: data.cssBlockingGenericHideExceptions);
-            advBlockingEntries.append(contentsOf: data.extendedCssBlockingDomainSensitive);
-            advBlockingEntries.append(contentsOf: data.cssElemhide);
-            advBlockingEntries.append(contentsOf: data.script);
-            advBlockingEntries.append(contentsOf: data.scriptlets);
-            advBlockingEntries.append(contentsOf: data.scriptJsInjectExceptions);
-            advBlockingEntries.append(contentsOf: data.сssInjects);
-            advBlockingEntries.append(contentsOf: data.other);
-            advBlockingEntries.append(contentsOf: data.importantExceptions);
-            advBlockingEntries.append(contentsOf: data.documentExceptions);
-
-            advBlockingEntries = updateDomains(entries: advBlockingEntries);
-        }
-
-        let errorsCount = data.errorsCount;
-        
-        return ConversionResult(
-            entries: entries,
-            advBlockingEntries: advBlockingEntries,
-            limit: self.limit,
-            errorsCount: errorsCount,
-            message: data.message,
-            maxJsonSizeBytes: self.maxJsonSizeBytes
-        );
+        return entries
     }
 
-    /**
-     * Updates if-domain and unless-domain fields.
-     * Adds wildcard to every rule and splits rules contains over limit domains
-     */
-    func updateDomains(entries: [BlockerEntry]) -> [BlockerEntry] {
-        var result = [BlockerEntry]()
-        for var entry in entries {
-            entry.trigger.ifDomain = addWildcard(domains: entry.trigger.ifDomain)
-            entry.trigger.unlessDomain = addWildcard(domains: entry.trigger.unlessDomain)
+    /// Creates an array of advanced blocking rules (to be interpreted by Safari app extension).
+    private func createAdvancedBlockedEntries(from result: CompilationResult) -> [BlockerEntry] {
+        var entries = [BlockerEntry]()
 
-            let ifDomainsAmount = entry.trigger.ifDomain?.count ?? 0
-            let unlessDomainsAmount = entry.trigger.unlessDomain?.count ?? 0
- 
-            // discard rules that exceed domains limit
-            // https://github.com/AdguardTeam/SafariConverterLib/issues/51
-            if ifDomainsAmount > MAX_DOMAINS_FOR_RULE
-                || unlessDomainsAmount > MAX_DOMAINS_FOR_RULE {
-                Logger.log("Domains limit exceeded: \(ifDomainsAmount > MAX_DOMAINS_FOR_RULE ? ifDomainsAmount : unlessDomainsAmount)")
-                continue
-            }
-            
-            result += [entry]
-        }
-        return result
-    };
-
-    private func addWildcard(domains: [String]?) -> [String]? {
-        if domains == nil || domains?.count == 0 {
-            return domains;
+        if !advancedBlockedEnabled {
+            return entries
         }
 
-        var result = [String]();
-        for domain in domains! {
-            if !domain.hasPrefix("*") {
-                result.append("*" + domain);
-            } else {
-                result.append(domain);
-            }
+        entries.append(contentsOf: result.extendedCssBlockingWide)
+        entries.append(contentsOf: result.extendedCssBlockingGenericDomainSensitive)
+        entries.append(contentsOf: result.cssBlockingGenericHideExceptions)
+        entries.append(contentsOf: result.extendedCssBlockingDomainSensitive)
+        entries.append(contentsOf: result.cssElemhide)
+        entries.append(contentsOf: result.script)
+        entries.append(contentsOf: result.scriptlets)
+        entries.append(contentsOf: result.scriptJsInjectExceptions)
+        entries.append(contentsOf: result.сssInjects)
+        entries.append(contentsOf: result.other)
+        entries.append(contentsOf: result.importantExceptions)
+        entries.append(contentsOf: result.documentExceptions)
+
+        return entries
+    }
+
+    /// Creates the final conversion result from the compilation result object.
+    func createConversionResult(data: CompilationResult) -> ConversionResult {
+        let entries = createEntries(from: data)
+        let advBlockingEntries = createAdvancedBlockedEntries(from: data)
+
+        let message = data.message
+        let totalConvertedCount = entries.count + advBlockingEntries.count
+        let overLimit = (limit > 0 && entries.count > limit)
+        let errorsCount = overLimit ? data.errorsCount + 1 : data.errorsCount
+
+        var limitedEntries = entries
+        if overLimit {
+            limitedEntries = Array(entries.prefix(limit))
+
+            Logger.log("(ConversionResult) - The limit is reached. Overlimit rules will be ignored.")
         }
 
-        return result;
-    };
+        let (converted, convertedCount) = Distributor.createJSONString(entries: limitedEntries, maxJsonSizeBytes: maxJsonSizeBytes)
+
+        var advancedBlocking: String?
+        var advancedBlockingConvertedCount: Int = 0
+
+        if advBlockingEntries.count > 0 {
+            (advancedBlocking, advancedBlockingConvertedCount) = Distributor.createJSONString(
+                entries: advBlockingEntries,
+                maxJsonSizeBytes: maxJsonSizeBytes
+            )
+        }
+
+        return ConversionResult(
+            totalConvertedCount: totalConvertedCount,
+            convertedCount: convertedCount,
+            errorsCount: errorsCount,
+            overLimit: overLimit,
+            converted: converted,
+            advancedBlockingConvertedCount: advancedBlockingConvertedCount,
+            advancedBlocking: advancedBlocking,
+            message: message
+        )
+    }
+
+    /// Serializes a list of `BlockerEntry` to JSON.
+    private static func createJSONString(entries: [BlockerEntry], maxJsonSizeBytes: Int?) -> (String, Int) {
+        if entries.isEmpty {
+            return (ConversionResult.EMPTY_RESULT_JSON, 0)
+        }
+
+        let encoder = BlockerEntryEncoder()
+        let (encoded, count) = encoder.encode(entries: entries, maxJsonSizeBytes: maxJsonSizeBytes)
+
+        // if nothing was converted due to limits, return empty result json
+        if count == 0 {
+            return (ConversionResult.EMPTY_RESULT_JSON, 0)
+        }
+
+        return (encoded, count)
+    }
 }

@@ -1,125 +1,114 @@
 import Foundation
 
-/**
- * Regex helper
- */
+/// This class provides logic for converting network rules patterns to regular expressions.
+///
+/// AdGuard's network rules mostly use a simplified syntax for matching URLs instead
+/// of full-scale regular expressions. These patterns can be converted to regular expressions
+/// that are supported by Safari content blocking rules.
 class SimpleRegex {
-    /**
-     * Improved regular expression instead of UrlFilterRule.REGEXP_START_URL (||)
-     * Please note, that this regular expression matches only ONE level of subdomains
-     * Using ([a-z0-9-.]+\\.)? instead increases memory usage by 10Mb
-     */
-    private static let  URL_FILTER_REGEXP_START_URL = #"^[htpsw]+:\/\/([a-z0-9-]+\.)?"#;
-    /** Simplified separator (to fix an issue with $ restriction - it can be only in the end of regexp) */
-    private static let  URL_FILTER_REGEXP_END_SEPARATOR = "([\\/:&\\?].*)?$";
-    private static let  URL_FILTER_REGEXP_SEPARATOR = "[/:&?]?";
-    
-    // Constants
-    private static let maskStartUrl = "||" as NSString;
-    private static let maskPipe = "|" as NSString;
-    private static let maskSeparator = "^" as NSString;
-    private static let maskAnySymbol = "*" as NSString;
+    private static let maskStartUrl = "||"
+    private static let maskPipe = "|"
+    private static let maskSeparator = "^"
+    private static let maskAnySymbol = "*"
 
-    private static let regexAnySymbol = ".*";
-    private static let regexStartUrl = URL_FILTER_REGEXP_START_URL;
-    private static let regexStartString = "^";
-    private static let regexEndString = "$";
+    private static let regexAnySymbol = ".*"
+    private static let regexAnySymbolChars = Array(".*".utf8)
+    private static let regexStartString = Array("^".utf8)
+    private static let regexEndString = Array("$".utf8)
 
-    /**
-     * Characters to be escaped in the regex
-     * https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/regexp
-     * should be escaped . * + ? ^ $ { } ( ) | [ ] / \
-     * except of * | ^
-     */
-    private static let CHARS_TO_ESCAPE = [
-        ".".utf16.first!,
-        "+".utf16.first!,
-        "?".utf16.first!,
-        "$".utf16.first!,
-        "{".utf16.first!,
-        "}".utf16.first!,
-        "(".utf16.first!,
-        ")".utf16.first!,
-        "[".utf16.first!,
-        "]".utf16.first!,
-        "/".utf16.first!,
-        "\\".utf16.first!
-    ]
-    private static let charPipe = "|".utf16.first!
-    private static let charSeparator = "^".utf16.first!
-    private static let charWildcard = "*".utf16.first!
+    /// Improved regular expression instead of UrlFilterRule.REGEXP_START_URL (||).
+    ///
+    /// Please note, that this regular expression matches only ONE level of subdomains.
+    /// Using ([a-z0-9-.]+\\.)? instead increases memory usage by 10Mb
+    private static let regexStartUrl = Array(#"^[htpsw]+:\/\/([a-z0-9-]+\.)?"#.utf8)
 
-    /**
-     * Creates regex
-     */
-    public static func createRegexText(str: NSString) -> NSString? {
-        if (str == maskStartUrl ||
-                str == maskPipe ||
-                str == maskAnySymbol) {
-            return regexAnySymbol as NSString;
+    /// Simplified separator (to fix an issue with $ restriction - it can be only in the end of regexp).
+    private static let regexEndSeparator = Array("([\\/:&\\?].*)?$".utf8)
+    private static let regexSeparator = Array("[/:&?]?".utf8)
+
+    /// Creates a regular expression from a network rule pattern.
+    ///
+    /// - Parameters:
+    ///   - pattern: network rule pattern to convert.
+    /// - Returns: regular expression corresponding to that pattern.
+    /// - Throws: SyntaxError if the pattern contains non-ASCII characters.
+    public static func createRegexText(pattern: String) throws -> String {
+        if (pattern == "" ||
+            pattern == maskStartUrl ||
+            pattern == maskPipe ||
+            pattern == maskAnySymbol) {
+            return regexAnySymbol
         }
-        
-        var result = ""
-        
-        let maxIndex = str.length - 1
-        var i = 0
-        while i <= maxIndex {
-            let char = str.character(at: i)
 
-            if CHARS_TO_ESCAPE.contains(char) {
-                result.append("\\")
-                result.append(Character(UnicodeScalar(char)!))
-            } else {
-                switch char {
-                case charPipe:
-                    if i == 0 {
-                        let nextChar = str.character(at: i+1)
-                        if nextChar == charPipe {
-                            result.append(regexStartUrl)
-                            i += 1 // increment i as we processed next char already
-                        } else {
-                            result.append(regexStartString)
-                        }
-                    } else if i == maxIndex {
-                        result.append(regexEndString)
+        var resultChars = [UInt8]()
+        let utf8 = pattern.utf8
+        var currentIndex = utf8.startIndex
+
+        @inline(__always) func peekNext() -> UInt8? {
+            let next = utf8.index(after: currentIndex)
+            guard next < utf8.endIndex else { return nil }
+            return utf8[next]
+        }
+
+        while currentIndex < utf8.endIndex {
+            let char = utf8[currentIndex]
+
+            switch char {
+            case UInt8(ascii: "."), UInt8(ascii: "+"), UInt8(ascii: "?"), UInt8(ascii: "$"),
+                UInt8(ascii: "{"), UInt8(ascii: "}"), UInt8(ascii: "("), UInt8(ascii: ")"),
+                UInt8(ascii: "["), UInt8(ascii: "]"), UInt8(ascii: "/"), UInt8(ascii: "\\"):
+
+                // Processing characters to be escaped in the regular expressions.
+                //
+                // Source for the characters:
+                // https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/regexp
+                //
+                // '\*', '|', '^', and `$` are processed differently.
+                resultChars.append(Chars.BACKSLASH)
+                resultChars.append(char)
+            case Chars.PIPE:
+                let nextChar = peekNext()
+
+                if currentIndex == utf8.startIndex {
+                    if nextChar == Chars.PIPE {
+                        // This is a start URL mask: `||`
+                        resultChars.append(contentsOf: regexStartUrl)
+
+                        // Increment index since we already processed next char.
+                        currentIndex = utf8.index(after: currentIndex)
                     } else {
-                        result.append("\\")
-                        result.append(Character(UnicodeScalar(char)!))
+                        // This is a string string mask.
+                        resultChars.append(contentsOf: regexStartString)
                     }
-                case charSeparator:
-                    if i == maxIndex {
-                        result.append(URL_FILTER_REGEXP_END_SEPARATOR)
-                    } else {
-                        result.append(URL_FILTER_REGEXP_SEPARATOR)
-                    }
-                case charWildcard:
-                    result.append(regexAnySymbol)
-                default:
-                    result.append(Character(UnicodeScalar(char)!))
+                } else if nextChar == nil {
+                    // This is the end of string so this is an end of URL mask.
+                    resultChars.append(contentsOf: regexEndString)
+                } else {
+                    // In other cases we just excape `|`.
+                    resultChars.append(Chars.BACKSLASH)
+                    resultChars.append(char)
                 }
+            case Chars.CARET:
+                let nextChar = peekNext()
+
+                if nextChar == nil {
+                    resultChars.append(contentsOf: regexEndSeparator)
+                } else {
+                    resultChars.append(contentsOf: regexSeparator)
+                }
+            case Chars.WILDCARD:
+                resultChars.append(contentsOf: regexAnySymbolChars)
+            default:
+                if char > 127 {
+                    throw SyntaxError.invalidPattern(message: "Non ASCII characters are not supported")
+                }
+
+                resultChars.append(char)
             }
-            
-            i += 1
+
+            currentIndex = utf8.index(after: currentIndex)
         }
 
-        return result as NSString;
-    }
-
-    /**
-     * Check if target string matches regex
-     */
-    static func isMatch(regex: NSRegularExpression, target: NSString) -> Bool {
-        let matchCount = regex.numberOfMatches(in: target as String, options: [], range: NSMakeRange(0, target.length))
-        return matchCount > 0;
-    }
-
-    /**
-     * Returns target string matches
-     */
-    static func matches(regex: NSRegularExpression, target: NSString) -> [String] {
-        let matches  = regex.matches(in: target as String, options: [], range: NSMakeRange(0, target.length))
-        return matches.map { match in
-            return target.substring(with: match.range)
-        }
+        return String(decoding: resultChars, as: UTF8.self)
     }
 }

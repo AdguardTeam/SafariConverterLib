@@ -69,9 +69,4 @@ final class SafariServiceTests: XCTestCase {
         XCTAssertTrue(safariVersionResolved.isSafari15orGreater())
         XCTAssertTrue(safariVersionResolved.isSafari16_4orGreater())
     }
-
-    static var allTests = [
-        ("testSafariServiceSupportedVersion", testSafariServiceSupportedVersion),
-        ("testSafariServiceUnsupportedVersion", testSafariServiceUnsupportedVersion),
-    ]
 }

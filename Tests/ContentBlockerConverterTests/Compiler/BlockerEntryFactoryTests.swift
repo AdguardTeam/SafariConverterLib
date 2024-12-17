@@ -4,459 +4,649 @@ import XCTest
 @testable import ContentBlockerConverter
 
 final class BlockerEntryFactoryTests: XCTestCase {
-    func testConvertNetworkRule() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: false, errorsCounter: ErrorsCounter());
+    func testBlockerEntryFactory() throws {
+        struct TestCase {
+            let ruleText: String
+            var version: SafariVersion = DEFAULT_SAFARI_VERSION
+            var advancedBlockingEnabled = true
+            var expectedEntry: BlockerEntry?
+            var expectedErrorsCount = 0
+        }
 
-        let rule = NetworkRule();
-        rule.ruleText = "||example.com/path$domain=test.com";
-        rule.permittedDomains = ["test.com"];
+        let testCases: [TestCase] = [
+            TestCase(
+                // Normal rule with domain modifier.
+                ruleText: "||example.com/path$domain=test.com",
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        ifDomain: ["*test.com"],
+                        urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.com\\/path"
+                    ),
+                    action: BlockerEntry.Action(
+                        type: "block"
+                    )
+                )
+            ),
+            TestCase(
+                // Regular expression rule.
+                ruleText: "/regex/$script,css",
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        urlFilter: "regex",
+                        resourceType: ["style-sheet", "script"]
+                    ),
+                    action: BlockerEntry.Action(
+                        type: "block"
+                    )
+                )
+            ),
+            TestCase(
+                // Rule matching path.
+                ruleText: "/addyn|*|adtech",
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        urlFilter: #"\/addyn\|.*\|adtech"#
+                    ),
+                    action: BlockerEntry.Action(
+                        type: "block"
+                    )
+                )
+            ),
+            TestCase(
+                // $match-case rule.
+                ruleText: "||example.org^$match-case",
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                        caseSensitive: true
+                    ),
+                    action: BlockerEntry.Action(
+                        type: "block"
+                    )
+                )
+            ),
+            TestCase(
+                // $third-party rule.
+                ruleText: "||example.org^$third-party",
+                version: SafariVersion.safari16_4,
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                        loadType: ["third-party"]
+                    ),
+                    action: BlockerEntry.Action(
+                        type: "block"
+                    )
+                )
+            ),
+            TestCase(
+                // $third-party rule for older Safari versions.
+                ruleText: "||example.org^$third-party",
+                version: SafariVersion.safari13,
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                        unlessDomain: ["*example.org"],
+                        loadType: ["third-party"]
+                    ),
+                    action: BlockerEntry.Action(
+                        type: "block"
+                    )
+                )
+            ),
+            TestCase(
+                // $first-party rule.
+                ruleText: "||example.org^$~third-party",
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                        loadType: ["first-party"]
+                    ),
+                    action: BlockerEntry.Action(
+                        type: "block"
+                    )
+                )
+            ),
+            TestCase(
+                // $all rule.
+                ruleText: "||example.org^$all",
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$"
+                    ),
+                    action: BlockerEntry.Action(
+                        type: "block"
+                    )
+                )
+            ),
+            TestCase(
+                // $image rule.
+                ruleText: "||example.org^$image",
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                        resourceType: ["image"]
+                    ),
+                    action: BlockerEntry.Action(
+                        type: "block"
+                    )
+                )
+            ),
+            TestCase(
+                // $image rule.
+                ruleText: "||example.org^$image,font",
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                        resourceType: ["image", "font"]
+                    ),
+                    action: BlockerEntry.Action(
+                        type: "block"
+                    )
+                )
+            ),
+            TestCase(
+                // $~image rule.
+                ruleText: "||example.org^$image,font,~font",
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                        resourceType: ["image"]
+                    ),
+                    action: BlockerEntry.Action(
+                        type: "block"
+                    )
+                )
+            ),
+            TestCase(
+                // $~image rule.
+                ruleText: "||example.org^$~image",
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                        resourceType: [ "style-sheet", "script", "media", "raw", "font", "document" ]
+                    ),
+                    action: BlockerEntry.Action(
+                        type: "block"
+                    )
+                )
+            ),
+            TestCase(
+                // $xmlhttprequest rule in older Safari versions maps to "raw".
+                ruleText: "||example.org^$xmlhttprequest",
+                version: SafariVersion.safari14,
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                        resourceType: [ "raw" ]
+                    ),
+                    action: BlockerEntry.Action(
+                        type: "block"
+                    )
+                )
+            ),
+            TestCase(
+                // $xmlhttprequest rule in new Safari versions maps to "fetch".
+                ruleText: "||example.org^$xmlhttprequest",
+                version: SafariVersion.safari15,
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                        resourceType: [ "fetch" ]
+                    ),
+                    action: BlockerEntry.Action(
+                        type: "block"
+                    )
+                )
+            ),
+            TestCase(
+                // $other rule in older Safari versions maps to "raw".
+                ruleText: "||example.org^$other",
+                version: SafariVersion.safari14,
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                        resourceType: [ "raw" ]
+                    ),
+                    action: BlockerEntry.Action(
+                        type: "block"
+                    )
+                )
+            ),
+            TestCase(
+                // $other rule in new Safari versions maps to "other".
+                ruleText: "||example.org^$other",
+                version: SafariVersion.safari15,
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                        resourceType: [ "other" ]
+                    ),
+                    action: BlockerEntry.Action(
+                        type: "block"
+                    )
+                )
+            ),
+            TestCase(
+                // $websocket rule in older Safari versions maps to "raw".
+                ruleText: "||example.org^$websocket",
+                version: SafariVersion.safari14,
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                        resourceType: [ "raw" ]
+                    ),
+                    action: BlockerEntry.Action(
+                        type: "block"
+                    )
+                )
+            ),
+            TestCase(
+                // $websocket rule in older Safari versions maps to "websocket".
+                ruleText: "||example.org^$websocket",
+                version: SafariVersion.safari15,
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                        resourceType: [ "websocket" ]
+                    ),
+                    action: BlockerEntry.Action(
+                        type: "block"
+                    )
+                )
+            ),
+            TestCase(
+                // $ping rule supported starting with Safari 14.
+                ruleText: "||example.org^$ping",
+                version: SafariVersion.safari14,
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                        resourceType: [ "ping" ]
+                    ),
+                    action: BlockerEntry.Action(
+                        type: "block"
+                    )
+                )
+            ),
+            TestCase(
+                // Blocklist $document rule.
+                ruleText: "||example.org^$document",
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                        resourceType: [ "document" ]
+                    ),
+                    action: BlockerEntry.Action(
+                        type: "block"
+                    )
+                )
+            ),
+            TestCase(
+                // Blocklist $popup rule.
+                ruleText: "||example.org^$popup",
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                        resourceType: [ "document" ]
+                    ),
+                    action: BlockerEntry.Action(
+                        type: "block"
+                    )
+                )
+            ),
+            TestCase(
+                // Simple whitelist rule.
+                ruleText: "@@||example.com^",
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.com([\\/:&\\?].*)?$"
+                    ),
+                    action: BlockerEntry.Action(
+                        type: "ignore-previous-rules"
+                    )
+                )
+            ),
+            TestCase(
+                // Element hiding rule.
+                ruleText: "example.org##.banner",
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        ifDomain: ["*example.org"],
+                        urlFilter: ".*"
+                    ),
+                    action: BlockerEntry.Action(
+                        type: "css-display-none",
+                        selector: ".banner"
+                    )
+                )
+            ),
+            TestCase(
+                // Whitelist element hiding rule.
+                // IMPORTANT: This is not a valid rule yet, it will be interpreted later by the compiler.
+                ruleText: "example.org#@#.banner",
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        ifDomain: ["*example.org"],
+                        urlFilter: ".*"
+                    ),
+                    action: BlockerEntry.Action(
+                        type: "ignore-previous-rules",
+                        selector: ".banner"
+                    )
+                )
+            ),
+            TestCase(
+                // Whitelist $document rule.
+                ruleText: "@@||example.com^$document",
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        ifDomain: ["*example.com"],
+                        urlFilter: ".*"
+                    ),
+                    action: BlockerEntry.Action(
+                        type: "ignore-previous-rules"
+                    )
+                )
+            ),
+            TestCase(
+                // Whitelist $elemhide rule.
+                ruleText: "@@||example.com^$elemhide",
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        ifDomain: ["*example.com"],
+                        urlFilter: ".*"
+                    ),
+                    action: BlockerEntry.Action(
+                        type: "ignore-previous-rules"
+                    )
+                )
+            ),
+            TestCase(
+                // Whitelist $jsinject rule.
+                ruleText: "@@||example.com^$jsinject",
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        ifDomain: ["*example.com"],
+                        urlFilter: ".*"
+                    ),
+                    action: BlockerEntry.Action(
+                        type: "ignore-previous-rules"
+                    )
+                )
+            ),
+            TestCase(
+                // Whitelist $urlblock rule.
+                ruleText: "@@||example.com^$urlblock",
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        ifDomain: ["*example.com"],
+                        urlFilter: ".*"
+                    ),
+                    action: BlockerEntry.Action(
+                        type: "ignore-previous-rules"
+                    )
+                )
+            ),
+            TestCase(
+                // Domain cannot be extracted so relying just on url-filter.
+                ruleText: "@@test.com/path^$document",
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        urlFilter: "test\\.com\\/path([\\/:&\\?].*)?$"
+                    ),
+                    action: BlockerEntry.Action(
+                        type: "ignore-previous-rules"
+                    )
+                )
+            ),
+            TestCase(
+                // Converting simple script rule.
+                ruleText: "example.org,example.com#%#test",
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        ifDomain: ["*example.org", "*example.com"],
+                        urlFilter: ".*"
+                    ),
+                    action: BlockerEntry.Action(
+                        type: "script",
+                        script: "test"
+                    )
+                )
+            ),
+            TestCase(
+                // Whitelist script rule.
+                ruleText: "example.org,example.com#@%#test",
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        ifDomain: ["*example.org", "*example.com"],
+                        urlFilter: ".*"
+                    ),
+                    action: BlockerEntry.Action(
+                        type: "ignore-previous-rules",
+                        script: "test"
+                    )
+                )
+            ),
+            TestCase(
+                // Scriptlet rule.
+                ruleText: "~example.org#%#//scriptlet(\"test-name\")",
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        urlFilter: ".*",
+                        unlessDomain: ["*example.org"]
+                    ),
+                    action: BlockerEntry.Action(
+                        type: "scriptlet",
+                        scriptlet: "test-name",
+                        scriptletParam: "{\"name\":\"test-name\",\"args\":[]}"
+                    )
+                )
+            ),
+            TestCase(
+                // Scriptlet with parameters rule.
+                ruleText: "~example.org,~example.com#%#//scriptlet('test scriptlet', 'test scriptlet param')",
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        urlFilter: ".*",
+                        unlessDomain: ["*example.org", "*example.com"]
+                    ),
+                    action: BlockerEntry.Action(
+                        type: "scriptlet",
+                        scriptlet: "test scriptlet",
+                        scriptletParam: "{\"name\":\"test scriptlet\",\"args\":[\"test scriptlet param\"]}"
+                    )
+                )
+            ),
+            TestCase(
+                // Whitelist scriptlet with parameters rule.
+                ruleText: "~example.org,~example.com#@%#//scriptlet('test scriptlet', 'test scriptlet param')",
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        urlFilter: ".*",
+                        unlessDomain: ["*example.org", "*example.com"]
+                    ),
+                    action: BlockerEntry.Action(
+                        type: "ignore-previous-rules",
+                        scriptlet: "test scriptlet",
+                        scriptletParam: "{\"name\":\"test scriptlet\",\"args\":[\"test scriptlet param\"]}"
+                    )
+                )
+            ),
+            TestCase(
+                // Trying to convert a script rule when advanced blocking is disabled.
+                ruleText: "example.org,example.com#%#test",
+                advancedBlockingEnabled: false,
+                expectedEntry: nil
+            ),
+            TestCase(
+                // Trying to convert a whitelist script rule when advanced blocking is disabled.
+                ruleText: "example.org,example.com#@%#test",
+                advancedBlockingEnabled: false,
+                expectedEntry: nil
+            ),
+            TestCase(
+                // Trying to convert a scriptlet rule when advanced blocking is disabled.
+                ruleText: "example.org,example.com#%#//scriptlet('test')",
+                advancedBlockingEnabled: false,
+                expectedEntry: nil
+            ),
+            TestCase(
+                // Trying to convert a whitelist scriptlet rule when advanced blocking is disabled.
+                ruleText: "example.org,example.com#@%#//scriptlet('test')",
+                advancedBlockingEnabled: false,
+                expectedEntry: nil
+            ),
+            TestCase(
+                // Extended CSS element hiding rule.
+                ruleText: "example.com#?#.banner",
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        ifDomain: ["*example.com"],
+                        urlFilter: ".*"
+                    ),
+                    action: BlockerEntry.Action(
+                        type: "css-extended",
+                        css: ".banner"
+                    )
+                )
+            ),
+            TestCase(
+                // CSS injection rule.
+                ruleText: "example.com#$#.banner { display: none; }",
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        ifDomain: ["*example.com"],
+                        urlFilter: ".*"
+                    ),
+                    action: BlockerEntry.Action(
+                        type: "css-inject",
+                        css: ".banner { display: none; }"
+                    )
+                )
+            ),
+            TestCase(
+                // Extended CSS injection rule.
+                ruleText: "example.com#$?#.banner { display: none; }",
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        ifDomain: ["*example.com"],
+                        urlFilter: ".*"
+                    ),
+                    action: BlockerEntry.Action(
+                        type: "css-extended",
+                        css: ".banner { display: none; }"
+                    )
+                )
+            ),
+            TestCase(
+                // Unsupported regular expression.
+                ruleText: "/regex{0,9}/",
+                expectedEntry: nil,
+                expectedErrorsCount: 1
+            ),
+            TestCase(
+                // Unsupported regular expression.
+                ruleText: "/regex|test/",
+                expectedEntry: nil,
+                expectedErrorsCount: 1
+            ),
+            TestCase(
+                // Unsupported regular expression.
+                ruleText: "/test(?!test)/",
+                expectedEntry: nil,
+                expectedErrorsCount: 1
+            ),
+            TestCase(
+                // Unsupported regular expression.
+                ruleText: "/test\\b/",
+                expectedEntry: nil,
+                expectedErrorsCount: 1
+            ),
+            TestCase(
+                // $subdocument without $third-party on a newer Safari.
+                ruleText: "||example.org^$subdocument,~third-party",
+                version: SafariVersion.safari16_4,
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                        loadType: ["first-party"],
+                        loadContext: ["child-frame"]
+                    ),
+                    action: BlockerEntry.Action(
+                        type: "block"
+                    )
+                )
+            ),
+            TestCase(
+                // ~$subdocument on a newer Safari.
+                ruleText: "||example.org^$~subdocument",
+                version: SafariVersion.safari16_4,
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                        resourceType : [
+                          "image",
+                          "style-sheet",
+                          "script",
+                          "media",
+                          "fetch",
+                          "other",
+                          "websocket",
+                          "font",
+                          "ping",
+                          "document"
+                        ],
+                        loadContext: ["top-frame"]
+                    ),
+                    action: BlockerEntry.Action(
+                        type: "block"
+                    )
+                )
+            ),
+            TestCase(
+                // Mixed if-domain and unless-domain is not supporteed.
+                ruleText: "||example.org^$domain=example.org|~example.com",
+                expectedEntry: nil,
+                expectedErrorsCount: 1
+            ),
+            TestCase(
+                // Mixed if-domain and unless-domain is not supporteed.
+                ruleText: "example.org,~example.com##.banner",
+                expectedEntry: nil,
+                expectedErrorsCount: 1
+            ),
+        ]
 
-        let result = converter.createBlockerEntry(rule: rule);
-        XCTAssertNotNil(result);
-        XCTAssertEqual(result!.trigger.urlFilter, "^[htpsw]+:\\/\\/");
-        XCTAssertEqual(result!.trigger.ifDomain![0], "test.com");
-        XCTAssertEqual(result!.trigger.unlessDomain, nil);
-        XCTAssertEqual(result!.trigger.shortcut, nil);
-        XCTAssertEqual(result!.trigger.regex, nil);
+        for testCase in testCases {
+            let errorsCounter = ErrorsCounter()
 
-        XCTAssertEqual(result!.action.type, "block");
-        XCTAssertEqual(result!.action.selector, nil);
-        XCTAssertEqual(result!.action.css, nil);
-        XCTAssertEqual(result!.action.script, nil);
-        XCTAssertEqual(result!.action.scriptlet, nil);
-        XCTAssertEqual(result!.action.scriptletParam, nil);
+            let converter = BlockerEntryFactory(
+                advancedBlockingEnabled: testCase.advancedBlockingEnabled,
+                errorsCounter: errorsCounter,
+                version: testCase.version
+            )
+
+            let rule = try! RuleFactory.createRule(ruleText: testCase.ruleText, for: testCase.version)
+            let result = converter.createBlockerEntry(rule: rule!)
+
+            XCTAssertEqual(result, testCase.expectedEntry, "Rule \(testCase.ruleText) conversion result didn't match")
+            XCTAssertEqual(errorsCounter.getCount(), testCase.expectedErrorsCount, "Rule \(testCase.ruleText) conversion errors count didn't match")
+        }
     }
 
-    func testConvertNetworkRuleRegExp() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: false, errorsCounter: ErrorsCounter());
+    func testTldDomains() throws {
+        let converter = BlockerEntryFactory(
+            advancedBlockingEnabled: true,
+            errorsCounter: ErrorsCounter(),
+            version: DEFAULT_SAFARI_VERSION
+        )
+        let rule = try CosmeticRule(ruleText: "example.*##.banner")
 
-        let rule = NetworkRule();
-        rule.urlRuleText = "/regex/$script";
-        rule.urlRegExpSource = "regex";
-
-        let result = converter.createBlockerEntry(rule: rule);
-        XCTAssertNotNil(result);
-        XCTAssertEqual(result!.trigger.urlFilter, "regex");
-        XCTAssertEqual(result!.trigger.ifDomain, nil);
-        XCTAssertEqual(result!.trigger.unlessDomain, nil);
-        XCTAssertEqual(result!.trigger.shortcut, nil);
-        XCTAssertEqual(result!.trigger.regex, nil);
-
-        XCTAssertEqual(result!.action.type, "block");
-        XCTAssertEqual(result!.action.selector, nil);
-        XCTAssertEqual(result!.action.css, nil);
-        XCTAssertEqual(result!.action.script, nil);
-        XCTAssertEqual(result!.action.scriptlet, nil);
-        XCTAssertEqual(result!.action.scriptletParam, nil);
+        let result = converter.createBlockerEntry(rule: rule)
+        XCTAssertNotNil(result)
+        XCTAssertTrue(result!.trigger.ifDomain!.count >= 100)
+        XCTAssertTrue(result!.trigger.ifDomain!.contains("*example.com"))
+        XCTAssertTrue(result!.trigger.ifDomain!.contains("*example.com.tr"))
     }
-
-    func testConvertNetworkRulePath() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: false, errorsCounter: ErrorsCounter());
-
-        let rule = NetworkRule();
-        rule.urlRuleText = "/addyn|*|adtech";
-        rule.urlRegExpSource = #"\/addyn\|*\|adtech"#;
-
-        let result = converter.createBlockerEntry(rule: rule);
-        XCTAssertNotNil(result);
-        XCTAssertEqual(result!.trigger.urlFilter, #"\/addyn\|*\|adtech"#);
-    }
-
-    func testConvertNetworkRuleWhitelist() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: false, errorsCounter: ErrorsCounter());
-
-        let rule = NetworkRule();
-        rule.isWhiteList = true;
-        rule.isDocumentWhiteList = true;
-        rule.ruleText = "@@||example.com^$document";
-        rule.urlRuleText = "||example.com^$document";
-
-        var result = converter.createBlockerEntry(rule: rule);
-        XCTAssertNotNil(result);
-        XCTAssertEqual(result!.trigger.urlFilter, ".*");
-        XCTAssertEqual(result!.trigger.ifDomain![0], "example.com");
-        XCTAssertEqual(result!.trigger.unlessDomain, nil);
-
-        rule.ruleText = "@@||example.com$document";
-        rule.urlRuleText = "||example.com$document";
-
-        result = converter.createBlockerEntry(rule: rule);
-        XCTAssertNotNil(result);
-        XCTAssertEqual(result!.trigger.urlFilter, "^[htpsw]+:\\/\\/");
-        XCTAssertEqual(result!.trigger.ifDomain![0], "example.com");
-        XCTAssertEqual(result!.trigger.unlessDomain, nil);
-    }
-
-    func testConvertScriptRule() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter());
-
-        let rule = try! CosmeticRule(ruleText: "example.org,test.com#%#test");
-
-        let result = converter.createBlockerEntry(rule: rule);
-        XCTAssertNotNil(result);
-        XCTAssertEqual(result!.trigger.urlFilter, ".*");
-        XCTAssertEqual(result!.trigger.ifDomain!.count, 2);
-        XCTAssertEqual(result!.trigger.unlessDomain, nil);
-        XCTAssertEqual(result!.trigger.shortcut, nil);
-        XCTAssertEqual(result!.trigger.regex, nil);
-
-        XCTAssertEqual(result!.action.type, "script");
-        XCTAssertEqual(result!.action.selector, nil);
-        XCTAssertEqual(result!.action.css, nil);
-        XCTAssertEqual(result!.action.script, "test");
-        XCTAssertEqual(result!.action.scriptlet, nil);
-        XCTAssertEqual(result!.action.scriptletParam, nil);
-    }
-
-    func testConvertScriptRulesForNonAdvancedBlocking() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: false, errorsCounter: ErrorsCounter());
-
-        var rule = try! CosmeticRule(ruleText: "example.org#%#test");
-        var result = converter.createBlockerEntry(rule: rule);
-        XCTAssertNil(result);
-
-        rule = try! CosmeticRule(ruleText: "#%#test");
-        result = converter.createBlockerEntry(rule: rule);
-        XCTAssertNil(result);
-
-        rule = try! CosmeticRule(ruleText: "example.org#@%#test");
-        result = converter.createBlockerEntry(rule: rule);
-        XCTAssertNil(result);
-    }
-
-    func testConvertScriptRuleWhitelist() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter());
-
-        let rule = try! CosmeticRule(ruleText: "example.org#@%#test");
-        rule.permittedDomains = ["test_domain_one", "test_domain_two"];
-
-        let result = converter.createBlockerEntry(rule: rule);
-        XCTAssertNotNil(result);
-        XCTAssertEqual(result!.trigger.urlFilter, ".*");
-        XCTAssertEqual(result!.trigger.ifDomain!.count, 2);
-        XCTAssertEqual(result!.trigger.unlessDomain, nil);
-        XCTAssertEqual(result!.trigger.shortcut, nil);
-        XCTAssertEqual(result!.trigger.regex, nil);
-
-        XCTAssertEqual(result!.action.type, "ignore-previous-rules");
-        XCTAssertEqual(result!.action.selector, nil);
-        XCTAssertEqual(result!.action.css, nil);
-        XCTAssertEqual(result!.action.script, "test");
-        XCTAssertEqual(result!.action.scriptlet, nil);
-        XCTAssertEqual(result!.action.scriptletParam, nil);
-    }
-
-    func testConvertScriptletRule() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter());
-
-        let rule = try! CosmeticRule(ruleText: "~example.org#%#//scriptlet(\"test-name\")");
-
-        let result = converter.createBlockerEntry(rule: rule);
-        XCTAssertNotNil(result);
-        XCTAssertEqual(result!.trigger.urlFilter, ".*");
-        XCTAssertEqual(result!.trigger.ifDomain, nil);
-        XCTAssertEqual(result!.trigger.unlessDomain!.count, 1);
-        XCTAssertEqual(result!.trigger.shortcut, nil);
-        XCTAssertEqual(result!.trigger.regex, nil);
-
-        XCTAssertEqual(result!.action.type, "scriptlet");
-        XCTAssertEqual(result!.action.selector, nil);
-        XCTAssertEqual(result!.action.css, nil);
-        XCTAssertEqual(result!.action.script, nil);
-        XCTAssertEqual(result!.action.scriptlet, "test-name");
-        XCTAssertEqual(result!.action.scriptletParam, "{\"name\":\"test-name\",\"args\":[]}");
-    }
-
-    func testConvertScriptletRuleWhitelist() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter());
-
-        let rule = try! CosmeticRule(ruleText: "##test");
-        rule.isScript = false;
-        rule.isScriptlet = true;
-        rule.scriptlet = "test scriptlet";
-        rule.scriptletParam = "test scriptlet param";
-        rule.restrictedDomains = ["test_domain_one", "test_domain_two"];
-        rule.isWhiteList = true;
-
-        let result = converter.createBlockerEntry(rule: rule);
-        XCTAssertNotNil(result);
-        XCTAssertEqual(result!.trigger.urlFilter, ".*");
-        XCTAssertEqual(result!.trigger.ifDomain, nil);
-        XCTAssertEqual(result!.trigger.unlessDomain!.count, 2);
-        XCTAssertEqual(result!.trigger.shortcut, nil);
-        XCTAssertEqual(result!.trigger.regex, nil);
-
-        XCTAssertEqual(result!.action.type, "ignore-previous-rules");
-        XCTAssertEqual(result!.action.selector, nil);
-        XCTAssertEqual(result!.action.css, nil);
-        XCTAssertEqual(result!.action.script, nil);
-        XCTAssertEqual(result!.action.scriptlet, "test scriptlet");
-        XCTAssertEqual(result!.action.scriptletParam, "test scriptlet param");
-    }
-
-    func testConvertCssRule() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter());
-
-        let rule = try! CosmeticRule(ruleText: "##.test_css_selector");
-        rule.restrictedDomains = ["test_domain_one", "test_domain_two"];
-
-        let result = converter.createBlockerEntry(rule: rule);
-        XCTAssertNotNil(result);
-        XCTAssertEqual(result!.trigger.urlFilter, ".*");
-        XCTAssertEqual(result!.trigger.ifDomain, nil);
-        XCTAssertEqual(result!.trigger.unlessDomain!.count, 2);
-        XCTAssertEqual(result!.trigger.shortcut, nil);
-        XCTAssertEqual(result!.trigger.regex, nil);
-
-        XCTAssertEqual(result!.action.type, "css-display-none");
-        XCTAssertEqual(result!.action.selector, ".test_css_selector");
-        XCTAssertEqual(result!.action.css, nil);
-    }
-
-    func testConvertCssExceptionRule() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter());
-
-        let rule = try! CosmeticRule(ruleText: "example.com#@##social");
-
-        let result = converter.createBlockerEntry(rule: rule);
-        XCTAssertNotNil(result);
-        XCTAssertEqual(result!.trigger.urlFilter, ".*");
-        XCTAssertEqual(result!.trigger.ifDomain, ["example.com"]);
-        XCTAssertEqual(result!.trigger.unlessDomain, nil);
-
-        XCTAssertEqual(result!.action.type, "ignore-previous-rules");
-        XCTAssertEqual(result!.action.selector, "#social");
-        XCTAssertEqual(result!.action.css, nil);
-    }
-
-    func testConvertCssRuleExtendedCss() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter());
-
-        let rule = try! CosmeticRule(ruleText: "##.test_css_selector:has(> .test_selector)");
-        rule.isExtendedCss = true;
-        rule.restrictedDomains = ["test_domain_one", "test_domain_two"];
-
-        let result = converter.createBlockerEntry(rule: rule);
-        XCTAssertNotNil(result);
-        XCTAssertEqual(result!.trigger.urlFilter, ".*");
-        XCTAssertEqual(result!.trigger.ifDomain, nil);
-        XCTAssertEqual(result!.trigger.unlessDomain!.count, 2);
-        XCTAssertEqual(result!.trigger.shortcut, nil);
-        XCTAssertEqual(result!.trigger.regex, nil);
-
-        XCTAssertEqual(result!.action.type, "css-extended");
-        XCTAssertEqual(result!.action.selector, nil);
-        XCTAssertEqual(result!.action.css, ".test_css_selector:has(> .test_selector)");
-    }
-
-    func testConvertCssRuleCssInject() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter());
-
-        let rule = try! CosmeticRule(ruleText: "example.com#$#.body { overflow: visible!important; }");
-
-        let result = converter.createBlockerEntry(rule: rule);
-        XCTAssertNotNil(result);
-        XCTAssertEqual(result!.trigger.urlFilter, ".*");
-        XCTAssertEqual(result!.trigger.ifDomain!, ["example.com"]);
-        XCTAssertNil(result!.trigger.unlessDomain);
-        XCTAssertEqual(result!.trigger.shortcut, nil);
-        XCTAssertEqual(result!.trigger.regex, nil);
-
-        XCTAssertEqual(result!.action.type, "css-inject");
-        XCTAssertEqual(result!.action.selector, nil);
-        XCTAssertEqual(result!.action.css, ".body { overflow: visible!important; }");
-    }
-
-    func testConvertInvalidCssRule() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter());
-
-        let rule = try! CosmeticRule(ruleText: "##url(test)");
-        rule.isExtendedCss = true;
-        rule.restrictedDomains = ["test_domain_one", "test_domain_two"];
-
-        let result = converter.createBlockerEntry(rule: rule);
-        XCTAssertNil(result);
-    }
-
-    func testConvertInvalidRegexNetworkRule() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: false, errorsCounter: ErrorsCounter());
-
-        let rule = NetworkRule();
-        rule.urlRuleText = "/regex/";
-
-        rule.urlRegExpSource = "regex{0,9}";
-        var result = converter.createBlockerEntry(rule: rule);
-        XCTAssertNil(result);
-
-        rule.urlRegExpSource = "regex|test";
-        result = converter.createBlockerEntry(rule: rule);
-        XCTAssertNil(result);
-
-        rule.urlRegExpSource = "test(?!test)";
-        result = converter.createBlockerEntry(rule: rule);
-        XCTAssertNil(result);
-
-        rule.urlRegExpSource = "test\\b";
-        result = converter.createBlockerEntry(rule: rule);
-        XCTAssertNil(result);
-    }
-
-    func testConvertInvalidNetworkRule() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter());
-
-        let rule = createTestNetworkRule();
-
-        rule.permittedContentType = [NetworkRule.ContentType.SUBDOCUMENT]
-        rule.isCheckThirdParty = true;
-        rule.isThirdParty = false;
-        let result = converter.createBlockerEntry(rule: rule);
-        XCTAssertNil(result);
-    }
-
-    func testTldDomains() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter());
-        let rule = createTestRule();
-
-        rule.permittedDomains = ["example.*"];
-
-        let result = converter.createBlockerEntry(rule: rule);
-        XCTAssertNotNil(result);
-        XCTAssertTrue(result!.trigger.ifDomain!.count >= 100);
-        XCTAssertTrue(result!.trigger.ifDomain!.contains("example.com"))
-        XCTAssertTrue(result!.trigger.ifDomain!.contains("example.com.tr"))
-    }
-
-    func testDomainsRestrictions() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: true, errorsCounter: ErrorsCounter());
-        let rule = createTestRule();
-
-        rule.permittedDomains = ["permitted"];
-        rule.restrictedDomains = ["restricted"];
-
-        let result = converter.createBlockerEntry(rule: rule);
-        XCTAssertNil(result);
-    }
-
-    func testThirdParty() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: false, errorsCounter: ErrorsCounter());
-        let rule = createTestNetworkRule();
-
-        rule.isCheckThirdParty = false;
-        rule.isThirdParty = true;
-
-        var result = converter.createBlockerEntry(rule: rule);
-        XCTAssertNil(result!.trigger.loadType);
-
-        rule.isCheckThirdParty = true;
-        rule.isThirdParty = true;
-        result = converter.createBlockerEntry(rule: rule);
-        XCTAssertEqual(result!.trigger.loadType!.count, 1);
-        XCTAssertEqual(result!.trigger.loadType![0], "third-party");
-
-        rule.isCheckThirdParty = true;
-        rule.isThirdParty = false;
-        result = converter.createBlockerEntry(rule: rule);
-        XCTAssertEqual(result!.trigger.loadType!.count, 1);
-        XCTAssertEqual(result!.trigger.loadType![0], "first-party");
-    }
-
-    func testMatchCase() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: false, errorsCounter: ErrorsCounter());
-        let rule = createTestNetworkRule();
-
-        var result = converter.createBlockerEntry(rule: rule);
-        XCTAssertNil(result!.trigger.caseSensitive);
-
-        rule.isMatchCase = false;
-        result = converter.createBlockerEntry(rule: rule);
-        XCTAssertNil(result!.trigger.caseSensitive);
-
-        rule.isMatchCase = true;
-        result = converter.createBlockerEntry(rule: rule);
-        XCTAssertEqual(result!.trigger.caseSensitive, true);
-    }
-
-    func testResourceTypes() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: false, errorsCounter: ErrorsCounter());
-        let rule = createTestNetworkRule();
-
-        var result = converter.createBlockerEntry(rule: rule);
-        XCTAssertNil(result!.trigger.resourceType);
-
-        rule.permittedContentType = [NetworkRule.ContentType.ALL];
-        rule.restrictedContentType = [];
-        result = converter.createBlockerEntry(rule: rule);
-        XCTAssertNil(result!.trigger.resourceType);
-
-        rule.permittedContentType = [NetworkRule.ContentType.IMAGE];
-        rule.restrictedContentType = [];
-        result = converter.createBlockerEntry(rule: rule);
-        XCTAssertEqual(result!.trigger.resourceType, ["image"]);
-
-        rule.permittedContentType = [NetworkRule.ContentType.IMAGE, NetworkRule.ContentType.FONT];
-        rule.restrictedContentType = [];
-        result = converter.createBlockerEntry(rule: rule);
-        XCTAssertEqual(result!.trigger.resourceType, ["image", "font"]);
-
-        rule.permittedContentType = [NetworkRule.ContentType.IMAGE, NetworkRule.ContentType.FONT];
-        rule.restrictedContentType = [NetworkRule.ContentType.FONT];
-        result = converter.createBlockerEntry(rule: rule);
-        XCTAssertEqual(result!.trigger.resourceType, ["image"]);
-    }
-
-    func testInvalidResourceTypes() {
-        let converter = BlockerEntryFactory(advancedBlockingEnabled: false, errorsCounter: ErrorsCounter());
-        let rule = createTestNetworkRule();
-
-        rule.permittedContentType = [NetworkRule.ContentType.OBJECT];
-        var result = converter.createBlockerEntry(rule: rule);
-        XCTAssertNil(result);
-
-        rule.permittedContentType = [NetworkRule.ContentType.OBJECT_SUBREQUEST];
-        result = converter.createBlockerEntry(rule: rule);
-        XCTAssertNil(result);
-
-        rule.permittedContentType = [NetworkRule.ContentType.WEBRTC];
-        result = converter.createBlockerEntry(rule: rule);
-        XCTAssertNil(result);
-
-        rule.permittedContentType = [NetworkRule.ContentType.IMAGE];
-        rule.isReplace = true;
-        result = converter.createBlockerEntry(rule: rule);
-        XCTAssertNil(result);
-    }
-
-    private func createTestRule() -> Rule {
-        let rule = try! CosmeticRule(ruleText: "example.org#%#test");
-        return rule;
-    }
-
-    private func createTestNetworkRule() -> NetworkRule {
-        let rule = NetworkRule();
-
-        return rule;
-    }
-
-    static var allTests = [
-        ("testConvertNetworkRule", testConvertNetworkRule),
-        ("testConvertNetworkRuleRegExp", testConvertNetworkRuleRegExp),
-        ("testConvertNetworkRulePath", testConvertNetworkRulePath),
-        ("testConvertNetworkRuleWhitelist", testConvertNetworkRuleWhitelist),
-        ("testConvertScriptRule", testConvertScriptRule),
-        ("testConvertScriptRulesForNonAdvancedBlocking", testConvertScriptRulesForNonAdvancedBlocking),
-        ("testConvertScriptRuleWhitelist", testConvertScriptRuleWhitelist),
-        ("testConvertScriptletRule", testConvertScriptletRule),
-        ("testConvertScriptletRuleWhitelist", testConvertScriptletRuleWhitelist),
-        ("testConvertCssRule", testConvertCssRule),
-        ("testConvertCssRuleExtendedCss", testConvertCssRuleExtendedCss),
-        ("testConvertCssRuleCssInject", testConvertCssRuleCssInject),
-        ("testConvertInvalidCssRule", testConvertInvalidCssRule),
-        ("testConvertInvalidNetworkRule", testConvertInvalidNetworkRule),
-        ("testConvertInvalidRegexNetworkRule", testConvertInvalidRegexNetworkRule),
-        ("testTldDomains", testTldDomains),
-        ("testDomainsRestrictions", testDomainsRestrictions),
-        ("testThirdParty", testThirdParty),
-        ("testMatchCase", testMatchCase),
-        ("testResourceTypes", testResourceTypes),
-    ]
 }

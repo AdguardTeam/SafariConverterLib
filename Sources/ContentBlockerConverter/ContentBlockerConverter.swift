@@ -8,28 +8,126 @@ struct VettedRules {
     var simpleRules: [Rule] = []
 }
 
-/**
- * Entry point
- */
+/// Entry point into the SafariConverterLib, here the conversion process starts.
 public class ContentBlockerConverter {
 
-    public init() {
+    public init() {}
 
+    /// Converts filter rules in AdGuard format to the format supported by Safari.
+    ///
+    /// - Parameters:
+    ///   - rules: array of filtering rules.
+    ///   - safariVersion: version of Safari for which the conversion should be done.
+    ///   - optimize: if set to true, removes generic element hiding rules form the result.
+    ///   - advancedBlocking: if true, convert advanced blocking rules too.
+    ///   - advancedBlockingFormat: format for advanced blocking rules (can be json or txt).
+    ///   - maxJsonSizeBytes: maximum size for the rules JSON. Due to iOS bug we have to limit that size.
+    ///   - progress: provides a way to cancel conversion earlier.
+    /// - Returns:
+    ///   - Conversion result that contains the Safari rules JSON and additional information about conversion.
+    public func convertArray(
+        rules: [String],
+        safariVersion: SafariVersion = .safari13,
+        // TODO: [ameshkov] Remove optimize argument, this logic is not used by anyone and is deprecated.
+        optimize: Bool = false,
+        // TODO: [ameshkov] Figure out how advancedBlocking is used now, maybe we don't need it?
+        advancedBlocking: Bool = false,
+        advancedBlockingFormat: AdvancedBlockingFormat = .json,
+        maxJsonSizeBytes: Int? = nil,
+        progress: Progress? = nil
+    ) -> ConversionResult {
+        var shouldContinue: Bool {
+            !(progress?.isCancelled ?? false)
+        }
+
+        let rulesLimit = safariVersion.rulesLimit
+
+        if rules.count == 0 || (rules.count == 1 && rules[0].isEmpty) {
+            Logger.log("(ContentBlockerConverter) - No rules passed")
+            return ConversionResult.createEmptyResult()
+        }
+
+        let errorsCounter = ErrorsCounter()
+
+        guard shouldContinue else {
+            Logger.log("(ContentBlockerConverter) - Cancelled before rules parsing")
+            return ConversionResult.createEmptyResult()
+        }
+
+        let ruleFactory = RuleFactory(errorsCounter: errorsCounter)
+        let parsedRules = ruleFactory.createRules(lines: rules, for: safariVersion, progress: progress)
+
+        let advancedBlockingJson = advancedBlocking && advancedBlockingFormat == AdvancedBlockingFormat.json
+
+        let compiler = Compiler(
+            optimize: optimize,
+            advancedBlocking: advancedBlockingJson,
+            errorsCounter: errorsCounter,
+            version: safariVersion
+        )
+
+        var compilationResult: CompilationResult
+        var advancedRulesTexts: String? = nil
+
+        guard shouldContinue else {
+            Logger.log("(ContentBlockerConverter) - Cancelled before advanced converting")
+            return ConversionResult.createEmptyResult()
+        }
+
+        // TODO: [ameshkov]: The correct way would be to move this logic to Compiler.
+        if advancedBlocking && advancedBlockingFormat == .txt {
+            let vettedRules = vetRules(parsedRules)
+            let advancedRules = vettedRules.advancedRules
+            let simpleRules = vettedRules.simpleRules
+
+            compilationResult = compiler.compileRules(rules: simpleRules, progress: progress)
+            advancedRulesTexts = advancedRules.map { $0.ruleText as String }.joined(separator: "\n")
+        } else {
+            // by default for .json format
+            compilationResult = compiler.compileRules(rules: parsedRules, progress: progress)
+        }
+
+        compilationResult.errorsCount = errorsCounter.getCount()
+
+        let message = createLogMessage(compilationResult: compilationResult)
+        Logger.log("(ContentBlockerConverter) - Compilation result: " + message)
+        compilationResult.message = message
+
+        let distributor = Distributor(
+            limit: rulesLimit,
+            advancedBlocking: advancedBlockingJson,
+            maxJsonSizeBytes: maxJsonSizeBytes
+        )
+
+        var conversionResult = distributor.createConversionResult(data: compilationResult)
+
+        conversionResult.advancedBlockingText = advancedRulesTexts
+
+        return conversionResult
     }
 
-    /**
-     * Creates two lists with
-     *  - advanced rules (extcss, script, scriptlet, css inject)
-     *  - simple rules (network, css, other)
-     */
-    func vetRules(_ rules: [Rule]) -> VettedRules {
+    /// Creates allowlist rule for provided domain.
+    public static func createAllowlistRule(by domain: String) -> String {
+        return "@@||\(domain)$document";
+    }
+
+    /// Creates inverted allowlist rule for provided domains.
+    public static func createInvertedAllowlistRule(by domains: [String]) -> String? {
+        let domainsString = domains.filter { !$0.isEmpty }.joined(separator: "|~")
+        return domainsString.count > 0 ? "@@||*$document,domain=~\(domainsString)" : nil
+    }
+
+    /// Creates two lists with:
+    /// - advanced rules (extcss, script, scriptlet, css inject)
+    /// - simple rules (network, css, other)
+    private func vetRules(_ rules: [Rule]) -> VettedRules {
         var result = VettedRules()
 
         for rule in rules {
-            var isException = rule.isDocumentWhiteList;
+            var isException = false
 
-            if !isException, let rule = rule as? NetworkRule {
-                isException = rule.isCssExceptionRule || rule.isJsInject
+            if let rule = rule as? NetworkRule {
+                isException = rule.isDocumentWhiteList || rule.isCssExceptionRule || rule.isJsInject
             }
 
             // exception rules with $document, $elemhide, $generichide, $jsinject modifiers
@@ -54,101 +152,6 @@ public class ContentBlockerConverter {
         }
 
         return result
-    }
-
-    /**
-     * Converts filter rules in AdGuard format to the format supported by Safari.
-     */
-    public func convertArray(
-            rules: [String],
-            safariVersion: SafariVersion = .safari13,
-            optimize: Bool = false,
-            advancedBlocking: Bool = false,
-            advancedBlockingFormat: AdvancedBlockingFormat = .json,
-            maxJsonSizeBytes: Int? = nil,
-            progress: Progress? = nil
-    ) -> ConversionResult {
-        var shouldContinue: Bool {
-            !(progress?.isCancelled ?? false)
-        }
-
-        SafariService.current.version = safariVersion;
-
-        let rulesLimit = safariVersion.rulesLimit;
-
-        if rules.count == 0 || (rules.count == 1 && rules[0].isEmpty) {
-            Logger.log("(ContentBlockerConverter) - No rules passed");
-            return ConversionResult.createEmptyResult();
-        }
-
-        let errorsCounter = ErrorsCounter();
-
-        guard shouldContinue else {
-            Logger.log("(ContentBlockerConverter) - Cancelled before rules parsing")
-            return ConversionResult.createEmptyResult()
-        }
-
-        let parsedRules = RuleFactory(errorsCounter: errorsCounter).createRules(lines: rules, progress: progress)
-
-        let advancedBlockingJson = advancedBlocking && advancedBlockingFormat == AdvancedBlockingFormat.json
-
-        let compiler = Compiler(
-            optimize: optimize,
-            advancedBlocking: advancedBlockingJson,
-            errorsCounter: errorsCounter
-        )
-
-        var compilationResult: CompilationResult;
-        var advancedRulesTexts: String? = nil;
-
-        guard shouldContinue else {
-            Logger.log("(ContentBlockerConverter) - Cancelled before advanced converting")
-            return ConversionResult.createEmptyResult()
-        }
-
-        if advancedBlocking && advancedBlockingFormat == .txt {
-            let vettedRules = vetRules(parsedRules);
-            let advancedRules = vettedRules.advancedRules;
-            let simpleRules = vettedRules.simpleRules;
-
-            compilationResult = compiler.compileRules(rules: simpleRules, progress: progress)
-            advancedRulesTexts = advancedRules.map { $0.ruleText as String }.joined(separator: "\n")
-        } else {
-            // by default for .json format
-            compilationResult = compiler.compileRules(rules: parsedRules, progress: progress)
-        }
-
-        compilationResult.errorsCount = errorsCounter.getCount();
-
-        let message = createLogMessage(compilationResult: compilationResult);
-        Logger.log("(ContentBlockerConverter) - Compilation result: " + message);
-        compilationResult.message = message;
-
-        var conversionResult = Distributor(
-            limit: rulesLimit,
-            advancedBlocking: advancedBlockingJson,
-            maxJsonSizeBytes: maxJsonSizeBytes
-        )
-            .createConversionResult(data: compilationResult);
-
-        conversionResult.advancedBlockingText = advancedRulesTexts;
-
-        return conversionResult;
-    }
-    
-    /**
-     * Creates allowlist rule for provided domain
-     */
-    public static func createAllowlistRule(by domain: String) -> String {
-        return "@@||\(domain)$document";
-    }
-
-    /**
-     * Creates inverted allowlist rule for provided domains
-     */
-    public static func createInvertedAllowlistRule(by domains: [String]) -> String? {
-        let domainsString = domains.filter { !$0.isEmpty }.joined(separator: "|~")
-        return domainsString.count > 0 ? "@@||*$document,domain=~\(domainsString)" : nil
     }
 
     private func createLogMessage(compilationResult: CompilationResult) -> String {
