@@ -1,5 +1,4 @@
 import Foundation
-
 import XCTest
 @testable import ContentBlockerConverter
 
@@ -293,7 +292,7 @@ final class NetworkRuleTests: XCTestCase {
             XCTAssertEqual(result.isJsInject, testCase.expectedJsInject, msg)
             XCTAssertEqual(result.isCssExceptionRule, testCase.expectedCssExceptionRule, msg)
             XCTAssertEqual(result.isMatchCase, testCase.expectedMatchCase, msg)
-            XCTAssertEqual(result.badfilter, testCase.expectedBadfilter, msg)
+            XCTAssertEqual(result.isBadfilter, testCase.expectedBadfilter, msg)
             XCTAssertEqual(result.permittedDomains, testCase.expectedPermittedDomains, msg)
             XCTAssertEqual(result.restrictedDomains, testCase.expectedRestrictedDomains, msg)
             XCTAssertEqual(result.permittedContentType, testCase.expectedPermittedContentTypes, msg)

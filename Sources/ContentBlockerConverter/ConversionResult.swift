@@ -1,5 +1,4 @@
 import Foundation
-import Shared
 
 /// Represents the final conversion result.
 public struct ConversionResult {

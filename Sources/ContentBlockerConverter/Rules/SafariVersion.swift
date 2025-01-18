@@ -1,5 +1,5 @@
 /// Default Safari version for which the rules will be converted if another version is not explicitly specified.
-let DEFAULT_SAFARI_VERSION = SafariVersion.safari13
+public let DEFAULT_SAFARI_VERSION = SafariVersion.safari13
 
 /// Represents Safari browser version for which the library will prepare a content blocker.
 public enum SafariVersion: CustomStringConvertible, CustomDebugStringConvertible, Equatable {
@@ -52,7 +52,7 @@ public enum SafariVersion: CustomStringConvertible, CustomDebugStringConvertible
         }
     }
 
-    var doubleValue: Double {
+    public var doubleValue: Double {
         switch self {
         case .safari13: return 13
         case .safari14: return 14
@@ -64,19 +64,17 @@ public enum SafariVersion: CustomStringConvertible, CustomDebugStringConvertible
         }
     }
 
-    func isSafari14orGreater() -> Bool {
+    public func isSafari14orGreater() -> Bool {
         return self.doubleValue >= SafariVersion.safari14.doubleValue;
     }
 
-    func isSafari15orGreater() -> Bool {
+    public func isSafari15orGreater() -> Bool {
         return self.doubleValue >= SafariVersion.safari15.doubleValue;
     }
 
-    /**
-     * Starting from 16.4 version Safari content blockers supports :has() pseudo-class.
-     * https://www.webkit.org/blog/13966/webkit-features-in-safari-16-4/
-     */
-    func isSafari16_4orGreater() -> Bool {
+    /// Starting from 16.4 version Safari content blockers supports :has() pseudo-class.
+    /// https://www.webkit.org/blog/13966/webkit-features-in-safari-16-4/
+    public func isSafari16_4orGreater() -> Bool {
         return self.doubleValue >= SafariVersion.safari16_4.doubleValue;
     }
 }

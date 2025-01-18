@@ -1,6 +1,5 @@
 import Foundation
 import ContentBlockerConverter
-import Shared
 import ArgumentParser
 
 func writeToStdError(str: String) {

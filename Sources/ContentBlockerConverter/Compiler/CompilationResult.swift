@@ -54,32 +54,46 @@ struct CompilationResult {
     // Advanced blocking entries
 
     /// Script rules (`#%#`)
+    ///
+    /// /// TODO(ameshkov): !!! Remove, deprecated
     var script: [BlockerEntry] = []
 
     /// Scriptlet rules (`#%#//scriptlet`)
+    ///
+    /// TODO(ameshkov): !!! Remove, deprecated
     var scriptlets: [BlockerEntry] = []
 
     /// JsInject exception (`$jsinject`)
+    ///
+    /// TODO(ameshkov): !!! Remove, deprecated
     var scriptJsInjectExceptions: [BlockerEntry] = []
 
     /// Css injecting rules.
     ///
     /// Example: `#$#.banner { visitibilty: hidden; }`
+    ///
+    /// TODO(ameshkov): !!! Remove, deprecated
     var сssInjects: [BlockerEntry] = []
 
     /// Extended css Elemhide rules (`##`, `#?#`) - wide generic rules.
     ///
     /// Example: `#?#.banner`.
+    ///
+    /// TODO(ameshkov): !!! Remove, deprecated
     var extendedCssBlockingWide: [BlockerEntry] = []
 
     /// Extended css Elemhide rules (`##`, `#?#`) - generic domain sensitive.
     ///
     /// Example: `~example.org#?#.banner`.
+    ///
+    /// TODO(ameshkov): !!! Remove, deprecated
     var extendedCssBlockingGenericDomainSensitive: [BlockerEntry] = []
 
     /// Elemhide rules (`##`, `#?#`) with domain restrictions.
     ///
     /// Example: `example.org#?#.banner`.
+    ///
+    /// TODO(ameshkov): !!! Remove, deprecated
     var extendedCssBlockingDomainSensitive: [BlockerEntry] = []
 
     /// Adds a new entry with action`block`.

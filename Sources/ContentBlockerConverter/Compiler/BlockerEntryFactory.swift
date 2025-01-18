@@ -1,5 +1,4 @@
 import Foundation
-import Shared
 
 /// BlockerEntryFactory creates Safari content blocking rules from AdGuard's NetworkRule and CosmeticRule.
 class BlockerEntryFactory {
@@ -94,9 +93,8 @@ class BlockerEntryFactory {
         let urlFilter = try createUrlFilterString(rule: rule)
 
         var trigger = BlockerEntry.Trigger(urlFilter: urlFilter)
-        var action = BlockerEntry.Action(type: "block")
+        var action = BlockerEntry.Action(type: rule.isWhiteList ? "ignore-previous-rules" : "block")
 
-        setWhiteList(rule: rule, action: &action)
         try addResourceType(rule: rule, trigger: &trigger)
         addLoadContext(rule: rule, trigger: &trigger)
         addThirdParty(rule: rule, trigger: &trigger)
@@ -115,13 +113,16 @@ class BlockerEntryFactory {
      * The result entry could be used in advanced blocking json only.
      */
     private func convertScriptRule(rule: CosmeticRule) throws -> BlockerEntry? {
-        var trigger = BlockerEntry.Trigger(urlFilter: BlockerEntryFactory.URL_FILTER_COSMETIC_RULES);
-        var action = BlockerEntry.Action(type: "script", script: rule.content);
+        var trigger = BlockerEntry.Trigger(urlFilter: BlockerEntryFactory.URL_FILTER_COSMETIC_RULES)
+        var action = BlockerEntry.Action(type: "script", script: rule.content)
 
-        setWhiteList(rule: rule, action: &action);
-        try addDomainOptions(rule: rule, trigger: &trigger);
+        if rule.isWhiteList {
+            throw ConversionError.unsupportedRule(message: "Cannot convert cosmetic exception: \(rule.ruleText)")
+        }
 
-        return BlockerEntry(trigger: trigger, action: action);
+        try addDomainOptions(rule: rule, trigger: &trigger)
+
+        return BlockerEntry(trigger: trigger, action: action)
     }
 
     /**
@@ -130,13 +131,16 @@ class BlockerEntryFactory {
     * The result entry could be used in advanced blocking json only.
     */
     private func convertScriptletRule(rule: CosmeticRule) throws -> BlockerEntry? {
-        var trigger = BlockerEntry.Trigger(urlFilter: BlockerEntryFactory.URL_FILTER_COSMETIC_RULES);
-        var action = BlockerEntry.Action(type: "scriptlet", scriptlet: rule.scriptlet, scriptletParam: rule.scriptletParam);
+        var trigger = BlockerEntry.Trigger(urlFilter: BlockerEntryFactory.URL_FILTER_COSMETIC_RULES)
+        var action = BlockerEntry.Action(type: "scriptlet", scriptlet: rule.scriptlet, scriptletParam: rule.scriptletParam)
 
-        setWhiteList(rule: rule, action: &action);
-        try addDomainOptions(rule: rule, trigger: &trigger);
+        if rule.isWhiteList {
+            throw ConversionError.unsupportedRule(message: "Cannot convert cosmetic exception: \(rule.ruleText)")
+        }
 
-        return BlockerEntry(trigger: trigger, action: action);
+        try addDomainOptions(rule: rule, trigger: &trigger)
+
+        return BlockerEntry(trigger: trigger, action: action)
     }
 
     /// Creates a blocker entry object from the source cosmetic rule.
@@ -158,7 +162,10 @@ class BlockerEntryFactory {
             action.selector = rule.content
         }
 
-        setWhiteList(rule: rule, action: &action)
+        if rule.isWhiteList {
+            throw ConversionError.unsupportedRule(message: "Cannot convert cosmetic exception: \(rule.ruleText)")
+        }
+
         try addDomainOptions(rule: rule, trigger: &trigger)
 
         let result = BlockerEntry(trigger: trigger, action: action)
@@ -238,13 +245,6 @@ class BlockerEntryFactory {
         }
 
         return urlFilter
-    };
-
-    /// Changes the rule action to "ignore-previous-rules".
-    private func setWhiteList(rule: Rule, action: inout BlockerEntry.Action) -> Void {
-        if (rule.isWhiteList) {
-            action.type = "ignore-previous-rules";
-        }
     }
 
     /// Adds resource type based on the content types specified in the network rule.

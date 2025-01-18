@@ -117,13 +117,6 @@ class Compiler {
 
         guard shouldContinue else { return CompilationResult() }
 
-        // Applying CSS exceptions
-        cssBlocking = Compiler.applyActionExceptions(
-            blockingItems: &cssBlocking,
-            exceptions: cssExceptions,
-            actionValue: "selector"
-        )
-
         // Compacting cosmetic rules.
         let cssCompact = Compiler.compactCssRules(cssBlocking: cssBlocking)
         if !optimize {
@@ -151,10 +144,6 @@ class Compiler {
         if advancedBlockedEnabled {
             guard shouldContinue else { return CompilationResult() }
 
-            // Applying CSS exceptions for extended css rules
-            extendedCssBlocking = Compiler.applyActionExceptions(
-                    blockingItems: &extendedCssBlocking, exceptions: cssExceptions + cosmeticCssExceptions, actionValue: "css"
-            )
             let extendedCssCompact = Compiler.compactCssRules(cssBlocking: extendedCssBlocking)
             if (!optimize) {
                 compilationResult.extendedCssBlockingWide = extendedCssCompact.cssBlockingWide
@@ -162,103 +151,18 @@ class Compiler {
             compilationResult.extendedCssBlockingGenericDomainSensitive = extendedCssCompact.cssBlockingGenericDomainSensitive
             compilationResult.extendedCssBlockingDomainSensitive = extendedCssCompact.cssBlockingDomainSensitive
 
-            guard shouldContinue else { return CompilationResult() }
-
             // Apply specifichide exceptions for extended css rules
             compilationResult.extendedCssBlockingDomainSensitive = Compiler.applySpecifichide(blockingItems: &compilationResult.extendedCssBlockingDomainSensitive, specifichideExceptions: specifichideExceptionDomains)
 
-            guard shouldContinue else { return CompilationResult() }
-
-            // Applying CSS exceptions for css injecting rules
-            cssInjects = Compiler.applyActionExceptions(
-                    blockingItems: &cssInjects, exceptions: cssExceptions + cosmeticCssExceptions, actionValue: "css"
-            )
-            compilationResult.сssInjects = cssInjects
-
-            guard shouldContinue else { return CompilationResult() }
 
             // Apply specifichide exceptions for css injecting rules
-            compilationResult.сssInjects = Compiler.applySpecifichide(blockingItems: &compilationResult.сssInjects, specifichideExceptions: specifichideExceptionDomains)
+            compilationResult.сssInjects = Compiler.applySpecifichide(blockingItems: &cssInjects, specifichideExceptions: specifichideExceptionDomains)
 
-            guard shouldContinue else { return CompilationResult() }
-
-            // Applying script exceptions
-            scriptRules = Compiler.applyActionExceptions(blockingItems: &scriptRules, exceptions: scriptExceptionRules, actionValue: "script")
             compilationResult.script = scriptRules
-
-            scriptlets = Compiler.applyActionExceptions(blockingItems: &scriptlets, exceptions: scriptletsExceptions, actionValue: "scriptlet")
             compilationResult.scriptlets = scriptlets
         }
 
         return compilationResult
-    }
-
-    /**
-     * Adds exception domain to the specified rule.
-     * First it checks if rule has if-domain restriction.
-     * If so - it may be that domain is redundant.
-     */
-    private static func applyExceptionDomains(exceptionTrigger: BlockerEntry.Trigger, ruleTrigger: inout BlockerEntry.Trigger) -> Void {
-        var exceptionDomains: [String]?;
-        var domainsList: [String]?;
-
-        if (exceptionTrigger.ifDomain != nil) {
-            exceptionDomains = exceptionTrigger.ifDomain;
-            domainsList = ruleTrigger.ifDomain;
-        } else if (exceptionTrigger.unlessDomain != nil) {
-            exceptionDomains = exceptionTrigger.unlessDomain;
-            domainsList = ruleTrigger.unlessDomain;
-        }
-
-        // generic exception case
-        if (exceptionDomains == nil) {
-            exceptionDomains = [];
-            ruleTrigger.ifDomain = [];
-            return;
-        }
-
-        for domain in exceptionDomains! {
-            if (domainsList != nil && domainsList!.count > 0) {
-
-                // First check that domain is not redundant
-                let applicable = domainsList?.firstIndex(of: domain) != nil;
-                if (!applicable) {
-                    continue
-                }
-
-                // remove exception domain
-                if (ruleTrigger.ifDomain != nil) {
-                    ruleTrigger.ifDomain = ruleTrigger.ifDomain!.filter {
-                        $0 != domain
-                    }
-                } else if (ruleTrigger.unlessDomain != nil) {
-                    ruleTrigger.unlessDomain = ruleTrigger.unlessDomain!.filter {
-                        $0 != domain
-                    }
-                }
-
-            } else {
-                if (ruleTrigger.unlessDomain == nil) {
-                    ruleTrigger.unlessDomain = [];
-                }
-                ruleTrigger.unlessDomain?.append(domain);
-            }
-        }
-    };
-
-    private static func getActionValue(entry: BlockerEntry, action: String) -> String? {
-        switch action {
-        case "selector":
-            return entry.action.selector;
-        case "css":
-            return entry.action.css;
-        case "script":
-            return entry.action.script;
-        case "scriptlet":
-            return entry.action.scriptlet;
-        default:
-            return nil;
-        }
     }
 
     /// Applies $specifichide exceptions by removing the domain from other rules' `if-domain`.
@@ -279,190 +183,132 @@ class Compiler {
                 }
             }
 
-            blockingItems[index].trigger = item.trigger;
-        }
-
-        var result = [BlockerEntry]();
-
-        for r in blockingItems {
-            // skip entries with excluded ifDomain
-            if (r.trigger.ifDomain?.count == 0) {
-                continue;
-            }
-            result.append(r);
-        }
-
-        return result;
-    }
-
-    /// Applies cosmetic exceptions by modifying `if-domain` of the rules.
-    static func applyActionExceptions(
-        blockingItems: inout [BlockerEntry],
-        exceptions: [BlockerEntry],
-        actionValue: String
-    ) -> [BlockerEntry] {
-        var exceptionsDictionary = [String: [BlockerEntry]]()
-        for exc in exceptions {
-            let key = Compiler.getActionValue(entry: exc, action: actionValue)
-            if (key == nil) {
-                continue
-            }
-
-            var current = exceptionsDictionary[key!]
-            if (current == nil) {
-                current = [BlockerEntry]()
-            }
-
-            current!.append(exc)
-            exceptionsDictionary.updateValue(current!, forKey: key!)
-        }
-
-        for index in 0..<blockingItems.count {
-            let key = Compiler.getActionValue(entry: blockingItems[index], action: actionValue)
-            if (key == nil) {
-                continue
-            }
-
-            let matchingExceptions = exceptionsDictionary[key!]
-            if (matchingExceptions == nil) {
-                continue
-            }
-
-            for exc in matchingExceptions! {
-                Compiler.applyExceptionDomains(exceptionTrigger: exc.trigger, ruleTrigger: &blockingItems[index].trigger)
-            }
+            blockingItems[index].trigger = item.trigger
         }
 
         var result = [BlockerEntry]()
 
         for r in blockingItems {
-            // skip cosmetic entries, that has been disabled by exclusion rules
-            if ((r.trigger.ifDomain?.count == 0 && r.trigger.unlessDomain == nil) || (r.trigger.unlessDomain?.count == 0 && r.trigger.ifDomain == nil) && self.COSMETIC_ACTIONS.contains(r.action.type)) {
+            // skip entries with excluded ifDomain
+            if (r.trigger.ifDomain?.count == 0) {
                 continue
             }
-
-            if (r.trigger.ifDomain == nil || r.trigger.ifDomain?.count == 0 ||
-                    r.trigger.unlessDomain == nil || r.trigger.unlessDomain?.count == 0) {
-                result.append(r)
-            }
+            result.append(r)
         }
 
-        return result;
+        return result
     }
 
     private static func createWideRule(wideSelectors: [String]) -> BlockerEntry {
         return BlockerEntry(
             trigger: BlockerEntry.Trigger(urlFilter: BlockerEntryFactory.URL_FILTER_COSMETIC_RULES),
             action: BlockerEntry.Action(type: "css-display-none", selector: wideSelectors.joined(separator: ", "))
-        );
-    };
+        )
+    }
 
     /// Tries to compress CSS rules by combining generic rules into a single rule.
     static func compactCssRules(cssBlocking: [BlockerEntry]) -> CompactCssRulesData {
-        var cssBlockingWide = [BlockerEntry]();
-        var cssBlockingDomainSensitive = [BlockerEntry]();
-        var cssBlockingGenericDomainSensitive = [BlockerEntry]();
+        var cssBlockingWide = [BlockerEntry]()
+        var cssBlockingDomainSensitive = [BlockerEntry]()
+        var cssBlockingGenericDomainSensitive = [BlockerEntry]()
 
-        var wideSelectors = [String]();
+        var wideSelectors = [String]()
 
         for entry in cssBlocking {
             if (entry.trigger.ifDomain != nil) {
-                cssBlockingDomainSensitive.append(entry);
+                cssBlockingDomainSensitive.append(entry)
             } else if (entry.trigger.unlessDomain != nil) {
-                cssBlockingGenericDomainSensitive.append(entry);
+                cssBlockingGenericDomainSensitive.append(entry)
             } else if (entry.action.selector != nil && entry.trigger.urlFilter == BlockerEntryFactory.URL_FILTER_COSMETIC_RULES) {
-                wideSelectors.append(entry.action.selector!);
+                wideSelectors.append(entry.action.selector!)
                 if (wideSelectors.count >= Compiler.MAX_SELECTORS_PER_WIDE_RULE) {
-                    cssBlockingWide.append(createWideRule(wideSelectors: wideSelectors));
-                    wideSelectors = [String]();
+                    cssBlockingWide.append(createWideRule(wideSelectors: wideSelectors))
+                    wideSelectors = [String]()
                 }
             } else {
-                cssBlockingWide.append(entry);
+                cssBlockingWide.append(entry)
             }
         }
 
         if (wideSelectors.count > 0) {
-            cssBlockingWide.append(createWideRule(wideSelectors: wideSelectors));
+            cssBlockingWide.append(createWideRule(wideSelectors: wideSelectors))
         }
 
         return CompactCssRulesData(
                 cssBlockingWide: cssBlockingWide,
                 cssBlockingDomainSensitive: cssBlockingDomainSensitive,
                 cssBlockingGenericDomainSensitive: cssBlockingGenericDomainSensitive
-        );
-    };
+        )
+    }
 
-    /**
-     * Compacts same domain elemhide rules
-     * @param cssBlocking unsorted domain sensitive css elemhide rules
-     */
+    /// Compacts cosmetic rules for the same domain to one entry.
     static func compactDomainCssRules(entries: [BlockerEntry], useUnlessDomain: Bool = false) -> [BlockerEntry] {
-        var result = [BlockerEntry]();
+        var result = [BlockerEntry]()
 
-        var domainsDictionary = [String: [BlockerEntry]]();
+        var domainsDictionary = [String: [BlockerEntry]]()
         for entry in entries {
-            var domain: String? = nil;
+            var domain: String? = nil
 
             if (entry.trigger.ifDomain != nil) {
                 if (entry.trigger.ifDomain?.count == 1) {
-                    domain = entry.trigger.ifDomain![0];
+                    domain = entry.trigger.ifDomain![0]
                 } else {
-                    result.append(entry);
+                    result.append(entry)
                 }
             } else if (entry.trigger.unlessDomain != nil) {
                 if (entry.trigger.unlessDomain?.count == 1) {
-                    domain = entry.trigger.unlessDomain![0];
+                    domain = entry.trigger.unlessDomain![0]
                 } else {
-                    result.append(entry);
+                    result.append(entry)
                 }
             } else {
                 // Not a domain sensitive entry
-                result.append(entry);
+                result.append(entry)
             }
 
             if (domain != nil) {
-                var current = domainsDictionary[domain!];
+                var current = domainsDictionary[domain!]
                 if (current == nil) {
-                    current = [BlockerEntry]();
+                    current = [BlockerEntry]()
                 }
 
-                current!.append(entry);
-                domainsDictionary.updateValue(current!, forKey: domain!);
+                current!.append(entry)
+                domainsDictionary.updateValue(current!, forKey: domain!)
             }
         }
 
         for domain in domainsDictionary.keys {
-            let domainEntries = domainsDictionary[domain];
+            let domainEntries = domainsDictionary[domain]
             if (domainEntries == nil) {
-                continue;
+                continue
             }
 
             if (domainEntries!.count <= 1) {
-                result.append(contentsOf: domainEntries!);
-                continue;
+                result.append(contentsOf: domainEntries!)
+                continue
             }
 
-            result.append(contentsOf: Compiler.createDomainWideEntries(domain: domain, useUnlessDomain: useUnlessDomain, domainEntries: domainEntries!));
+            result.append(contentsOf: Compiler.createDomainWideEntries(domain: domain, useUnlessDomain: useUnlessDomain, domainEntries: domainEntries!))
         }
 
         return result;
     };
 
     private static func createDomainWideEntries(domain: String, useUnlessDomain: Bool, domainEntries: [BlockerEntry]) -> [BlockerEntry] {
-        var result = [BlockerEntry]();
+        var result = [BlockerEntry]()
 
-        var trigger = BlockerEntry.Trigger(ifDomain: [domain], urlFilter: ".*");
+        var trigger = BlockerEntry.Trigger(ifDomain: [domain], urlFilter: ".*")
         if (useUnlessDomain) {
-            trigger = BlockerEntry.Trigger(urlFilter: ".*", unlessDomain: [domain]);
+            trigger = BlockerEntry.Trigger(urlFilter: ".*", unlessDomain: [domain])
         }
 
-        let chunked = domainEntries.chunked(into: MAX_SELECTORS_PER_DOMAIN_RULE);
+        let chunked = domainEntries.chunked(into: MAX_SELECTORS_PER_DOMAIN_RULE)
         for chunk in chunked {
-            var selectors = [String]();
+            var selectors = [String]()
             for entry in chunk {
-                let selector = entry.action.selector;
+                let selector = entry.action.selector
                 if (selector != nil) {
-                    selectors.append(entry.action.selector!);
+                    selectors.append(entry.action.selector!)
                 }
             }
 
@@ -471,10 +317,10 @@ class Compiler {
                     action: BlockerEntry.Action(type: "css-display-none", selector: selectors.joined(separator: ", "))
             );
 
-            result.append(wideRuleEntry);
+            result.append(wideRuleEntry)
         }
 
-        return result;
+        return result
     }
 
     struct CompactCssRulesData {

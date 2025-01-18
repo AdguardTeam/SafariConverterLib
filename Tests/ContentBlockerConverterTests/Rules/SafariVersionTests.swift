@@ -1,11 +1,10 @@
 import Foundation
-
 import XCTest
 @testable import ContentBlockerConverter
 
-final class SafariServiceTests: XCTestCase {
+final class SafariVersionTests: XCTestCase {
 
-    func testSafariServiceSupportedVersion() {
+    func testSafariVersionSupportedVersion() {
         var safariVersion = 13.0
         var safariVersionResolved = SafariVersion(safariVersion);
         XCTAssertEqual(safariVersionResolved, .safari13)
@@ -56,7 +55,7 @@ final class SafariServiceTests: XCTestCase {
         XCTAssertTrue(safariVersionResolved.isSafari16_4orGreater())
     }
 
-    func testSafariServiceUnsupportedVersion() {
+    func testSafariVersionUnsupportedVersion() {
         var safariVersion = 10.1
         var safariVersionResolved = SafariVersion(safariVersion)
         XCTAssertEqual(safariVersionResolved, .safari13)

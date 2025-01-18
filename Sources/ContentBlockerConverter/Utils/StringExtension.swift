@@ -4,7 +4,7 @@ import Foundation
 extension String {
 
     /// Escapes special characters so that the string could be used in a JSON.
-    func escapeForJSON() -> String {
+    public func escapeForJSON() -> String {
         var result = ""
 
         let utf8 = self.utf8
@@ -52,7 +52,7 @@ extension String {
     }
 
     /// Replaces all occuriences of the target string with the specified string.
-    func replace(target: String, withString: String) -> String {
+    public func replace(target: String, withString: String) -> String {
         return self.replacingOccurrences(of: target, with: withString, options: NSString.CompareOptions.literal, range: nil)
     }
 
@@ -60,7 +60,7 @@ extension String {
     ///
     /// Takes into account if delimiter is escaped by the specified escape character.
     /// Ignores empty components.
-    func split(delimiter: UInt8, escapeChar: UInt8) -> [String] {
+    public func split(delimiter: UInt8, escapeChar: UInt8) -> [String] {
         let utf8 = self.utf8
 
         if utf8.count == 0 {
@@ -122,7 +122,7 @@ extension String {
     }
 
     /// Returns range of the first regex match in the string.
-    func firstMatch(for regex: NSRegularExpression) -> Range<String.Index>? {
+    public func firstMatch(for regex: NSRegularExpression) -> Range<String.Index>? {
         let range = NSMakeRange(0, self.utf16.count)
         if let match = regex.firstMatch(in: self, options: [], range: range) {
             return Range(match.range, in: self)
@@ -132,7 +132,7 @@ extension String {
     }
 
     /// Returns all regex matches found in the string.
-    func matches(regex: NSRegularExpression) -> [String] {
+    public func matches(regex: NSRegularExpression) -> [String] {
         let range = NSMakeRange(0, self.utf16.count)
         let matches = regex.matches(in: self, options: [], range: range)
         return matches.compactMap { match in
@@ -145,14 +145,14 @@ extension String {
 }
 
 extension StringProtocol {
-    func isASCII() -> Bool {
+    public func isASCII() -> Bool {
         return utf8.allSatisfy { $0 < 128 }
     }
 }
 
 extension Collection where Element == UInt8, Index == String.Index {
     /// Access a UTF-8 code unit by integer index.
-    subscript(safeIndex index: Int) -> UInt8? {
+    public subscript(safeIndex index: Int) -> UInt8? {
         guard index >= 0, let utf8Index = self.index(startIndex, offsetBy: index, limitedBy: endIndex) else {
             return nil
         }
@@ -163,7 +163,7 @@ extension Collection where Element == UInt8, Index == String.Index {
 /// Extending Collection with UInt8 elements as they're used when working with UTF8 String representations.
 extension Collection where Element == UInt8 {
     /// Checks if the collection contains the specified one.
-    func includes<C: Collection>(_ other: C) -> Bool where C.Element == UInt8 {
+    public func includes<C: Collection>(_ other: C) -> Bool where C.Element == UInt8 {
         guard !other.isEmpty else {
             // Empty subsequence is trivially included
             return true

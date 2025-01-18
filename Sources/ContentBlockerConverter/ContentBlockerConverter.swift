@@ -1,5 +1,4 @@
 import Foundation
-import Shared
 
 struct VettedRules {
     // extcss, script, scriptlet, css inject

@@ -3,7 +3,7 @@ import Foundation
 /**
  * Cosmetic rule class
  */
-class CosmeticRule: Rule {
+public class CosmeticRule: Rule {
     private static let EXT_CSS_PSEUDO_INDICATOR_HAS = "has"
     private static let EXT_CSS_PSEUDO_INDICATOR_IS = "is"
 
@@ -35,17 +35,29 @@ class CosmeticRule: Rule {
     private static let PATH_MODIFIER = "path="
     private static let DOMAIN_MODIFIER = "domain="
 
-    var content: String = ""
+    /// Content depends on the rule type.
+    ///
+    /// - CSS selector for element hiding rules or CSS selector + style for CSS injection rules.
+    /// - Script contents for script rules.
+    public var content: String = ""
 
-    var scriptlet: String? = nil
-    var scriptletParam: String? = nil
+    /// Scriptlet name for scriptlet rules.
+    public var scriptlet: String? = nil
 
-    var isElemhide = false
-    var isExtendedCss = false
-    var isInjectCss = false
+    /// JSON content with scriptlet arguments for scriptlet rules.
+    public var scriptletParam: String? = nil
 
-    var pathModifier: String?
-    var pathRegExpSource: String?
+    /// If true, this is an element hiding rule.
+    public var isElemhide = false
+
+    // If true, this is CSS injection rule.
+    public var isInjectCss = false
+
+    /// If true, this is an extended CSS rule (can be eiter element hiding or CSS injection).
+    public var isExtendedCss = false
+
+    public var pathModifier: String?
+    public var pathRegExpSource: String?
 
     /// Initializes a cosmetic rule by parsing its properties from the rule text.
     ///
@@ -53,7 +65,7 @@ class CosmeticRule: Rule {
     ///   - ruleText: AdGuard rule text.
     ///   - version: Safari version which will use that rule. Depending on the version some features may be available or not.
     /// - Throws: SyntaxError if any issue with the rule is detected.
-    override init(ruleText: String, for version: SafariVersion = DEFAULT_SAFARI_VERSION) throws {
+    public override init(ruleText: String, for version: SafariVersion = DEFAULT_SAFARI_VERSION) throws {
         try super.init(ruleText: ruleText)
 
         let markerInfo = CosmeticRuleMarker.findCosmeticRuleMarker(ruleText: ruleText)
@@ -90,7 +102,9 @@ class CosmeticRule: Rule {
         if (self.isScript) {
             if (self.content.hasPrefix(ScriptletParser.SCRIPTLET_MASK)) {
                 self.isScriptlet = true
-                let scriptletInfo = try ScriptletParser.parse(data:self.content);
+
+                // TODO(ameshkov): !!! Remove this, we can parse it lazily.
+                let scriptletInfo = try ScriptletParser.parse(data:self.content)
                 self.scriptlet = scriptletInfo.name
                 self.scriptletParam = scriptletInfo.json
             }
@@ -244,6 +258,7 @@ class CosmeticRule: Rule {
 
                 pathRegExpSource = String(pathModifier![startIndex..<endIndex])
             } else {
+                // TODO(ameshkov): !!! This is incorrect, do we need to add ^ and $ (?)
                 pathRegExpSource = try SimpleRegex.createRegexText(pattern: pathModifier!)
             }
 

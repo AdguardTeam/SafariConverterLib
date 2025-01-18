@@ -1,6 +1,6 @@
 import Foundation
-
 import XCTest
+
 @testable import ContentBlockerConverter
 
 final class BlockerEntryFactoryTests: XCTestCase {
@@ -323,18 +323,9 @@ final class BlockerEntryFactoryTests: XCTestCase {
             ),
             TestCase(
                 // Whitelist element hiding rule.
-                // IMPORTANT: This is not a valid rule yet, it will be interpreted later by the compiler.
                 ruleText: "example.org#@#.banner",
-                expectedEntry: BlockerEntry(
-                    trigger: BlockerEntry.Trigger(
-                        ifDomain: ["*example.org"],
-                        urlFilter: ".*"
-                    ),
-                    action: BlockerEntry.Action(
-                        type: "ignore-previous-rules",
-                        selector: ".banner"
-                    )
-                )
+                expectedEntry: nil,
+                expectedErrorsCount: 1
             ),
             TestCase(
                 // Whitelist $document rule.
@@ -417,16 +408,8 @@ final class BlockerEntryFactoryTests: XCTestCase {
             TestCase(
                 // Whitelist script rule.
                 ruleText: "example.org,example.com#@%#test",
-                expectedEntry: BlockerEntry(
-                    trigger: BlockerEntry.Trigger(
-                        ifDomain: ["*example.org", "*example.com"],
-                        urlFilter: ".*"
-                    ),
-                    action: BlockerEntry.Action(
-                        type: "ignore-previous-rules",
-                        script: "test"
-                    )
-                )
+                expectedEntry: nil,
+                expectedErrorsCount: 1
             ),
             TestCase(
                 // Scriptlet rule.
@@ -461,17 +444,8 @@ final class BlockerEntryFactoryTests: XCTestCase {
             TestCase(
                 // Whitelist scriptlet with parameters rule.
                 ruleText: "~example.org,~example.com#@%#//scriptlet('test scriptlet', 'test scriptlet param')",
-                expectedEntry: BlockerEntry(
-                    trigger: BlockerEntry.Trigger(
-                        urlFilter: ".*",
-                        unlessDomain: ["*example.org", "*example.com"]
-                    ),
-                    action: BlockerEntry.Action(
-                        type: "ignore-previous-rules",
-                        scriptlet: "test scriptlet",
-                        scriptletParam: "{\"name\":\"test scriptlet\",\"args\":[\"test scriptlet param\"]}"
-                    )
-                )
+                expectedEntry: nil,
+                expectedErrorsCount: 1
             ),
             TestCase(
                 // Trying to convert a script rule when advanced blocking is disabled.

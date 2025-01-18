@@ -1,20 +1,18 @@
 import Foundation
 import Punycode
 
-/**
- * AG Rule super class
- */
-class Rule {
-    let ruleText: String
+/// Super class for AdGuard rules.
+public class Rule {
+    public let ruleText: String
 
-    var isWhiteList = false
-    var isImportant = false
+    public var isWhiteList = false
+    public var isImportant = false
 
-    var isScript = false
-    var isScriptlet = false
+    public var isScript = false
+    public var isScriptlet = false
 
-    var permittedDomains = [String]()
-    var restrictedDomains = [String]()
+    public var permittedDomains = [String]()
+    public var restrictedDomains = [String]()
 
     init(ruleText: String, for version: SafariVersion = DEFAULT_SAFARI_VERSION) throws {
         self.ruleText = ruleText;

@@ -5,7 +5,7 @@ import Foundation
 /// AdGuard's network rules mostly use a simplified syntax for matching URLs instead
 /// of full-scale regular expressions. These patterns can be converted to regular expressions
 /// that are supported by Safari content blocking rules.
-class SimpleRegex {
+public class SimpleRegex {
     private static let maskStartUrl = "||"
     private static let maskPipe = "|"
     private static let maskSeparator = "^"

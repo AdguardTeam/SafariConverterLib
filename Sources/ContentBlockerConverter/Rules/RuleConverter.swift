@@ -15,7 +15,7 @@ import Foundation
 /// - $all
 /// - $1p
 /// - $3p
-class RuleConverter {
+public class RuleConverter {
     private static let UBO_SCRIPTLET_MASK_REG = "#@?#\\+js"
     private static let UBO_SCRIPTLET_MASK_REGEXP = try! NSRegularExpression(pattern: UBO_SCRIPTLET_MASK_REG, options: [.caseInsensitive])
     private static let SENTENCES_REGEXP = try! NSRegularExpression(pattern: #"'.*?'|".*?"|\S+"#, options: [.caseInsensitive])

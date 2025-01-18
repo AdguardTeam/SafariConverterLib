@@ -10,7 +10,7 @@ let package = Package(
         .library(
             name: "ContentBlockerConverter",
             type: .static,
-            targets: ["ContentBlockerConverter", "ContentBlockerEngine"]),
+            targets: ["ContentBlockerConverter", "FilterEngine"]),
         .executable(
             name: "ConverterTool",
             targets: ["CommandLineWrapper"])
@@ -26,21 +26,18 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages which this package depends on.
         .target(
             name: "CommandLineWrapper",
-            dependencies: ["ContentBlockerConverter", "Shared", "ArgumentParser"]),
+            dependencies: ["ContentBlockerConverter", "ArgumentParser"]),
         .target(
             name: "ContentBlockerConverter",
-            dependencies: ["Punycode", "Shared"]),
+            dependencies: ["Punycode"]),
         .target(
-            name: "ContentBlockerEngine",
-            dependencies: ["ContentBlockerConverter", "Shared"]),
-        .target(
-            name: "Shared"),
+            name: "FilterEngine",
+            dependencies: ["ContentBlockerConverter"]),
         .testTarget(
             name: "ContentBlockerConverterTests",
             dependencies: ["ContentBlockerConverter"]),
         .testTarget(
-            name: "ContentBlockerEngineTests",
-            dependencies: ["ContentBlockerEngine"]
-        )
+            name: "FilterEngineTests",
+            dependencies: ["FilterEngine"])
     ]
 )

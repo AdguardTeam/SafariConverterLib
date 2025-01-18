@@ -12,39 +12,39 @@ import Foundation
 /// - $redirect-rule
 /// - $csp
 /// - $object
-class NetworkRule: Rule {
+public class NetworkRule: Rule {
 
     /// If true, the network rule unblocks everything on the website (cosmetic + network).
-    var isDocumentWhiteList = false
+    public var isDocumentWhiteList = false
     /// If true, the network rule unblocks all request from matching domains.
-    var isUrlBlock = false
+    public var isUrlBlock = false
     /// If true, the network rule unblocks cosmetics on matching domains.
-    var isCssExceptionRule = false
+    public var isCssExceptionRule = false
     /// If true, the network rule disables script rules and scriptlets on matching domains.
-    var isJsInject = false
+    public var isJsInject = false
 
-    var isCheckThirdParty = false
-    var isThirdParty = false
-    var isMatchCase = false
+    public var isCheckThirdParty = false
+    public var isThirdParty = false
+    public var isMatchCase = false
 
     // TODO: [ameshkov]: Modifying url-filter for WebSocket was required until Safari 15, it can be removed now.
-    var isWebSocket = false
-    var badfilter = false
+    public var isWebSocket = false
+    public var isBadfilter = false
 
-    var permittedContentType: ContentType = .all
-    var restrictedContentType: ContentType = []
+    public var permittedContentType: ContentType = .all
+    public var restrictedContentType: ContentType = []
 
     /// Lists of options that are enabled (or disabled) by modifiers in this rule.
-    var enabledOptions: Option = []
-    var disabledOptions: Option = []
+    public var enabledOptions: Option = []
+    public var disabledOptions: Option = []
 
     /// Network rule pattern.
-    var urlRuleText: String = ""
+    public var urlRuleText: String = ""
 
     /// Regular expression that's converted from the rule pattern.
     ///
     /// nil here means that the rule will match all URLs.
-    var urlRegExpSource: String? = nil
+    public var urlRegExpSource: String? = nil
 
     /// Initializes a network rule by parsing its properties from the rule text.
     ///
@@ -52,7 +52,7 @@ class NetworkRule: Rule {
     ///   - ruleText: AdGuard rule text.
     ///   - version: Safari version which will use that rule. Depending on the version some features may be available or not.
     /// - Throws: SyntaxError if any issue with the rule is detected.
-    override init(ruleText: String, for version: SafariVersion = DEFAULT_SAFARI_VERSION) throws {
+    public override init(ruleText: String, for version: SafariVersion = DEFAULT_SAFARI_VERSION) throws {
         try super.init(ruleText: ruleText)
 
         let ruleParts = try NetworkRuleParser.parseRuleText(ruleText: ruleText)
@@ -86,28 +86,28 @@ class NetworkRule: Rule {
     }
 
     /// Returns true if rule pattern is a regular expression.
-    func isRegexRule() -> Bool {
+    public func isRegexRule() -> Bool {
         urlRuleText.utf8.count > 1 && urlRuleText.utf8.first == Chars.SLASH && urlRuleText.utf8.last == Chars.SLASH
     }
 
     /// Checks if rule targets specified content type.
-    func hasContentType(contentType: ContentType) -> Bool {
+    public func hasContentType(contentType: ContentType) -> Bool {
         return permittedContentType.contains(contentType) && !restrictedContentType.contains(contentType)
     }
 
     /// Returns true if the rule targets only the specified content type and nothing else.
-    func isContentType(contentType: ContentType) -> Bool {
+    public func isContentType(contentType: ContentType) -> Bool {
         return permittedContentType == contentType
     }
 
     /// Returns true if the specified content type is restricted for this rule.
-    func hasRestrictedContentType(contentType: ContentType) -> Bool {
+    public func hasRestrictedContentType(contentType: ContentType) -> Bool {
         return restrictedContentType.contains(contentType)
     }
 
     /// Checks if this rule negates the other rule.
     /// Only makes sense when this rule has a `$badfilter` modifier.
-    func negatesBadfilter(specifiedRule: NetworkRule) -> Bool {
+    public func negatesBadfilter(specifiedRule: NetworkRule) -> Bool {
         if (isWhiteList != specifiedRule.isWhiteList) {
             return false
         }
@@ -259,7 +259,7 @@ class NetworkRule: Rule {
         case "popup":
             try setOptionEnabled(option: .popup, value: true)
         case "badfilter":
-            badfilter = true
+            isBadfilter = true
         case "domain", "from":
             try setNetworkRuleDomains(domains: optionValue)
         case "elemhide", "ehide":
@@ -352,12 +352,12 @@ class NetworkRule: Rule {
     }
 
     /// Returns true if the rule has an option and that's the only specified option.
-    func isSingleOption(option: Option) -> Bool {
+    public func isSingleOption(option: Option) -> Bool {
         return enabledOptions == option
     }
 
     /// Returns true if the specified option is enabled in this rule.
-    func isOptionEnabled(option: Option) -> Bool {
+    public func isOptionEnabled(option: Option) -> Bool {
         return self.enabledOptions.contains(option)
     }
 
@@ -371,22 +371,26 @@ class NetworkRule: Rule {
     }
 
     /// Represents content types the rule can be limited to.
-    struct ContentType: OptionSet {
-        let rawValue: Int
+    public struct ContentType: OptionSet {
+        public let rawValue: Int
 
-        static let image           = ContentType(rawValue: 1 << 0)
-        static let stylesheet      = ContentType(rawValue: 1 << 1)
-        static let script          = ContentType(rawValue: 1 << 2)
-        static let media           = ContentType(rawValue: 1 << 3)
-        static let xmlHttpRequest  = ContentType(rawValue: 1 << 4)
-        static let other           = ContentType(rawValue: 1 << 5)
-        static let websocket       = ContentType(rawValue: 1 << 6)
-        static let font            = ContentType(rawValue: 1 << 7)
-        static let document        = ContentType(rawValue: 1 << 8)
-        static let subdocument     = ContentType(rawValue: 1 << 9)
-        static let ping            = ContentType(rawValue: 1 << 10)
+        public init(rawValue: Int) {
+            self.rawValue = rawValue
+        }
 
-        static let all: ContentType = [
+        public static let image           = ContentType(rawValue: 1 << 0)
+        public static let stylesheet      = ContentType(rawValue: 1 << 1)
+        public static let script          = ContentType(rawValue: 1 << 2)
+        public static let media           = ContentType(rawValue: 1 << 3)
+        public static let xmlHttpRequest  = ContentType(rawValue: 1 << 4)
+        public static let other           = ContentType(rawValue: 1 << 5)
+        public static let websocket       = ContentType(rawValue: 1 << 6)
+        public static let font            = ContentType(rawValue: 1 << 7)
+        public static let document        = ContentType(rawValue: 1 << 8)
+        public static let subdocument     = ContentType(rawValue: 1 << 9)
+        public static let ping            = ContentType(rawValue: 1 << 10)
+
+        public static let all: ContentType = [
             .image,
             .stylesheet,
             .script,
@@ -403,28 +407,32 @@ class NetworkRule: Rule {
     }
 
     /// Represents network rule options.
-    struct Option: OptionSet {
-        let rawValue: Int
+    public struct Option: OptionSet {
+        public let rawValue: Int
 
-        static let elemhide      = Option(rawValue: 1 << 0)
-        static let generichide   = Option(rawValue: 1 << 1)
-        static let genericblock  = Option(rawValue: 1 << 2)
-        static let specifichide  = Option(rawValue: 1 << 3)
-        static let jsinject      = Option(rawValue: 1 << 4)
-        static let urlblock      = Option(rawValue: 1 << 5)
-        static let content       = Option(rawValue: 1 << 6)
-        static let document      = Option(rawValue: 1 << 7)
-        static let popup         = Option(rawValue: 1 << 8)
+        public init(rawValue: Int) {
+            self.rawValue = rawValue
+        }
+
+        public static let elemhide      = Option(rawValue: 1 << 0)
+        public static let generichide   = Option(rawValue: 1 << 1)
+        public static let genericblock  = Option(rawValue: 1 << 2)
+        public static let specifichide  = Option(rawValue: 1 << 3)
+        public static let jsinject      = Option(rawValue: 1 << 4)
+        public static let urlblock      = Option(rawValue: 1 << 5)
+        public static let content       = Option(rawValue: 1 << 6)
+        public static let document      = Option(rawValue: 1 << 7)
+        public static let popup         = Option(rawValue: 1 << 8)
 
         /// Document-level options cause the rule to be limited to "document" type.
-        static let documentLevel: Option = [
+        public static let documentLevel: Option = [
             .document,
             .popup,
             .whitelistOnly
         ]
 
         /// These options can only be used in whitelist rules.
-        static let whitelistOnly: Option = [
+        public static let whitelistOnly: Option = [
             .jsinject,
             .elemhide,
             .content,

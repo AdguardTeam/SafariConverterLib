@@ -1,7 +1,7 @@
 import Foundation
 
 /// Cosmetic rules marker enumeration
-enum CosmeticRuleMarker: String, CaseIterable {
+public enum CosmeticRuleMarker: String, CaseIterable {
     case ElementHiding = "##"
     case ElementHidingException = "#@#"
     case ElementHidingExtCSS = "#?#"

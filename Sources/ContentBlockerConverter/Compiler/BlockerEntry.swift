@@ -52,7 +52,9 @@ public struct BlockerEntry : Codable, Equatable, CustomStringConvertible {
         public var urlFilter: String?
         public var unlessDomain: [String]?
 
+        /// TODO(ameshkov): !!! Remove, deprecated
         var shortcut: String?
+        /// TODO(ameshkov): !!! Remove, deprecated
         var regex: NSRegularExpression?
 
         var loadType: [String]?
@@ -114,9 +116,14 @@ public struct BlockerEntry : Codable, Equatable, CustomStringConvertible {
 
         public var type: String
         var selector: String?
+
+        /// TODO(ameshkov): !!! Remove, deprecated
         public var css: String?
+        /// TODO(ameshkov): !!! Remove, deprecated
         public var script: String?
+        /// TODO(ameshkov): !!! Remove, deprecated
         public var scriptlet: String?
+        /// TODO(ameshkov): !!! Remove, deprecated
         public var scriptletParam: String?
 
         enum CodingKeys: String, CodingKey {

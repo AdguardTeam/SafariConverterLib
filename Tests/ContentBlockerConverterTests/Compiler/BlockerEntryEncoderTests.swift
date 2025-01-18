@@ -1,6 +1,6 @@
 import Foundation
-
 import XCTest
+
 @testable import ContentBlockerConverter
 
 final class BlockerEntryEncoderTests: XCTestCase {

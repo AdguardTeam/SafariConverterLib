@@ -1,5 +1,4 @@
 import Foundation
-
 import XCTest
 @testable import ContentBlockerConverter
 
@@ -248,7 +247,7 @@ final class CosmeticRuleTests: XCTestCase {
 
     func testForbiddenCSSRules() {
         XCTAssertThrowsError(try CosmeticRule(ruleText: "#$#.banner { background: url(test.png) }"))
-        XCTAssertThrowsError(try CosmeticRule(ruleText: "#?$#.banner { background: url(test.png) }"))
+        XCTAssertThrowsError(try CosmeticRule(ruleText: "#$?#.banner { background: url(test.png) }"))
     }
 
 }

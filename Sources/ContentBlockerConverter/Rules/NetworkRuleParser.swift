@@ -3,7 +3,7 @@ import Punycode
 
 /// Simple parser that is only capable of splitting network rule into basic parts.
 /// The further complicated parsing is done by NetworkRule.
-class NetworkRuleParser {
+public class NetworkRuleParser {
     private static let MASK_WHITE_LIST_UTF8 = [Chars.AT_CHAR, Chars.AT_CHAR]
     private static let DOMAIN_VALIDATION_REGEXP = try! NSRegularExpression(pattern: "^[a-zA-Z0-9][a-zA-Z0-9-.]*[a-zA-Z0-9]\\.[a-zA-Z-]{2,}$", options: [.caseInsensitive])
     private static let startDomainPrefixMatcher = PrefixMatcher(prefixes: [
@@ -14,7 +14,7 @@ class NetworkRuleParser {
     ])
 
     /// Split the specified network rule into its basic parts: pattern and options strings.
-    static func parseRuleText(ruleText: String) throws -> BasicRuleParts {
+    public static func parseRuleText(ruleText: String) throws -> BasicRuleParts {
         var ruleParts = BasicRuleParts()
 
         let utf8 = ruleText.utf8
@@ -83,7 +83,7 @@ class NetworkRuleParser {
     }
 
     /// Searches for domain name in rule text and transforms it to punycode if required.
-    static func encodeDomainIfRequired(pattern: String?) -> String? {
+    public static func encodeDomainIfRequired(pattern: String?) -> String? {
         if pattern == nil {
             return pattern
         }
@@ -109,7 +109,7 @@ class NetworkRuleParser {
     /// - Returns:
     ///   - domain: Extracted domain or empty string if domain not found.
     ///   - patternMatchesPath: true if pattern matches more than just the domain.
-    static func extractDomain(pattern: String) -> (domain: String, patternMatchesPath: Bool) {
+    public static func extractDomain(pattern: String) -> (domain: String, patternMatchesPath: Bool) {
         let utf8 = pattern.utf8
         let res = startDomainPrefixMatcher.matchPrefix(in: pattern)
 
@@ -190,9 +190,9 @@ class NetworkRuleParser {
     /// - pattern: ||example.org^
     /// - options: third-party
     /// - whitelist: true
-    struct BasicRuleParts {
-        var pattern: String = ""
-        var options: String?
-        var whitelist = false
+    public struct BasicRuleParts {
+        public var pattern: String = ""
+        public var options: String?
+        public var whitelist = false
     }
 }

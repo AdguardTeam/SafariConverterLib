@@ -1,7 +1,7 @@
 import Foundation
 
 /// Helper for working with scriptlet rules.
-class ScriptletParser {
+public class ScriptletParser {
     public static let SCRIPTLET_MASK = "//scriptlet("
     private static let SCRIPTLET_MASK_LEN = SCRIPTLET_MASK.count
 
@@ -45,7 +45,7 @@ class ScriptletParser {
         result.append("\"")
         if args != nil {
             result.append(",\"args\":")
-            result.append(JsonUtils.encodeStringArray(arr: args!, escape: true))
+            result.append(args!.encodeToJSON(escape: true))
         }
         result.append("}")
 

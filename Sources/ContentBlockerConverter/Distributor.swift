@@ -1,5 +1,4 @@
 import Foundation
-import Shared
 
 /// Distributor creates a Safari JSON and checks for additional limitations while doing that.
 class Distributor {

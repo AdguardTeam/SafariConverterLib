@@ -1,5 +1,4 @@
 import Foundation
-import Shared
 
 /**
  * Blocker entries JSON encoder
@@ -139,27 +138,27 @@ class BlockerEntryEncoder {
 
         if (trigger.loadType != nil) {
             result.append(",\"load-type\":")
-            result.append(JsonUtils.encodeStringArray(arr: trigger.loadType!))
+            result.append(trigger.loadType!.encodeToJSON())
         }
 
         if (trigger.resourceType != nil) {
             result.append(",\"resource-type\":")
-            result.append(JsonUtils.encodeStringArray(arr: trigger.resourceType!))
+            result.append(trigger.resourceType!.encodeToJSON())
         }
 
         if (trigger.loadContext != nil) {
             result.append(",\"load-context\":")
-            result.append(JsonUtils.encodeStringArray(arr: trigger.loadContext!))
+            result.append(trigger.loadContext!.encodeToJSON())
         }
 
         if (trigger.ifDomain != nil) {
             result.append(",\"if-domain\":")
-            result.append(JsonUtils.encodeStringArray(arr: trigger.ifDomain!, escape: true))
+            result.append(trigger.ifDomain!.encodeToJSON(escape: true))
         }
 
         if (trigger.unlessDomain != nil) {
             result.append(",\"unless-domain\":")
-            result.append(JsonUtils.encodeStringArray(arr: trigger.unlessDomain!, escape: true))
+            result.append(trigger.unlessDomain!.encodeToJSON(escape: true))
         }
 
         result.append("}")
