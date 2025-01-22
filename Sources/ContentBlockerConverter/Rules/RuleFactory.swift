@@ -2,7 +2,6 @@ import Foundation
 
 /// RuleFactory is responsible for parsing AdGuard rules.
 public class RuleFactory {
-    private static let converter = RuleConverter()
     private var errorsCounter: ErrorsCounter
 
     public init(errorsCounter: ErrorsCounter) {
@@ -16,11 +15,7 @@ public class RuleFactory {
     ///
     /// It also applies cosmetic exceptions, i.e. rules like `#@#.banner` by modifying the
     /// corresponding rules permitted/restricted domains.
-    public func createRules(lines: [String], for version: SafariVersion, progress: Progress? = nil) -> [Rule] {
-        var shouldContinue: Bool {
-            !(progress?.isCancelled ?? false)
-        }
-
+    public func createRules(lines: [String], for version: SafariVersion) -> [Rule] {
         var result = [Rule]()
 
         var networkRules = [NetworkRule]()
@@ -29,8 +24,6 @@ public class RuleFactory {
         var cosmeticExceptions: [String: [CosmeticRule]] = [:]
 
         for line in lines {
-            guard shouldContinue else { return [] }
-
             var ruleLine = line
             if !ruleLine.isContiguousUTF8 {
                 // This is of UTMOST importance for the conversion performance.
@@ -45,10 +38,8 @@ public class RuleFactory {
                 continue
             }
 
-            let convertedLines = RuleFactory.converter.convertRule(ruleText: ruleLine)
+            let convertedLines = RuleConverter.convertRule(ruleText: ruleLine)
             for convertedLine in convertedLines {
-                guard shouldContinue else { return [] }
-
                 if convertedLine != nil {
                     guard let rule = safeCreateRule(ruleText: convertedLine!, version: version) else { continue }
                     if let networkRule = rule as? NetworkRule {
@@ -67,8 +58,6 @@ public class RuleFactory {
                 }
             }
         }
-
-        guard shouldContinue else { return [] }
 
         result += RuleFactory.applyBadFilterExceptions(rules: networkRules, badfilterRules: badfilterRules)
         result += RuleFactory.applyCosmeticExceptions(rules: cosmeticRules, cosmeticExceptions: cosmeticExceptions)

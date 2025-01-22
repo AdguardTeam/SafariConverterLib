@@ -15,7 +15,7 @@ import Foundation
 /// - $all
 /// - $1p
 /// - $3p
-public class RuleConverter {
+public final class RuleConverter {
     private static let UBO_SCRIPTLET_MASK_REG = "#@?#\\+js"
     private static let UBO_SCRIPTLET_MASK_REGEXP = try! NSRegularExpression(pattern: UBO_SCRIPTLET_MASK_REG, options: [.caseInsensitive])
     private static let SENTENCES_REGEXP = try! NSRegularExpression(pattern: #"'.*?'|".*?"|\S+"#, options: [.caseInsensitive])
@@ -27,9 +27,9 @@ public class RuleConverter {
     private static let EXCEPTION_MASK = "@@"
     private static let EXCEPTION_SUFFIX = EXCEPTION_MASK + "||"
 
-    private let UBO_SCRIPTLET_MASK = "##+js"
-    private let UBO_SCRIPTLET_EXCEPTION_MASK = "#@#+js"
-    private let UBO_CSS_STYLE_MASK = ":style("
+    private static let UBO_SCRIPTLET_MASK = "##+js"
+    private static let UBO_SCRIPTLET_EXCEPTION_MASK = "#@#+js"
+    private static let UBO_CSS_STYLE_MASK = ":style("
 
     // AdGuard CSS rule mask regex.
     private static let ADG_CSS_MASK_REG = "#@?\\$#.+?\\s*\\{.*\\}\\s*$"
@@ -39,15 +39,15 @@ public class RuleConverter {
     private static let escapeChar = "\\".utf16.first!
 
     /// AdGuard script rules mask.
-    private let ADGUARD_SCRIPTLET_MASK = "${domains}#%#//scriptlet(${args})"
+    private static let ADGUARD_SCRIPTLET_MASK = "${domains}#%#//scriptlet(${args})"
 
     /// AdGuard scriptlet exception mask.
-    private let ADGUARD_SCRIPTLET_EXCEPTION_MASK = "${domains}#@%#//scriptlet(${args})"
+    private static let ADGUARD_SCRIPTLET_EXCEPTION_MASK = "${domains}#@%#//scriptlet(${args})"
 
     /// Converts a rule to AdGuard-compatible syntax.
     ///
     /// Note, that some rules are converted to a list of rules.
-    func convertRule(ruleText: String) -> [String?] {
+    public static func convertRule(ruleText: String) -> [String?] {
         if (ruleText.isEmpty) {
             return [ruleText]
         }
@@ -85,7 +85,7 @@ public class RuleConverter {
 
     /// Returns true if the rule is a uBO scriptlet rule.
     /// In this case the rule needs to be converted.
-    private func isUboScriptletRule(ruleText: String, marker: CosmeticRuleMarker, index: Int) -> Bool {
+    private static func isUboScriptletRule(ruleText: String, marker: CosmeticRuleMarker, index: Int) -> Bool {
         if marker != CosmeticRuleMarker.ElementHiding && marker != CosmeticRuleMarker.ElementHidingException {
             // uBO uses standard element hiding marker for scriptlet rules.
             return false
@@ -95,14 +95,14 @@ public class RuleConverter {
         let ruleContent = ruleText[contentIndex...]
 
         return (
-            ruleContent.utf8.starts(with: UBO_SCRIPTLET_MASK.utf8)
-            || ruleContent.utf8.starts(with: UBO_SCRIPTLET_EXCEPTION_MASK.utf8)
-        ) && String(ruleContent).firstMatch(for: RuleConverter.UBO_SCRIPTLET_MASK_REGEXP) != nil
+            ruleContent.utf8.starts(with: Self.UBO_SCRIPTLET_MASK.utf8)
+            || ruleContent.utf8.starts(with: Self.UBO_SCRIPTLET_EXCEPTION_MASK.utf8)
+        ) && String(ruleContent).firstMatch(for: Self.UBO_SCRIPTLET_MASK_REGEXP) != nil
     }
 
     /// Converts a uBO scriptlet rule to AdGuard syntax.
-    private func convertUboScriptletRule(rule: String) -> String? {
-        let range = rule.firstMatch(for: RuleConverter.UBO_SCRIPTLET_MASK_REGEXP)
+    private static func convertUboScriptletRule(rule: String) -> String? {
+        let range = rule.firstMatch(for: Self.UBO_SCRIPTLET_MASK_REGEXP)
         if range == nil {
             return nil
         }
@@ -112,9 +112,9 @@ public class RuleConverter {
 
         let template: String;
         if (mask.utf8.contains(Chars.AT_CHAR)) {
-            template = ADGUARD_SCRIPTLET_EXCEPTION_MASK;
+            template = Self.ADGUARD_SCRIPTLET_EXCEPTION_MASK;
         } else {
-            template = ADGUARD_SCRIPTLET_MASK;
+            template = Self.ADGUARD_SCRIPTLET_MASK;
         }
 
         guard let arguments: String = extractArgumentsString(str: rule) else {
@@ -143,7 +143,7 @@ public class RuleConverter {
     }
 
     /// Returns true if the rule most probably is a ABP snippet rule.
-    private func isAbpSnippetRule(ruleText: String, marker: CosmeticRuleMarker, index: Int) -> Bool {
+    private static func isAbpSnippetRule(ruleText: String, marker: CosmeticRuleMarker, index: Int) -> Bool {
         if marker != CosmeticRuleMarker.Css && marker != CosmeticRuleMarker.CssException {
             // Adblock Plus uses the same marker as the one AdGuard uses for CSS rules (#$#, #@$#).
             return false
@@ -152,12 +152,12 @@ public class RuleConverter {
         let contentIndex = ruleText.utf8.index(ruleText.startIndex, offsetBy: index)
         let ruleContent = String(ruleText[contentIndex...])
 
-        return ruleContent.firstMatch(for: RuleConverter.ADG_CSS_MASK_REGEXP) == nil
+        return ruleContent.firstMatch(for: Self.ADG_CSS_MASK_REGEXP) == nil
     }
 
     /// Convert string of ABP scriptlet rule to AdGuard scriptlet rule.
-    private func convertAbpSnippetRule(ruleText: String, marker: CosmeticRuleMarker, index: Int) -> [String] {
-        let template = marker == CosmeticRuleMarker.Css ? ADGUARD_SCRIPTLET_MASK : ADGUARD_SCRIPTLET_EXCEPTION_MASK
+    private static func convertAbpSnippetRule(ruleText: String, marker: CosmeticRuleMarker, index: Int) -> [String] {
+        let template = marker == CosmeticRuleMarker.Css ? Self.ADGUARD_SCRIPTLET_MASK : Self.ADGUARD_SCRIPTLET_EXCEPTION_MASK
 
         let maskIndex = ruleText.utf8.index(ruleText.startIndex, offsetBy: index)
         let domains = String(ruleText[..<maskIndex])
@@ -171,7 +171,7 @@ public class RuleConverter {
 
         for s in splitted {
             var sentences = [String]()
-            let sen = s.matches(regex: RuleConverter.SENTENCES_REGEXP)
+            let sen = s.matches(regex: Self.SENTENCES_REGEXP)
             for part in sen {
                 if part != "" {
                     sentences.append(part)
@@ -202,8 +202,8 @@ public class RuleConverter {
     /// example.com#@#h1:style(background-color: blue !important)
     /// ->
     /// example.com#@$#h1 { background-color: blue !important }
-    private func convertUboCssStyleRule(ruleText: String) -> String? {
-        if !ruleText.utf8.includes(UBO_CSS_STYLE_MASK.utf8) {
+    private static func convertUboCssStyleRule(ruleText: String) -> String? {
+        if !ruleText.utf8.includes(Self.UBO_CSS_STYLE_MASK.utf8) {
             return nil
         }
 
@@ -218,7 +218,7 @@ public class RuleConverter {
         for marker in uboToInjectCssMarkersDictionary.keys {
             if (ruleText.utf8.includes(marker.utf8)) {
                 replacedMarkerRule = ruleText.replacingOccurrences(of: marker, with: uboToInjectCssMarkersDictionary[marker]!)
-                let result = replacedMarkerRule!.replacingOccurrences(of: UBO_CSS_STYLE_MASK, with: " { ")
+                let result = replacedMarkerRule!.replacingOccurrences(of: Self.UBO_CSS_STYLE_MASK, with: " { ")
 
                 return result.dropLast() + " }"
             }
@@ -231,8 +231,8 @@ public class RuleConverter {
     ///
     /// Learn more about it here:
     /// https://github.com/AdguardTeam/CoreLibs/issues/1304
-    private func convertDenyallowRule(ruleText: String) -> [String]? {
-        if !ruleText.utf8.includes(RuleConverter.DENYALLOW_MODIFIER_MASK.utf8) {
+    private static func convertDenyallowRule(ruleText: String) -> [String]? {
+        if !ruleText.utf8.includes(Self.DENYALLOW_MODIFIER_MASK.utf8) {
             return nil
         }
 
@@ -240,7 +240,7 @@ public class RuleConverter {
 
         if ruleParts.pattern.utf8.first == Chars.PIPE ||
             ruleParts.options == nil ||
-            !ruleParts.options!.utf8.includes(RuleConverter.DOMAIN_MODIFIER_MASK.utf8) {
+            !ruleParts.options!.utf8.includes(Self.DOMAIN_MODIFIER_MASK.utf8) {
 
             // We can only support simple case like this: $denyallow=x.com,domain=y.com,
             // i.e. the rule that targets path (not domain) and it must have both
@@ -257,10 +257,10 @@ public class RuleConverter {
         let isGenericRule = blockingElement == "" || blockingElement == "*"
 
         let ruleOptions = ruleParts.options!.components(separatedBy: ",")
-        let denyallowOption = ruleOptions.first(where: { $0.contains(RuleConverter.DENYALLOW_MODIFIER_MASK) })!
+        let denyallowOption = ruleOptions.first(where: { $0.contains(Self.DENYALLOW_MODIFIER_MASK) })!
 
         // Get denyallow domains list.
-        let denyallowDomains = denyallowOption.replace(target: RuleConverter.DENYALLOW_MODIFIER_MASK, withString: "").components(separatedBy: "|")
+        let denyallowDomains = denyallowOption.replace(target: Self.DENYALLOW_MODIFIER_MASK, withString: "").components(separatedBy: "|")
 
         for domain in denyallowDomains {
             if (domain.hasPrefix("~") || domain.contains("*")) {
@@ -278,24 +278,24 @@ public class RuleConverter {
         var result = [String]()
 
         let blockingRulePrefix: String = ruleParts.whitelist ? "@@" : ""
-        let exceptionRulePrefix: String = ruleParts.whitelist ? "||" : RuleConverter.EXCEPTION_SUFFIX
-        let exceptionRuleSuffix: String = ruleParts.whitelist ? "," + RuleConverter.IMPORTANT_MODIFIER_MASK : ""
+        let exceptionRulePrefix: String = ruleParts.whitelist ? "||" : Self.EXCEPTION_SUFFIX
+        let exceptionRuleSuffix: String = ruleParts.whitelist ? "," + Self.IMPORTANT_MODIFIER_MASK : ""
 
         // Blocking rule.
-        let blockingRule = blockingRulePrefix + ruleParts.pattern + RuleConverter.MODIFIER_MASK + optionsWithoutDenyallow
+        let blockingRule = blockingRulePrefix + ruleParts.pattern + Self.MODIFIER_MASK + optionsWithoutDenyallow
         result.append(blockingRule)
 
         // Exception rules.
         for domain in denyallowDomains {
             if (!isGenericRule) {
-                let exceptionRule = exceptionRulePrefix + domain + "/" + blockingElement + RuleConverter.MODIFIER_MASK + optionsWithoutDenyallow + exceptionRuleSuffix
+                let exceptionRule = exceptionRulePrefix + domain + "/" + blockingElement + Self.MODIFIER_MASK + optionsWithoutDenyallow + exceptionRuleSuffix
                 result.append(exceptionRule)
 
-                let exceptionRuleWide = exceptionRulePrefix + domain + "/*/" + blockingElement + RuleConverter.MODIFIER_MASK + optionsWithoutDenyallow + exceptionRuleSuffix
+                let exceptionRuleWide = exceptionRulePrefix + domain + "/*/" + blockingElement + Self.MODIFIER_MASK + optionsWithoutDenyallow + exceptionRuleSuffix
                 result.append(exceptionRuleWide)
 
             } else {
-                let exceptionRule = exceptionRulePrefix + domain + RuleConverter.MODIFIER_MASK + optionsWithoutDenyallow + exceptionRuleSuffix
+                let exceptionRule = exceptionRulePrefix + domain + Self.MODIFIER_MASK + optionsWithoutDenyallow + exceptionRuleSuffix
                 result.append(exceptionRule)
             }
         }
@@ -306,7 +306,7 @@ public class RuleConverter {
     /// Extracts arguments string from a scriptlet string.
     ///
     /// I.e. it will extract "1,2,3" from "func(1,2,3)".
-    private func extractArgumentsString(str: String) -> String? {
+    private static func extractArgumentsString(str: String) -> String? {
         var firstIndex = str.utf8.firstIndex(of: Chars.BRACKET_OPEN)
         let lastIndex = str.utf8.lastIndex(of: Chars.BRACKET_CLOSE)
 
@@ -323,7 +323,7 @@ public class RuleConverter {
     }
 
     /// Wraps the specified string in doublequotes escaping quotes inside if required.
-    private func wrapInDoubleQuotes(str: String) -> String {
+    private static func wrapInDoubleQuotes(str: String) -> String {
         var modified = str
         // https://github.com/AdguardTeam/SafariConverterLib/issues/34
         if str.utf8.count <= 1 {
@@ -342,7 +342,7 @@ public class RuleConverter {
     }
 
     /// Replaces placeholders for domains and arguments in the specified template string.
-    private func replacePlaceholders(str: String, domains: String, args: String) -> String {
+    private static func replacePlaceholders(str: String, domains: String, args: String) -> String {
         var result = str.replace(target: "${domains}", withString: domains)
         result = result.replace(target: "${args}", withString: args)
 

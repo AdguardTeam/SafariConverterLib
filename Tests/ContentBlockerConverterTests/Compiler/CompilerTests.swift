@@ -6,12 +6,7 @@ import XCTest
 final class CompilerTests: XCTestCase {
 
     func testEmpty() {
-        let compiler = Compiler(
-            optimize: false,
-            advancedBlocking: false,
-            errorsCounter: ErrorsCounter(),
-            version: DEFAULT_SAFARI_VERSION
-        )
+        let compiler = Compiler(errorsCounter: ErrorsCounter(), version: DEFAULT_SAFARI_VERSION)
         let result = compiler.compileRules(rules: [Rule]())
 
         XCTAssertNotNil(result)
@@ -25,12 +20,6 @@ final class CompilerTests: XCTestCase {
         XCTAssertEqual(result.important.count, 0)
         XCTAssertEqual(result.importantExceptions.count, 0)
         XCTAssertEqual(result.documentExceptions.count, 0)
-        XCTAssertEqual(result.script.count, 0)
-        XCTAssertEqual(result.scriptlets.count, 0)
-        XCTAssertEqual(result.scriptJsInjectExceptions.count, 0)
-        XCTAssertEqual(result.extendedCssBlockingWide.count, 0)
-        XCTAssertEqual(result.extendedCssBlockingGenericDomainSensitive.count, 0)
-        XCTAssertEqual(result.extendedCssBlockingDomainSensitive.count, 0)
     }
 
     func testCompactCss() {
@@ -109,12 +98,7 @@ final class CompilerTests: XCTestCase {
     }
 
     func testIfDomainAndUnlessDomain() {
-        let compiler = Compiler(
-            optimize: false,
-            advancedBlocking: false,
-            errorsCounter: ErrorsCounter(),
-            version: SafariVersion.safari13
-        )
+        let compiler = Compiler(errorsCounter: ErrorsCounter(), version: SafariVersion.safari13)
 
         func assertResultEmpty(result: CompilationResult) -> Void {
             XCTAssertEqual(result.cssBlockingWide.count, 0)
@@ -127,12 +111,6 @@ final class CompilerTests: XCTestCase {
             XCTAssertEqual(result.important.count, 0)
             XCTAssertEqual(result.importantExceptions.count, 0)
             XCTAssertEqual(result.documentExceptions.count, 0)
-            XCTAssertEqual(result.script.count, 0)
-            XCTAssertEqual(result.scriptlets.count, 0)
-            XCTAssertEqual(result.scriptJsInjectExceptions.count, 0)
-            XCTAssertEqual(result.extendedCssBlockingWide.count, 0)
-            XCTAssertEqual(result.extendedCssBlockingGenericDomainSensitive.count, 0)
-            XCTAssertEqual(result.extendedCssBlockingDomainSensitive.count, 0)
         }
 
         var ruleText = "example.org,~subdomain.example.org###banner"

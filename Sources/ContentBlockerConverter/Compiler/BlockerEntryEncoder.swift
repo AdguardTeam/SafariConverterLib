@@ -1,26 +1,22 @@
 import Foundation
 
-/**
- * Blocker entries JSON encoder
- */
+/// Blocker entries JSON encoder
 class BlockerEntryEncoder {
 
-    /**
-     * Encodes an array of blocker entries into a JSON string representation with an optional maximum size limit.
-     *
-     * - Parameters:
-     *   - entries: The array of BlockerEntry objects to be encoded.
-     *   - maxJsonSizeBytes: The optional maximum size in bytes for the resulting JSON string.
-     *                       If nil, there is no size limit.
-     *
-     * - Returns: A tuple containing:
-     *             1. A JSON-formatted string containing the encoded blocker entries,
-     *                adhering to the optional maxJsonSizeBytes limit.
-     *             2. An integer representing the number of entries successfully encoded into the JSON string.
-     *
-     * Note: The maxJsonSizeBytes is in bytes, calculated based on the UTF-8 representation of the string.
-     *       If the size limit is reached, no more entries will be encoded and the function will break out of the loop.
-     */
+    /// Encodes an array of blocker entries into a JSON string representation with an optional maximum size limit.
+    ///
+    /// - Parameters:
+    ///   - entries: The array of BlockerEntry objects to be encoded.
+    ///   - maxJsonSizeBytes: The optional maximum size in bytes for the resulting JSON string.
+    ///                       If nil, there is no size limit.
+    ///
+    /// - Returns: A tuple containing:
+    ///            1. A JSON-formatted string containing the encoded blocker entries,
+    ///              adhering to the optional maxJsonSizeBytes limit.
+    ///            2. An integer representing the number of entries successfully encoded into the JSON string.
+    ///
+    /// Note: The `maxJsonSizeBytes` is in bytes, calculated based on the UTF-8 representation of the string.
+    ///       If the size limit is reached, no more entries will be encoded and the function will break out of the loop.
     func encode(entries: [BlockerEntry], maxJsonSizeBytes: Int? = nil) -> (String, Int) {
         var result = "["
         var currentSize = 2 // Account for the opening and closing brackets in the JSON string
@@ -36,7 +32,7 @@ class BlockerEntryEncoder {
 
             // Check if adding the next entry would exceed the maxSize limit
             if let maxSize = maxJsonSizeBytes, currentSize + entrySize + commaSize > maxSize {
-                Logger.log("(BlockerEntryEncoder) - The maxSize limit is reached. Overlimit entries will be ignored.");
+                Logger.log("(BlockerEntryEncoder) - The maxSize limit is reached. Overlimit entries will be ignored.")
                 break
             }
 
@@ -59,57 +55,34 @@ class BlockerEntryEncoder {
     }
 
     private func encodeEntry(entry: BlockerEntry) -> String {
-        let action = encodeAction(action: entry.action);
-        let trigger = encodeTrigger(trigger: entry.trigger);
+        let action = encodeAction(action: entry.action)
+        let trigger = encodeTrigger(trigger: entry.trigger)
 
-        var result = "{\"trigger\":";
-        result.append(trigger);
-        result.append(",\"action\":");
-        result.append(action);
-        result.append("}");
-        return result;
+        var result = "{\"trigger\":"
+        result.append(trigger)
+        result.append(",\"action\":")
+        result.append(action)
+        result.append("}")
+
+        return result
     }
 
     private func encodeAction(action: BlockerEntry.Action) -> String {
-        var result = "{";
+        var result = "{"
 
-        result.append("\"type\":\"");
-        result.append(action.type);
-        result.append("\"");
+        result.append("\"type\":\"")
+        result.append(action.type)
+        result.append("\"")
 
         if action.selector != nil {
-            result.append(",\"selector\":\"");
-            result.append(action.selector!.escapeForJSON());
-            result.append("\"");
+            result.append(",\"selector\":\"")
+            result.append(action.selector!.escapeForJSON())
+            result.append("\"")
         }
 
-        if action.css != nil {
-            result.append(",\"css\":\"");
-            result.append(action.css!.escapeForJSON());
-            result.append("\"");
-        }
+        result.append("}")
 
-        if action.script != nil {
-            result.append(",\"script\":\"");
-            result.append(action.script!.escapeForJSON());
-            result.append("\"");
-        }
-
-        if action.scriptlet != nil {
-            result.append(",\"scriptlet\":\"");
-            result.append(action.scriptlet!.escapeForJSON());
-            result.append("\"");
-        }
-
-        if action.scriptletParam != nil {
-            result.append(",\"scriptletParam\":\"");
-            result.append(action.scriptletParam!.escapeForJSON());
-            result.append("\"");
-        }
-
-        result.append("}");
-
-        return result;
+        return result
     }
 
     private func encodeTrigger(trigger: BlockerEntry.Trigger) -> String {
@@ -119,21 +92,9 @@ class BlockerEntryEncoder {
         result.append(trigger.urlFilter!.escapeForJSON())
         result.append("\"")
 
-        if trigger.shortcut != nil {
-            result.append("\"url-shortcut\":\"")
-            result.append(trigger.shortcut!.escapeForJSON())
-            result.append("\"")
-        }
-
         if (trigger.caseSensitive != nil) {
             result.append(",\"url-filter-is-case-sensitive\":")
             result.append(trigger.caseSensitive! ? "true" : "false")
-        }
-
-        if (trigger.regex != nil) {
-            result.append(",\"regex\":\"")
-            result.append(trigger.regex!.pattern.escapeForJSON())
-            result.append("\"")
         }
 
         if (trigger.loadType != nil) {

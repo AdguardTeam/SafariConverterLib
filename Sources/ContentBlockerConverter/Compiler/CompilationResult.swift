@@ -5,13 +5,13 @@ import Foundation
 struct CompilationResult {
 
     /// Total number of rules in the input rules array.
-    var rulesCount = 0;
+    var rulesCount = 0
 
     /// Total number of errors encountered while converting rules.
-    var errorsCount = 0;
+    var errorsCount = 0
 
     /// Log message with conversion status details.
-    var message = "";
+    var message = ""
 
     /// Elemhide rules (##) - wide generic rules.
     ///
@@ -51,51 +51,6 @@ struct CompilationResult {
     /// `$document` url blocking exceptions.
     var documentExceptions: [BlockerEntry] = []
 
-    // Advanced blocking entries
-
-    /// Script rules (`#%#`)
-    ///
-    /// /// TODO(ameshkov): !!! Remove, deprecated
-    var script: [BlockerEntry] = []
-
-    /// Scriptlet rules (`#%#//scriptlet`)
-    ///
-    /// TODO(ameshkov): !!! Remove, deprecated
-    var scriptlets: [BlockerEntry] = []
-
-    /// JsInject exception (`$jsinject`)
-    ///
-    /// TODO(ameshkov): !!! Remove, deprecated
-    var scriptJsInjectExceptions: [BlockerEntry] = []
-
-    /// Css injecting rules.
-    ///
-    /// Example: `#$#.banner { visitibilty: hidden; }`
-    ///
-    /// TODO(ameshkov): !!! Remove, deprecated
-    var сssInjects: [BlockerEntry] = []
-
-    /// Extended css Elemhide rules (`##`, `#?#`) - wide generic rules.
-    ///
-    /// Example: `#?#.banner`.
-    ///
-    /// TODO(ameshkov): !!! Remove, deprecated
-    var extendedCssBlockingWide: [BlockerEntry] = []
-
-    /// Extended css Elemhide rules (`##`, `#?#`) - generic domain sensitive.
-    ///
-    /// Example: `~example.org#?#.banner`.
-    ///
-    /// TODO(ameshkov): !!! Remove, deprecated
-    var extendedCssBlockingGenericDomainSensitive: [BlockerEntry] = []
-
-    /// Elemhide rules (`##`, `#?#`) with domain restrictions.
-    ///
-    /// Example: `example.org#?#.banner`.
-    ///
-    /// TODO(ameshkov): !!! Remove, deprecated
-    var extendedCssBlockingDomainSensitive: [BlockerEntry] = []
-
     /// Adds a new entry with action`block`.
     mutating func addBlockTypedEntry(entry: BlockerEntry, source: Rule) -> Void {
         if (source.isImportant) {
@@ -114,8 +69,6 @@ struct CompilationResult {
                 cssBlockingGenericHideExceptions.append(entry)
             } else if (networkRule.isSingleOption(option: .elemhide)) {
                 cssElemhide.append(entry)
-            } else if (networkRule.isSingleOption(option: .jsinject)) {
-                scriptJsInjectExceptions.append(entry)
             } else if (networkRule.isImportant) {
                 importantExceptions.append(entry)
             } else if (networkRule.isDocumentWhiteList) {

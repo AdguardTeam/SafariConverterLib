@@ -7,34 +7,11 @@ class Compiler {
     private static let MAX_SELECTORS_PER_WIDE_RULE = 250
     private static let MAX_SELECTORS_PER_DOMAIN_RULE = 250
 
-    /// Cosmetic rule actions.
-    ///
-    /// "css-display-none" is natively supported by Safari, other types are custom
-    /// actions that can only be supported by a different Safari extension.
-    private static let COSMETIC_ACTIONS: [String] = [
-        "css-display-none",
-        "css-inject",
-        "css-extended",
-        "scriptlet",
-        "script",
-    ]
-
-    private let optimize: Bool
-    private let advancedBlockedEnabled: Bool
-
     private let blockerEntryFactory: BlockerEntryFactory
 
     /// Initializes Safari content blocker compiler.
-    init(
-            optimize: Bool,
-            advancedBlocking: Bool,
-            errorsCounter: ErrorsCounter,
-            version: SafariVersion
-    ) {
-        self.optimize = optimize
-        advancedBlockedEnabled = advancedBlocking
+    init(errorsCounter: ErrorsCounter, version: SafariVersion) {
         blockerEntryFactory = BlockerEntryFactory(
-            advancedBlockingEnabled: advancedBlocking,
             errorsCounter: errorsCounter,
             version: version
         )
@@ -48,15 +25,6 @@ class Compiler {
         }
 
         var cssBlocking = [BlockerEntry]()
-        var cssExceptions = [BlockerEntry]()
-
-        var cssInjects = [BlockerEntry]()
-        var extendedCssBlocking = [BlockerEntry]()
-        var scriptRules = [BlockerEntry]()
-        var scriptExceptionRules = [BlockerEntry]()
-        var scriptlets = [BlockerEntry]()
-        var scriptletsExceptions = [BlockerEntry]()
-        var cosmeticCssExceptions = [BlockerEntry]()
 
         // A list of domains disabled by $specifichide rules.
         var specifichideExceptionDomains = [String]()
@@ -88,30 +56,8 @@ class Compiler {
                 compilationResult.addBlockTypedEntry(entry: item, source: rule)
             } else if item.action.type == "css-display-none" {
                 cssBlocking.append(item)
-            } else if item.action.type == "css-inject" {
-                cssInjects.append(item)
-            } else if item.action.type == "css-extended" {
-                extendedCssBlocking.append(item)
-            } else if item.action.type == "scriptlet" {
-                scriptlets.append(item)
-            } else if item.action.type == "script" {
-                scriptRules.append(item)
             } else if item.action.type == "ignore-previous-rules" {
-                // Exceptions
-                if rule.isScriptlet {
-                    // #@%#//scriptlet
-                    scriptletsExceptions.append(item)
-                } else if rule.isScript {
-                    // #@%# rules
-                    scriptExceptionRules.append(item)
-                } else if item.action.selector != nil && item.action.selector! != "" {
-                    // #@# rules
-                    cssExceptions.append(item)
-                } else if item.action.css != nil && item.action.css! != "" {
-                    cosmeticCssExceptions.append(item)
-                } else {
-                    compilationResult.addIgnorePreviousTypedEntry(entry: item, rule: rule)
-                }
+                compilationResult.addIgnorePreviousTypedEntry(entry: item, rule: rule)
             }
         }
 
@@ -119,9 +65,7 @@ class Compiler {
 
         // Compacting cosmetic rules.
         let cssCompact = Compiler.compactCssRules(cssBlocking: cssBlocking)
-        if !optimize {
-            compilationResult.cssBlockingWide = cssCompact.cssBlockingWide
-        }
+        compilationResult.cssBlockingWide = cssCompact.cssBlockingWide
 
         compilationResult.cssBlockingGenericDomainSensitive = Compiler.compactDomainCssRules(
             entries: cssCompact.cssBlockingGenericDomainSensitive,
@@ -140,27 +84,6 @@ class Compiler {
             specifichideExceptions: specifichideExceptionDomains)
 
         guard shouldContinue else { return CompilationResult() }
-
-        if advancedBlockedEnabled {
-            guard shouldContinue else { return CompilationResult() }
-
-            let extendedCssCompact = Compiler.compactCssRules(cssBlocking: extendedCssBlocking)
-            if (!optimize) {
-                compilationResult.extendedCssBlockingWide = extendedCssCompact.cssBlockingWide
-            }
-            compilationResult.extendedCssBlockingGenericDomainSensitive = extendedCssCompact.cssBlockingGenericDomainSensitive
-            compilationResult.extendedCssBlockingDomainSensitive = extendedCssCompact.cssBlockingDomainSensitive
-
-            // Apply specifichide exceptions for extended css rules
-            compilationResult.extendedCssBlockingDomainSensitive = Compiler.applySpecifichide(blockingItems: &compilationResult.extendedCssBlockingDomainSensitive, specifichideExceptions: specifichideExceptionDomains)
-
-
-            // Apply specifichide exceptions for css injecting rules
-            compilationResult.сssInjects = Compiler.applySpecifichide(blockingItems: &cssInjects, specifichideExceptions: specifichideExceptionDomains)
-
-            compilationResult.script = scriptRules
-            compilationResult.scriptlets = scriptlets
-        }
 
         return compilationResult
     }
@@ -235,9 +158,9 @@ class Compiler {
         }
 
         return CompactCssRulesData(
-                cssBlockingWide: cssBlockingWide,
-                cssBlockingDomainSensitive: cssBlockingDomainSensitive,
-                cssBlockingGenericDomainSensitive: cssBlockingGenericDomainSensitive
+            cssBlockingWide: cssBlockingWide,
+            cssBlockingDomainSensitive: cssBlockingDomainSensitive,
+            cssBlockingGenericDomainSensitive: cssBlockingGenericDomainSensitive
         )
     }
 
@@ -313,8 +236,8 @@ class Compiler {
             }
 
             let wideRuleEntry = BlockerEntry(
-                    trigger: trigger,
-                    action: BlockerEntry.Action(type: "css-display-none", selector: selectors.joined(separator: ", "))
+                trigger: trigger,
+                action: BlockerEntry.Action(type: "css-display-none", selector: selectors.joined(separator: ", "))
             );
 
             result.append(wideRuleEntry)

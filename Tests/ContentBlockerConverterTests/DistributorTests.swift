@@ -7,18 +7,12 @@ final class DistributorTests: XCTestCase {
     let testTrigger = BlockerEntry.Trigger(
         ifDomain: ["test_if_domain"],
         urlFilter: "test_url_filter",
-        unlessDomain: ["test_unless_domain"],
-        shortcut: "test_shortcut",
-        regex: nil
+        unlessDomain: ["test_unless_domain"]
     )
 
     let testAction = BlockerEntry.Action(
         type: "test_type",
-        selector: nil,
-        css: "test_css",
-        script: nil,
-        scriptlet: nil,
-        scriptletParam: nil
+        selector: nil
     )
 
     func assertEntry(actual: String?) -> Void {
@@ -34,10 +28,7 @@ final class DistributorTests: XCTestCase {
     }
 
     func testEmpty() {
-        let builder = Distributor(
-            limit: 0,
-            advancedBlocking: true
-        )
+        let builder = Distributor(limit: 0)
 
         let result = builder.createConversionResult(data: CompilationResult())
 
@@ -50,10 +41,7 @@ final class DistributorTests: XCTestCase {
     }
 
     func testSimple() {
-        let builder = Distributor(
-            limit: 0,
-            advancedBlocking: true
-        )
+        let builder = Distributor(limit: 0)
 
         let entries = [
             BlockerEntry(trigger: testTrigger, action: testAction)
@@ -76,10 +64,7 @@ final class DistributorTests: XCTestCase {
     }
 
     func testOverlimit() {
-        let builder = Distributor(
-            limit: 1,
-            advancedBlocking: true
-        )
+        let builder = Distributor(limit: 1)
 
         let entries = [
             BlockerEntry(trigger: testTrigger, action: testAction),
@@ -99,36 +84,6 @@ final class DistributorTests: XCTestCase {
         XCTAssertEqual(result.overLimit, true)
         XCTAssertEqual(result.message, "test")
         assertEntry(actual: result.converted)
-    }
-
-    func testAdvancedBlocking() {
-        let builder = Distributor(
-            limit: 1,
-            advancedBlocking: true
-        )
-
-        let entries = [
-            BlockerEntry(trigger: testTrigger, action: testAction)
-        ];
-
-        let compilationResult = CompilationResult(
-            message: "test",
-            cssBlockingWide: entries,
-            сssInjects: entries
-        )
-
-        let result = builder.createConversionResult(data: compilationResult)
-
-        XCTAssertEqual(result.totalConvertedCount, 2)
-        XCTAssertEqual(result.convertedCount, 1)
-        XCTAssertEqual(result.errorsCount, 0)
-        XCTAssertEqual(result.overLimit, false)
-        XCTAssertEqual(result.message, "test")
-        assertEntry(actual: result.converted)
-
-        XCTAssertEqual(result.advancedBlockingConvertedCount, 1);
-        assertEntry(actual: result.advancedBlocking);
-
     }
 
 }

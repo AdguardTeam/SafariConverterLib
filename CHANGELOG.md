@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Filtering Engine
+
+One of the main challenges when developing Safari extension is its async nature.
+For a content blocker it is critically important to be inject scripts and styles
+as soon as possible; in the ideal scenario it should be injected before page own
+scripts are executed.
+
+* TODO: Remove json format for advanced blocking
+* TODO: Update `safari-blocker` and make samples for both WebExtension and AppExtension.
+* TODO: Add more text to justification
+* TODO: Explain what was removed (ContentBlockerEngine)
+* TODO: Explain what was added (FilterEngine) and how to use it
+* TODO: Update and test the console tool
+* TODO: Update and test the node module
+* TODO: Remove `optimize` flag
+
 ## 2.1.1
 
 ### Performance

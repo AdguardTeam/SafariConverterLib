@@ -26,19 +26,18 @@ func encodeJson(_ result: ConversionResult) throws -> String {
     return String(data: json, encoding: .utf8)!.replacingOccurrences(of: "\\/", with: "/")
 }
 
-/**
- * Converter tool
- * Usage:
- *  "cat rules.txt | ./ConverterTool --safari-version 14 --optimize true --advanced-blocking true --advanced-blocking-format txt"
- */
+/// Converter tool
+///
+/// ## Usage
+///
+/// ```
+/// cat rules.txt | ./ConverterTool --safari-version 14 --advanced-blocking true
+/// ```
 struct ConverterTool: ParsableCommand {
     static let configuration = CommandConfiguration(commandName: "ConverterTool")
 
     @Option(name: .shortAndLong, help: "Safari version.")
     var safariVersion: Double = 13
-
-    @Option(name: .shortAndLong, help: "Optimize.")
-    var optimize = false
 
     @Option(name: .shortAndLong, help: "Advanced blocking.")
     var advancedBlocking = false
@@ -46,25 +45,16 @@ struct ConverterTool: ParsableCommand {
     @Option(name: .shortAndLong, help: "Maximum json size in bytes. Leave empty for no limit.")
     var maxJsonSizeBytes: Int = 0
 
-    @Option(name: [.customShort("f"), .long], help: "Advanced blocking output format.")
-    var advancedBlockingFormat = "json"
-
     @Argument(help: "Reads rules from standard input.")
     var rules: String?
 
     mutating func run() throws {
         let safariVersionResolved = SafariVersion(safariVersion);
 
-        guard let advancedBlockingFormat = AdvancedBlockingFormat(rawValue: advancedBlockingFormat) else {
-            throw AdvancedBlockingFormatError.unsupportedFormat()
-        }
-
         let maxJsonSizeBytesOption: Int? = (maxJsonSizeBytes <= 0) ? nil : maxJsonSizeBytes
 
         Logger.log("(ConverterTool) - Safari version: \(safariVersionResolved)")
-        Logger.log("(ConverterTool) - Optimize: \(optimize)")
         Logger.log("(ConverterTool) - Advanced blocking: \(advancedBlocking)")
-        Logger.log("(ConverterTool) - Advanced blocking format: \(advancedBlockingFormat)")
 
         if let size = maxJsonSizeBytesOption {
             Logger.log("(ConverterTool) - Max json limit: \(size)")
@@ -89,9 +79,7 @@ struct ConverterTool: ParsableCommand {
             .convertArray(
                 rules: rules,
                 safariVersion: safariVersionResolved,
-                optimize: optimize,
                 advancedBlocking: advancedBlocking,
-                advancedBlockingFormat: advancedBlockingFormat,
                 maxJsonSizeBytes: maxJsonSizeBytesOption
             )
 

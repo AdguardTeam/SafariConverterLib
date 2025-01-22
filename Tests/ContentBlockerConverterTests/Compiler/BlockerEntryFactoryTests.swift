@@ -8,7 +8,6 @@ final class BlockerEntryFactoryTests: XCTestCase {
         struct TestCase {
             let ruleText: String
             var version: SafariVersion = DEFAULT_SAFARI_VERSION
-            var advancedBlockingEnabled = true
             var expectedEntry: BlockerEntry?
             var expectedErrorsCount = 0
         }
@@ -394,16 +393,8 @@ final class BlockerEntryFactoryTests: XCTestCase {
             TestCase(
                 // Converting simple script rule.
                 ruleText: "example.org,example.com#%#test",
-                expectedEntry: BlockerEntry(
-                    trigger: BlockerEntry.Trigger(
-                        ifDomain: ["*example.org", "*example.com"],
-                        urlFilter: ".*"
-                    ),
-                    action: BlockerEntry.Action(
-                        type: "script",
-                        script: "test"
-                    )
-                )
+                expectedEntry: nil,
+                expectedErrorsCount: 1
             ),
             TestCase(
                 // Whitelist script rule.
@@ -414,32 +405,14 @@ final class BlockerEntryFactoryTests: XCTestCase {
             TestCase(
                 // Scriptlet rule.
                 ruleText: "~example.org#%#//scriptlet(\"test-name\")",
-                expectedEntry: BlockerEntry(
-                    trigger: BlockerEntry.Trigger(
-                        urlFilter: ".*",
-                        unlessDomain: ["*example.org"]
-                    ),
-                    action: BlockerEntry.Action(
-                        type: "scriptlet",
-                        scriptlet: "test-name",
-                        scriptletParam: "{\"name\":\"test-name\",\"args\":[]}"
-                    )
-                )
+                expectedEntry: nil,
+                expectedErrorsCount: 1
             ),
             TestCase(
                 // Scriptlet with parameters rule.
                 ruleText: "~example.org,~example.com#%#//scriptlet('test scriptlet', 'test scriptlet param')",
-                expectedEntry: BlockerEntry(
-                    trigger: BlockerEntry.Trigger(
-                        urlFilter: ".*",
-                        unlessDomain: ["*example.org", "*example.com"]
-                    ),
-                    action: BlockerEntry.Action(
-                        type: "scriptlet",
-                        scriptlet: "test scriptlet",
-                        scriptletParam: "{\"name\":\"test scriptlet\",\"args\":[\"test scriptlet param\"]}"
-                    )
-                )
+                expectedEntry: nil,
+                expectedErrorsCount: 1
             ),
             TestCase(
                 // Whitelist scriptlet with parameters rule.
@@ -448,70 +421,22 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 expectedErrorsCount: 1
             ),
             TestCase(
-                // Trying to convert a script rule when advanced blocking is disabled.
-                ruleText: "example.org,example.com#%#test",
-                advancedBlockingEnabled: false,
-                expectedEntry: nil
-            ),
-            TestCase(
-                // Trying to convert a whitelist script rule when advanced blocking is disabled.
-                ruleText: "example.org,example.com#@%#test",
-                advancedBlockingEnabled: false,
-                expectedEntry: nil
-            ),
-            TestCase(
-                // Trying to convert a scriptlet rule when advanced blocking is disabled.
-                ruleText: "example.org,example.com#%#//scriptlet('test')",
-                advancedBlockingEnabled: false,
-                expectedEntry: nil
-            ),
-            TestCase(
-                // Trying to convert a whitelist scriptlet rule when advanced blocking is disabled.
-                ruleText: "example.org,example.com#@%#//scriptlet('test')",
-                advancedBlockingEnabled: false,
-                expectedEntry: nil
-            ),
-            TestCase(
                 // Extended CSS element hiding rule.
                 ruleText: "example.com#?#.banner",
-                expectedEntry: BlockerEntry(
-                    trigger: BlockerEntry.Trigger(
-                        ifDomain: ["*example.com"],
-                        urlFilter: ".*"
-                    ),
-                    action: BlockerEntry.Action(
-                        type: "css-extended",
-                        css: ".banner"
-                    )
-                )
+                expectedEntry: nil,
+                expectedErrorsCount: 1
             ),
             TestCase(
                 // CSS injection rule.
                 ruleText: "example.com#$#.banner { display: none; }",
-                expectedEntry: BlockerEntry(
-                    trigger: BlockerEntry.Trigger(
-                        ifDomain: ["*example.com"],
-                        urlFilter: ".*"
-                    ),
-                    action: BlockerEntry.Action(
-                        type: "css-inject",
-                        css: ".banner { display: none; }"
-                    )
-                )
+                expectedEntry: nil,
+                expectedErrorsCount: 1
             ),
             TestCase(
                 // Extended CSS injection rule.
                 ruleText: "example.com#$?#.banner { display: none; }",
-                expectedEntry: BlockerEntry(
-                    trigger: BlockerEntry.Trigger(
-                        ifDomain: ["*example.com"],
-                        urlFilter: ".*"
-                    ),
-                    action: BlockerEntry.Action(
-                        type: "css-extended",
-                        css: ".banner { display: none; }"
-                    )
-                )
+                expectedEntry: nil,
+                expectedErrorsCount: 1
             ),
             TestCase(
                 // Unsupported regular expression.
@@ -594,12 +519,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
 
         for testCase in testCases {
             let errorsCounter = ErrorsCounter()
-
-            let converter = BlockerEntryFactory(
-                advancedBlockingEnabled: testCase.advancedBlockingEnabled,
-                errorsCounter: errorsCounter,
-                version: testCase.version
-            )
+            let converter = BlockerEntryFactory(errorsCounter: errorsCounter, version: testCase.version)
 
             let rule = try! RuleFactory.createRule(ruleText: testCase.ruleText, for: testCase.version)
             let result = converter.createBlockerEntry(rule: rule!)
@@ -610,11 +530,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
     }
 
     func testTldDomains() throws {
-        let converter = BlockerEntryFactory(
-            advancedBlockingEnabled: true,
-            errorsCounter: ErrorsCounter(),
-            version: DEFAULT_SAFARI_VERSION
-        )
+        let converter = BlockerEntryFactory(errorsCounter: ErrorsCounter(), version: DEFAULT_SAFARI_VERSION)
         let rule = try CosmeticRule(ruleText: "example.*##.banner")
 
         let result = converter.createBlockerEntry(rule: rule)

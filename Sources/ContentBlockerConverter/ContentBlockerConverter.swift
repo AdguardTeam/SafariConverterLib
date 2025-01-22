@@ -19,7 +19,6 @@ public class ContentBlockerConverter {
     ///   - safariVersion: version of Safari for which the conversion should be done.
     ///   - optimize: if set to true, removes generic element hiding rules form the result.
     ///   - advancedBlocking: if true, convert advanced blocking rules too.
-    ///   - advancedBlockingFormat: format for advanced blocking rules (can be json or txt).
     ///   - maxJsonSizeBytes: maximum size for the rules JSON. Due to iOS bug we have to limit that size.
     ///   - progress: provides a way to cancel conversion earlier.
     /// - Returns:
@@ -27,11 +26,7 @@ public class ContentBlockerConverter {
     public func convertArray(
         rules: [String],
         safariVersion: SafariVersion = .safari13,
-        // TODO: [ameshkov] Remove optimize argument, this logic is not used by anyone and is deprecated.
-        optimize: Bool = false,
-        // TODO: [ameshkov] Figure out how advancedBlocking is used now, maybe we don't need it?
         advancedBlocking: Bool = false,
-        advancedBlockingFormat: AdvancedBlockingFormat = .json,
         maxJsonSizeBytes: Int? = nil,
         progress: Progress? = nil
     ) -> ConversionResult {
@@ -41,6 +36,7 @@ public class ContentBlockerConverter {
 
         let rulesLimit = safariVersion.rulesLimit
 
+        // TODO(ameshkov): !!! Add test with list that consists of comments
         if rules.count == 0 || (rules.count == 1 && rules[0].isEmpty) {
             Logger.log("(ContentBlockerConverter) - No rules passed")
             return ConversionResult.createEmptyResult()
@@ -54,16 +50,9 @@ public class ContentBlockerConverter {
         }
 
         let ruleFactory = RuleFactory(errorsCounter: errorsCounter)
-        let parsedRules = ruleFactory.createRules(lines: rules, for: safariVersion, progress: progress)
+        let parsedRules = ruleFactory.createRules(lines: rules, for: safariVersion)
 
-        let advancedBlockingJson = advancedBlocking && advancedBlockingFormat == AdvancedBlockingFormat.json
-
-        let compiler = Compiler(
-            optimize: optimize,
-            advancedBlocking: advancedBlockingJson,
-            errorsCounter: errorsCounter,
-            version: safariVersion
-        )
+        let compiler = Compiler(errorsCounter: errorsCounter, version: safariVersion)
 
         var compilationResult: CompilationResult
         var advancedRulesTexts: String? = nil
@@ -73,17 +62,14 @@ public class ContentBlockerConverter {
             return ConversionResult.createEmptyResult()
         }
 
-        // TODO: [ameshkov]: The correct way would be to move this logic to Compiler.
-        if advancedBlocking && advancedBlockingFormat == .txt {
+        // TODO(ameshkov): !!! Fix the logic here
+        if true {
             let vettedRules = vetRules(parsedRules)
             let advancedRules = vettedRules.advancedRules
             let simpleRules = vettedRules.simpleRules
 
             compilationResult = compiler.compileRules(rules: simpleRules, progress: progress)
             advancedRulesTexts = advancedRules.map { $0.ruleText as String }.joined(separator: "\n")
-        } else {
-            // by default for .json format
-            compilationResult = compiler.compileRules(rules: parsedRules, progress: progress)
         }
 
         compilationResult.errorsCount = errorsCounter.getCount()
@@ -94,7 +80,6 @@ public class ContentBlockerConverter {
 
         let distributor = Distributor(
             limit: rulesLimit,
-            advancedBlocking: advancedBlockingJson,
             maxJsonSizeBytes: maxJsonSizeBytes
         )
 
@@ -153,25 +138,20 @@ public class ContentBlockerConverter {
         return result
     }
 
+    // TODO(ameshkov): !!! Fix comment
     private func createLogMessage(compilationResult: CompilationResult) -> String {
-        var message = "Rules converted:  \(compilationResult.rulesCount) (\(compilationResult.errorsCount) errors)";
-        message += "\nBasic rules: \(String(describing: compilationResult.urlBlocking.count))";
-        message += "\nBasic important rules: \(String(describing: compilationResult.important.count))";
-        message += "\nElemhide rules (wide): \(String(describing: compilationResult.cssBlockingWide.count))";
-        message += "\nElemhide rules (generic domain sensitive): \(String(describing: compilationResult.cssBlockingGenericDomainSensitive.count))";
-        message += "\nExceptions Elemhide (wide): \(String(describing: compilationResult.cssBlockingGenericHideExceptions.count))";
-        message += "\nElemhide rules (domain-sensitive): \(String(describing: compilationResult.cssBlockingDomainSensitive.count))";
-        message += "\nCssInject rules (domain-sensitive): \(String(describing: compilationResult.сssInjects.count))";
-        message += "\nScript rules: \(String(describing: compilationResult.script.count))";
-        message += "\nScriptlets rules: \(String(describing: compilationResult.scriptlets.count))";
-        message += "\nExtended Css Elemhide rules (wide): \(String(describing: compilationResult.extendedCssBlockingWide.count))";
-        message += "\nExtended Css Elemhide rules (generic domain sensitive): \(String(describing: compilationResult.extendedCssBlockingGenericDomainSensitive.count))";
-        message += "\nExtended Css Elemhide rules (domain-sensitive): \(String(describing: compilationResult.extendedCssBlockingDomainSensitive.count))";
-        message += "\nExceptions (elemhide): \(String(describing: compilationResult.cssElemhide.count))";
-        message += "\nExceptions (important): \(String(describing: compilationResult.importantExceptions.count))";
-        message += "\nExceptions (document): \(String(describing: compilationResult.documentExceptions.count))";
-        message += "\nExceptions (jsinject): \(String(describing: compilationResult.scriptJsInjectExceptions.count))";
-        message += "\nExceptions (other): \(String(describing: compilationResult.other.count))";
+        var message = "Rules converted:  \(compilationResult.rulesCount) (\(compilationResult.errorsCount) errors)"
+
+        message += "\nBasic rules: \(String(describing: compilationResult.urlBlocking.count))"
+        message += "\nBasic important rules: \(String(describing: compilationResult.important.count))"
+        message += "\nElemhide rules (wide): \(String(describing: compilationResult.cssBlockingWide.count))"
+        message += "\nElemhide rules (generic domain sensitive): \(String(describing: compilationResult.cssBlockingGenericDomainSensitive.count))"
+        message += "\nExceptions Elemhide (wide): \(String(describing: compilationResult.cssBlockingGenericHideExceptions.count))"
+        message += "\nElemhide rules (domain-sensitive): \(String(describing: compilationResult.cssBlockingDomainSensitive.count))"
+        message += "\nExceptions (elemhide): \(String(describing: compilationResult.cssElemhide.count))"
+        message += "\nExceptions (important): \(String(describing: compilationResult.importantExceptions.count))"
+        message += "\nExceptions (document): \(String(describing: compilationResult.documentExceptions.count))"
+        message += "\nExceptions (other): \(String(describing: compilationResult.other.count))"
 
         return message;
     }

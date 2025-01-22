@@ -42,18 +42,15 @@ class BlockerEntryFactory {
         "co.nz", "rs", "ai", "website", "bg", "ua", "ma", "world", "pe", "link"
     ]
 
-    private let advancedBlockingEnabled: Bool
     private let errorsCounter: ErrorsCounter
     private let version: SafariVersion
 
     /// Creates a new instance of BlockerEntryFactory.
     ///
     /// - Parameters:
-    ///   - advancedBlockingEnabled: if true, advanced rules (the ones interpreted by WebExtension) are also converted.
     ///   - errorsCounter: object where we count the total number of conversion errors though the whole conversion process.
     ///   - version: version of Safari for which the rules are being built.
-    init(advancedBlockingEnabled: Bool, errorsCounter: ErrorsCounter, version: SafariVersion) {
-        self.advancedBlockingEnabled = advancedBlockingEnabled
+    init(errorsCounter: ErrorsCounter, version: SafariVersion) {
         self.errorsCounter = errorsCounter
         self.version = version
     }
@@ -68,17 +65,7 @@ class BlockerEntryFactory {
             if (rule is NetworkRule) {
                 return try convertNetworkRule(rule: rule as! NetworkRule)
             } else {
-                if (self.advancedBlockingEnabled) {
-                    if (rule.isScriptlet) {
-                        return try convertScriptletRule(rule: rule as! CosmeticRule)
-                    } else if (rule.isScript) {
-                        return try convertScriptRule(rule: rule as! CosmeticRule)
-                    }
-                }
-
-                if (!rule.isScript && !rule.isScriptlet) {
-                    return try convertCssRule(rule: rule as! CosmeticRule)
-                }
+                return try convertCosmeticRule(rule: rule as! CosmeticRule)
             }
         } catch {
             self.errorsCounter.add()
@@ -93,7 +80,7 @@ class BlockerEntryFactory {
         let urlFilter = try createUrlFilterString(rule: rule)
 
         var trigger = BlockerEntry.Trigger(urlFilter: urlFilter)
-        var action = BlockerEntry.Action(type: rule.isWhiteList ? "ignore-previous-rules" : "block")
+        let action = BlockerEntry.Action(type: rule.isWhiteList ? "ignore-previous-rules" : "block")
 
         try addResourceType(rule: rule, trigger: &trigger)
         addLoadContext(rule: rule, trigger: &trigger)
@@ -106,65 +93,24 @@ class BlockerEntryFactory {
         let result = BlockerEntry(trigger: trigger, action: action)
 
         return result
-    };
-
-    /**
-     * Creates blocker entry object from source Cosmetic script rule.
-     * The result entry could be used in advanced blocking json only.
-     */
-    private func convertScriptRule(rule: CosmeticRule) throws -> BlockerEntry? {
-        var trigger = BlockerEntry.Trigger(urlFilter: BlockerEntryFactory.URL_FILTER_COSMETIC_RULES)
-        var action = BlockerEntry.Action(type: "script", script: rule.content)
-
-        if rule.isWhiteList {
-            throw ConversionError.unsupportedRule(message: "Cannot convert cosmetic exception: \(rule.ruleText)")
-        }
-
-        try addDomainOptions(rule: rule, trigger: &trigger)
-
-        return BlockerEntry(trigger: trigger, action: action)
-    }
-
-    /**
-    * Creates blocker entry object from source Cosmetic scriptlet rule.
-    * Scriptlets are functions those will be inserted to page content scripts and could be accessed by name with parameters.
-    * The result entry could be used in advanced blocking json only.
-    */
-    private func convertScriptletRule(rule: CosmeticRule) throws -> BlockerEntry? {
-        var trigger = BlockerEntry.Trigger(urlFilter: BlockerEntryFactory.URL_FILTER_COSMETIC_RULES)
-        var action = BlockerEntry.Action(type: "scriptlet", scriptlet: rule.scriptlet, scriptletParam: rule.scriptletParam)
-
-        if rule.isWhiteList {
-            throw ConversionError.unsupportedRule(message: "Cannot convert cosmetic exception: \(rule.ruleText)")
-        }
-
-        try addDomainOptions(rule: rule, trigger: &trigger)
-
-        return BlockerEntry(trigger: trigger, action: action)
     }
 
     /// Creates a blocker entry object from the source cosmetic rule.
     ///
     /// In the case the rule selector contains extended css or rule is an inject-style rule,
     /// the result entry could be used in advanced blocking json only.
-    private func convertCssRule(rule: CosmeticRule) throws -> BlockerEntry? {
-        let urlFilter = try createUrlFilterStringForCosmetic(rule: rule)
-        var trigger = BlockerEntry.Trigger(urlFilter: urlFilter)
-        var action = BlockerEntry.Action(type:"css-display-none")
-
-        if (rule.isExtendedCss) {
-            action.type = "css-extended"
-            action.css = rule.content
-        } else if (rule.isInjectCss) {
-            action.type = "css-inject"
-            action.css = rule.content
-        } else {
-            action.selector = rule.content
+    private func convertCosmeticRule(rule: CosmeticRule) throws -> BlockerEntry? {
+        if rule.isScript || rule.isScriptlet || rule.isInjectCss || rule.isExtendedCss {
+            throw ConversionError.unsupportedRule(message: "Cannot convert advanced rule: \(rule.ruleText)")
         }
 
         if rule.isWhiteList {
             throw ConversionError.unsupportedRule(message: "Cannot convert cosmetic exception: \(rule.ruleText)")
         }
+
+        let urlFilter = try createUrlFilterStringForCosmetic(rule: rule)
+        var trigger = BlockerEntry.Trigger(urlFilter: urlFilter)
+        let action = BlockerEntry.Action(type:"css-display-none", selector: rule.content)
 
         try addDomainOptions(rule: rule, trigger: &trigger)
 

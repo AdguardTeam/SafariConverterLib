@@ -1,19 +1,17 @@
 import Foundation
 
 /// Distributor creates a Safari JSON and checks for additional limitations while doing that.
+///
+/// TODO(ameshkov): !!! Fix comment
 class Distributor {
-
-    private let limit: Int;
-    private let advancedBlockedEnabled: Bool;
-    private let maxJsonSizeBytes: Int?;
+    private let limit: Int
+    private let maxJsonSizeBytes: Int?
 
     init(
         limit: Int,
-        advancedBlocking: Bool,
         maxJsonSizeBytes: Int? = nil
     ) {
         self.limit = limit
-        advancedBlockedEnabled = advancedBlocking
         self.maxJsonSizeBytes = maxJsonSizeBytes
     }
 
@@ -35,37 +33,12 @@ class Distributor {
         return entries
     }
 
-    /// Creates an array of advanced blocking rules (to be interpreted by Safari app extension).
-    private func createAdvancedBlockedEntries(from result: CompilationResult) -> [BlockerEntry] {
-        var entries = [BlockerEntry]()
-
-        if !advancedBlockedEnabled {
-            return entries
-        }
-
-        entries.append(contentsOf: result.extendedCssBlockingWide)
-        entries.append(contentsOf: result.extendedCssBlockingGenericDomainSensitive)
-        entries.append(contentsOf: result.cssBlockingGenericHideExceptions)
-        entries.append(contentsOf: result.extendedCssBlockingDomainSensitive)
-        entries.append(contentsOf: result.cssElemhide)
-        entries.append(contentsOf: result.script)
-        entries.append(contentsOf: result.scriptlets)
-        entries.append(contentsOf: result.scriptJsInjectExceptions)
-        entries.append(contentsOf: result.сssInjects)
-        entries.append(contentsOf: result.other)
-        entries.append(contentsOf: result.importantExceptions)
-        entries.append(contentsOf: result.documentExceptions)
-
-        return entries
-    }
-
     /// Creates the final conversion result from the compilation result object.
     func createConversionResult(data: CompilationResult) -> ConversionResult {
         let entries = createEntries(from: data)
-        let advBlockingEntries = createAdvancedBlockedEntries(from: data)
 
         let message = data.message
-        let totalConvertedCount = entries.count + advBlockingEntries.count
+        let totalConvertedCount = entries.count
         let overLimit = (limit > 0 && entries.count > limit)
         let errorsCount = overLimit ? data.errorsCount + 1 : data.errorsCount
 
@@ -78,24 +51,12 @@ class Distributor {
 
         let (converted, convertedCount) = Distributor.createJSONString(entries: limitedEntries, maxJsonSizeBytes: maxJsonSizeBytes)
 
-        var advancedBlocking: String?
-        var advancedBlockingConvertedCount: Int = 0
-
-        if advBlockingEntries.count > 0 {
-            (advancedBlocking, advancedBlockingConvertedCount) = Distributor.createJSONString(
-                entries: advBlockingEntries,
-                maxJsonSizeBytes: maxJsonSizeBytes
-            )
-        }
-
         return ConversionResult(
             totalConvertedCount: totalConvertedCount,
             convertedCount: convertedCount,
             errorsCount: errorsCount,
             overLimit: overLimit,
             converted: converted,
-            advancedBlockingConvertedCount: advancedBlockingConvertedCount,
-            advancedBlocking: advancedBlocking,
             message: message
         )
     }

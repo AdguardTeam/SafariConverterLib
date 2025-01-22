@@ -36,12 +36,18 @@ public struct BlockerEntry : Codable, Equatable, CustomStringConvertible {
 
     /// Trigger is the "trigger" field of a content blocking rule, i.e. defines conditions when the rule is applied.
     public struct Trigger : Codable, Equatable {
-        public init(ifDomain: [String]? = nil, urlFilter: String? = nil, unlessDomain: [String]? = nil, shortcut: String? = nil, regex: NSRegularExpression? = nil, loadType: [String]? = nil, resourceType: [String]? = nil, caseSensitive: Bool? = nil, loadContext: [String]? = nil) {
+        public init(
+            ifDomain: [String]? = nil,
+            urlFilter: String? = nil,
+            unlessDomain: [String]? = nil,
+            loadType: [String]? = nil,
+            resourceType: [String]? = nil,
+            caseSensitive: Bool? = nil,
+            loadContext: [String]? = nil
+        ) {
             self.ifDomain = ifDomain
             self.urlFilter = urlFilter
             self.unlessDomain = unlessDomain
-            self.shortcut = shortcut
-            self.regex = regex
             self.loadType = loadType
             self.resourceType = resourceType
             self.caseSensitive = caseSensitive
@@ -51,42 +57,19 @@ public struct BlockerEntry : Codable, Equatable, CustomStringConvertible {
         public var ifDomain: [String]?
         public var urlFilter: String?
         public var unlessDomain: [String]?
-
-        /// TODO(ameshkov): !!! Remove, deprecated
-        var shortcut: String?
-        /// TODO(ameshkov): !!! Remove, deprecated
-        var regex: NSRegularExpression?
-
-        var loadType: [String]?
-        var resourceType: [String]?
-        var caseSensitive: Bool?
-        var loadContext: [String]?
+        public var loadType: [String]?
+        public var resourceType: [String]?
+        public var caseSensitive: Bool?
+        public var loadContext: [String]?
 
         enum CodingKeys: String, CodingKey {
             case ifDomain = "if-domain"
             case urlFilter = "url-filter"
             case unlessDomain = "unless-domain"
-            case shortcut = "url-shortcut"
             case loadType = "load-type"
             case resourceType = "resource-type"
             case caseSensitive = "url-filter-is-case-sensitive"
             case loadContext = "load-context"
-        }
-
-        mutating func setShortcut(shortcutValue: String?) {
-            self.shortcut = shortcutValue;
-        }
-
-        mutating func setRegex(regex: NSRegularExpression?) {
-            self.regex = regex;
-        }
-
-        mutating func setIfDomain(domains: [String]?) {
-            self.ifDomain = domains;
-        }
-
-        mutating func setUnlessDomain(domains: [String]?) {
-            self.unlessDomain = domains;
         }
 
         // Custom Equatable implementation
@@ -94,8 +77,6 @@ public struct BlockerEntry : Codable, Equatable, CustomStringConvertible {
             return lhs.ifDomain == rhs.ifDomain &&
                 lhs.urlFilter == rhs.urlFilter &&
                 lhs.unlessDomain == rhs.unlessDomain &&
-                lhs.shortcut == rhs.shortcut &&
-                lhs.regex?.pattern == rhs.regex?.pattern && // Compare regex patterns
                 lhs.loadType == rhs.loadType &&
                 lhs.resourceType == rhs.resourceType &&
                 lhs.caseSensitive == rhs.caseSensitive &&
@@ -105,34 +86,17 @@ public struct BlockerEntry : Codable, Equatable, CustomStringConvertible {
 
     /// Action represents an action that this rule applies.
     public struct Action : Codable, Equatable {
-        public init(type: String, selector: String? = nil, css: String? = nil, script: String? = nil, scriptlet: String? = nil, scriptletParam: String? = nil) {
+        public init(type: String, selector: String? = nil) {
             self.type = type
             self.selector = selector
-            self.css = css
-            self.script = script
-            self.scriptlet = scriptlet
-            self.scriptletParam = scriptletParam
         }
 
         public var type: String
-        var selector: String?
-
-        /// TODO(ameshkov): !!! Remove, deprecated
-        public var css: String?
-        /// TODO(ameshkov): !!! Remove, deprecated
-        public var script: String?
-        /// TODO(ameshkov): !!! Remove, deprecated
-        public var scriptlet: String?
-        /// TODO(ameshkov): !!! Remove, deprecated
-        public var scriptletParam: String?
+        public var selector: String?
 
         enum CodingKeys: String, CodingKey {
             case type = "type"
             case selector = "selector"
-            case css = "css"
-            case script = "script"
-            case scriptlet = "scriptlet"
-            case scriptletParam = "scriptletParam"
         }
     }
 }

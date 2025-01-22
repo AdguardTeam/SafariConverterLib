@@ -374,4 +374,8 @@ build and publish new release with an asset binary.
 
 ### Third-party dependencies
 
-- Punycode (<https://github.com/gumob/PunycodeSwift.git>)
+- [Punycode][punycode]
+- [ArgumentParser][argmentparser]
+
+[punycode]: https://github.com/gumob/PunycodeSwift
+[argumentparser]: https://github.com/apple/swift-argument-parser

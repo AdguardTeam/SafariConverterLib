@@ -13,7 +13,6 @@ final class BlockerEntryEncoderTests: XCTestCase {
 
     func testSimpleEntry() throws {
         let converter = BlockerEntryFactory(
-            advancedBlockingEnabled: false,
             errorsCounter: ErrorsCounter(),
             version: DEFAULT_SAFARI_VERSION
         )

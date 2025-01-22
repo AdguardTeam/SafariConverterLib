@@ -23,7 +23,6 @@ public struct ConversionResult {
         overLimit: Bool,
         converted: String,
         advancedBlockingConvertedCount: Int = 0,
-        advancedBlocking: String? = nil,
         advancedBlockingText: String? = nil,
         message: String
     ) {
@@ -33,7 +32,6 @@ public struct ConversionResult {
         self.overLimit = overLimit
         self.converted = converted
         self.advancedBlockingConvertedCount = advancedBlockingConvertedCount
-        self.advancedBlocking = advancedBlocking
         self.advancedBlockingText = advancedBlockingText
         self.message = message
     }
@@ -55,9 +53,6 @@ public struct ConversionResult {
 
     /// Count of advanced blocking rules.
     public var advancedBlockingConvertedCount = 0
-
-    /// JSON with advanced content blocker rules.
-    public var advancedBlocking: String? = nil
 
     /// Text with advanced content blocker rules.
     public var advancedBlockingText: String? = nil
