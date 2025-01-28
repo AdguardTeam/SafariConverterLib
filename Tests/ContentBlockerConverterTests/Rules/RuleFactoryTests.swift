@@ -190,9 +190,11 @@ final class RuleFactoryTests: XCTestCase {
 
         for testCase in testCases {
             let errorsCounter = ErrorsCounter()
-            let factory = RuleFactory(errorsCounter: ErrorsCounter())
 
-            let rules = factory.createRules(lines: testCase.rules, for: SafariVersion.safari16_4)
+            let rules = RuleFactory.createRules(
+                lines: testCase.rules,
+                for: SafariVersion.safari16_4,
+                errorsCounter: errorsCounter)
 
             XCTAssertEqual(testCase.expectedErrorsCount, errorsCounter.getCount())
             XCTAssertEqual(testCase.expectedRules.count, rules.count, testCase.name)

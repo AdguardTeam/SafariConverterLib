@@ -1,12 +1,5 @@
 import Foundation
 
-struct VettedRules {
-    // extcss, script, scriptlet, css inject
-    var advancedRules: [Rule] = []
-    // network, css, other
-    var simpleRules: [Rule] = []
-}
-
 /// Entry point into the SafariConverterLib, here the conversion process starts.
 public class ContentBlockerConverter {
 
@@ -34,8 +27,6 @@ public class ContentBlockerConverter {
             !(progress?.isCancelled ?? false)
         }
 
-        let rulesLimit = safariVersion.rulesLimit
-
         // TODO(ameshkov): !!! Add test with list that consists of comments
         if rules.count == 0 || (rules.count == 1 && rules[0].isEmpty) {
             Logger.log("(ContentBlockerConverter) - No rules passed")
@@ -49,110 +40,102 @@ public class ContentBlockerConverter {
             return ConversionResult.createEmptyResult()
         }
 
-        let ruleFactory = RuleFactory(errorsCounter: errorsCounter)
-        let parsedRules = ruleFactory.createRules(lines: rules, for: safariVersion)
+        let allRules = RuleFactory.createRules(lines: rules, for: safariVersion, errorsCounter: errorsCounter)
 
-        let compiler = Compiler(errorsCounter: errorsCounter, version: safariVersion)
+        var (simpleRules, advancedRules) = ContentBlockerConverter.splitSimpleAdvanced(allRules)
 
-        var compilationResult: CompilationResult
-        var advancedRulesTexts: String? = nil
+        // Count rules compatible with Safari before filtering out exceptions.
+        let safariCompatibleRulesCount = simpleRules.count
+
+        // Filter out exceptions from simple rules first.
+        simpleRules = RuleFactory.filterOutExceptions(from: simpleRules)
 
         guard shouldContinue else {
-            Logger.log("(ContentBlockerConverter) - Cancelled before advanced converting")
+            Logger.log("(ContentBlockerConverter) - Cancelled before compiling into Safari JSON")
             return ConversionResult.createEmptyResult()
         }
 
-        // TODO(ameshkov): !!! Fix the logic here
-        if true {
-            let vettedRules = vetRules(parsedRules)
-            let advancedRules = vettedRules.advancedRules
-            let simpleRules = vettedRules.simpleRules
+        let compiler = Compiler(errorsCounter: errorsCounter, version: safariVersion)
 
-            compilationResult = compiler.compileRules(rules: simpleRules, progress: progress)
-            advancedRulesTexts = advancedRules.map { $0.ruleText as String }.joined(separator: "\n")
-        }
+        // Compile simple rules to Safari content blocking JSON.
+        let compilationResult = compiler.compileRules(rules: simpleRules, progress: progress)
 
-        compilationResult.errorsCount = errorsCounter.getCount()
-
-        let message = createLogMessage(compilationResult: compilationResult)
-        Logger.log("(ContentBlockerConverter) - Compilation result: " + message)
-        compilationResult.message = message
-
-        let distributor = Distributor(
-            limit: rulesLimit,
+        // Compose the Safari content blocking JSON.
+        let rulesLimit = safariVersion.rulesLimit
+        let result = SafariCbBuilder.buildCbJson(
+            from: compilationResult,
+            maxRules: rulesLimit,
             maxJsonSizeBytes: maxJsonSizeBytes
         )
 
-        var conversionResult = distributor.createConversionResult(data: compilationResult)
+        // Prepare advanced rules text.
+        let advancedRulesCount = advancedBlocking ? advancedRules.count : 0
+        let advancedBlockingText = advancedBlocking ? advancedRules.map { $0.ruleText }.joined(separator: "\n") : nil
 
-        conversionResult.advancedBlockingText = advancedRulesTexts
+        // Prepare the conversion result.
+        let conversionResult = ConversionResult(
+            sourceRulesCount: allRules.count,
+            sourceSafariCompatibleRulesCount: safariCompatibleRulesCount,
+            safariRulesCount: result.rulesCount,
+            advancedRulesCount: advancedRulesCount,
+            discardedSafariRules: result.discardedRulesCount,
+            errorsCount: errorsCounter.getCount(),
+            safariRulesJSON: result.json,
+            advancedRulesText: advancedBlockingText
+        )
+
+        Logger.log("(ContentBlockerConverter) - Compilation result: \(conversionResult)")
 
         return conversionResult
     }
 
     /// Creates allowlist rule for provided domain.
+    ///
+    /// This function is supposed to be used by the library users.
     public static func createAllowlistRule(by domain: String) -> String {
         return "@@||\(domain)$document";
     }
 
     /// Creates inverted allowlist rule for provided domains.
+    ///
+    /// This function is supposed to be used by the library users.
     public static func createInvertedAllowlistRule(by domains: [String]) -> String? {
         let domainsString = domains.filter { !$0.isEmpty }.joined(separator: "|~")
         return domainsString.count > 0 ? "@@||*$document,domain=~\(domainsString)" : nil
     }
 
-    /// Creates two lists with:
-    /// - advanced rules (extcss, script, scriptlet, css inject)
-    /// - simple rules (network, css, other)
-    private func vetRules(_ rules: [Rule]) -> VettedRules {
-        var result = VettedRules()
+    /// Splits all rules into two arrays:
+    ///
+    /// - Advanced rules (extended CSS, script, scriptlet, css injection)
+    /// - Simple rules (network, element hiding)
+    private static func splitSimpleAdvanced(_ rules: [Rule]) -> (simple: [Rule], advanced: [Rule]) {
+        var simple = [Rule]()
+        var advanced = [Rule]()
 
         for rule in rules {
-            var isException = false
-
             if let rule = rule as? NetworkRule {
-                isException = rule.isDocumentWhiteList || rule.isCssExceptionRule || rule.isJsInject
-            }
+                let isException = rule.isDocumentWhiteList || rule.isCssExceptionRule || rule.isJsInject
 
-            // exception rules with $document, $elemhide, $generichide, $jsinject modifiers
-            // are required in the both lists
-            if (isException) {
-                result.advancedRules.append(rule)
-                result.simpleRules.append(rule)
-                continue;
-            }
+                simple.append(rule)
 
-            var isAdvanced = rule.isScript
+                if isException {
+                    // Network rules that can affect how advanced cosmetic rules are used
+                    // are added to both simple and advanced.
+                    advanced.append(rule)
+                }
+            } else if let rule = rule as? CosmeticRule {
+                // Cosmetic rules are either go to Safari or they need to be applied
+                // via javascript (i.e. they are added to advanced).
+                let isAdvanced = rule.isScript || rule.isExtendedCss || rule.isInjectCss
 
-            if !isAdvanced, let rule = rule as? CosmeticRule {
-                isAdvanced = rule.isExtendedCss || rule.isInjectCss
-            }
-
-            if (isAdvanced) {
-                result.advancedRules.append(rule)
-            } else {
-                result.simpleRules.append(rule)
+                if isAdvanced {
+                    advanced.append(rule)
+                } else {
+                    simple.append(rule)
+                }
             }
         }
 
-        return result
-    }
-
-    // TODO(ameshkov): !!! Fix comment
-    private func createLogMessage(compilationResult: CompilationResult) -> String {
-        var message = "Rules converted:  \(compilationResult.rulesCount) (\(compilationResult.errorsCount) errors)"
-
-        message += "\nBasic rules: \(String(describing: compilationResult.urlBlocking.count))"
-        message += "\nBasic important rules: \(String(describing: compilationResult.important.count))"
-        message += "\nElemhide rules (wide): \(String(describing: compilationResult.cssBlockingWide.count))"
-        message += "\nElemhide rules (generic domain sensitive): \(String(describing: compilationResult.cssBlockingGenericDomainSensitive.count))"
-        message += "\nExceptions Elemhide (wide): \(String(describing: compilationResult.cssBlockingGenericHideExceptions.count))"
-        message += "\nElemhide rules (domain-sensitive): \(String(describing: compilationResult.cssBlockingDomainSensitive.count))"
-        message += "\nExceptions (elemhide): \(String(describing: compilationResult.cssElemhide.count))"
-        message += "\nExceptions (important): \(String(describing: compilationResult.importantExceptions.count))"
-        message += "\nExceptions (document): \(String(describing: compilationResult.documentExceptions.count))"
-        message += "\nExceptions (other): \(String(describing: compilationResult.other.count))"
-
-        return message;
+        return (simple, advanced)
     }
 }

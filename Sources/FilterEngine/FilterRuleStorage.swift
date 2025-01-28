@@ -189,9 +189,9 @@ public class FilterRuleStorage {
         var zeroCount: UInt32 = 0
         handle.write(Data(bytes: &zeroCount, count: 4))
 
-        // 3) Parse lines all at once
-        let ruleFactory = RuleFactory(errorsCounter: ErrorsCounter())
-        let rawRules = ruleFactory.createRules(lines: lines, for: version)
+        // 3) Parse lines all at once and filter out exceptions
+        var rawRules = RuleFactory.createRules(lines: lines, for: version)
+        rawRules = RuleFactory.filterOutExceptions(from: rawRules)
 
         // 4) Convert each raw rule to a FilterRule and write it
         var writtenCount: UInt32 = 0

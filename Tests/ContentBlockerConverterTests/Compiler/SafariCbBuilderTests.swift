@@ -3,7 +3,7 @@ import Foundation
 import XCTest
 @testable import ContentBlockerConverter
 
-final class DistributorTests: XCTestCase {
+final class SafariCbBuilderTests: XCTestCase {
     let testTrigger = BlockerEntry.Trigger(
         ifDomain: ["test_if_domain"],
         urlFilter: "test_url_filter",
@@ -28,21 +28,15 @@ final class DistributorTests: XCTestCase {
     }
 
     func testEmpty() {
-        let builder = Distributor(limit: 0)
-
-        let result = builder.createConversionResult(data: CompilationResult())
+        let result = SafariCbBuilder.buildCbJson(from: CompilationResult())
 
         XCTAssertNotNil(result)
-        XCTAssertEqual(result.totalConvertedCount, 0)
-        XCTAssertEqual(result.convertedCount, 0)
-        XCTAssertEqual(result.errorsCount, 0)
-        XCTAssertEqual(result.overLimit, false)
-        XCTAssertEqual(result.converted, ConversionResult.EMPTY_RESULT_JSON)
+        XCTAssertEqual(result.rulesCount, 0)
+        XCTAssertEqual(result.discardedRulesCount, 0)
+        XCTAssertEqual(result.json, ConversionResult.EMPTY_RESULT_JSON)
     }
 
     func testSimple() {
-        let builder = Distributor(limit: 0)
-
         let entries = [
             BlockerEntry(trigger: testTrigger, action: testAction)
         ]
@@ -52,20 +46,15 @@ final class DistributorTests: XCTestCase {
             cssBlockingWide: entries
         )
 
-        let result = builder.createConversionResult(data: compilationResult)
+        let result = SafariCbBuilder.buildCbJson(from: compilationResult)
 
-        XCTAssertEqual(result.totalConvertedCount, 1);
-        XCTAssertEqual(result.convertedCount, 1);
-        XCTAssertEqual(result.errorsCount, 0);
-        XCTAssertEqual(result.overLimit, false);
-        XCTAssertEqual(result.message, "test");
+        XCTAssertEqual(result.rulesCount, 1)
+        XCTAssertEqual(result.discardedRulesCount, 0)
 
-        assertEntry(actual: result.converted);
+        assertEntry(actual: result.json)
     }
 
     func testOverlimit() {
-        let builder = Distributor(limit: 1)
-
         let entries = [
             BlockerEntry(trigger: testTrigger, action: testAction),
             BlockerEntry(trigger: testTrigger, action: testAction)
@@ -76,14 +65,11 @@ final class DistributorTests: XCTestCase {
             cssBlockingWide: entries
         )
 
-        let result = builder.createConversionResult(data: compilationResult)
+        let result = SafariCbBuilder.buildCbJson(from: compilationResult)
 
-        XCTAssertEqual(result.totalConvertedCount, 2)
-        XCTAssertEqual(result.convertedCount, 1)
-        XCTAssertEqual(result.errorsCount, 1)
-        XCTAssertEqual(result.overLimit, true)
-        XCTAssertEqual(result.message, "test")
-        assertEntry(actual: result.converted)
+        XCTAssertEqual(result.rulesCount, 1)
+        XCTAssertEqual(result.discardedRulesCount, 1)
+        assertEntry(actual: result.json)
     }
 
 }

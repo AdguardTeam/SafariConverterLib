@@ -14,9 +14,9 @@ final class CompilerTests: XCTestCase {
         XCTAssertEqual(result.cssBlockingGenericDomainSensitive.count, 0)
         XCTAssertEqual(result.cssBlockingDomainSensitive.count, 0)
         XCTAssertEqual(result.cssBlockingGenericHideExceptions.count, 0)
-        XCTAssertEqual(result.cssElemhide.count, 0)
+        XCTAssertEqual(result.cssElemhideExceptions.count, 0)
         XCTAssertEqual(result.urlBlocking.count, 0)
-        XCTAssertEqual(result.other.count, 0)
+        XCTAssertEqual(result.otherExceptions.count, 0)
         XCTAssertEqual(result.important.count, 0)
         XCTAssertEqual(result.importantExceptions.count, 0)
         XCTAssertEqual(result.documentExceptions.count, 0)
@@ -78,25 +78,6 @@ final class CompilerTests: XCTestCase {
         XCTAssertEqual(result.count, 3)
     }
 
-    func testCompactUnlessDomainCss() {
-        let entries = [
-            BlockerEntry(
-                trigger: BlockerEntry.Trigger(urlFilter: ".*", unlessDomain: ["some.com"]),
-                action: BlockerEntry.Action(type: "css-display-none", selector: "#some-selector")),
-            BlockerEntry(
-                trigger: BlockerEntry.Trigger(urlFilter: ".*", unlessDomain: ["compact.com"]),
-                action: BlockerEntry.Action(type: "css-display-none", selector: "#selector-two")),
-            BlockerEntry(
-                trigger: BlockerEntry.Trigger(urlFilter: ".*", unlessDomain: ["compact.com"]),
-                action: BlockerEntry.Action(type: "css-display-none", selector: "#selector-three")),
-        ]
-
-        let result = Compiler.compactDomainCssRules(entries: entries, useUnlessDomain: true)
-
-        XCTAssertNotNil(result)
-        XCTAssertEqual(result.count, 2)
-    }
-
     func testIfDomainAndUnlessDomain() {
         let compiler = Compiler(errorsCounter: ErrorsCounter(), version: SafariVersion.safari13)
 
@@ -105,9 +86,9 @@ final class CompilerTests: XCTestCase {
             XCTAssertEqual(result.cssBlockingGenericDomainSensitive.count, 0)
             XCTAssertEqual(result.cssBlockingDomainSensitive.count, 0)
             XCTAssertEqual(result.cssBlockingGenericHideExceptions.count, 0)
-            XCTAssertEqual(result.cssElemhide.count, 0)
+            XCTAssertEqual(result.cssElemhideExceptions.count, 0)
             XCTAssertEqual(result.urlBlocking.count, 0)
-            XCTAssertEqual(result.other.count, 0)
+            XCTAssertEqual(result.otherExceptions.count, 0)
             XCTAssertEqual(result.important.count, 0)
             XCTAssertEqual(result.importantExceptions.count, 0)
             XCTAssertEqual(result.documentExceptions.count, 0)

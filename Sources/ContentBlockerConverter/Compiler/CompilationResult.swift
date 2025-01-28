@@ -5,12 +5,18 @@ import Foundation
 struct CompilationResult {
 
     /// Total number of rules in the input rules array.
+    ///
+    /// TODO(ameshkov): !!! REMOVE
     var rulesCount = 0
 
     /// Total number of errors encountered while converting rules.
+    ///
+    /// TODO(ameshkov): !!! REMOVE
     var errorsCount = 0
 
     /// Log message with conversion status details.
+    ///
+    /// TODO(ameshkov): !!! REMOVE
     var message = ""
 
     /// Elemhide rules (##) - wide generic rules.
@@ -34,13 +40,13 @@ struct CompilationResult {
     var cssBlockingGenericHideExceptions: [BlockerEntry] = []
 
     /// Elemhide exceptions (`$elemhide`)
-    var cssElemhide: [BlockerEntry] = []
+    var cssElemhideExceptions: [BlockerEntry] = []
 
     /// Url blocking rules.
     var urlBlocking: [BlockerEntry] = []
 
     /// Other exceptions
-    var other: [BlockerEntry] = []
+    var otherExceptions: [BlockerEntry] = []
 
     /// `$important` url blocking rules.
     var important: [BlockerEntry] = []
@@ -68,16 +74,16 @@ struct CompilationResult {
             if (networkRule.isSingleOption(option: .generichide)) {
                 cssBlockingGenericHideExceptions.append(entry)
             } else if (networkRule.isSingleOption(option: .elemhide)) {
-                cssElemhide.append(entry)
+                cssElemhideExceptions.append(entry)
             } else if (networkRule.isImportant) {
                 importantExceptions.append(entry)
             } else if (networkRule.isDocumentWhiteList) {
                 documentExceptions.append(entry)
             } else {
-                other.append(entry)
+                otherExceptions.append(entry)
             }
         } else {
-            other.append(entry)
+            otherExceptions.append(entry)
         }
     }
 }

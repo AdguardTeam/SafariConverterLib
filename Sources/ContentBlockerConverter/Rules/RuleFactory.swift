@@ -1,12 +1,7 @@
 import Foundation
 
 /// RuleFactory is responsible for parsing AdGuard rules.
-public class RuleFactory {
-    private var errorsCounter: ErrorsCounter
-
-    public init(errorsCounter: ErrorsCounter) {
-        self.errorsCounter = errorsCounter
-    }
+public final class RuleFactory {
 
     /// Creates AdGuard rules from the specified lines.
     ///
@@ -15,13 +10,12 @@ public class RuleFactory {
     ///
     /// It also applies cosmetic exceptions, i.e. rules like `#@#.banner` by modifying the
     /// corresponding rules permitted/restricted domains.
-    public func createRules(lines: [String], for version: SafariVersion) -> [Rule] {
+    public static func createRules(
+        lines: [String],
+        for version: SafariVersion,
+        errorsCounter: ErrorsCounter? = nil
+    ) -> [Rule] {
         var result = [Rule]()
-
-        var networkRules = [NetworkRule]()
-        var cosmeticRules = [CosmeticRule]()
-        var badfilterRules: [String: [NetworkRule]] = [:]
-        var cosmeticExceptions: [String: [CosmeticRule]] = [:]
 
         for line in lines {
             var ruleLine = line
@@ -41,20 +35,56 @@ public class RuleFactory {
             let convertedLines = RuleConverter.convertRule(ruleText: ruleLine)
             for convertedLine in convertedLines {
                 if convertedLine != nil {
-                    guard let rule = safeCreateRule(ruleText: convertedLine!, version: version) else { continue }
-                    if let networkRule = rule as? NetworkRule {
-                        if networkRule.isBadfilter {
-                            badfilterRules[networkRule.urlRuleText, default: []].append(networkRule)
-                        } else {
-                            networkRules.append(networkRule)
+                    do {
+                        let rule = try RuleFactory.createRule(ruleText: convertedLine!, for: version)
+                        if rule != nil {
+                            result.append(rule!)
                         }
-                    } else if let cosmeticRule = rule as? CosmeticRule {
-                        if cosmeticRule.isWhiteList {
-                            cosmeticExceptions[cosmeticRule.content, default: []].append(cosmeticRule)
-                        } else {
-                            cosmeticRules.append(cosmeticRule)
-                        }
+                    } catch {
+                        errorsCounter?.add()
                     }
+                }
+            }
+        }
+
+        return result
+    }
+
+    /// This function filters out rules that are disabled `$badfilter` and modifies domain restrictions
+    /// using cosmetic exceptions.
+    ///
+    /// ## Examples
+    ///
+    /// ### $badfilter
+    ///
+    /// Rule `||example.org^` will be filtered out by `||example.org^$third-party,badfilter`.
+    ///
+    /// ### Cosmetic exceptions
+    ///
+    /// Rule `##.banner` will be changed by `example.org#@#.banner` and the final form will
+    /// be `~example.org##.banner`.
+    /// ```
+    public static func filterOutExceptions(from rules: [Rule]) -> [Rule] {
+        var networkRules = [NetworkRule]()
+        var cosmeticRules = [CosmeticRule]()
+
+        var badfilterRules: [String: [NetworkRule]] = [:]
+        var cosmeticExceptions: [String: [CosmeticRule]] = [:]
+
+        var result = [Rule]()
+
+        for rule in rules {
+            if let networkRule = rule as? NetworkRule {
+                if networkRule.isBadfilter {
+                    badfilterRules[networkRule.urlRuleText, default: []].append(networkRule)
+                } else {
+                    networkRules.append(networkRule)
+                }
+            } else if let cosmeticRule = rule as? CosmeticRule {
+                if cosmeticRule.isWhiteList {
+                    cosmeticExceptions[cosmeticRule.content, default: []].append(cosmeticRule)
+                } else {
+                    cosmeticRules.append(cosmeticRule)
                 }
             }
         }
@@ -185,16 +215,6 @@ public class RuleFactory {
         }
 
         return rule
-    }
-
-    /// Helper for safely create a rule or increment an errors counter.
-    private func safeCreateRule(ruleText: String, version: SafariVersion) -> Rule? {
-        do {
-            return try RuleFactory.createRule(ruleText: ruleText, for: version)
-        } catch {
-            self.errorsCounter.add()
-            return nil
-        }
     }
 
     /// Checks if the rule is a cosmetic (CSS/JS) or not.

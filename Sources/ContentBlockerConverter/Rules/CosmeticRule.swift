@@ -56,6 +56,12 @@ public class CosmeticRule: Rule {
     /// If true, this is an extended CSS rule (can be eiter element hiding or CSS injection).
     public var isExtendedCss = false
 
+    /// If true, this is a script rule or scriptlet.
+    public var isScript = false
+
+    /// If true, this is a scriptlet rule.
+    public var isScriptlet = false
+
     public var pathModifier: String?
     public var pathRegExpSource: String?
 

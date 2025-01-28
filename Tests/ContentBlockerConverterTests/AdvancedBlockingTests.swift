@@ -52,10 +52,10 @@ final class AdvancedBlockingTests: XCTestCase {
                 advancedBlocking: true
         )
 
-        XCTAssertEqual(result.convertedCount, simpleRules.count)
+        XCTAssertEqual(result.safariRulesCount, simpleRules.count)
         XCTAssertEqual(result.errorsCount, 0)
-        XCTAssertEqual(result.advancedBlockingConvertedCount, 0)
-        XCTAssertEqual(result.advancedBlockingText, advancedRules.joined(separator: "\n"))
+        XCTAssertEqual(result.advancedRulesCount, 0)
+        XCTAssertEqual(result.advancedRulesText, advancedRules.joined(separator: "\n"))
     }
 
     func testAdvancedBlockingParamFalse() {
@@ -63,10 +63,10 @@ final class AdvancedBlockingTests: XCTestCase {
                 rules: ["example.org#$#.content { margin-top: 0!important; }"],
                 advancedBlocking: false
         )
-        XCTAssertEqual(result.convertedCount, 0)
+        XCTAssertEqual(result.safariRulesCount, 0)
         XCTAssertEqual(result.errorsCount, 0)
-        XCTAssertEqual(result.advancedBlockingConvertedCount, 0)
-        XCTAssertEqual(result.advancedBlockingText, nil)
+        XCTAssertEqual(result.advancedRulesCount, 0)
+        XCTAssertEqual(result.advancedRulesText, nil)
     }
 
     func testAdvancedBlockingTextWithAllowlistRules() {
@@ -101,12 +101,12 @@ final class AdvancedBlockingTests: XCTestCase {
         )
 
         XCTAssertEqual(result.errorsCount, 0)
-        XCTAssertEqual(result.convertedCount, 1)
-        XCTAssertEqual(result.totalConvertedCount, 1)
-        XCTAssertEqual(result.advancedBlockingConvertedCount, 0)
+        XCTAssertEqual(result.safariRulesCount, 1)
+        XCTAssertEqual(result.sourceRulesCount, 1)
+        XCTAssertEqual(result.advancedRulesCount, 0)
         // conjunct arrays in this way,
         // because createRules method adds allowlist rules to the end of the list
-        XCTAssertEqual(result.advancedBlockingText, (rules + [allowlistRule]).joined(separator: "\n"))
+        XCTAssertEqual(result.advancedRulesText, (rules + [allowlistRule]).joined(separator: "\n"))
     }
 
     func testAdvancedBlockingTextWithExceptionModifiers() {
@@ -139,9 +139,9 @@ final class AdvancedBlockingTests: XCTestCase {
         )
 
         XCTAssertEqual(result.errorsCount, 0)
-        XCTAssertEqual(result.advancedBlockingConvertedCount, 0)
+        XCTAssertEqual(result.advancedRulesCount, 0)
         // conjunct arrays in this way,
         // because createRules method adds allowlist rules to the end of the list
-        XCTAssertEqual(result.advancedBlockingText, (rules).joined(separator: "\n"))
+        XCTAssertEqual(result.advancedRulesText, (rules).joined(separator: "\n"))
     }
 }

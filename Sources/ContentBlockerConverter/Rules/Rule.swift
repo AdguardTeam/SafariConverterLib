@@ -8,9 +8,6 @@ public class Rule {
     public var isWhiteList = false
     public var isImportant = false
 
-    public var isScript = false
-    public var isScriptlet = false
-
     public var permittedDomains = [String]()
     public var restrictedDomains = [String]()
 

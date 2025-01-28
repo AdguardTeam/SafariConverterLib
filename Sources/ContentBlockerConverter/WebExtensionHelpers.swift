@@ -1,8 +1,6 @@
 import Foundation
 
-/**
- * Provides methods to manage allowlist and inverted allowlist rules without conversion
- */
+/// Provides methods to manage allowlist and inverted allowlist rules without conversion.
 public protocol WebExtensionHelpersProtocol {
     // Public method to check if provided rule is associated with the domain
     func userRuleIsAssociated(with domain: String, _ userRule: String) -> Bool
@@ -20,9 +18,7 @@ public protocol WebExtensionHelpersProtocol {
     func convertInvertedAllowlistRuleToDomain(_ rule: String) -> String
 }
 
-/**
- * Provides helpers methods for web extension
- */
+/// Provides helpers methods for web extension.
 public class WebExtensionHelpers: WebExtensionHelpersProtocol {
     private static let allowlistPrefix = "@@||"
     private static let allowlistSuffix = "^$document"
@@ -57,10 +53,8 @@ public class WebExtensionHelpers: WebExtensionHelpersProtocol {
         return ruleDomains.contains{ $0 == domain }
     }
 
-    /**
-     * Converts domain to allowlist rule @@||domain^$document
-     * If passed domain already contains '@@||' or '^$document' they won't be repeated
-     */
+    /// Converts domain to allowlist rule `@@||domain^$document`.
+    /// If passed domain already contains `@@||` or `^$document` they won't be repeated.
     public func convertDomainToAllowlistRule(_ domain: String) -> String {
         var rule = domain
 
@@ -75,11 +69,8 @@ public class WebExtensionHelpers: WebExtensionHelpersProtocol {
         return rule
     }
 
-    /**
-     * Converts rule with @@||domain^$document format to domain
-     * If passed rule doesn't contain '@@||' or '^$document'
-     * the function will return rule without modifying it
-     */
+    /// Converts rule with `@@||domain^$document` format to domain.
+    /// If passed rule doesn't contain `@@||` or `^$document` the function will return rule without modifying it.
     public func convertAllowlistRuleToDomain(_ ruleText: String) -> String {
         var domain = ruleText
 
@@ -94,10 +85,8 @@ public class WebExtensionHelpers: WebExtensionHelpersProtocol {
         return domain
     }
 
-    /**
-     * Converts domain to inverted allowlist rule @@||*$document,domain=~<domain>
-     * If passed inverted allowlist rule instead of domain it returns inverted allowlist rule
-     */
+    /// Converts domain to inverted allowlist rule `@@||*$document,domain=~<domain>`.
+    /// If passed inverted allowlist rule instead of domain it returns inverted allowlist rule.
     public func convertDomainToInvertedAllowlistRule(_ domain: String) -> String {
         var rule = domain
 
@@ -108,10 +97,8 @@ public class WebExtensionHelpers: WebExtensionHelpersProtocol {
         return rule
     }
 
-    /**
-     * Converts inverted allowlist rule @@||*$document,domain=~<domain> to domain
-     * If passed domain instead of inverted allowlist rule it returns domain
-     */
+    /// Converts inverted allowlist rule `@@||*$document,domain=~<domain>` to domain.
+    /// If passed domain instead of inverted allowlist rule it returns domain.
     public func convertInvertedAllowlistRuleToDomain(_ rule: String) -> String {
         var domain = rule
 
