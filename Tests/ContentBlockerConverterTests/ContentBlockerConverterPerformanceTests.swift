@@ -16,7 +16,7 @@ extension ContentBlockerConverterTests {
         // On MBP M1 Max 2021 32GB
         // CPU profiler result:
         //
-        // 353.37 Mc  70.3%: ContentBlockerConverter.convertArray
+        // 345.95 Mc  69.7%: ContentBlockerConverter.convertArray
         let conversionResult = ContentBlockerConverter().convertArray(rules: rules, advancedBlocking: true)
 
         XCTAssertEqual(conversionResult.sourceRulesCount, 32644)
@@ -35,7 +35,7 @@ extension ContentBlockerConverterTests {
         let content = try! String(contentsOf: resourceURL, encoding: String.Encoding.utf8)
         let rules = content.components(separatedBy: "\n")
 
-        // Expected 1.516 seconds on MBP M1 Max 2021 32GB
+        // Expected 1.455 seconds on MBP M1 Max 2021 32GB
         self.measure {
             let conversionResult = ContentBlockerConverter().convertArray(rules: rules, advancedBlocking: true)
 

@@ -7,11 +7,13 @@ public class ScriptletParser {
 
     /// Parses and validates a scriptlet rule.
     ///
+    /// TODO(ameshkov): !!! Rewrite, it should return just the list of arguments.
+    ///
     /// - Parameters:
     ///  - data: the full scriptlet rule, i.e. `//scriptlet('scriptletName', 'arg1', 'arg2')`
     /// - Returns: the scriptlet name and a json with it's arguments.
     /// - Throws: SyntaxError.invalidRule if failed to parse.
-    static func parse(data: String) throws -> (name: String, json: String) {
+    public static func parse(data: String) throws -> (name: String, json: String) {
         if (data.isEmpty || !data.utf8.starts(with: ScriptletParser.SCRIPTLET_MASK.utf8)) {
             throw SyntaxError.invalidRule(message: "Invalid scriptlet")
         }

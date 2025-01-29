@@ -22,6 +22,7 @@ scripts are executed.
 * TODO: Update and test the console tool
 * TODO: Update and test the node module
 * TODO: Remove `optimize` flag
+* TODO: Explain Extension
 
 ## 2.1.1
 

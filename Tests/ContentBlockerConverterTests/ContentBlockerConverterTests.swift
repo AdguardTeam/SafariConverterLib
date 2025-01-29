@@ -3048,7 +3048,7 @@ final class ContentBlockerConverterTests: XCTestCase {
             "facebook2.com##div[role=\"region\"] + div[role=\"main\"] div[role=\"article\"] div[style=\"border-radius: max(0px, min(8px, ((100vw - 4px) - 100%) * 9999)) / 8px;\"] > div[class]:not([class*=\" \"])",
         ]
         let converter = ContentBlockerConverter()
-        var result = converter.convertArray(rules: rules, safariVersion: .safari15, advancedBlocking: true)
+        let result = converter.convertArray(rules: rules, safariVersion: .safari15, advancedBlocking: true)
         XCTAssertEqual(result.sourceRulesCount, rules.count)
         XCTAssertEqual(result.sourceSafariCompatibleRulesCount, 3)
         XCTAssertEqual(result.safariRulesCount, 3)

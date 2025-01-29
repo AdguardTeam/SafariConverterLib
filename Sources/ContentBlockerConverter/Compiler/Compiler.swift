@@ -222,7 +222,7 @@ class Compiler {
     private static func createDomainWideEntries(domain: String, domainEntries: [BlockerEntry]) -> [BlockerEntry] {
         var result = [BlockerEntry]()
 
-        var trigger = BlockerEntry.Trigger(ifDomain: [domain], urlFilter: ".*")
+        let trigger = BlockerEntry.Trigger(ifDomain: [domain], urlFilter: ".*")
 
         let chunked = domainEntries.chunked(into: MAX_SELECTORS_PER_RULE)
         for chunk in chunked {
