@@ -3,11 +3,6 @@ import XCTest
 
 
 final class ContentBlockerConverterTests: XCTestCase {
-    // TODO(ameshkov): !!! REMOVE ALL
-    private let START_URL_UNESCAPED = "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?"
-    private let URL_FILTER_CSS_RULES = ".*"
-    let converter = ContentBlockerConverter();
-    // TODO(ameshkov): !!! STOP REMOVING
 
     func testConvertArrayEmptyOrComments() {
         let testCases: [TestCase] = [
@@ -2696,6 +2691,94 @@ final class ContentBlockerConverterTests: XCTestCase {
         runTests(testCases)
     }
 
+    func testConvertArrayAdvancedRules() {
+        let testCases: [TestCase] = [
+            TestCase(
+                // Test that nothing is returned when advancedBlocking is disabled.
+                rules: [
+                    "example.org#$#.content { margin-top: 0!important; }"
+                ],
+                advancedBlocking: false,
+                expectedSafariRulesJSON: ConversionResult.EMPTY_RESULT_JSON,
+                expectedSourceRulesCount: 1,
+                expectedSourceSafariCompatibleRulesCount: 0,
+                expectedSafariRulesCount: 0,
+                expectedAdvancedRulesCount: 0
+            ),
+            TestCase(
+                // Test that rules are correctly distributed between simple and advanced.
+                rules: [
+                    // Simple rule, not included.
+                    "||example.org^",
+                    // $elemhide, included into both sets: advanced and safari.
+                    "@@||example.org^$elemhide",
+                    // Simple element hiding, only safari.
+                    "example.com##div.textad",
+                    // Must be evaluated as advanced.
+                    "example.com#?#div.textad",
+                    // CSS injection, only advanced.
+                    "example.org#$#.div { background:none!important; }",
+                    // Advanced pseudo-class.
+                    "example.org##div:contains(test)",
+                    // JS rule, advanced.
+                    "example.org#%#window.__gaq = undefined;",
+                    // Scriptlet rule, advanced.
+                    "example.org#%#//scriptlet(\"abort-on-property-read\", \"alert\")",
+                ],
+                advancedBlocking: true,
+                expectedSafariRulesJSON: #"""
+                                         [
+                                           {
+                                             "action" : {
+                                               "selector" : "div.textad",
+                                               "type" : "css-display-none"
+                                             },
+                                             "trigger" : {
+                                               "if-domain" : [
+                                                 "*example.com"
+                                               ],
+                                               "url-filter" : ".*"
+                                             }
+                                           },
+                                           {
+                                             "action" : {
+                                               "type" : "ignore-previous-rules"
+                                             },
+                                             "trigger" : {
+                                               "if-domain" : [
+                                                 "*example.org"
+                                               ],
+                                               "url-filter" : ".*"
+                                             }
+                                           },
+                                           {
+                                             "action" : {
+                                               "type" : "block"
+                                             },
+                                             "trigger" : {
+                                               "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
+                                             }
+                                           }
+                                         ]
+                                         """#,
+                expectedAdvancedRulesText: [
+                    "@@||example.org^$elemhide",
+                    "example.com#?#div.textad",
+                    "example.org#$#.div { background:none!important; }",
+                    "example.org##div:contains(test)",
+                    "example.org#%#window.__gaq = undefined;",
+                    "example.org#%#//scriptlet(\"abort-on-property-read\", \"alert\")",
+                ].joined(separator: "\n"),
+                expectedSourceRulesCount: 8,
+                expectedSourceSafariCompatibleRulesCount: 3,
+                expectedSafariRulesCount: 3,
+                expectedAdvancedRulesCount: 6
+            ),
+        ]
+
+        runTests(testCases)
+    }
+
     /// This is a big test that checks how the rules are sorted.
     ///
     /// Currently, the sorting order is the following:
@@ -2863,6 +2946,8 @@ final class ContentBlockerConverterTests: XCTestCase {
         }
 
         func performTest(withLimit limit: Int?, expectedCount: Int) {
+            let converter = ContentBlockerConverter()
+
             let result = converter.convertArray(
                 rules: rules,
                 advancedBlocking: false,
@@ -2885,12 +2970,14 @@ final class ContentBlockerConverterTests: XCTestCase {
     }
 
     func testTldWildcardRules() {
+        let converter = ContentBlockerConverter()
+
         var result = converter.convertArray(rules: ["surge.*,testcases.adguard.*###case-5-wildcard-for-tld > .test-banner"])
         XCTAssertEqual(result.safariRulesCount, 1)
 
         var decoded = try! parseJsonString(json: result.safariRulesJSON)
         XCTAssertEqual(decoded.count, 1)
-        XCTAssertEqual(decoded[0].trigger.urlFilter, URL_FILTER_CSS_RULES)
+        XCTAssertEqual(decoded[0].trigger.urlFilter, ".*")
         XCTAssertEqual(decoded[0].trigger.ifDomain?[0], "*surge.com.bd")
         XCTAssertEqual(decoded[0].trigger.ifDomain?[1], "*surge.com.np")
         XCTAssertEqual(decoded[0].trigger.ifDomain?[2], "*surge.com")
@@ -2901,7 +2988,7 @@ final class ContentBlockerConverterTests: XCTestCase {
 
         decoded = try! parseJsonString(json: result.safariRulesJSON)
         XCTAssertEqual(decoded.count, 1)
-        XCTAssertEqual(decoded[0].trigger.urlFilter, START_URL_UNESCAPED + ".*\\/test-files\\/adguard\\.png")
+        XCTAssertEqual(decoded[0].trigger.urlFilter, "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?.*\\/test-files\\/adguard\\.png")
         XCTAssertEqual(decoded[0].trigger.ifDomain?[0], "*surge.com.bd")
         XCTAssertEqual(decoded[0].trigger.ifDomain?[1], "*surge.com.np")
         XCTAssertEqual(decoded[0].trigger.ifDomain?[2], "*surge.com")
@@ -2934,6 +3021,7 @@ final class ContentBlockerConverterTests: XCTestCase {
             "abplive.com#?#.articlepage > .center_block:has(> p:contains(- - Advertisement - -))",
             "facebook2.com##div[role=\"region\"] + div[role=\"main\"] div[role=\"article\"] div[style=\"border-radius: max(0px, min(8px, ((100vw - 4px) - 100%) * 9999)) / 8px;\"] > div[class]:not([class*=\" \"])",
         ]
+        let converter = ContentBlockerConverter()
         var result = converter.convertArray(rules: rules, safariVersion: .safari15, advancedBlocking: true)
         XCTAssertEqual(result.sourceRulesCount, rules.count)
         XCTAssertEqual(result.sourceSafariCompatibleRulesCount, 3)
