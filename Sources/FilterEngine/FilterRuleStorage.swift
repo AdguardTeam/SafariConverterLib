@@ -157,7 +157,7 @@ public class FilterRuleStorage {
             do {
                 rule = try FilterRule.fromData(ruleData)
             } catch {
-                // TODO(ameshkov): !!! Log the problem
+                Logger.log("Failed to decode a rule: \(error)")
 
                 // skip corrupted
                 return nil

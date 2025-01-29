@@ -2,9 +2,9 @@ import Foundation
 
 /// Entry point into the SafariConverterLib, here the conversion process starts.
 public class ContentBlockerConverter {
-    
+
     public init() {}
-    
+
     /// Converts filter rules in AdGuard format to the format supported by Safari.
     ///
     /// - Parameters:
@@ -26,40 +26,34 @@ public class ContentBlockerConverter {
         var shouldContinue: Bool {
             !(progress?.isCancelled ?? false)
         }
-        
-        // TODO(ameshkov): !!! Add test with list that consists of comments
-        if rules.count == 0 || (rules.count == 1 && rules[0].isEmpty) {
-            Logger.log("(ContentBlockerConverter) - No rules passed")
-            return ConversionResult.createEmptyResult()
-        }
-        
+
         let errorsCounter = ErrorsCounter()
-        
+
         guard shouldContinue else {
             Logger.log("(ContentBlockerConverter) - Cancelled before rules parsing")
             return ConversionResult.createEmptyResult()
         }
-        
+
         let allRules = RuleFactory.createRules(lines: rules, for: safariVersion, errorsCounter: errorsCounter)
-        
+
         var (simpleRules, advancedRules) = ContentBlockerConverter.splitSimpleAdvanced(allRules)
-        
+
         // Count rules compatible with Safari before filtering out exceptions.
         let safariCompatibleRulesCount = simpleRules.count
-        
+
         // Filter out exceptions from simple rules first.
         simpleRules = RuleFactory.filterOutExceptions(from: simpleRules)
-        
+
         guard shouldContinue else {
             Logger.log("(ContentBlockerConverter) - Cancelled before compiling into Safari JSON")
             return ConversionResult.createEmptyResult()
         }
-        
+
         let compiler = Compiler(errorsCounter: errorsCounter, version: safariVersion)
-        
+
         // Compile simple rules to Safari content blocking JSON.
         let compilationResult = compiler.compileRules(rules: simpleRules, progress: progress)
-        
+
         // Compose the Safari content blocking JSON.
         let rulesLimit = safariVersion.rulesLimit
         let result = SafariCbBuilder.buildCbJson(
@@ -67,12 +61,12 @@ public class ContentBlockerConverter {
             maxRules: rulesLimit,
             maxJsonSizeBytes: maxJsonSizeBytes
         )
-        
+
         // Prepare advanced rules text.
         let advancedRulesCount = advancedBlocking ? advancedRules.count : 0
         let advancedBlockingText = advancedBlocking && advancedRulesCount > 0 ?
         advancedRules.map { $0.ruleText }.joined(separator: "\n") : nil
-        
+
         // Prepare the conversion result.
         let conversionResult = ConversionResult(
             sourceRulesCount: allRules.count,
@@ -84,19 +78,19 @@ public class ContentBlockerConverter {
             safariRulesJSON: result.json,
             advancedRulesText: advancedBlockingText
         )
-        
+
         Logger.log("(ContentBlockerConverter) - Compilation result: \(conversionResult)")
-        
+
         return conversionResult
     }
-    
+
     /// Creates allowlist rule for provided domain.
     ///
     /// This function is supposed to be used by the library users.
     public static func createAllowlistRule(by domain: String) -> String {
         return "@@||\(domain)$document";
     }
-    
+
     /// Creates inverted allowlist rule for provided domains.
     ///
     /// This function is supposed to be used by the library users.
@@ -104,7 +98,7 @@ public class ContentBlockerConverter {
         let domainsString = domains.filter { !$0.isEmpty }.joined(separator: "|~")
         return domainsString.count > 0 ? "@@||*$document,domain=~\(domainsString)" : nil
     }
-    
+
     /// This is a list of modifiers that can affect how cosmetic and scriptlet rules are applied to the page.
     /// Rules with these modifiers should be placed to the list of advanced rules.
     private static let advancedOptions: NetworkRule.Option = [
@@ -114,7 +108,7 @@ public class ContentBlockerConverter {
         .generichide,
         .specifichide
     ]
-    
+
     /// Splits all rules into two arrays:
     ///
     /// - Advanced rules (extended CSS, script, scriptlet, css injection)
@@ -122,11 +116,11 @@ public class ContentBlockerConverter {
     private static func splitSimpleAdvanced(_ rules: [Rule]) -> (simple: [Rule], advanced: [Rule]) {
         var simple = [Rule]()
         var advanced = [Rule]()
-        
+
         for rule in rules {
             if let rule = rule as? NetworkRule {
                 simple.append(rule)
-                
+
                 if rule.isWhiteList && !rule.enabledOptions.isDisjoint(with: advancedOptions) {
                     // Network rules that can affect how advanced cosmetic rules are used
                     // are added to both simple and advanced.
@@ -136,7 +130,7 @@ public class ContentBlockerConverter {
                 // Cosmetic rules are either go to Safari or they need to be applied
                 // via javascript (i.e. they are added to advanced).
                 let isAdvanced = rule.isScript || rule.isExtendedCss || rule.isInjectCss
-                
+
                 if isAdvanced {
                     advanced.append(rule)
                 } else {
@@ -144,7 +138,7 @@ public class ContentBlockerConverter {
                 }
             }
         }
-        
+
         return (simple, advanced)
     }
 }

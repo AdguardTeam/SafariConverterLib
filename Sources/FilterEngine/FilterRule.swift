@@ -11,7 +11,7 @@ import ContentBlockerConverter
 /// Safari WebExtension, i.e. it only supports cosmetic rules and those allowlist rules
 /// that can disable cosmetics.
 ///
-/// TODO(ameshkov): !!! Does not support $subdocument, $third-party.
+/// TODO(ameshkov): !!! Does not support `$subdocument`, `$third-party`.
 public struct FilterRule: Codable {
     /// Defines what this filter rule does.
     public let action: Action

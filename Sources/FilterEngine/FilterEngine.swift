@@ -471,7 +471,7 @@ extension FilterEngine {
                 return regex
             } catch {
                 // If the pattern cannot be compiled, return nil
-                // TODO(ameshkov): !!! Log error
+                // TODO(ameshkov): !!! Log error, add a test?
                 return nil
             }
         }

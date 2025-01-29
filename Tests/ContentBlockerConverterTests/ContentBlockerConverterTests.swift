@@ -18,6 +18,10 @@ final class ContentBlockerConverterTests: XCTestCase {
                 rules: ["! just a comment"],
                 expectedSafariRulesJSON: ConversionResult.EMPTY_RESULT_JSON
             ),
+            TestCase(
+                rules: ["! just a comment", "! other comment"],
+                expectedSafariRulesJSON: ConversionResult.EMPTY_RESULT_JSON
+            ),
         ]
 
         runTests(testCases)
@@ -1219,9 +1223,32 @@ final class ContentBlockerConverterTests: XCTestCase {
         runTests(testCases)
     }
 
-    // TODO(ameshkov): !!! Add compacting for generic rules
     func testConvertArrayCompactCosmeticRules() {
         let testCases: [TestCase] = [
+            TestCase(
+                // Compacting multiple generic rules.
+                rules: [
+                    "###selector-one",
+                    "###selector-two",
+                    "###selector-three"
+                ],
+                expectedSafariRulesJSON: #"""
+                                   [
+                                     {
+                                       "action" : {
+                                         "selector" : "#selector-one, #selector-two, #selector-three",
+                                         "type" : "css-display-none"
+                                       },
+                                       "trigger" : {
+                                         "url-filter" : ".*"
+                                       }
+                                     }
+                                   ]
+                                   """#,
+                expectedSourceRulesCount: 3,
+                expectedSourceSafariCompatibleRulesCount: 3,
+                expectedSafariRulesCount: 1
+            ),
             TestCase(
                 // Compacting multiple rules for the same domain to a single rule.
                 rules: [
@@ -2344,7 +2371,6 @@ final class ContentBlockerConverterTests: XCTestCase {
                 rules: [
                     "test.com#%#",
                     "test.com#@%#",
-                    "example.org#%#//scriptlet()",
                     "example.org#%#",
                     "example.org#@%#"
                 ],
@@ -2352,7 +2378,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                 expectedSafariRulesJSON: ConversionResult.EMPTY_RESULT_JSON,
                 expectedSafariRulesCount: 0,
                 expectedAdvancedRulesCount: 0,
-                expectedErrorsCount: 5
+                expectedErrorsCount: 4
             ),
         ]
 

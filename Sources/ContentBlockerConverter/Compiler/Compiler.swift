@@ -31,7 +31,6 @@ class Compiler {
         var specifichideExceptionDomains = [String]()
 
         var compilationResult = CompilationResult()
-        compilationResult.rulesCount = rules.count
 
         for rule in rules {
             guard shouldContinue else { return CompilationResult() }

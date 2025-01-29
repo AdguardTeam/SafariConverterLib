@@ -38,14 +38,8 @@ public class CosmeticRule: Rule {
     /// Content depends on the rule type.
     ///
     /// - CSS selector for element hiding rules or CSS selector + style for CSS injection rules.
-    /// - Script contents for script rules.
+    /// - Script contents for script and scriptlet rules.
     public var content: String = ""
-
-    /// Scriptlet name for scriptlet rules.
-    public var scriptlet: String? = nil
-
-    /// JSON content with scriptlet arguments for scriptlet rules.
-    public var scriptletParam: String? = nil
 
     /// If true, this is an element hiding rule.
     public var isElemhide = false
@@ -108,11 +102,6 @@ public class CosmeticRule: Rule {
         if (self.isScript) {
             if (self.content.hasPrefix(ScriptletParser.SCRIPTLET_MASK)) {
                 self.isScriptlet = true
-
-                // TODO(ameshkov): !!! Remove this, we can parse it lazily.
-                let scriptletInfo = try ScriptletParser.parse(data:self.content)
-                self.scriptlet = scriptletInfo.name
-                self.scriptletParam = scriptletInfo.json
             }
         }
 
@@ -264,7 +253,6 @@ public class CosmeticRule: Rule {
 
                 pathRegExpSource = String(pathModifier![startIndex..<endIndex])
             } else {
-                // TODO(ameshkov): !!! This is incorrect, do we need to add ^ and $ (?)
                 pathRegExpSource = try SimpleRegex.createRegexText(pattern: pathModifier!)
             }
 

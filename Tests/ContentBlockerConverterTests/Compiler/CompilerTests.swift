@@ -79,7 +79,8 @@ final class CompilerTests: XCTestCase {
     }
 
     func testIfDomainAndUnlessDomain() {
-        let compiler = Compiler(errorsCounter: ErrorsCounter(), version: SafariVersion.safari13)
+        var errorsCounter = ErrorsCounter()
+        var compiler = Compiler(errorsCounter: errorsCounter, version: SafariVersion.safari13)
 
         func assertResultEmpty(result: CompilationResult) -> Void {
             XCTAssertEqual(result.cssBlockingWide.count, 0)
@@ -100,41 +101,47 @@ final class CompilerTests: XCTestCase {
         var result = compiler.compileRules(rules: [rule!])
 
         XCTAssertNotNil(result)
-        XCTAssertEqual(result.rulesCount, 1)
-        XCTAssertEqual(result.errorsCount, 0)
+        XCTAssertEqual(result.rulesCount, 0)
+        XCTAssertEqual(errorsCounter.getCount(), 1)
 
         assertResultEmpty(result: result)
 
         ruleText = "yandex.kz,~afisha.yandex.kz#@#body.i-bem > a[data-statlog^='banner']"
-
         rule = try! RuleFactory.createRule(ruleText: ruleText, for: SafariVersion.safari13)
+
+        errorsCounter = ErrorsCounter()
+        compiler = Compiler(errorsCounter: errorsCounter, version: SafariVersion.safari13)
         result = compiler.compileRules(rules: [rule!])
 
         XCTAssertNotNil(result)
-        XCTAssertEqual(result.rulesCount, 1)
-        XCTAssertEqual(result.errorsCount, 0)
+        XCTAssertEqual(result.rulesCount, 0)
+        XCTAssertEqual(errorsCounter.getCount(), 1)
 
         assertResultEmpty(result: result)
 
         ruleText = "||example.org^$domain=test.com|~sub.test.com"
-
         rule = try! RuleFactory.createRule(ruleText: ruleText, for: SafariVersion.safari13)
+
+        errorsCounter = ErrorsCounter()
+        compiler = Compiler(errorsCounter: errorsCounter, version: SafariVersion.safari13)
         result = compiler.compileRules(rules: [rule!])
 
         XCTAssertNotNil(result)
-        XCTAssertEqual(result.rulesCount, 1)
-        XCTAssertEqual(result.errorsCount, 0)
+        XCTAssertEqual(result.rulesCount, 0)
+        XCTAssertEqual(errorsCounter.getCount(), 1)
 
         assertResultEmpty(result: result)
 
         ruleText = "@@||example.org^$domain=test.com|~sub.test.com"
-
         rule = try! RuleFactory.createRule(ruleText: ruleText, for: SafariVersion.safari13)
+
+        errorsCounter = ErrorsCounter()
+        compiler = Compiler(errorsCounter: errorsCounter, version: SafariVersion.safari13)
         result = compiler.compileRules(rules: [rule!])
 
         XCTAssertNotNil(result)
-        XCTAssertEqual(result.rulesCount, 1)
-        XCTAssertEqual(result.errorsCount, 0)
+        XCTAssertEqual(result.rulesCount, 0)
+        XCTAssertEqual(errorsCounter.getCount(), 1)
 
         assertResultEmpty(result: result)
     }

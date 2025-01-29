@@ -15,8 +15,6 @@ final class CosmeticRuleTests: XCTestCase {
             var expectedIsInjectCss = false
             var expectedIsScript = false
             var expectedIsScriptlet = false
-            var expectedScriptlet: String?
-            var expectedScriptletParam: String?
             var expectedPathModifier: String?
             var expectedPathRegExpSource: String?
             var expectedPermittedDomains: [String] = []
@@ -137,17 +135,13 @@ final class CosmeticRuleTests: XCTestCase {
                 ruleText: "#%#//scriptlet(\"set-constant\", \"test\", \"true\")",
                 expectedContent: "//scriptlet(\"set-constant\", \"test\", \"true\")",
                 expectedIsScript: true,
-                expectedIsScriptlet: true,
-                expectedScriptlet: "set-constant",
-                expectedScriptletParam: "{\"name\":\"set-constant\",\"args\":[\"test\",\"true\"]}"),
+                expectedIsScriptlet: true),
             TestCase(
                 // Scriptlet rule.
                 ruleText: "#%#//scriptlet(\"noeval\")",
                 expectedContent: "//scriptlet(\"noeval\")",
                 expectedIsScript: true,
-                expectedIsScriptlet: true,
-                expectedScriptlet: "noeval",
-                expectedScriptletParam: "{\"name\":\"noeval\",\"args\":[]}"),
+                expectedIsScriptlet: true),
             TestCase(
                 // Scriptlet whitelist rule.
                 ruleText: "example.org#@%#//scriptlet(\"noeval\")",
@@ -155,8 +149,6 @@ final class CosmeticRuleTests: XCTestCase {
                 expectedIsWhiteList: true,
                 expectedIsScript: true,
                 expectedIsScriptlet: true,
-                expectedScriptlet: "noeval",
-                expectedScriptletParam: "{\"name\":\"noeval\",\"args\":[]}",
                 expectedPermittedDomains: ["example.org"]),
             TestCase(
                 // Cosmetic rule with $domain modifier options.
@@ -235,8 +227,6 @@ final class CosmeticRuleTests: XCTestCase {
             XCTAssertEqual(result.isInjectCss, testCase.expectedIsInjectCss, msg)
             XCTAssertEqual(result.isScript, testCase.expectedIsScript, msg)
             XCTAssertEqual(result.isScriptlet, testCase.expectedIsScriptlet, msg)
-            XCTAssertEqual(result.scriptlet, testCase.expectedScriptlet, msg)
-            XCTAssertEqual(result.scriptletParam, testCase.expectedScriptletParam, msg)
             XCTAssertEqual(result.pathModifier, testCase.expectedPathModifier, msg)
             XCTAssertEqual(result.pathRegExpSource, testCase.expectedPathRegExpSource, msg)
             XCTAssertEqual(result.permittedDomains, testCase.expectedPermittedDomains, msg)

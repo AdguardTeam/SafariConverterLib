@@ -41,7 +41,6 @@ final class SafariCbBuilderTests: XCTestCase {
         ]
 
         let compilationResult = CompilationResult(
-            message: "test",
             cssBlockingWide: entries
         )
 
@@ -57,10 +56,9 @@ final class SafariCbBuilderTests: XCTestCase {
         let entries = [
             BlockerEntry(trigger: testTrigger, action: testAction),
             BlockerEntry(trigger: testTrigger, action: testAction)
-        ];
+        ]
 
         let compilationResult = CompilationResult(
-            message: "test",
             cssBlockingWide: entries
         )
 
