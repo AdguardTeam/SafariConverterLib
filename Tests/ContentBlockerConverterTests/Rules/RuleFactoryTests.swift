@@ -92,7 +92,7 @@ final class RuleFactoryTests: XCTestCase {
         }
     }
 
-    func testCreateRules() {
+    func testFilterOutRules() {
         struct ExpectedRule {
             /// For network rules we'll only check urlPattern
             var networkPattern: String?
@@ -191,10 +191,13 @@ final class RuleFactoryTests: XCTestCase {
         for testCase in testCases {
             let errorsCounter = ErrorsCounter()
 
-            let rules = RuleFactory.createRules(
+            var rules = RuleFactory.createRules(
                 lines: testCase.rules,
                 for: SafariVersion.safari16_4,
                 errorsCounter: errorsCounter)
+
+            // Filter out CSS exceptions and $badfilter.
+            rules = RuleFactory.filterOutExceptions(from: rules)
 
             XCTAssertEqual(testCase.expectedErrorsCount, errorsCounter.getCount())
             XCTAssertEqual(testCase.expectedRules.count, rules.count, testCase.name)

@@ -12,19 +12,18 @@ final class SafariCbBuilderTests: XCTestCase {
 
     let testAction = BlockerEntry.Action(
         type: "test_type",
-        selector: nil
+        selector: "test_selector"
     )
 
     func assertEntry(actual: String?) -> Void {
-        XCTAssertNotNil(actual);
+        XCTAssertNotNil(actual)
 
-        XCTAssertTrue(actual!.contains("\"url-filter\":\"test_url_filter\""));
-        XCTAssertTrue(actual!.contains("test_unless_domain"));
-        XCTAssertTrue(actual!.contains("test_if_domain"));
-        XCTAssertTrue(actual!.contains("\"url-shortcut\":\"test_shortcut\""));
+        XCTAssertTrue(actual!.contains("\"url-filter\":\"test_url_filter\""))
+        XCTAssertTrue(actual!.contains("test_unless_domain"))
+        XCTAssertTrue(actual!.contains("test_if_domain"))
 
-        XCTAssertTrue(actual!.contains("\"type\":\"test_type\""));
-        XCTAssertTrue(actual!.contains("\"css\":\"test_css\""));
+        XCTAssertTrue(actual!.contains("\"type\":\"test_type\""))
+        XCTAssertTrue(actual!.contains("\"selector\":\"test_selector\""))
     }
 
     func testEmpty() {
@@ -65,7 +64,7 @@ final class SafariCbBuilderTests: XCTestCase {
             cssBlockingWide: entries
         )
 
-        let result = SafariCbBuilder.buildCbJson(from: compilationResult)
+        let result = SafariCbBuilder.buildCbJson(from: compilationResult, maxRules: 1)
 
         XCTAssertEqual(result.rulesCount, 1)
         XCTAssertEqual(result.discardedRulesCount, 1)
