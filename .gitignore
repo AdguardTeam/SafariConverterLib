@@ -1,11 +1,14 @@
 .DS_Store
-bin
+
+# Swift
 .swiftpm
 /.build
 /Packages
 /*.xcodeproj
 xcuserdata/
 /.idea
-/node_modules
-/bin/ConverterTool
+
+# JS
 .vscode
+/node_modules
+Extension/node_modules
