@@ -84,7 +84,7 @@ const nodePlugins = [
         ],
         allowAllFormats: true,
         compact: false,
-    })
+    }),
 ];
 
 // Plugins for browser builds.
@@ -116,7 +116,7 @@ const browserPlugins = [
         ],
         allowAllFormats: true,
         compact: false,
-    })
+    }),
 ];
 
 // CommonJS build configuration.

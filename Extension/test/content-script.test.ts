@@ -1,12 +1,19 @@
+/* eslint-disable @typescript-eslint/dot-notation */
+
 /**
  * @file Contains tests for the ContentScript class.
  *
  * @vitest-environment jsdom
  */
 
-import { expect, test, afterEach } from 'vitest';
+import {
+    vi,
+    expect,
+    test,
+    afterEach,
+} from 'vitest';
+
 import { ContentScript } from '../src/content-script';
-import { vi } from 'vitest';
 
 afterEach(() => {
     // Clear DOM
@@ -24,7 +31,7 @@ test('ContentScript adds CSS to the page', () => {
         css: ['.test-element { background-color: blue; }'],
         extendedCSS: [],
         scriptlets: [],
-        js: []
+        js: [],
     };
 
     // Act: run the content script with the given configuration
@@ -51,7 +58,7 @@ test('ContentScript adds CSS display:none when given only selector', () => {
         css: ['.test-element'],
         extendedCSS: [],
         scriptlets: [],
-        js: []
+        js: [],
     };
 
     // Act: run the content script with the given configuration
@@ -78,7 +85,7 @@ test('ContentScript applies extended CSS', () => {
         css: [],
         extendedCSS: ['.test-element:contains(Hello) { background-color: blue; }'],
         scriptlets: [],
-        js: []
+        js: [],
     };
 
     // Create element with text "Hello"
@@ -103,7 +110,7 @@ test('ContentScript adds JS to the page', () => {
         css: [],
         extendedCSS: [],
         scriptlets: [],
-        js: ['console.log("Hello, world!");']
+        js: ['console.log("Hello, world!");'],
     };
 
     // Run the content script
@@ -122,7 +129,7 @@ test('ContentScript applies scriptlets', () => {
         css: [],
         extendedCSS: [],
         scriptlets: [{ name: 'log', args: ['I am a scriptlet'] }],
-        js: []
+        js: [],
     };
 
     // Run the content script
@@ -133,7 +140,7 @@ test('ContentScript applies scriptlets', () => {
         expect.objectContaining({
             name: 'log',
             args: ['I am a scriptlet'],
-        })
+        }),
     ]);
 
     // Check that the scriptlet was applied.

@@ -1,7 +1,7 @@
 {
     "extends": "./tsconfig.json",
     "include": [
-        ".eslintrc.js",
+        ".eslintrc.cjs",
         "jest.config.ts",
         "jest.config.ts",
         "rollup.config.ts",
