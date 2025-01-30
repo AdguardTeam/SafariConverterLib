@@ -26,7 +26,6 @@
     "check-types": "tsc --noEmit",
     "clean": "rimraf dist",
     "clean-types": "rimraf dist/types",
-    "coverage": "vitest --coverage",
     "lint": "pnpm lint:ts && pnpm lint:md",
     "lint:md": "markdownlint .",
     "lint:ts": "eslint . --cache --ext .ts",
