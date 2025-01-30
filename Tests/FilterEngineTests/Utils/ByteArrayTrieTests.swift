@@ -182,8 +182,6 @@ final class ByteArrayTrieTests: XCTestCase {
     }
 
     /// Test inserting the same word multiple times (with different payload).
-    /// The final payload for that node typically gets overwritten,
-    /// or you might define logic to merge. Here we assume "overwrite".
     func testInsertDuplicateWord() {
         let root = TrieNode()
         root.insert(word: "hello", payload: [10])
@@ -192,8 +190,8 @@ final class ByteArrayTrieTests: XCTestCase {
 
         let trie = ByteArrayTrie(from: root)
 
-        // We'll assume the final payload is [20,30].
-        XCTAssertEqual(trie.find(word: "hello"), [20, 30])
+        // We'll assume the final payload is [10,20,30].
+        XCTAssertEqual(trie.find(word: "hello"), [10, 20, 30])
     }
 
     /// Test attaching payload to the root node *and* to children,

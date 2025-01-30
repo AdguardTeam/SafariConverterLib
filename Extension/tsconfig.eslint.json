@@ -2,8 +2,6 @@
     "extends": "./tsconfig.json",
     "include": [
         ".eslintrc.cjs",
-        "jest.config.ts",
-        "jest.config.ts",
         "rollup.config.ts",
         "src/**/*.ts",
         "test/**/*.ts",

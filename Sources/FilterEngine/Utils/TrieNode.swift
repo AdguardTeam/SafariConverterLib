@@ -48,7 +48,11 @@ public class TrieNode {
             current = current.children[byte]!
         }
         // Attach the payload at the final node for this word
-        current.payload = payload
+        if !current.payload.isEmpty {
+            current.payload += payload
+        } else {
+            current.payload = payload
+        }
     }
 
     // MARK: - Find

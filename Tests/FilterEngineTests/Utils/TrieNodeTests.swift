@@ -108,14 +108,14 @@ final class TrieNodeTests: XCTestCase {
         XCTAssertEqual(root.collectPayload(word: "abc"), [9999, 10])
     }
 
-    /// Test inserting the same word multiple times with different payload (assuming last overwrite)
+    /// Test inserting the same word multiple times with different payload (assuming it adds payload on top)
     func testInsertDuplicateWord() {
         let root = TrieNode()
         root.insert(word: "hello", payload: [10])
         root.insert(word: "hello", payload: [20, 30])  // duplicate insert
 
-        // We assume the last insert overwrote the payload
-        XCTAssertEqual(root.find(word: "hello"), [20, 30], "Expected the final payload to be [20, 30]")
+        // We assume the last insert was added on top of existing.
+        XCTAssertEqual(root.find(word: "hello"), [10, 20, 30], "Expected the final payload to be [10, 20, 30]")
     }
 
     /// Test a very long word (thousands of characters)

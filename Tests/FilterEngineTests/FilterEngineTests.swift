@@ -94,6 +94,20 @@ final class FilterEngineTests: XCTestCase {
                 ]
             ),
             TestCase(
+                name: "many cosmetic rules for the same domain",
+                rules: [
+                    "example.org###banner",
+                    "example.org#$##banner { display: hidden; }",
+                    "example.org##.banner"
+                ],
+                urlString: "https://example.org/",
+                expectedCosmeticContent: [
+                    "#banner",
+                    "#banner { display: hidden; }",
+                    ".banner",
+                ]
+            ),
+            TestCase(
                 name: "disable css",
                 rules: [
                     "@@||example.org^$elemhide",
