@@ -2,8 +2,8 @@
  * @file Contains the implementation of the content script.
  */
 
-import * as Scriptlets from '@adguard/scriptlets';
 import { ExtendedCss } from '@adguard/extended-css';
+import { type Source as ScriptletSource, scriptlets as ScriptletsAPI } from '@adguard/scriptlets';
 
 import { type Configuration, type Scriptlet } from './configuration';
 
@@ -200,7 +200,7 @@ const applyExtendedCss = (extendedCss: string[]) => {
  */
 const getScriptletCode = (scriptlet: Scriptlet): string => {
     try {
-        return Scriptlets.scriptlets.invoke({
+        const scriptletSource: ScriptletSource = {
             engine: 'safari-extension',
             name: scriptlet.name,
             args: scriptlet.args,
@@ -210,7 +210,9 @@ const getScriptletCode = (scriptlet: Scriptlet): string => {
 
             // TODO: remove
             verbose: false,
-        });
+        };
+
+        return ScriptletsAPI.invoke(scriptletSource);
     } catch (e) {
         // TODO: log error
     }

@@ -1,3 +1,9 @@
+/*
+ * SafariExtension v3.0.0 (build date: Thu, 30 Jan 2025 10:36:27 GMT)
+ * (c) 2025 Adguard Software Ltd.
+ * Released under the GPL-3.0 license
+ * https://github.com/AdguardTeam/SafariConverterLib/tree/master/Extension
+ */
 /**
  * @adguard/extended-css - v2.1.1 - Thu Dec 19 2024
  * https://github.com/AdguardTeam/ExtendedCss#homepage
@@ -25460,7 +25466,7 @@ const applyExtendedCss = extendedCss => {
  */
 const getScriptletCode = scriptlet => {
   try {
-    return scriptlets.invoke({
+    const scriptletSource = {
       engine: 'safari-extension',
       name: scriptlet.name,
       args: scriptlet.args,
@@ -25468,7 +25474,8 @@ const getScriptletCode = scriptlet => {
       version: '1.0.0',
       // TODO: remove
       verbose: false
-    });
+    };
+    return scriptlets.invoke(scriptletSource);
   } catch (e) {
     // TODO: log error
   }

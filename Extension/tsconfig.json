@@ -2,11 +2,7 @@
     "compilerOptions": {
         "target": "ESNext",
         "module": "ESNext",
-        "moduleResolution": "node",
-        "types": [
-            "node",
-            "jest"
-        ],
+        "moduleResolution": "bundler",
         "resolveJsonModule": true,
         "allowJs": true,
         "declaration": true,
@@ -23,11 +19,5 @@
     "exclude": [
         "./node_modules",
         "./dist"
-    ],
-    "ts-node": {
-        "swc": true,
-        "compilerOptions": {
-            "module": "CommonJS"
-        }
-    }
+    ]
 }

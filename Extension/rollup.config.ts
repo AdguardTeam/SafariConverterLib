@@ -11,8 +11,6 @@ import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import dtsPlugin from 'rollup-plugin-dts';
 import json from '@rollup/plugin-json';
-import terser from '@rollup/plugin-terser';
-import nodePolyfills from 'rollup-plugin-polyfill-node';
 import { getBabelOutputPlugin } from '@rollup/plugin-babel';
 import path from 'path';
 import { readFileSync } from 'fs';
@@ -61,18 +59,6 @@ const typeScriptPlugin = typescript({
     },
 });
 
-const terserPlugin = terser({
-    sourceMap: true,
-    output: {
-        // Keep the banner in the minified output.
-        preamble: BANNER,
-    },
-    compress: {
-        // It has negative impact on performance, so we disable it.
-        reduce_funcs: false,
-    },
-});
-
 // Common plugins for all types of builds.
 const commonPlugins = [
     json({ preferConst: true }),
@@ -98,15 +84,12 @@ const nodePlugins = [
         ],
         allowAllFormats: true,
         compact: false,
-    }),
-    // Minify the output with Terser.
-    // terserPlugin,
+    })
 ];
 
 // Plugins for browser builds.
 const browserPlugins = [
     ...commonPlugins,
-    nodePolyfills(),
     // Provide better browser compatibility with Babel.
     getBabelOutputPlugin({
         presets: [
@@ -133,9 +116,7 @@ const browserPlugins = [
         ],
         allowAllFormats: true,
         compact: false,
-    }),
-    // Minify the output with Terser.
-    // terserPlugin,
+    })
 ];
 
 // CommonJS build configuration.
@@ -161,7 +142,7 @@ const esm = {
             file: path.join(distDirLocation, `${BASE_FILE_NAME}.esm.js`),
             format: 'esm',
             sourcemap: false,
-            BANNER,
+            banner: BANNER,
         },
     ],
     plugins: nodePlugins,
@@ -176,7 +157,7 @@ const umd = {
             name: BASE_NAME,
             format: 'umd',
             sourcemap: false,
-            BANNER,
+            banner: BANNER,
         },
     ],
     plugins: browserPlugins,
