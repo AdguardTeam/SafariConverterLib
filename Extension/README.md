@@ -39,8 +39,12 @@ has the following fields:
 [Scriptlets]: https://github.com/AdguardTeam/Scriptlets
 [Configuration]: src/configuration.ts
 
+TODO(ameshkov): !!! Add usage examples here.
+
 ## How to build the library
 
 ```sh
 pnpm install
 ```
+
+TODO(ameshkov): !!! Explain every command here.

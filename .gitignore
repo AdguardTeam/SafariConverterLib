@@ -7,8 +7,3 @@
 /*.xcodeproj
 xcuserdata/
 /.idea
-
-# JS
-.vscode
-/node_modules
-Extension/node_modules
