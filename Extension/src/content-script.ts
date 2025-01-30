@@ -247,7 +247,7 @@ class ContentScript {
 
     public run() {
         applyCss(this.configuration.css);
-        applyExtendedCss(this.configuration.extendedCSS);
+        applyExtendedCss(this.configuration.extendedCss);
         applyScriptlets(this.configuration.scriptlets);
         applyScripts(this.configuration.js);
     }

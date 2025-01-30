@@ -29,7 +29,7 @@ has the following fields:
 
 - `css` - a set of CSS rules (selector + style) that will be used to apply
   additional styles to the elements on a page.
-- `extendedCSS` - a set of CSS rules that will be used to apply additional
+- `extendedCss` - a set of CSS rules that will be used to apply additional
   styles to the elements on a page via Extended CSS library.
 - `js` - a set of JS scripts that will be executed on the page.
 - `scriptlets` - a set of scriptlets parameters that will be used to run

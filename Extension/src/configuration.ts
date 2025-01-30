@@ -18,7 +18,7 @@ interface Configuration {
      * elements on a page via Extended CSS library. The array can contain full
      * CSS rules or just selectors.
      */
-    extendedCSS: string[];
+    extendedCss: string[];
 
     /**
      * A list of JS scripts that will be executed on the page.

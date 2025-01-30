@@ -1,5 +1,5 @@
 /*
- * SafariExtension v3.0.0 (build date: Thu, 30 Jan 2025 12:40:08 GMT)
+ * SafariExtension v3.0.0 (build date: Thu, 30 Jan 2025 19:16:41 GMT)
  * (c) 2025 Adguard Software Ltd.
  * Released under the GPL-3.0 license
  * https://github.com/AdguardTeam/SafariConverterLib/tree/master/Extension
@@ -25505,7 +25505,7 @@ class ContentScript {
   }
   run() {
     applyCss(this.configuration.css);
-    applyExtendedCss(this.configuration.extendedCSS);
+    applyExtendedCss(this.configuration.extendedCss);
     applyScriptlets(this.configuration.scriptlets);
     applyScripts(this.configuration.js);
   }
