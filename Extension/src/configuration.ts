@@ -30,6 +30,13 @@ interface Configuration {
      * on the page.
      */
     scriptlets: Scriptlet[];
+
+    /**
+     * The timestamp of the engine that was used to generate the configuration.
+     * This is used to determine if the configuration is outdated and needs to
+     * be updated.
+     */
+    engineTimestamp: number;
 }
 
 /**

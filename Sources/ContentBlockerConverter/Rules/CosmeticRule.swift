@@ -99,8 +99,8 @@ public class CosmeticRule: Rule {
             throw SyntaxError.invalidRule(message: "Unsupported rule type");
         }
 
-        if (self.isScript) {
-            if (self.content.hasPrefix(ScriptletParser.SCRIPTLET_MASK)) {
+        if self.isScript {
+            if ScriptletParser.isScriptlet(cosmeticRuleContent: self.content) {
                 self.isScriptlet = true
             }
         }

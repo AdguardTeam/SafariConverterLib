@@ -5,53 +5,41 @@ public class ScriptletParser {
     public static let SCRIPTLET_MASK = "//scriptlet("
     private static let SCRIPTLET_MASK_LEN = SCRIPTLET_MASK.count
 
+    /// Returns true if cosmetic rule content is a scriptlet.
+    public static func isScriptlet(cosmeticRuleContent: String) -> Bool {
+        return cosmeticRuleContent.utf8.starts(with: SCRIPTLET_MASK.utf8)
+    }
+
     /// Parses and validates a scriptlet rule.
     ///
-    /// TODO(ameshkov): !!! Rewrite, it should return just the list of arguments.
-    ///
     /// - Parameters:
-    ///  - data: the full scriptlet rule, i.e. `//scriptlet('scriptletName', 'arg1', 'arg2')`
-    /// - Returns: the scriptlet name and a json with it's arguments.
-    /// - Throws: SyntaxError.invalidRule if failed to parse.
-    public static func parse(data: String) throws -> (name: String, json: String) {
-        if (data.isEmpty || !data.utf8.starts(with: ScriptletParser.SCRIPTLET_MASK.utf8)) {
+    ///   - cosmeticRuleContent: Cosmetic rule content, i.e. if rule text is `example.org#%#//scriptlet('name', 'arg)`,
+    ///           it will be `//scriptlet('name', 'arg)`.
+    /// - Returns: scriptlet name and its arguments.
+    /// - Throws:`SyntaxError.invalidRule` if failed to parse.
+    public static func parse(cosmeticRuleContent: String) throws -> (name: String, args: [String]) {
+        if !isScriptlet(cosmeticRuleContent: cosmeticRuleContent) {
             throw SyntaxError.invalidRule(message: "Invalid scriptlet")
         }
 
         // Without the scriptlet prefix the string looks like:
         // "scriptletname", "arg1", "arg2", etc
-        let argumentsStrIndex = data.utf8.index(data.utf8.startIndex, offsetBy: SCRIPTLET_MASK_LEN)
+        let argumentsStrIndex = cosmeticRuleContent.utf8.index(cosmeticRuleContent.utf8.startIndex, offsetBy: SCRIPTLET_MASK_LEN)
         // Do not include the last character as it's a bracket.
-        let argumentsEndIndex = data.utf8.index(data.utf8.endIndex, offsetBy: -1)
-        let argumentsStr = data[argumentsStrIndex..<argumentsEndIndex]
+        let argumentsEndIndex = cosmeticRuleContent.utf8.index(cosmeticRuleContent.utf8.endIndex, offsetBy: -1)
+        let argumentsStr = cosmeticRuleContent[argumentsStrIndex..<argumentsEndIndex]
 
         // Now we just get an array of these arguments
-        var params = try ScriptletParser.extractArguments(str: argumentsStr, delimiter: Chars.COMMA)
+        var args = try ScriptletParser.extractArguments(str: argumentsStr, delimiter: Chars.COMMA)
 
-        if (params.count < 1) {
+        if (args.count < 1) {
             throw SyntaxError.invalidRule(message: "Invalid scriptlet params");
         }
 
-        let name = params[0]
-        params.remove(at: 0)
+        let name = args[0]
+        args.remove(at: 0)
 
-        let json = encodeScriptletParams(name: name, args: params)
-
-        return (name, json)
-    }
-
-    /// Encodes scriptlet parameters as a JSON string with name and arguments.
-    private static func encodeScriptletParams(name: String, args: [String]?) -> String {
-        var result = "{\"name\":\""
-        result.append(name.escapeForJSON())
-        result.append("\"")
-        if args != nil {
-            result.append(",\"args\":")
-            result.append(args!.encodeToJSON(escape: true))
-        }
-        result.append("}")
-
-        return result
+        return (name, args)
     }
 
     /// Extracts the scriptlet arguments from the string.
@@ -118,19 +106,5 @@ public class ScriptletParser {
         }
 
         return result
-    }
-
-    /// Represents a scriptlet signature, i.e. the scriptlet name and its parameters.
-    ///
-    /// A normal scriptlet rule looks like this:
-    /// //scriptlet('scriptlet name', 'param1', 'param2')
-    ///
-    /// ScriptletParams object representing this will look like this:
-    ///
-    /// - name: "scriptlet name"
-    /// - args: [ "param1", "param2" ]
-    struct ScriptletParams: Encodable {
-        let name: String
-        let args: [String]?
     }
 }
