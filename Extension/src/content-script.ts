@@ -78,7 +78,7 @@ const applyScripts = (scripts: string[]) => {
         return;
     }
 
-    executeScripts(scripts.reverse());
+    executeScripts(scripts);
 };
 
 /**

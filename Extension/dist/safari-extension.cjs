@@ -1,5 +1,5 @@
 /*
- * SafariExtension v3.0.0 (build date: Thu, 30 Jan 2025 19:16:41 GMT)
+ * SafariExtension v3.0.0 (build date: Thu, 30 Jan 2025 19:29:02 GMT)
  * (c) 2025 Adguard Software Ltd.
  * Released under the GPL-3.0 license
  * https://github.com/AdguardTeam/SafariConverterLib/tree/master/Extension
@@ -25362,7 +25362,7 @@ const applyScripts = scripts => {
   if (!scripts || scripts.length === 0) {
     return;
   }
-  executeScripts(scripts.reverse());
+  executeScripts(scripts);
 };
 /**
  * Protects specified style element from changes to the current document
