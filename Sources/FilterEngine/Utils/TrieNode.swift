@@ -1,3 +1,5 @@
+import OrderedCollections
+
 /// A simple in-memory trie node structure that stores ASCII-based words and associated payloads.
 ///
 /// This node supports:
@@ -22,7 +24,10 @@ public class TrieNode {
 
     /// Children keyed by ASCII character byte.
     /// Each key is a `UInt8` representing one character (0–127 if strictly ASCII).
-    public var children: [UInt8: TrieNode] = [:]
+    ///
+    /// `TrieNode` is used to build `ByteArrayTrie` and to guarantee the consistent result
+    /// we are using `OrderedDictionary` here.
+    public var children: OrderedDictionary<UInt8, TrieNode> = OrderedDictionary()
 
     /// Optional payload stored at this node.
     /// In many trie designs, the payload is nonempty only if this node represents

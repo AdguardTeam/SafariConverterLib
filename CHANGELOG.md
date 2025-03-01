@@ -23,6 +23,7 @@ scripts are executed.
 * TODO: Update and test the node module
 * TODO: Remove `optimize` flag
 * TODO: Explain Extension
+* TODO: CommandLineWrapper interface changes
 
 ## 2.1.1
 

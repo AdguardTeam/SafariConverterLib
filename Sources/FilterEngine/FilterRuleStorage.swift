@@ -221,6 +221,8 @@ public class FilterRuleStorage {
 
         // 1) Read magic
         let magicData = handle.readData(ofLength: 4)
+
+        // TODO(ameshkov): !!! Put magic to constants
         guard let magicStr = String(data: magicData, encoding: .utf8), magicStr == "FRS0" else {
             throw FilterRuleStorageError.fileFormatError(reason: "Wrong magic header")
         }
