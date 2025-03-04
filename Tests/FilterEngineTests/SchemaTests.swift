@@ -6,7 +6,6 @@ import ContentBlockerConverter
 /// any changes are made to `FilterRule`, `FilterRuleStorage` or `FilterEngine`
 /// serialization & deserialization code.
 final class SchemaTests: XCTestCase {
-
     private var tempDirectory: URL!
     private var tempRulesFileURL: URL!
     private var tempIndexFileURL: URL!
@@ -55,15 +54,15 @@ final class SchemaTests: XCTestCase {
 
         // Serialize the engine to a file
         try engine.write(to: self.tempIndexFileURL)
-        
+
         // Get reference file paths
         let referenceRulesFileURL = thisDirectory.appendingPathComponent("Resources/reference-rules.bin")
         let referenceEngineFileURL = thisDirectory.appendingPathComponent("Resources/reference-engine.bin")
-        
+
         // Read temporary files
         let tempRulesData = try Data(contentsOf: tempRulesFileURL)
         let tempEngineData = try Data(contentsOf: tempIndexFileURL)
-        
+
         // Read reference files
         let referenceRulesData = try Data(contentsOf: referenceRulesFileURL)
         let referenceEngineData = try Data(contentsOf: referenceEngineFileURL)

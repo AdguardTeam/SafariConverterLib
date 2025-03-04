@@ -3,7 +3,6 @@ import XCTest
 @testable import FilterEngine
 
 final class FilterRuleExtractRegexShortcutsTests: XCTestCase {
-
     // MARK: - Basic tests
 
     func testExtractRegexShortcutsEmptyString() {
@@ -333,5 +332,4 @@ final class FilterRuleExtractRegexShortcutsTests: XCTestCase {
             }
         }
     }
-
 }

@@ -3,7 +3,6 @@ import XCTest
 
 /// Performance tests..
 extension ContentBlockerConverterTests {
-
     /// Single run of the rule converter so that it was easier to profile it.
     func testPerformanceSingleRun() {
         let thisSourceFile = URL(fileURLWithPath: #file)
@@ -61,7 +60,7 @@ extension ContentBlockerConverterTests {
         self.measure {
             let conversionResult = ContentBlockerConverter().convertArray(rules: rules)
 
-            XCTAssertEqual(conversionResult.sourceRulesCount, rulePairsCount*2)
+            XCTAssertEqual(conversionResult.sourceRulesCount, rulePairsCount * 2)
             XCTAssertEqual(conversionResult.safariRulesCount, rulePairsCount)
             XCTAssertEqual(conversionResult.errorsCount, 0)
             XCTAssertEqual(conversionResult.discardedSafariRules, 0)

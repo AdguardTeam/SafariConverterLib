@@ -3,7 +3,6 @@ import XCTest
 
 
 final class ContentBlockerConverterTests: XCTestCase {
-
     func testConvertArrayEmptyOrComments() {
         let testCases: [TestCase] = [
             TestCase(
@@ -21,7 +20,7 @@ final class ContentBlockerConverterTests: XCTestCase {
             TestCase(
                 rules: ["! just a comment", "! other comment"],
                 expectedSafariRulesJSON: ConversionResult.EMPTY_RESULT_JSON
-            ),
+            )
         ]
 
         runTests(testCases)
@@ -119,7 +118,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                 expectedSourceRulesCount: 1,
                 expectedSourceSafariCompatibleRulesCount: 1,
                 expectedSafariRulesCount: 1
-            ),
+            )
         ]
 
         runTests(testCases)
@@ -162,7 +161,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                 expectedSourceRulesCount: 2,
                 expectedSourceSafariCompatibleRulesCount: 2,
                 expectedSafariRulesCount: 2
-            ),
+            )
         ]
 
         runTests(testCases)
@@ -188,7 +187,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                 expectedSourceRulesCount: 1,
                 expectedSourceSafariCompatibleRulesCount: 1,
                 expectedSafariRulesCount: 1
-            ),
+            )
         ]
 
         runTests(testCases)
@@ -307,7 +306,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                 expectedSourceRulesCount: 2,
                 expectedSourceSafariCompatibleRulesCount: 2,
                 expectedSafariRulesCount: 2
-            ),
+            )
         ]
 
         runTests(testCases)
@@ -359,11 +358,11 @@ final class ContentBlockerConverterTests: XCTestCase {
                 // $domain modifier with regular expression are not supported.
                 rules: [
                     "||example.com^$domain=/test\\.com/",
-                    "[$domain=/test\\.com/]##.banner",
+                    "[$domain=/test\\.com/]##.banner"
                 ],
                 expectedSafariRulesJSON: ConversionResult.EMPTY_RESULT_JSON,
                 expectedErrorsCount: 2
-            ),
+            )
         ]
 
         runTests(testCases)
@@ -592,7 +591,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                 expectedSourceRulesCount: 2,
                 expectedSourceSafariCompatibleRulesCount: 2,
                 expectedSafariRulesCount: 2
-            ),
+            )
         ]
 
         runTests(testCases)
@@ -713,7 +712,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                 expectedSourceRulesCount: 1,
                 expectedSourceSafariCompatibleRulesCount: 1,
                 expectedSafariRulesCount: 1
-            ),
+            )
         ]
 
         runTests(testCases)
@@ -813,7 +812,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                 expectedSourceRulesCount: 1,
                 expectedSourceSafariCompatibleRulesCount: 1,
                 expectedSafariRulesCount: 1
-            ),
+            )
         ]
 
         runTests(testCases)
@@ -845,7 +844,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                 expectedSourceRulesCount: 1,
                 expectedSourceSafariCompatibleRulesCount: 1,
                 expectedSafariRulesCount: 1
-            ),
+            )
         ]
 
         runTests(testCases)
@@ -941,7 +940,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                 // Keep 1 domain, remove the other.
                 rules: [
                     "test.com,example.org###banner",
-                    "example.org#@##banner",
+                    "example.org#@##banner"
                 ],
                 expectedSafariRulesJSON: #"""
                                    [
@@ -967,7 +966,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                 // Keep 1 domain, remove the other.
                 rules: [
                     "test.com,example.org###banner",
-                    "example.com,example.org#@##banner",
+                    "example.com,example.org#@##banner"
                 ],
                 expectedSafariRulesJSON: #"""
                                    [
@@ -993,7 +992,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                 // Keep 1 domain, remove 2 other domains.
                 rules: [
                     "test1.com,example.org,test2.com###banner",
-                    "example.com,example.org,test1.com#@##banner",
+                    "example.com,example.org,test1.com#@##banner"
                 ],
                 expectedSafariRulesJSON: #"""
                                    [
@@ -1021,7 +1020,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                     "test1.com,test2.com,test3.com###banner",
                     "example1.org,example2.org###banner",
                     "test1.com,example2.org#@##banner",
-                    "test2.com,example1.org#@##banner",
+                    "test2.com,example1.org#@##banner"
                 ],
                 expectedSafariRulesJSON: #"""
                                    [
@@ -1042,7 +1041,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                 expectedSourceRulesCount: 4,
                 expectedSourceSafariCompatibleRulesCount: 4,
                 expectedSafariRulesCount: 1
-            ),
+            )
         ]
 
         runTests(testCases)
@@ -1074,7 +1073,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                 expectedSourceRulesCount: 1,
                 expectedSourceSafariCompatibleRulesCount: 1,
                 expectedSafariRulesCount: 1
-            ),
+            )
         ]
 
         runTests(testCases)
@@ -1153,7 +1152,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                 expectedSourceRulesCount: 3,
                 expectedSourceSafariCompatibleRulesCount: 3,
                 expectedSafariRulesCount: 3
-            ),
+            )
         ]
 
         runTests(testCases)
@@ -1217,7 +1216,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                 expectedSourceRulesCount: 4,
                 expectedSourceSafariCompatibleRulesCount: 4,
                 expectedSafariRulesCount: 4
-            ),
+            )
         ]
 
         runTests(testCases)
@@ -1315,7 +1314,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                 expectedSourceRulesCount: 3,
                 expectedSourceSafariCompatibleRulesCount: 3,
                 expectedSafariRulesCount: 2
-            ),
+            )
         ]
 
         runTests(testCases)
@@ -1422,7 +1421,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                 expectedSourceRulesCount: 1,
                 expectedSourceSafariCompatibleRulesCount: 1,
                 expectedSafariRulesCount: 1
-            ),
+            )
         ]
 
         runTests(testCases)
@@ -1442,7 +1441,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                     // Unbalanced bracket.
                     #"/example{/"#,
                     // Digit range is not supported.
-                    #"/([0-9]{1,3}\.){3}[0-9]{1,3}.\/proxy$/$script,websocket,third-party"#,
+                    #"/([0-9]{1,3}\.){3}[0-9]{1,3}.\/proxy$/$script,websocket,third-party"#
                 ],
                 expectedSafariRulesJSON: ConversionResult.EMPTY_RESULT_JSON,
                 expectedSourceRulesCount: 5,
@@ -1460,7 +1459,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                 expectedSourceSafariCompatibleRulesCount: 0,
                 expectedSafariRulesCount: 0,
                 expectedErrorsCount: 1
-            ),
+            )
         ]
 
         runTests(testCases)
@@ -1493,7 +1492,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                 expectedSourceRulesCount: 4,
                 expectedSourceSafariCompatibleRulesCount: 4,
                 expectedSafariRulesCount: 1
-            ),
+            )
         ]
 
         runTests(testCases)
@@ -1620,7 +1619,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                 expectedSourceRulesCount: 2,
                 expectedSourceSafariCompatibleRulesCount: 2,
                 expectedSafariRulesCount: 2
-            ),
+            )
         ]
 
         runTests(testCases)
@@ -1694,7 +1693,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                 expectedSourceRulesCount: 7,
                 expectedSourceSafariCompatibleRulesCount: 7,
                 expectedSafariRulesCount: 2
-            ),
+            )
         ]
 
         runTests(testCases)
@@ -1706,7 +1705,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                 // Test uBO scriptlet rules conversion
                 rules: [
                     "example.org##+js(aopr,__cad.cpm_popunder)",
-                    "example.org##+js(acis,setTimeout,testad)",
+                    "example.org##+js(acis,setTimeout,testad)"
                 ],
                 advancedBlocking: true,
                 expectedSafariRulesJSON: ConversionResult.EMPTY_RESULT_JSON,
@@ -1718,7 +1717,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                 expectedSourceSafariCompatibleRulesCount: 0,
                 expectedSafariRulesCount: 0,
                 expectedAdvancedRulesCount: 2
-            ),
+            )
         ]
 
         runTests(testCases)
@@ -1730,19 +1729,19 @@ final class ContentBlockerConverterTests: XCTestCase {
                 // Test CSS injection rules.
                 rules: [
                     "#$?#div:has(> .banner) { display: none; debug: global; }",
-                    "google.com#$##js-header, #searchform, .O-j-k, .header:not(.column-section):not(.viewed):not(.ng-star-inserted):not([class*=\"_ngcontent\"]), .js-header.chr-header, .mobile-action-bar, body > .ng-scope, #flt-nav, .gws-flights__scrollbar-padding.gws-flights__selection-bar, .gws-flights__selection-bar-shadow-mask { position: absolute !important; }",
+                    "google.com#$##js-header, #searchform, .O-j-k, .header:not(.column-section):not(.viewed):not(.ng-star-inserted):not([class*=\"_ngcontent\"]), .js-header.chr-header, .mobile-action-bar, body > .ng-scope, #flt-nav, .gws-flights__scrollbar-padding.gws-flights__selection-bar, .gws-flights__selection-bar-shadow-mask { position: absolute !important; }"
                 ],
                 advancedBlocking: true,
                 expectedSafariRulesJSON: ConversionResult.EMPTY_RESULT_JSON,
                 expectedAdvancedRulesText: [
                     #"#$?#div:has(> .banner) { display: none; debug: global; }"#,
-                    "google.com#$##js-header, #searchform, .O-j-k, .header:not(.column-section):not(.viewed):not(.ng-star-inserted):not([class*=\"_ngcontent\"]), .js-header.chr-header, .mobile-action-bar, body > .ng-scope, #flt-nav, .gws-flights__scrollbar-padding.gws-flights__selection-bar, .gws-flights__selection-bar-shadow-mask { position: absolute !important; }",
+                    "google.com#$##js-header, #searchform, .O-j-k, .header:not(.column-section):not(.viewed):not(.ng-star-inserted):not([class*=\"_ngcontent\"]), .js-header.chr-header, .mobile-action-bar, body > .ng-scope, #flt-nav, .gws-flights__scrollbar-padding.gws-flights__selection-bar, .gws-flights__selection-bar-shadow-mask { position: absolute !important; }"
                 ].joined(separator: "\n"),
                 expectedSourceRulesCount: 2,
                 expectedSourceSafariCompatibleRulesCount: 0,
                 expectedSafariRulesCount: 0,
                 expectedAdvancedRulesCount: 2
-            ),
+            )
         ]
 
         runTests(testCases)
@@ -1756,7 +1755,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                     "+Popunder+$popup",
                     "||calabriareportage.it^+-Banner-",
                     #"@@/:\/\/.*[.]wp[.]pl\/[a-z0-9_]+[.][a-z]+\\/"#,
-                    #"/\\/"#,
+                    #"/\\/"#
                 ],
                 expectedSafariRulesJSON: #"""
                                    [
@@ -1830,7 +1829,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                 expectedSourceRulesCount: 2,
                 expectedSourceSafariCompatibleRulesCount: 2,
                 expectedSafariRulesCount: 2
-            ),
+            )
         ]
 
         runTests(testCases)
@@ -1845,7 +1844,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                     "example.org##.banner1",
                     "example.org,test.com##.banner2",
                     "##.banner3",
-                    "@@||example.org^$specifichide",
+                    "@@||example.org^$specifichide"
                 ],
                 expectedSafariRulesJSON: #"""
                                    [
@@ -1884,7 +1883,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                     "subdomain.test.com##.banner",
                     "test.com##.headeads",
                     "##.ad-banner",
-                    "@@||subdomain.test.com^$specifichide",
+                    "@@||subdomain.test.com^$specifichide"
                 ],
                 expectedSafariRulesJSON: #"""
                                    [
@@ -1950,7 +1949,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                 rules: [
                     "test.com,example.org#$#body { overflow: visible!important; }",
                     "##.banner",
-                    "@@||example.org^$specifichide",
+                    "@@||example.org^$specifichide"
                 ],
                 advancedBlocking: true,
                 expectedSafariRulesJSON: #"""
@@ -1968,13 +1967,13 @@ final class ContentBlockerConverterTests: XCTestCase {
                                    """#,
                 expectedAdvancedRulesText: [
                     "test.com,example.org#$#body { overflow: visible!important; }",
-                    "@@||example.org^$specifichide",
+                    "@@||example.org^$specifichide"
                 ].joined(separator: "\n"),
                 expectedSourceRulesCount: 3,
                 expectedSourceSafariCompatibleRulesCount: 2,
                 expectedSafariRulesCount: 1,
                 expectedAdvancedRulesCount: 2
-            ),
+            )
         ]
 
         runTests(testCases)
@@ -2041,7 +2040,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                 expectedSourceRulesCount: 2,
                 expectedSourceSafariCompatibleRulesCount: 2,
                 expectedSafariRulesCount: 2
-            ),
+            )
         ]
 
         runTests(testCases)
@@ -2186,7 +2185,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                 expectedSourceRulesCount: 2,
                 expectedSourceSafariCompatibleRulesCount: 2,
                 expectedSafariRulesCount: 2
-            ),
+            )
         ]
 
         runTests(testCases)
@@ -2344,7 +2343,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                 expectedSourceRulesCount: 2,
                 expectedSourceSafariCompatibleRulesCount: 2,
                 expectedSafariRulesCount: 2
-            ),
+            )
         ]
 
         runTests(testCases)
@@ -2379,7 +2378,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                 expectedSafariRulesCount: 0,
                 expectedAdvancedRulesCount: 0,
                 expectedErrorsCount: 4
-            ),
+            )
         ]
 
         runTests(testCases)
@@ -2569,7 +2568,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                 expectedSourceSafariCompatibleRulesCount: 1,
                 expectedSafariRulesCount: 0,
                 expectedErrorsCount: 1
-            ),
+            )
         ]
 
         runTests(testCases)
@@ -2695,7 +2694,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                     "test.com#?#:xpath(//div[@data-st-area='Advert'])",
                     "example.org##:xpath(//div[@id='stream_pagelet'])",
                     "example.com##:xpath(//div[@id='adv'])",
-                    "example.com#@#:xpath(//div[@id='adv'])",
+                    "example.com#@#:xpath(//div[@id='adv'])"
                 ],
                 version: SafariVersion.safari16_4,
                 advancedBlocking: true,
@@ -2704,14 +2703,14 @@ final class ContentBlockerConverterTests: XCTestCase {
                     "test.com#?#:xpath(//div[@data-st-area='Advert'])",
                     "example.org##:xpath(//div[@id='stream_pagelet'])",
                     "example.com##:xpath(//div[@id='adv'])",
-                    "example.com#@#:xpath(//div[@id='adv'])",
+                    "example.com#@#:xpath(//div[@id='adv'])"
                 ].joined(separator: "\n"),
                 expectedSourceRulesCount: 4,
                 expectedSourceSafariCompatibleRulesCount: 0,
                 expectedSafariRulesCount: 0,
                 expectedAdvancedRulesCount: 4,
                 expectedErrorsCount: 0
-            ),
+            )
         ]
 
         runTests(testCases)
@@ -2749,7 +2748,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                     // JS rule, advanced.
                     "example.org#%#window.__gaq = undefined;",
                     // Scriptlet rule, advanced.
-                    "example.org#%#//scriptlet(\"abort-on-property-read\", \"alert\")",
+                    "example.org#%#//scriptlet(\"abort-on-property-read\", \"alert\")"
                 ],
                 advancedBlocking: true,
                 expectedSafariRulesJSON: #"""
@@ -2793,13 +2792,13 @@ final class ContentBlockerConverterTests: XCTestCase {
                     "example.org#$#.div { background:none!important; }",
                     "example.org##div:contains(test)",
                     "example.org#%#window.__gaq = undefined;",
-                    "example.org#%#//scriptlet(\"abort-on-property-read\", \"alert\")",
+                    "example.org#%#//scriptlet(\"abort-on-property-read\", \"alert\")"
                 ].joined(separator: "\n"),
                 expectedSourceRulesCount: 8,
                 expectedSourceSafariCompatibleRulesCount: 3,
                 expectedSafariRulesCount: 3,
                 expectedAdvancedRulesCount: 6
-            ),
+            )
         ]
 
         runTests(testCases)
@@ -2838,7 +2837,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                     "@@||example.org^",
                     "||example.org^$important",
                     "@@||example.org^$important",
-                    "@@||example.org^$document",
+                    "@@||example.org^$document"
                 ],
                 version: SafariVersion.safari16_4,
                 expectedSafariRulesJSON: #"""
@@ -2946,7 +2945,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                 expectedSourceRulesCount: 10,
                 expectedSourceSafariCompatibleRulesCount: 10,
                 expectedSafariRulesCount: 10
-            ),
+            )
         ]
 
         runTests(testCases)
@@ -3045,7 +3044,7 @@ final class ContentBlockerConverterTests: XCTestCase {
             "allegro.pl##div[data-box-name=\"banner - cmuid\"][data-prototype-id=\"allegro.advertisement.slot.banner\"]",
             "msn.com#%#AG_onLoad(function() { setTimeout(function() { var el = document.querySelectorAll(\".todaystripe .swipenav > li\"); if(el) { for(i=0;i<el.length;i++) { el[i].setAttribute(\"data-aop\", \"slide\" + i + \">single\"); var data = el[i].getAttribute(\"data-id\"); el[i].setAttribute(\"data-m\", ' {\"i\":' + data + ',\"p\":115,\"n\":\"single\",\"y\":8,\"o\":' + i + '} ')}; var count = document.querySelectorAll(\".todaystripe .infopane-placeholder .slidecount span\"); var diff = count.length - el.length; while(diff > 0) { var count_length = count.length; count[count_length-1].remove(); var count = document.querySelectorAll(\".todaystripe .infopane-placeholder .slidecount span\"); var diff = count.length - el.length; } } }, 300); });",
             "abplive.com#?#.articlepage > .center_block:has(> p:contains(- - Advertisement - -))",
-            "facebook2.com##div[role=\"region\"] + div[role=\"main\"] div[role=\"article\"] div[style=\"border-radius: max(0px, min(8px, ((100vw - 4px) - 100%) * 9999)) / 8px;\"] > div[class]:not([class*=\" \"])",
+            "facebook2.com##div[role=\"region\"] + div[role=\"main\"] div[role=\"article\"] div[style=\"border-radius: max(0px, min(8px, ((100vw - 4px) - 100%) * 9999)) / 8px;\"] > div[class]:not([class*=\" \"])"
         ]
         let converter = ContentBlockerConverter()
         let result = converter.convertArray(rules: rules, safariVersion: .safari15, advancedBlocking: true)

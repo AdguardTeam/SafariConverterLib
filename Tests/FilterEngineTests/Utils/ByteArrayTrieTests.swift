@@ -3,7 +3,6 @@ import XCTest
 @testable import FilterEngine
 
 final class ByteArrayTrieTests: XCTestCase {
-
     // MARK: - Basic Tests
 
     /// Test an empty trie: lookups on an empty trie should return nil or empty payload.

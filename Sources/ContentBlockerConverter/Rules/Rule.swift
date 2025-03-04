@@ -12,7 +12,7 @@ public class Rule {
     public var restrictedDomains = [String]()
 
     init(ruleText: String, for version: SafariVersion = DEFAULT_SAFARI_VERSION) throws {
-        self.ruleText = ruleText;
+        self.ruleText = ruleText
     }
 
     /// Parses the list of domains separated by the separator character and populates
@@ -24,7 +24,7 @@ public class Rule {
     ///   - domainsStr: a string with domains to be parsed.
     ///   - separator: a separator for the list of domains.
     /// - Throws: SyntaxError if encountered an invalid domain.
-    func addDomains(domainsStr: String, separator: UInt8) throws -> Void {
+    func addDomains(domainsStr: String, separator: UInt8) throws {
         let utfString = domainsStr.utf8
 
         let maxIndex = utfString.count - 1

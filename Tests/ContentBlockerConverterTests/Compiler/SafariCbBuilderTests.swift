@@ -15,7 +15,7 @@ final class SafariCbBuilderTests: XCTestCase {
         selector: "test_selector"
     )
 
-    func assertEntry(actual: String?) -> Void {
+    func assertEntry(actual: String?) {
         XCTAssertNotNil(actual)
 
         XCTAssertTrue(actual!.contains("\"url-filter\":\"test_url_filter\""))
@@ -68,5 +68,4 @@ final class SafariCbBuilderTests: XCTestCase {
         XCTAssertEqual(result.discardedRulesCount, 1)
         assertEntry(actual: result.json)
     }
-
 }

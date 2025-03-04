@@ -6,7 +6,7 @@ public class ErrorsCounter {
     }
 
     /// Increments the number of errors.
-    public func add() -> Void {
+    public func add() {
         count += 1
     }
 

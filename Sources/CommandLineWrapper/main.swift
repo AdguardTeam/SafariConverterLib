@@ -108,7 +108,6 @@ struct Convert: ParsableCommand {
             let content = result.advancedRulesText ?? ""
             try content.write(toFile: advancedBlockingRulesPath!, atomically: true, encoding: .utf8)
         }
-
     }
 }
 

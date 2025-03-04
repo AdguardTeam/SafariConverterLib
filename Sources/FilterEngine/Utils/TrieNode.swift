@@ -21,7 +21,6 @@ import OrderedCollections
 /// Once you've built up your trie, you can optionally flatten it into a more compact structure
 /// (e.g., `ByteArrayTrie`), or serialize it, etc.
 public class TrieNode {
-
     /// Children keyed by ASCII character byte.
     /// Each key is a `UInt8` representing one character (0–127 if strictly ASCII).
     ///

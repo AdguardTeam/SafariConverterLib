@@ -2,7 +2,6 @@ import XCTest
 @testable import ContentBlockerConverter
 
 final class PrefixMatcherTests: XCTestCase {
-
     func testNoPrefixes() {
         let matcher = PrefixMatcher(prefixes: [])
         let input = "hello"

@@ -1,7 +1,6 @@
 import XCTest
 
 class StringArrayEncodeToJSONTests: XCTestCase {
-
     func testEncodeToJSONWithoutEscape() {
         // Arrange
         let strings = ["Hello", "World", "Simple Test"]

@@ -4,7 +4,6 @@ import ContentBlockerConverter
 @testable import FilterEngine
 
 final class WebExtensionTests: XCTestCase {
-
     private var tempDirectory: URL!
 
     override func setUpWithError() throws {

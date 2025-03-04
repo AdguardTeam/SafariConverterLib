@@ -3,7 +3,6 @@ import XCTest
 @testable import FilterEngine
 
 final class FilterRuleExtractShortcutsTests: XCTestCase {
-
     // MARK: - Basic tests
 
     /// Tests an empty pattern; should return an empty array.
@@ -133,5 +132,4 @@ final class FilterRuleExtractShortcutsTests: XCTestCase {
             }
         }
     }
-
 }

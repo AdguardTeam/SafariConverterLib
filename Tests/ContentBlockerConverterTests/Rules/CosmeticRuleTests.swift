@@ -3,7 +3,6 @@ import XCTest
 @testable import ContentBlockerConverter
 
 final class CosmeticRuleTests: XCTestCase {
-
     func testCosmeticRule() {
         struct TestCase {
             let ruleText: String
@@ -211,7 +210,7 @@ final class CosmeticRuleTests: XCTestCase {
                 ruleText: "##div:is(.banner)",
                 version: SafariVersion.safari14,
                 expectedContent: "div:is(.banner)",
-                expectedIsElemhide: true),
+                expectedIsElemhide: true)
         ]
 
         for testCase in testCases {
@@ -232,12 +231,10 @@ final class CosmeticRuleTests: XCTestCase {
             XCTAssertEqual(result.permittedDomains, testCase.expectedPermittedDomains, msg)
             XCTAssertEqual(result.restrictedDomains, testCase.expectedRestrictedDomains, msg)
         }
-
     }
 
     func testForbiddenCSSRules() {
         XCTAssertThrowsError(try CosmeticRule(ruleText: "#$#.banner { background: url(test.png) }"))
         XCTAssertThrowsError(try CosmeticRule(ruleText: "#$?#.banner { background: url(test.png) }"))
     }
-
 }

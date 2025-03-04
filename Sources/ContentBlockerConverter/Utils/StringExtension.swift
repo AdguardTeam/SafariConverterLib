@@ -2,7 +2,6 @@ import Foundation
 
 /// Useful string extensions.
 extension String {
-
     /// Escapes special characters so that the string could be used in a JSON.
     public func escapeForJSON() -> String {
         var result = ""
@@ -63,7 +62,7 @@ extension String {
     public func split(delimiter: UInt8, escapeChar: UInt8) -> [String] {
         let utf8 = self.utf8
 
-        if utf8.count == 0 {
+        if utf8.isEmpty {
             return []
         }
 
@@ -123,7 +122,7 @@ extension String {
 
     /// Returns range of the first regex match in the string.
     public func firstMatch(for regex: NSRegularExpression) -> Range<String.Index>? {
-        let range = NSMakeRange(0, self.utf16.count)
+        let range = NSRange(location: 0, length: self.utf16.count)
         if let match = regex.firstMatch(in: self, options: [], range: range) {
             return Range(match.range, in: self)
         }
@@ -133,7 +132,7 @@ extension String {
 
     /// Returns all regex matches found in the string.
     public func matches(regex: NSRegularExpression) -> [String] {
-        let range = NSMakeRange(0, self.utf16.count)
+        let range = NSRange(location: 0, length: self.utf16.count)
         let matches = regex.matches(in: self, options: [], range: range)
         return matches.compactMap { match in
             guard let substringRange = Range(match.range, in: self) else {

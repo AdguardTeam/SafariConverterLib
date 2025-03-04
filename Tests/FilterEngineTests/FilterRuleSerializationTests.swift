@@ -3,7 +3,6 @@ import ContentBlockerConverter
 @testable import FilterEngine
 
 final class FilterRuleSerializationTests: XCTestCase {
-
     // Helper method to compare two FilterRule instances
     // because FilterRule is not Equatable by default.
     private func assertEqualRules(_ lhs: FilterRule, _ rhs: FilterRule, file: StaticString = #filePath, line: UInt = #line) {

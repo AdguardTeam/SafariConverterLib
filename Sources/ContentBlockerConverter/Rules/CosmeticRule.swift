@@ -27,10 +27,10 @@ public class CosmeticRule: Rule {
         "upward",
         "remove",
         "matches-attr",
-        "matches-property",
+        "matches-property"
     ]
 
-    private static let EXT_CSS_ATTR_INDICATOR = "[-ext-";
+    private static let EXT_CSS_ATTR_INDICATOR = "[-ext-"
 
     private static let PATH_MODIFIER = "path="
     private static let DOMAIN_MODIFIER = "domain="
@@ -69,7 +69,7 @@ public class CosmeticRule: Rule {
         try super.init(ruleText: ruleText)
 
         let markerInfo = CosmeticRuleMarker.findCosmeticRuleMarker(ruleText: ruleText)
-        if (markerInfo.index == -1) {
+        if markerInfo.index == -1 {
             throw SyntaxError.invalidRule(message: "Not a cosmetic rule")
         }
 
@@ -77,11 +77,11 @@ public class CosmeticRule: Rule {
         let utfContentIndex = ruleText.utf8.index(ruleText.utf8.startIndex, offsetBy: contentIndex)
         self.content = String(ruleText[utfContentIndex...])
 
-        if (self.content == "") {
+        if self.content == "" {
             throw SyntaxError.invalidRule(message: "Rule content is empty")
         }
 
-        switch (markerInfo.marker!) {
+        switch markerInfo.marker! {
         case CosmeticRuleMarker.ElementHiding,
             CosmeticRuleMarker.ElementHidingExtCSS,
             CosmeticRuleMarker.ElementHidingException,
@@ -96,7 +96,7 @@ public class CosmeticRule: Rule {
             CosmeticRuleMarker.JsException:
             self.isScript = true
         default:
-            throw SyntaxError.invalidRule(message: "Unsupported rule type");
+            throw SyntaxError.invalidRule(message: "Unsupported rule type")
         }
 
         if self.isScript {
@@ -105,7 +105,7 @@ public class CosmeticRule: Rule {
             }
         }
 
-        if (markerInfo.index > 0) {
+        if markerInfo.index > 0 {
             // This means that the marker is preceded by the list of domains
             // Now it's a good time to parse them.
             let markerIndex = ruleText.utf8.index(ruleText.utf8.startIndex, offsetBy: markerInfo.index)
@@ -113,14 +113,14 @@ public class CosmeticRule: Rule {
 
             // Support for *## for generic rules
             // https://github.com/AdguardTeam/SafariConverterLib/issues/11
-            if (!(domains.utf8.count == 1 && domains.utf8.first == Chars.WILDCARD)) {
+            if !(domains.utf8.count == 1 && domains.utf8.first == Chars.WILDCARD) {
                 try setCosmeticRuleDomains(domains: domains)
             }
         }
 
         isWhiteList = CosmeticRule.isWhiteList(marker: markerInfo.marker!)
         isExtendedCss = CosmeticRule.isExtCssMarker(marker: markerInfo.marker!)
-        if (!isExtendedCss && CosmeticRule.hasExtCSSIndicators(content: self.content, version: version)) {
+        if !isExtendedCss && CosmeticRule.hasExtCSSIndicators(content: self.content, version: version) {
             // Additional check if rule is extended css rule by pseudo class indicators.
             isExtendedCss = true
         }
@@ -133,7 +133,7 @@ public class CosmeticRule: Rule {
     /// Checks if the rule contains any extended CSS pseudo-class indicators.
     private static func hasExtCSSIndicators(content: String, version: SafariVersion) -> Bool {
         // Not enough for even minimal length pseudo.
-        if (content.utf8.count < 6) {
+        if content.utf8.count < 6 {
             return false
         }
 
@@ -150,14 +150,10 @@ public class CosmeticRule: Rule {
                 if content.utf8.dropFirst(i).starts(with: CosmeticRule.EXT_CSS_ATTR_INDICATOR.utf8) {
                     return true
                 }
-
-                break
-            case Chars.COLON:
+                case Chars.COLON:
                 insidePseudo = true
                 pseudoStartIndex = i + 1
-
-                break
-            case Chars.BRACKET_OPEN:
+                case Chars.BRACKET_OPEN:
                 if insidePseudo {
                     insidePseudo = false
                     let pseudoEndIndex = i - 1
@@ -166,7 +162,7 @@ public class CosmeticRule: Rule {
                         let startIndex = content.utf8.index(content.utf8.startIndex, offsetBy: pseudoStartIndex)
                         let endIndex = content.utf8.index(content.utf8.startIndex, offsetBy: pseudoEndIndex)
 
-                        let pseudo = String(content[startIndex...endIndex])
+                        let pseudo = String(content[startIndex ... endIndex])
 
                         // the rule with `##` marker and `:has()` pseudo-class should not be considered as ExtendedCss,
                         // because `:has()` pseudo-class has native implementation since Safari 16.4
@@ -192,8 +188,6 @@ public class CosmeticRule: Rule {
                         }
                     }
                 }
-
-                break
             default:
                 break
             }
@@ -204,7 +198,7 @@ public class CosmeticRule: Rule {
 
     /// Returns true if the rule marker is for an exception rule.
     private static func isWhiteList(marker: CosmeticRuleMarker) -> Bool {
-        switch (marker) {
+        switch marker {
         case CosmeticRuleMarker.ElementHidingException,
             CosmeticRuleMarker.ElementHidingExtCSSException,
             CosmeticRuleMarker.CssException,
@@ -219,7 +213,7 @@ public class CosmeticRule: Rule {
 
     /// Returns true if the rule is an extended CSS rule.
     private static func isExtCssMarker(marker: CosmeticRuleMarker) -> Bool {
-        switch (marker) {
+        switch marker {
         case CosmeticRuleMarker.CssExtCSS,
             CosmeticRuleMarker.CssExtCSSException,
             CosmeticRuleMarker.ElementHidingExtCSS,
@@ -231,7 +225,7 @@ public class CosmeticRule: Rule {
     }
 
     /// Parses a single cosmetic option.
-    private func parseOption(name: String, value: String) throws -> Void {
+    private func parseOption(name: String, value: String) throws {
         switch name {
         case "domain", "from":
             if value.isEmpty {
@@ -310,7 +304,7 @@ public class CosmeticRule: Rule {
         return nil
     }
 
-    func setCosmeticRuleDomains(domains: String) throws -> Void {
+    func setCosmeticRuleDomains(domains: String) throws {
         if domains.utf8.first == Chars.SQUARE_BRACKET_OPEN {
             let remainingDomains = try parseCosmeticOptions(domains: domains)
             if remainingDomains != nil && !remainingDomains!.isEmpty {

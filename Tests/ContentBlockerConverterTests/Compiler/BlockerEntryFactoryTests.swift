@@ -484,7 +484,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 expectedEntry: BlockerEntry(
                     trigger: BlockerEntry.Trigger(
                         urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
-                        resourceType : [
+                        resourceType: [
                           "image",
                           "style-sheet",
                           "script",
@@ -514,7 +514,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 ruleText: "example.org,~example.com##.banner",
                 expectedEntry: nil,
                 expectedErrorsCount: 1
-            ),
+            )
         ]
 
         for testCase in testCases {

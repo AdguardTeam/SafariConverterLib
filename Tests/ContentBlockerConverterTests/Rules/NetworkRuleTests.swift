@@ -271,7 +271,7 @@ final class NetworkRuleTests: XCTestCase {
                 expectedUrlRuleText: "||example.org^",
                 expectedUrlRegExpSource: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
                 expectedPermittedDomains: ["example.org"],
-                expectedPermittedContentTypes: [.image, .script]),
+                expectedPermittedContentTypes: [.image, .script])
         ]
 
         for testCase in testCases {
@@ -365,7 +365,7 @@ final class NetworkRuleTests: XCTestCase {
             ("||example.com/path", "example.com", true),
             ("||invalid/path", "invalid", true),
             ("http://example.org$", "example.org", false),
-            ("https://example.org^someother", "example.org", true),
+            ("https://example.org^someother", "example.org", true)
         ]
 
         for testPattern in testPatterns {
@@ -388,7 +388,7 @@ final class NetworkRuleTests: XCTestCase {
             ("||example.com/path", "example.com", true),
             ("||invalid/path", "", false),
             ("http://example.org$", "example.org", false),
-            ("https://example.org^someother", "example.org", true),
+            ("https://example.org^someother", "example.org", true)
         ]
 
         for testPattern in testPatterns {
@@ -410,7 +410,7 @@ final class NetworkRuleTests: XCTestCase {
             ("||example.org^$domain=~example.com", "||example.org^$badfilter", false),
             ("||example.org^$domain=~example.com", "||example.org^$domain=~example.com,badfilter", true),
             ("||example.org^$domain=example.com", "||example.org^$badfilter,domain=example.com", true),
-            ("||example.org^$domain=example.com|example.net", "||example.org^$badfilter,domain=example.org|example.com", true),
+            ("||example.org^$domain=example.com|example.net", "||example.org^$badfilter,domain=example.org|example.com", true)
         ]
 
         for (rule, badfilter, expected) in testRules {

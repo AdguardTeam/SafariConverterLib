@@ -13,7 +13,6 @@ import Foundation
 /// - $csp
 /// - $object
 public class NetworkRule: Rule {
-
     /// If true, the network rule unblocks everything on the website (cosmetic + network).
     public var isDocumentWhiteList = false
     /// If true, the network rule unblocks all request from matching domains.
@@ -44,7 +43,7 @@ public class NetworkRule: Rule {
     /// Regular expression that's converted from the rule pattern.
     ///
     /// nil here means that the rule will match all URLs.
-    public var urlRegExpSource: String? = nil
+    public var urlRegExpSource: String?
 
     /// Initializes a network rule by parsing its properties from the rule text.
     ///
@@ -58,13 +57,13 @@ public class NetworkRule: Rule {
         let ruleParts = try NetworkRuleParser.parseRuleText(ruleText: ruleText)
         isWhiteList = ruleParts.whitelist
 
-        if (ruleParts.options != nil && ruleParts.options != "") {
+        if ruleParts.options != nil && ruleParts.options != "" {
             try loadOptions(options: ruleParts.options!, version: version)
         }
 
         urlRuleText = ruleParts.pattern
 
-        if (isRegexRule()) {
+        if isRegexRule() {
             let startIndex = urlRuleText.utf8.index(after: urlRuleText.utf8.startIndex)
             let endIndex = urlRuleText.utf8.index(before: urlRuleText.utf8.endIndex)
 
@@ -72,7 +71,7 @@ public class NetworkRule: Rule {
         } else {
             urlRuleText = NetworkRuleParser.encodeDomainIfRequired(pattern: urlRuleText)!
 
-            if (!urlRuleText.isEmpty) {
+            if !urlRuleText.isEmpty {
                 urlRegExpSource = try SimpleRegex.createRegexText(pattern: urlRuleText)
             }
         }
@@ -108,35 +107,35 @@ public class NetworkRule: Rule {
     /// Checks if this rule negates the other rule.
     /// Only makes sense when this rule has a `$badfilter` modifier.
     public func negatesBadfilter(specifiedRule: NetworkRule) -> Bool {
-        if (isWhiteList != specifiedRule.isWhiteList) {
+        if isWhiteList != specifiedRule.isWhiteList {
             return false
         }
 
-        if (urlRuleText != specifiedRule.urlRuleText) {
+        if urlRuleText != specifiedRule.urlRuleText {
             return false
         }
 
-        if (permittedContentType != specifiedRule.permittedContentType) {
+        if permittedContentType != specifiedRule.permittedContentType {
             return false
         }
 
-        if (restrictedContentType != specifiedRule.restrictedContentType) {
+        if restrictedContentType != specifiedRule.restrictedContentType {
             return false
         }
 
-        if (enabledOptions != specifiedRule.enabledOptions) {
+        if enabledOptions != specifiedRule.enabledOptions {
             return false
         }
 
-        if (disabledOptions != specifiedRule.disabledOptions) {
+        if disabledOptions != specifiedRule.disabledOptions {
             return false
         }
 
-        if (restrictedDomains != specifiedRule.restrictedDomains) {
+        if restrictedDomains != specifiedRule.restrictedDomains {
             return false
         }
 
-        if (!NetworkRule.stringArraysHaveIntersection(left: permittedDomains, right: specifiedRule.permittedDomains)) {
+        if !NetworkRule.stringArraysHaveIntersection(left: permittedDomains, right: specifiedRule.permittedDomains) {
             return false
         }
 
@@ -145,12 +144,12 @@ public class NetworkRule: Rule {
 
     /// Checks if two string arrays have at least 1 element in intersection.
     private static func stringArraysHaveIntersection(left: [String], right: [String]) -> Bool {
-        if (left.count == 0 && right.count == 0) {
+        if left.isEmpty && right.isEmpty {
             return true
         }
 
         for elem in left {
-            if (right.contains(elem)) {
+            if right.contains(elem) {
                 return true
             }
         }
@@ -159,8 +158,8 @@ public class NetworkRule: Rule {
     }
 
     /// Sets rule domains from the $domain modifier.
-    private func setNetworkRuleDomains(domains: String) throws -> Void {
-        if (domains == "") {
+    private func setNetworkRuleDomains(domains: String) throws {
+        if domains == "" {
             throw SyntaxError.invalidModifier(message: "$domain cannot be empty")
         }
 
@@ -170,13 +169,12 @@ public class NetworkRule: Rule {
     /// Checks that the rule and its options is valid.
     ///
     /// - Throws: SyntaxError if the rule is not valid.
-    private func validateRule(version: SafariVersion) throws -> Void {
-        if (urlRuleText == "||"
+    private func validateRule(version: SafariVersion) throws {
+        if urlRuleText == "||"
                 || urlRuleText == "*"
                 || urlRuleText == ""
-                || urlRuleText.utf8.count < 3
-           ) {
-            if (permittedDomains.count < 1) {
+                || urlRuleText.utf8.count < 3 {
+            if permittedDomains.count < 1 {
                 // Rule matches too much and does not have any domain restriction
                 // We should not allow this kind of rules
                 throw SyntaxError.invalidPattern(message: "The rule is too wide, add domain restriction or make the pattern more specific")
@@ -203,8 +201,8 @@ public class NetworkRule: Rule {
     }
 
     /// Parses network rule options from the options string.
-    private func loadOptions(options: String, version: SafariVersion) throws -> Void {
-        let optionParts = options.split(delimiter: Chars.COMMA, escapeChar: Chars.BACKSLASH);
+    private func loadOptions(options: String, version: SafariVersion) throws {
+        let optionParts = options.split(delimiter: Chars.COMMA, escapeChar: Chars.BACKSLASH)
 
         for option in optionParts {
             var optionName = option
@@ -228,26 +226,26 @@ public class NetworkRule: Rule {
     }
 
     /// Attempts to parse a single network rule option.
-    private func loadOption(optionName: String, optionValue: String, version: SafariVersion) throws -> Void {
+    private func loadOption(optionName: String, optionValue: String, version: SafariVersion) throws {
         if optionName.utf8.first == Chars.UNDERSCORE {
             // A noop modifier does nothing and can be used to increase some rules readability.
             // It consists of the sequence of underscore characters (_) of any length
             // and can appear in a rule as many times as it's needed.
-            if optionName.utf8.allSatisfy({$0 == Chars.UNDERSCORE}) {
+            if optionName.utf8.allSatisfy({ $0 == Chars.UNDERSCORE }) {
                 return
             }
         }
 
-        switch (optionName) {
+        switch optionName {
         case "all":
             // A normal blocking rule in the case of Safari is almost the same as $all,
             // i.e. it blocks all requests including main frame ones.
             // So we're doing nothing here.
             break
-        case "third-party","~first-party","3p","~1p":
+        case "third-party", "~first-party", "3p", "~1p":
             isCheckThirdParty = true
             isThirdParty = true
-        case "~third-party","first-party","1p","~3p":
+        case "~third-party", "first-party", "1p", "~3p":
             isCheckThirdParty = true
             isThirdParty = false
         case "match-case":
@@ -339,8 +337,8 @@ public class NetworkRule: Rule {
     }
 
     /// Enables or disables the specified content type for this rule.
-    private func setRequestType(contentType: ContentType, enabled: Bool) -> Void {
-        if (enabled) {
+    private func setRequestType(contentType: ContentType, enabled: Bool) {
+        if enabled {
             if permittedContentType == .all {
                 permittedContentType = []
             }
@@ -362,8 +360,8 @@ public class NetworkRule: Rule {
     }
 
     /// Enables or disables the specified option.
-    private func setOptionEnabled(option: Option, value: Bool) throws -> Void {
-        if (value) {
+    private func setOptionEnabled(option: Option, value: Bool) throws {
+        if value {
             self.enabledOptions.insert(option)
         } else {
             self.disabledOptions.insert(option)
@@ -403,7 +401,6 @@ public class NetworkRule: Rule {
             .subdocument,
             .ping
         ]
-
     }
 
     /// Represents network rule options.

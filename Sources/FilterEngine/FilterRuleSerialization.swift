@@ -3,7 +3,6 @@ import Foundation
 // MARK: - Serialization
 
 extension FilterRule {
-
     enum FilterRuleCodingError: Error {
         case stringTooLong(actualLength: Int, maxAllowed: Int)
         case notEnoughBytes
@@ -99,7 +98,6 @@ extension FilterRule {
 // MARK: - Private helpers for compact serialization
 
 extension FilterRule {
-
     /// Writes a String? into the buffer using [2-byte length] + [bytes].
     /// - If the string is nil or empty, writes 0 for length.
     private static func writeString(_ value: String?, to buffer: inout Data) throws {

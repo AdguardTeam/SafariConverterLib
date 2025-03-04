@@ -1,6 +1,5 @@
 /// Helper functions for working with domains.
 public final class DomainUtils {
-
     /// Determines if `candidate` is exactly the given `domain` or a subdomain of it.
     ///
     /// This function compares the candidate string to the domain string using their

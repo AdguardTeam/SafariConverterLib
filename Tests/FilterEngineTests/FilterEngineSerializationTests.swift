@@ -4,7 +4,6 @@ import ContentBlockerConverter
 @testable import FilterEngine
 
 final class FilterEngineSerializationTests: XCTestCase {
-
     private var tempDirectory: URL!
     private var tempRulesFileURL: URL!
     private var tempIndexFileURL: URL!

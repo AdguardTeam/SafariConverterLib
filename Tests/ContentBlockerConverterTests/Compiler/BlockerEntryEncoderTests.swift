@@ -4,11 +4,11 @@ import XCTest
 @testable import ContentBlockerConverter
 
 final class BlockerEntryEncoderTests: XCTestCase {
-    private let encoder = BlockerEntryEncoder();
+    private let encoder = BlockerEntryEncoder()
 
     func testEmpty() {
-        let (result, _) = encoder.encode(entries: [BlockerEntry]());
-        XCTAssertEqual(result, "[]");
+        let (result, _) = encoder.encode(entries: [BlockerEntry]())
+        XCTAssertEqual(result, "[]")
     }
 
     func testSimpleEntry() throws {
@@ -20,6 +20,6 @@ final class BlockerEntryEncoderTests: XCTestCase {
 
         let entry = converter.createBlockerEntry(rule: rule)
         let (result, _) = encoder.encode(entries: [entry!])
-        XCTAssertEqual(result, "[{\"trigger\":{\"url-filter\":\"^[htpsw]+:\\\\/\\\\/([a-z0-9-]+\\\\.)?example\\\\.com\\\\/path\",\"if-domain\":[\"*test.com\"]},\"action\":{\"type\":\"block\"}}]");
+        XCTAssertEqual(result, "[{\"trigger\":{\"url-filter\":\"^[htpsw]+:\\\\/\\\\/([a-z0-9-]+\\\\.)?example\\\\.com\\\\/path\",\"if-domain\":[\"*test.com\"]},\"action\":{\"type\":\"block\"}}]")
     }
 }

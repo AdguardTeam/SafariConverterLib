@@ -4,7 +4,6 @@ import XCTest
 @testable import ContentBlockerConverter
 
 final class CompilerTests: XCTestCase {
-
     func testEmpty() {
         let compiler = Compiler(errorsCounter: ErrorsCounter(), version: DEFAULT_SAFARI_VERSION)
         let result = compiler.compileRules(rules: [Rule]())
@@ -44,7 +43,7 @@ final class CompilerTests: XCTestCase {
                 action: BlockerEntry.Action(type: "css-display-none", selector: "#pub")),
             BlockerEntry(
                 trigger: BlockerEntry.Trigger(urlFilter: ".*"),
-                action: BlockerEntry.Action(type: "css-display-none", selector: "#banner")),
+                action: BlockerEntry.Action(type: "css-display-none", selector: "#banner"))
         ]
 
         let result = Compiler.compactCssRules(cssBlocking: entries)
@@ -70,7 +69,7 @@ final class CompilerTests: XCTestCase {
                 action: BlockerEntry.Action(type: "css-display-none", selector: "#selector-two")),
             BlockerEntry(
                 trigger: BlockerEntry.Trigger(ifDomain: ["compact.com"], urlFilter: ".*"),
-                action: BlockerEntry.Action(type: "css-display-none", selector: "#selector-three")),
+                action: BlockerEntry.Action(type: "css-display-none", selector: "#selector-three"))
         ]
 
         let result = Compiler.compactDomainCssRules(entries: entries)
@@ -82,7 +81,7 @@ final class CompilerTests: XCTestCase {
         var errorsCounter = ErrorsCounter()
         var compiler = Compiler(errorsCounter: errorsCounter, version: SafariVersion.safari13)
 
-        func assertResultEmpty(result: CompilationResult) -> Void {
+        func assertResultEmpty(result: CompilationResult) {
             XCTAssertEqual(result.cssBlockingWide.count, 0)
             XCTAssertEqual(result.cssBlockingGenericDomainSensitive.count, 0)
             XCTAssertEqual(result.cssBlockingDomainSensitive.count, 0)

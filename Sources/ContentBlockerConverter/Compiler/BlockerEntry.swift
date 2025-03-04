@@ -6,7 +6,7 @@ import Foundation
 /// https://developer.apple.com/documentation/safariservices/creating-a-content-blocker
 ///
 /// In addition to Safari normal syntax it adds some new fields that are interpreted by a custom extension.
-public struct BlockerEntry : Codable, Equatable, CustomStringConvertible {
+public struct BlockerEntry: Codable, Equatable, CustomStringConvertible {
     public init(trigger: BlockerEntry.Trigger, action: BlockerEntry.Action) {
         self.trigger = trigger
         self.action = action
@@ -24,7 +24,7 @@ public struct BlockerEntry : Codable, Equatable, CustomStringConvertible {
     public var description: String {
         let encoder = JSONEncoder()
 
-        encoder.outputFormatting = [.prettyPrinted,.sortedKeys]
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         let json = try? encoder.encode(self)
 
         if json == nil {
@@ -35,7 +35,7 @@ public struct BlockerEntry : Codable, Equatable, CustomStringConvertible {
     }
 
     /// Trigger is the "trigger" field of a content blocking rule, i.e. defines conditions when the rule is applied.
-    public struct Trigger : Codable, Equatable {
+    public struct Trigger: Codable, Equatable {
         public init(
             ifDomain: [String]? = nil,
             urlFilter: String? = nil,
@@ -85,7 +85,7 @@ public struct BlockerEntry : Codable, Equatable, CustomStringConvertible {
     }
 
     /// Action represents an action that this rule applies.
-    public struct Action : Codable, Equatable {
+    public struct Action: Codable, Equatable {
         public init(type: String, selector: String? = nil) {
             self.type = type
             self.selector = selector

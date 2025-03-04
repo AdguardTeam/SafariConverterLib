@@ -22,7 +22,7 @@ let package = Package(
         // .package(url: /* package url */, from: "1.0.0"),
         .package(url: "https://github.com/gumob/PunycodeSwift.git", .exact("3.0.0")),
         .package(url: "https://github.com/apple/swift-argument-parser", .exact("1.5.0")),
-        .package(url: "https://github.com/apple/swift-collections.git", .exact("1.1.4")),
+        .package(url: "https://github.com/apple/swift-collections.git", .exact("1.1.4"))
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -53,6 +53,11 @@ let package = Package(
             resources: [.copy("Resources/test-rules.txt")]),
         .testTarget(
             name: "FilterEngineTests",
-            dependencies: ["FilterEngine"])
+            dependencies: ["FilterEngine"],
+            resources: [
+                .copy("Resources/advanced-rules.txt"),
+                .copy("Resources/reference-rules.bin"),
+                .copy("Resources/reference-engine.bin")
+            ])
     ]
 )

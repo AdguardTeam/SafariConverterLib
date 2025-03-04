@@ -154,31 +154,31 @@ public struct Action: OptionSet, Codable {
     }
 
     /// Rules that disable CSS cosmetic rules, i.e. `$elemhide`.
-    public static let disableCSS         = Action(rawValue: 1 << 0)
+    public static let disableCSS = Action(rawValue: 1 << 0)
 
     /// Rules that disable generic CSS rules, i.e. `$generichide`.
-    public static let disableGenericCSS  = Action(rawValue: 1 << 1)
+    public static let disableGenericCSS = Action(rawValue: 1 << 1)
 
     /// Rules that disable specific CSS rules, i.e. `$specifichide`.
     public static let disableSpecificCSS = Action(rawValue: 1 << 2)
 
     /// Rules that disable script rules, i.e. `$jsinject`.
-    public static let disableScript      = Action(rawValue: 1 << 3)
+    public static let disableScript = Action(rawValue: 1 << 3)
 
     /// Regular element hiding rules, i.e. `##`.
-    public static let cssDisplayNone   = Action(rawValue: 1 << 4)
+    public static let cssDisplayNone = Action(rawValue: 1 << 4)
 
     /// CSS injection rules, i.e. `#$#`.
-    public static let cssInject        = Action(rawValue: 1 << 5)
+    public static let cssInject = Action(rawValue: 1 << 5)
 
     /// Scriptlet rules, i.e. `#%#//scriptlet`.
-    public static let scriptlet        = Action(rawValue: 1 << 6)
+    public static let scriptlet = Action(rawValue: 1 << 6)
 
     /// Script injection rules, i.e. `#%#`.
-    public static let scriptInject     = Action(rawValue: 1 << 7)
+    public static let scriptInject = Action(rawValue: 1 << 7)
 
     /// Extended CSS rules (can be element hiding or CSS inject), i.e. `#?#` or `#$?#`
-    public static let extendedCSS      = Action(rawValue: 1 << 8)
+    public static let extendedCSS = Action(rawValue: 1 << 8)
 
     public static let network: Action = [disableCSS, disableGenericCSS, disableSpecificCSS, disableScript]
     public static let cosmetic: Action = [cssDisplayNone, cssInject, scriptlet, scriptInject, extendedCSS]
@@ -203,7 +203,6 @@ public enum RuleError: Error {
 // MARK: - Helper functions for FilterRule initialization
 
 extension FilterRule {
-
     /// Creates `Action` from a network rule and returns it or throws `RuleError`
     /// if this network rule cannot be used in Safari.
     private static func getNetworkRuleAction(_ rule: NetworkRule) throws -> Action {
@@ -265,7 +264,6 @@ extension FilterRule {
 // MARK: - Extracting rule pattern shortcut
 
 extension FilterRule {
-
     /// Extracts "shortcuts" from the given pattern. Shortcuts:
     ///  - Must not contain `|`, `*`, or `^`
     ///  - Must be at least 3 characters long
@@ -303,7 +301,6 @@ extension FilterRule {
 // MARK: - Extracting regex shortcuts
 
 extension FilterRule {
-
     /// Extracts "shortcuts" from a regex pattern, following the rules:
     ///  1. Shortcut is a string without special characters that can be used to
     ///     test a string before using the regular expression.
@@ -316,7 +313,6 @@ extension FilterRule {
     ///  6. Accumulate all valid characters outside of brackets into "shortcut" strings,
     ///     splitting whenever we see a "special" regex character (while outside brackets).
     public static func extractRegexShortcuts(from pattern: String) -> [String] {
-
         // 1) Define sets / maps we'll need:
 
         // Special regex characters that *end* a shortcut (while outside brackets).
@@ -473,5 +469,4 @@ extension FilterRule {
 
         return result
     }
-
 }

@@ -2,7 +2,6 @@ import Foundation
 
 /// Takes care of validation of regular expressions that can used by Safari.
 class SafariRegex {
-
     /// Safari does not support some regular expressions so we do some additional validations.
     ///
     /// Supported expressions:
@@ -164,7 +163,6 @@ class SafariRegex {
 
         return .success(())
     }
-
 }
 
 /// Represents different reasons why the regular expression may be considered invalid by Safari.

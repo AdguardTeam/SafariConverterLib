@@ -98,7 +98,7 @@ class Compiler {
             var item = blockingItems[index]
 
             for exception in specifichideExceptions {
-                if (item.trigger.ifDomain?.contains(exception) != nil) {
+                if item.trigger.ifDomain?.contains(exception) != nil {
                     item.trigger.ifDomain = item.trigger.ifDomain!.filter {
                         $0 != exception
                     }
@@ -112,7 +112,7 @@ class Compiler {
 
         for r in blockingItems {
             // skip entries with excluded ifDomain
-            if (r.trigger.ifDomain?.count == 0) {
+            if r.trigger.ifDomain?.count == 0 {
                 continue
             }
             result.append(r)
@@ -137,13 +137,13 @@ class Compiler {
         var wideSelectors = [String]()
 
         for entry in cssBlocking {
-            if (entry.trigger.ifDomain != nil) {
+            if entry.trigger.ifDomain != nil {
                 cssBlockingDomainSensitive.append(entry)
-            } else if (entry.trigger.unlessDomain != nil) {
+            } else if entry.trigger.unlessDomain != nil {
                 cssBlockingGenericDomainSensitive.append(entry)
-            } else if (entry.action.selector != nil && entry.trigger.urlFilter == BlockerEntryFactory.URL_FILTER_COSMETIC_RULES) {
+            } else if entry.action.selector != nil && entry.trigger.urlFilter == BlockerEntryFactory.URL_FILTER_COSMETIC_RULES {
                 wideSelectors.append(entry.action.selector!)
-                if (wideSelectors.count >= Compiler.MAX_SELECTORS_PER_RULE) {
+                if wideSelectors.count >= Compiler.MAX_SELECTORS_PER_RULE {
                     cssBlockingWide.append(createWideRule(wideSelectors: wideSelectors))
                     wideSelectors = [String]()
                 }
@@ -152,7 +152,7 @@ class Compiler {
             }
         }
 
-        if (wideSelectors.count > 0) {
+        if !wideSelectors.isEmpty {
             cssBlockingWide.append(createWideRule(wideSelectors: wideSelectors))
         }
 
@@ -183,11 +183,11 @@ class Compiler {
 
             if ifDomain != nil && ifDomain?.count == 1 &&
                 urlFilter == BlockerEntryFactory.URL_FILTER_ANY_URL &&
-                (unlessDomain?.isEmpty ?? true)   {
+                (unlessDomain?.isEmpty ?? true) {
                 let domain = entry.trigger.ifDomain![0]
 
                 var current = domainsDictionary[domain]
-                if (current == nil) {
+                if current == nil {
                     current = [BlockerEntry]()
                 }
 
@@ -201,11 +201,11 @@ class Compiler {
 
         for domain in domainsDictionary.keys {
             let domainEntries = domainsDictionary[domain]
-            if (domainEntries == nil) {
+            if domainEntries == nil {
                 continue
             }
 
-            if (domainEntries!.count <= 1) {
+            if domainEntries!.count <= 1 {
                 result.append(contentsOf: domainEntries!)
                 continue
             }
@@ -229,7 +229,7 @@ class Compiler {
             var selectors = [String]()
             for entry in chunk {
                 let selector = entry.action.selector
-                if (selector != nil) {
+                if selector != nil {
                     selectors.append(entry.action.selector!)
                 }
             }
@@ -237,7 +237,7 @@ class Compiler {
             let wideRuleEntry = BlockerEntry(
                 trigger: trigger,
                 action: BlockerEntry.Action(type: "css-display-none", selector: selectors.joined(separator: ", "))
-            );
+            )
 
             result.append(wideRuleEntry)
         }

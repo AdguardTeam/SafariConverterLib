@@ -48,7 +48,7 @@ public final class RuleConverter {
     ///
     /// Note, that some rules are converted to a list of rules.
     public static func convertRule(ruleText: String) -> [String?] {
-        if (ruleText.isEmpty) {
+        if ruleText.isEmpty {
             return [ruleText]
         }
 
@@ -57,25 +57,25 @@ public final class RuleConverter {
         if markerInfo.index != -1 {
             // If a cosmetic rule marker has been found, check for scriptlet rules
             // conversions.
-            if (isUboScriptletRule(ruleText: ruleText, marker: markerInfo.marker!, index: markerInfo.index)) {
+            if isUboScriptletRule(ruleText: ruleText, marker: markerInfo.marker!, index: markerInfo.index) {
                 return [convertUboScriptletRule(rule: ruleText)]
             }
 
-            if (isAbpSnippetRule(ruleText: ruleText, marker: markerInfo.marker!, index: markerInfo.index)) {
+            if isAbpSnippetRule(ruleText: ruleText, marker: markerInfo.marker!, index: markerInfo.index) {
                 return convertAbpSnippetRule(ruleText: ruleText, marker: markerInfo.marker!, index: markerInfo.index)
             }
 
             if markerInfo.marker == CosmeticRuleMarker.ElementHiding ||
                        markerInfo.marker == CosmeticRuleMarker.ElementHidingException {
                 let uboCssStyleRule = convertUboCssStyleRule(ruleText: ruleText)
-                if (uboCssStyleRule != nil) {
+                if uboCssStyleRule != nil {
                     return [uboCssStyleRule!]
                 }
             }
         } else {
             // Convert denyallow rule.
             let denyallowRules = convertDenyallowRule(ruleText: ruleText)
-            if (denyallowRules != nil) {
+            if denyallowRules != nil {
                 return denyallowRules!
             }
         }
@@ -107,14 +107,14 @@ public final class RuleConverter {
             return nil
         }
 
-        let mask = rule[range!];
-        let domains = String(rule[..<range!.lowerBound]);
+        let mask = rule[range!]
+        let domains = String(rule[..<range!.lowerBound])
 
-        let template: String;
-        if (mask.utf8.contains(Chars.AT_CHAR)) {
-            template = Self.ADGUARD_SCRIPTLET_EXCEPTION_MASK;
+        let template: String
+        if mask.utf8.contains(Chars.AT_CHAR) {
+            template = Self.ADGUARD_SCRIPTLET_EXCEPTION_MASK
         } else {
-            template = Self.ADGUARD_SCRIPTLET_MASK;
+            template = Self.ADGUARD_SCRIPTLET_MASK
         }
 
         guard let arguments: String = extractArgumentsString(str: rule) else {
@@ -122,7 +122,7 @@ public final class RuleConverter {
         }
 
         var parsedArgs = arguments.components(separatedBy: ", ")
-        if (parsedArgs.count == 1) {
+        if parsedArgs.count == 1 {
             // Most probably this is not correct separator, in this case we use ','
             parsedArgs = arguments.components(separatedBy: ",")
         }
@@ -134,12 +134,12 @@ public final class RuleConverter {
                 arg = "ubo-" + arg
             }
 
-            args.append(wrapInDoubleQuotes(str: arg));
+            args.append(wrapInDoubleQuotes(str: arg))
         }
 
         let argsString = args.joined(separator: ", ")
 
-        return replacePlaceholders(str: template, domains: domains, args: argsString);
+        return replacePlaceholders(str: template, domains: domains, args: argsString)
     }
 
     /// Returns true if the rule most probably is a ABP snippet rule.
@@ -188,7 +188,7 @@ public final class RuleConverter {
             result.append(converted)
         }
 
-        return result;
+        return result
     }
 
     /// Convers uBO-style CSS injection rule.
@@ -211,12 +211,12 @@ public final class RuleConverter {
             "##": "#$#",
             "#@#": "#@$#",
             "#?#": "#$?#",
-            "#@?#": "#@$?#",
+            "#@?#": "#@$?#"
         ]
 
-        var replacedMarkerRule: String? = nil;
+        var replacedMarkerRule: String?
         for marker in uboToInjectCssMarkersDictionary.keys {
-            if (ruleText.utf8.includes(marker.utf8)) {
+            if ruleText.utf8.includes(marker.utf8) {
                 replacedMarkerRule = ruleText.replacingOccurrences(of: marker, with: uboToInjectCssMarkersDictionary[marker]!)
                 let result = replacedMarkerRule!.replacingOccurrences(of: Self.UBO_CSS_STYLE_MASK, with: " { ")
 
@@ -224,7 +224,7 @@ public final class RuleConverter {
             }
         }
 
-        return nil;
+        return nil
     }
 
     /// Validates and converts rule with $denyallow modifier into blocking rule and additional exception rules.
@@ -241,7 +241,6 @@ public final class RuleConverter {
         if ruleParts.pattern.utf8.first == Chars.PIPE ||
             ruleParts.options == nil ||
             !ruleParts.options!.utf8.includes(Self.DOMAIN_MODIFIER_MASK.utf8) {
-
             // We can only support simple case like this: $denyallow=x.com,domain=y.com,
             // i.e. the rule that targets path (not domain) and it must have both
             // denyallow and domain modifier.
@@ -249,21 +248,21 @@ public final class RuleConverter {
             return nil
         }
 
-        var blockingElement: String = ruleParts.pattern;
-        if (blockingElement.starts(with: "/")) {
-            blockingElement = String(blockingElement.dropFirst());
+        var blockingElement: String = ruleParts.pattern
+        if blockingElement.starts(with: "/") {
+            blockingElement = String(blockingElement.dropFirst())
         }
 
         let isGenericRule = blockingElement == "" || blockingElement == "*"
 
         let ruleOptions = ruleParts.options!.components(separatedBy: ",")
-        let denyallowOption = ruleOptions.first(where: { $0.contains(Self.DENYALLOW_MODIFIER_MASK) })!
+        let denyallowOption = ruleOptions.first { $0.contains(Self.DENYALLOW_MODIFIER_MASK) }!
 
         // Get denyallow domains list.
         let denyallowDomains = denyallowOption.replace(target: Self.DENYALLOW_MODIFIER_MASK, withString: "").components(separatedBy: "|")
 
         for domain in denyallowDomains {
-            if (domain.hasPrefix("~") || domain.contains("*")) {
+            if domain.hasPrefix("~") || domain.contains("*") {
                 // Modifier $denyallow cannot be negated or have a wildcard TLD
                 return nil
             }
@@ -272,7 +271,7 @@ public final class RuleConverter {
         // Remove denyallow from options.
         let optionsWithoutDenyallow = ruleOptions.filter { part in
                     return part != denyallowOption
-                }
+        }
                 .joined(separator: ",")
 
         var result = [String]()
@@ -287,13 +286,12 @@ public final class RuleConverter {
 
         // Exception rules.
         for domain in denyallowDomains {
-            if (!isGenericRule) {
+            if !isGenericRule {
                 let exceptionRule = exceptionRulePrefix + domain + "/" + blockingElement + Self.MODIFIER_MASK + optionsWithoutDenyallow + exceptionRuleSuffix
                 result.append(exceptionRule)
 
                 let exceptionRuleWide = exceptionRulePrefix + domain + "/*/" + blockingElement + Self.MODIFIER_MASK + optionsWithoutDenyallow + exceptionRuleSuffix
                 result.append(exceptionRuleWide)
-
             } else {
                 let exceptionRule = exceptionRulePrefix + domain + Self.MODIFIER_MASK + optionsWithoutDenyallow + exceptionRuleSuffix
                 result.append(exceptionRule)

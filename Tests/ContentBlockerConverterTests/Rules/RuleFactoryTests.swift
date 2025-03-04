@@ -3,7 +3,6 @@ import XCTest
 @testable import ContentBlockerConverter
 
 final class RuleFactoryTests: XCTestCase {
-
     func testCreateRule() {
         struct TestCase {
             let ruleText: String
@@ -61,7 +60,7 @@ final class RuleFactoryTests: XCTestCase {
             TestCase(
                 ruleText: "example.org#$#banner { display: none }",
                 expectedCosmeticRule: true
-            ),
+            )
         ]
 
         for testCase in testCases {
@@ -114,11 +113,11 @@ final class RuleFactoryTests: XCTestCase {
                 name: "simple rules",
                 rules: [
                     "||example.org^",
-                    "##.banner",
+                    "##.banner"
                 ],
                 expectedRules: [
                     ExpectedRule(networkPattern: "||example.org^"),
-                    ExpectedRule(cosmeticContent: ".banner"),
+                    ExpectedRule(cosmeticContent: ".banner")
                 ],
                 expectedErrorsCount: 0
             ),
@@ -126,7 +125,7 @@ final class RuleFactoryTests: XCTestCase {
                 name: "all rules badfiltered",
                 rules: [
                     "||example.org^",
-                    "||example.org^$badfilter",
+                    "||example.org^$badfilter"
                 ],
                 expectedRules: [],
                 expectedErrorsCount: 0
@@ -135,13 +134,13 @@ final class RuleFactoryTests: XCTestCase {
                 name: "negate css",
                 rules: [
                     "##.banner",
-                    "example.org#@#.banner",
+                    "example.org#@#.banner"
                 ],
                 expectedRules: [
                     ExpectedRule(
                         cosmeticContent: ".banner",
                         restrictedDomains: ["example.org"]
-                    ),
+                    )
                 ],
                 expectedErrorsCount: 0
             ),
@@ -149,7 +148,7 @@ final class RuleFactoryTests: XCTestCase {
                 name: "negate completely",
                 rules: [
                     "example.org##.banner",
-                    "example.org#@#.banner",
+                    "example.org#@#.banner"
                 ],
                 expectedRules: [],
                 expectedErrorsCount: 0
@@ -158,7 +157,7 @@ final class RuleFactoryTests: XCTestCase {
                 name: "negate all domains",
                 rules: [
                     "example.org##.banner",
-                    "#@#.banner",
+                    "#@#.banner"
                 ],
                 expectedRules: [],
                 expectedErrorsCount: 0
@@ -167,7 +166,7 @@ final class RuleFactoryTests: XCTestCase {
                 name: "negate subdomain",
                 rules: [
                     "sub.example.org##.banner",
-                    "example.org#@#.banner",
+                    "example.org#@#.banner"
                 ],
                 expectedRules: [],
                 expectedErrorsCount: 0
@@ -176,7 +175,7 @@ final class RuleFactoryTests: XCTestCase {
                 name: "negate and not invalidate",
                 rules: [
                     "example.com##.banner",
-                    "example.org#@#.banner",
+                    "example.org#@#.banner"
                 ],
                 expectedRules: [
                     ExpectedRule(
@@ -185,7 +184,7 @@ final class RuleFactoryTests: XCTestCase {
                     )
                 ],
                 expectedErrorsCount: 0
-            ),
+            )
         ]
 
         for testCase in testCases {
@@ -223,4 +222,3 @@ final class RuleFactoryTests: XCTestCase {
         }
     }
 }
-

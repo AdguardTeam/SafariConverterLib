@@ -25,7 +25,6 @@ import ContentBlockerConverter
 /// Storage indexes of the rules that have neither `permittedDomains` nor
 /// any shortcuts are placed in the tail array.
 public class FilterEngine {
-
     /// Storage for filter rules. In order to save on RAM and initialization time, the rules are
     /// serialized into a binary format on the compilation step and after that we only operate
     /// UInt32 rule indices. The idea is that only a tiny share of all rules are actually required
@@ -74,7 +73,6 @@ public class FilterEngine {
 // MARK: - Selecting rules
 
 extension FilterEngine {
-
     /// Represents intermediate match result.
     private struct MatchResult {
         public var networkRule: FilterRule?
@@ -232,7 +230,6 @@ extension FilterEngine {
 // MARK: - Match individual rule
 
 extension FilterEngine {
-
     /// Checks if the given rule matches the specified URL.
     private func ruleMatches(rule: FilterRule, url: URL) -> Bool {
         // 1. Make sure the URL has a host
@@ -324,13 +321,11 @@ extension FilterEngine {
             }
         }
     }
-
 }
 
 // MARK: - Trie initialization
 
 extension FilterEngine {
-
     // TODO(ameshkov): !!! Comment
     private static func buildTries(
         from storage: FilterRuleStorage
@@ -403,7 +398,6 @@ extension FilterEngine {
 // MARK: - Helper functions
 
 extension FilterEngine {
-
     private static func host(from url: URL) -> String {
         if #available(macOS 13.0, iOS 16.0, *) {
             return url.host() ?? ""

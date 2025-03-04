@@ -2,7 +2,6 @@ import Foundation
 
 /// RuleFactory is responsible for parsing AdGuard rules.
 public final class RuleFactory {
-
     /// Creates AdGuard rules from the specified lines.
     ///
     /// `$badfilter` rules are interpreted when creating rules, the rules that are negated
@@ -102,11 +101,11 @@ public final class RuleFactory {
                 return nil
             }
 
-            if (ruleText.utf8.count < 3) {
+            if ruleText.utf8.count < 3 {
                 throw SyntaxError.invalidRule(message: "The rule is too short")
             }
 
-            if (RuleFactory.isCosmetic(ruleText: ruleText)) {
+            if RuleFactory.isCosmetic(ruleText: ruleText) {
                 return try CosmeticRule(ruleText: ruleText, for: version)
             }
 
@@ -124,7 +123,7 @@ public final class RuleFactory {
     ) -> [Rule] {
         var result = [Rule]()
         for rule in rules {
-            let negatingRule = badfilterRules[rule.urlRuleText]?.first(where: { $0.negatesBadfilter(specifiedRule: rule) })
+            let negatingRule = badfilterRules[rule.urlRuleText]?.first { $0.negatesBadfilter(specifiedRule: rule) }
             if negatingRule == nil {
                 result.append(rule)
             }

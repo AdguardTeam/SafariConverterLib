@@ -4,7 +4,6 @@ import ContentBlockerConverter
 @testable import FilterEngine
 
 final class FilterEngineTests: XCTestCase {
-
     private var tempDirectory: URL!
     private var tempFileURL: URL!
 
@@ -104,7 +103,7 @@ final class FilterEngineTests: XCTestCase {
                 expectedCosmeticContent: [
                     "#banner",
                     "#banner { display: hidden; }",
-                    ".banner",
+                    ".banner"
                 ]
             ),
             TestCase(
@@ -170,7 +169,7 @@ final class FilterEngineTests: XCTestCase {
             TestCase(
                 name: "single script inject rule",
                 rules: [
-                    "#%#console.log('1')",
+                    "#%#console.log('1')"
                 ],
                 urlString: "https://example.org/",
                 expectedCosmeticContent: ["console.log('1')"]
@@ -179,7 +178,7 @@ final class FilterEngineTests: XCTestCase {
                 name: "many script rules",
                 rules: [
                     "#%#console.log('1')",
-                    "example.org#%#//scriptlet('set-constant', 'test', '1')",
+                    "example.org#%#//scriptlet('set-constant', 'test', '1')"
                 ],
                 urlString: "https://example.org/",
                 expectedCosmeticContent: [
@@ -192,7 +191,7 @@ final class FilterEngineTests: XCTestCase {
                 rules: [
                     "@@||example.org^$jsinject",
                     "#%#console.log('1')",
-                    "example.org#%#//scriptlet('set-constant', 'test', '1')",
+                    "example.org#%#//scriptlet('set-constant', 'test', '1')"
                 ],
                 urlString: "https://example.org/",
                 expectedCosmeticContent: []

@@ -1,7 +1,6 @@
 /// SafariCbBuilder is responsible for building a Safari content blocking JSON
 /// from the `CompilationResult`.
 final class SafariCbBuilder {
-
     /// Represents the result of building a content blocker.
     struct Result {
         /// Final content blocker JSON.

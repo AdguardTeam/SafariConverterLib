@@ -2,7 +2,6 @@ import XCTest
 @testable import ContentBlockerConverter
 
 final class SimpleRegexTests: XCTestCase {
-
     func testCreateRegexText() throws {
         let testPatterns: [(pattern: String, expectedRegex: String, expectedError: Bool)] = [
             ("||example.org", #"^[htpsw]+:\/\/([a-z0-9-]+\.)?example\.org"#, false),

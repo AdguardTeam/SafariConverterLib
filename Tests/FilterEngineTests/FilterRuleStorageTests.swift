@@ -4,7 +4,6 @@ import ContentBlockerConverter
 @testable import FilterEngine
 
 final class FilterRuleStorageTests: XCTestCase {
-
     private var tempDirectory: URL!
     private var tempFileURL: URL!
 
@@ -127,9 +126,9 @@ final class FilterRuleStorageTests: XCTestCase {
 
         // Assert
         XCTAssertEqual(readRules.count, 3)
-        XCTAssertTrue(readRules.contains(where: { $0.urlPattern == "||example.org^" }))
-        XCTAssertTrue(readRules.contains(where: { $0.urlPattern == "||example.net^" }))
-        XCTAssertTrue(readRules.contains(where: { $0.cosmeticContent == ".sidebar" }))
+        XCTAssertTrue(readRules.contains { $0.urlPattern == "||example.org^" })
+        XCTAssertTrue(readRules.contains { $0.urlPattern == "||example.net^" })
+        XCTAssertTrue(readRules.contains { $0.cosmeticContent == ".sidebar" })
     }
 
     func testIteratorEndCondition() throws {

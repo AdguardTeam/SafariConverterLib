@@ -3,7 +3,6 @@ import Foundation
 // MARK: - Serializing and deserializing the engine
 
 extension FilterEngine {
-
     // A "magic" marker we'll write at the start of the file so we can validate it on read.
     private static let fileMagic: [UInt8] = [0x46, 0x49, 0x4C, 0x54] // e.g. "FILT" in ASCII
 

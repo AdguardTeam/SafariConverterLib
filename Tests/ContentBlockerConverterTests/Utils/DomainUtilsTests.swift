@@ -2,7 +2,6 @@ import XCTest
 @testable import ContentBlockerConverter
 
 final class DomainUtilsTests: XCTestCase {
-
     func testExactMatch() {
         // Arrange
         let candidate = "google.com"
@@ -134,5 +133,4 @@ final class DomainUtilsTests: XCTestCase {
         // Assert
         XCTAssertFalse(result, "Expected \(candidate) NOT to be recognized when domain is empty.")
     }
-
 }

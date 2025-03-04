@@ -2,7 +2,6 @@ import XCTest
 @testable import ContentBlockerConverter
 
 final class SafariRegexTests: XCTestCase {
-
     func testIsSupported() {
         let testPatterns: [(pattern: String, expected: Bool)] = [
             // Basic allowed patterns
@@ -89,7 +88,7 @@ final class SafariRegexTests: XCTestCase {
             ("abc^def", false),   // Unescaped '^' in the middle of a pattern is not allowed
             ("abc$def", false),   // Unescaped '$' in the middle of a pattern is not allowed
             (".*?", false),        // .* followed by ?, in our logic not allowed
-            ("[$^{}()|*+?.\\]", false), // Unescaped '\' is not allowed even inside character range
+            ("[$^{}()|*+?.\\]", false) // Unescaped '\' is not allowed even inside character range
         ]
 
         for (pattern, expected) in testPatterns {
@@ -107,8 +106,5 @@ final class SafariRegexTests: XCTestCase {
                 }
             }
         }
-
     }
 }
-
-

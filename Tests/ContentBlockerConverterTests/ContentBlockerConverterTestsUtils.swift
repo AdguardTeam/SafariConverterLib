@@ -3,14 +3,13 @@ import XCTest
 
 /// Helper methods and structs for testing converter.
 extension ContentBlockerConverterTests {
-
     /// Helper struct that combines all the information for testing conversion.
     struct TestCase {
         let rules: [String]
         var version: SafariVersion = DEFAULT_SAFARI_VERSION
         var advancedBlocking: Bool = false
         let expectedSafariRulesJSON: String
-        var expectedAdvancedRulesText: String? = nil
+        var expectedAdvancedRulesText: String?
         var expectedSourceRulesCount = 0
         var expectedSourceSafariCompatibleRulesCount = 0
         var expectedSafariRulesCount = 0
@@ -65,7 +64,7 @@ extension ContentBlockerConverterTests {
         let actualRules = try! parseJsonString(json: json)
 
         let encoder = JSONEncoder()
-        encoder.outputFormatting = [.prettyPrinted,.sortedKeys]
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
 
         let expectedRulesJSON = String(data: try! encoder.encode(expectedRules), encoding: .utf8)!
         let actualRulesJSON = String(data: try! encoder.encode(actualRules), encoding: .utf8)!

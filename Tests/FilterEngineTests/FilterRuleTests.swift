@@ -3,7 +3,6 @@ import ContentBlockerConverter
 @testable import FilterEngine
 
 final class FilterRuleTests: XCTestCase {
-
     // MARK: - Init from rules
 
     func testInitFromRule() {
@@ -11,7 +10,7 @@ final class FilterRuleTests: XCTestCase {
             let ruleText: String
             var expectedError: Bool = false
             var expectedAction: Action?
-            var safariVersion: SafariVersion = SafariVersion.safari16_4
+            var safariVersion = SafariVersion.safari16_4
             var expectedUrlPattern: String?
             var expectedUrlRegex: String?
             var expectedPathRegex: String?

@@ -33,10 +33,10 @@ public class SimpleRegex {
     /// - Returns: regular expression corresponding to that pattern.
     /// - Throws: SyntaxError if the pattern contains non-ASCII characters.
     public static func createRegexText(pattern: String) throws -> String {
-        if (pattern == "" ||
+        if pattern == "" ||
             pattern == maskStartUrl ||
             pattern == maskPipe ||
-            pattern == maskAnySymbol) {
+            pattern == maskAnySymbol {
             return regexAnySymbol
         }
 

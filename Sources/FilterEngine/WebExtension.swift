@@ -16,25 +16,24 @@ import ContentBlockerConverter
 /// This functionality requires having a shared file storage and shared UserDefaults since some information
 /// must be shared between the host app and the native extension process.
 public class WebExtension {
-
     /// Base directory name for storing all WebExtension related files.
     private static let BASE_DIR = ".webkit"
-    
+
     /// UserDefaults key for storing the current schema version.
     private static let ENGINE_SCHEMA_VERSION_KEY = "com.adguard.safari-converter.schema-version"
 
     /// UserDefaults key for storing the timestamp when the engine was last built.
     private static let ENGINE_TIMESTAMP_KEY = "com.adguard.safari-converter.engine-timestamp"
-    
+
     /// Name of the lock file used for synchronizing access to shared resources.
     private static let LOCK_FILE_NAME = "lock"
-    
+
     /// Name of the file storing the original, uncompiled filtering rules.
     private static let RULES_FILE_NAME = "rules.txt"
-    
+
     /// Name of the file storing the serialized `FilterRuleStorage`.
     private static let FILTER_RULE_STORAGE_FILE_NAME = "rules.bin"
-    
+
     /// Name of the file storing the serialized `FilterEngine` index.
     private static let FILTER_ENGINE_INDEX_FILE_NAME = "engine.bin"
 
@@ -88,7 +87,6 @@ public class WebExtension {
 // MARK: - Building FilterEngine from rules
 
 extension WebExtension {
-
     /// Builds a `FilterEngine` from the specified rules and serializes it to a binary form that can later
     /// be used to very quickly deserialize it.
     ///
@@ -148,7 +146,6 @@ extension WebExtension {
 // MARK: - Reading FilterEngine from binary format
 
 extension WebExtension {
-
     /// Gets or creates an instance of `FilterEngine`.
     private func getFilterEngine() -> FilterEngine? {
         let engineTimestamp = sharedUserDefaults.double(forKey: WebExtension.ENGINE_TIMESTAMP_KEY)
@@ -184,7 +181,6 @@ extension WebExtension {
         }
 
 
-
         let filterRuleStorageURL = baseURL.appendingPathComponent(WebExtension.FILTER_RULE_STORAGE_FILE_NAME)
         let filterEngineIndexURL = baseURL.appendingPathComponent(WebExtension.FILTER_ENGINE_INDEX_FILE_NAME)
 
@@ -218,13 +214,11 @@ extension WebExtension {
         // TODO: save new schema version to userdefaults
         // TODO: release semaphore
     }
-
 }
 
 // MARK: - Reading FilterEngine from binary format
 
 extension WebExtension {
-
     /// Represents scriptlet data: its name and arguments.
     public struct Scriptlet {
         public let name: String
@@ -255,8 +249,6 @@ extension WebExtension {
 // MARK: - Synchronizing resources access in WebExtension
 
 extension WebExtension {
-
     private func lock() {
-
     }
 }

@@ -23,7 +23,7 @@ public class FileLock {
 
     /// Secondary lock for synchronizing threads within the same process.
     /// We are using NSRecursiveLock to maintain the reentrant behavior.
-    private let threadLock: NSRecursiveLock = NSRecursiveLock()
+    private let threadLock = NSRecursiveLock()
 
     /// Initializes a new FileLock instance.
     ///

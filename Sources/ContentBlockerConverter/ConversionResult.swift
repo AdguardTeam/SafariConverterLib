@@ -1,7 +1,7 @@
 import Foundation
 
 /// Represents the final conversion result.
-public struct ConversionResult : CustomStringConvertible {
+public struct ConversionResult: CustomStringConvertible {
     public static let EMPTY_RESULT_JSON: String = "[{\"trigger\": {\"url-filter\": \".*\",\"if-domain\": [\"domain.com\"]},\"action\":{\"type\": \"ignore-previous-rules\"}}]"
 
     /// Helper function that creates an empty result.
@@ -69,7 +69,6 @@ public struct ConversionResult : CustomStringConvertible {
 * Advanced rules size: \(self.advancedRulesText?.utf8.count ?? 0)
 """
     }
-
 }
 
 /// Make it possible to serialize ConversionResult to JSON.

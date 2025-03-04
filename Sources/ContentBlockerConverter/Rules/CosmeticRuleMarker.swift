@@ -108,7 +108,7 @@ public enum CosmeticRuleMarker: String, CaseIterable {
                 if nextChar == Chars.AT_CHAR && twoAhead == Chars.DOLLAR {
                     // $@$
                     return (i, HtmlException)
-                } else if (nextChar == Chars.DOLLAR) {
+                } else if nextChar == Chars.DOLLAR {
                     return (i, Html)
                 }
             default: break

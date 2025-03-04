@@ -2,7 +2,6 @@ import Foundation
 
 /// Blocker entries JSON encoder
 class BlockerEntryEncoder {
-
     /// Encodes an array of blocker entries into a JSON string representation with an optional maximum size limit.
     ///
     /// - Parameters:
@@ -92,32 +91,32 @@ class BlockerEntryEncoder {
         result.append(trigger.urlFilter!.escapeForJSON())
         result.append("\"")
 
-        if (trigger.caseSensitive != nil) {
+        if trigger.caseSensitive != nil {
             result.append(",\"url-filter-is-case-sensitive\":")
             result.append(trigger.caseSensitive! ? "true" : "false")
         }
 
-        if (trigger.loadType != nil) {
+        if trigger.loadType != nil {
             result.append(",\"load-type\":")
             result.append(trigger.loadType!.encodeToJSON())
         }
 
-        if (trigger.resourceType != nil) {
+        if trigger.resourceType != nil {
             result.append(",\"resource-type\":")
             result.append(trigger.resourceType!.encodeToJSON())
         }
 
-        if (trigger.loadContext != nil) {
+        if trigger.loadContext != nil {
             result.append(",\"load-context\":")
             result.append(trigger.loadContext!.encodeToJSON())
         }
 
-        if (trigger.ifDomain != nil) {
+        if trigger.ifDomain != nil {
             result.append(",\"if-domain\":")
             result.append(trigger.ifDomain!.encodeToJSON(escape: true))
         }
 
-        if (trigger.unlessDomain != nil) {
+        if trigger.unlessDomain != nil {
             result.append(",\"unless-domain\":")
             result.append(trigger.unlessDomain!.encodeToJSON(escape: true))
         }

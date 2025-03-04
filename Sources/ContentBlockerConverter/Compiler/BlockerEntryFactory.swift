@@ -2,7 +2,6 @@ import Foundation
 
 /// BlockerEntryFactory creates Safari content blocking rules from AdGuard's NetworkRule and CosmeticRule.
 class BlockerEntryFactory {
-
     /// For the patterns that match any URL we use simplified "url-filter" instead of simply converting
     /// the pattern. The reason for that is to achieve higher performance in Safari.
     ///
@@ -62,7 +61,7 @@ class BlockerEntryFactory {
     /// - Returns: `BlockerEntry` or `nil` if the rule cannot be converted.
     func createBlockerEntry(rule: Rule) -> BlockerEntry? {
         do {
-            if (rule is NetworkRule) {
+            if rule is NetworkRule {
                 return try convertNetworkRule(rule: rule as! NetworkRule)
             } else {
                 return try convertCosmeticRule(rule: rule as! CosmeticRule)
@@ -110,7 +109,7 @@ class BlockerEntryFactory {
 
         let urlFilter = try createUrlFilterStringForCosmetic(rule: rule)
         var trigger = BlockerEntry.Trigger(urlFilter: urlFilter)
-        let action = BlockerEntry.Action(type:"css-display-none", selector: rule.content)
+        let action = BlockerEntry.Action(type: "css-display-none", selector: rule.content)
 
         try addDomainOptions(rule: rule, trigger: &trigger)
 
@@ -186,7 +185,7 @@ class BlockerEntryFactory {
 
         // Prepending WebSocket protocol to resolve this:
         // https://github.com/AdguardTeam/AdguardBrowserExtension/issues/957
-        if (isWebSocket && !urlFilter.hasPrefix("^") && !urlFilter.hasPrefix("ws")) {
+        if isWebSocket && !urlFilter.hasPrefix("^") && !urlFilter.hasPrefix("ws") {
             return BlockerEntryFactory.URL_FILTER_WS_ANY_URL + ".*" + urlFilter
         }
 
@@ -197,11 +196,11 @@ class BlockerEntryFactory {
     ///
     /// Read more about it here:
     /// https://developer.apple.com/documentation/safariservices/creating-a-content-blocker#:~:text=if%2Ddomain.-,resource%2Dtype,-An%20array%20of
-    private func addResourceType(rule: NetworkRule, trigger: inout BlockerEntry.Trigger) throws -> Void {
+    private func addResourceType(rule: NetworkRule, trigger: inout BlockerEntry.Trigger) throws {
         // Using String array instead of Set makes the code a bit more clunkier, but saves time.
         var types: [String] = []
 
-        if (rule.isContentType(contentType:.all) && rule.restrictedContentType.isEmpty) {
+        if rule.isContentType(contentType: .all) && rule.restrictedContentType.isEmpty {
             // Safari does not support all other default content types, like subdocument etc.
             // So we can use default safari content types instead.
             return
@@ -278,12 +277,12 @@ class BlockerEntryFactory {
             }
         }
 
-        if (rule.isOptionEnabled(option: .popup)) {
+        if rule.isOptionEnabled(option: .popup) {
             // Make sure that $popup only target document to avoid false positive blocking.
             types = ["document"]
         }
 
-        if (types.count > 0) {
+        if !types.isEmpty {
             trigger.resourceType = types
         }
     }
@@ -294,7 +293,7 @@ class BlockerEntryFactory {
     ///
     /// We use this to apply $subdocument correctly in Safari, i.e. only apply it
     /// on the child frame level.
-    private func addLoadContext(rule: NetworkRule, trigger: inout BlockerEntry.Trigger) -> Void {
+    private func addLoadContext(rule: NetworkRule, trigger: inout BlockerEntry.Trigger) {
         var context = [String]()
 
         // `child-frame` and `top-frame` contexts are supported since Safari 15
@@ -308,21 +307,21 @@ class BlockerEntryFactory {
             }
         }
 
-        if context.count > 0 {
+        if !context.isEmpty {
             trigger.loadContext = context
         }
     }
 
     /// Adds load-type property to the rule if required.
-    private func addThirdParty(rule: NetworkRule, trigger: inout BlockerEntry.Trigger) -> Void {
-        if (rule.isCheckThirdParty) {
+    private func addThirdParty(rule: NetworkRule, trigger: inout BlockerEntry.Trigger) {
+        if rule.isCheckThirdParty {
             trigger.loadType = rule.isThirdParty ? ["third-party"] : ["first-party"]
         }
     }
 
     /// Makes the url-filter case sensitive if required.
-    private func addMatchCase(rule: NetworkRule, trigger: inout BlockerEntry.Trigger) -> Void {
-        if (rule.isMatchCase) {
+    private func addMatchCase(rule: NetworkRule, trigger: inout BlockerEntry.Trigger) {
+        if rule.isMatchCase {
             trigger.caseSensitive = true
         }
     }
@@ -330,21 +329,21 @@ class BlockerEntryFactory {
     /// Adds domain limitations to the rule's trigger block.
     ///
     /// Domain limitations are controlled by the "if-domain" and "unless-domain" arrays.
-    private func addDomainOptions(rule: Rule, trigger: inout BlockerEntry.Trigger) throws -> Void {
+    private func addDomainOptions(rule: Rule, trigger: inout BlockerEntry.Trigger) throws {
         let included = resolveDomains(domains: rule.permittedDomains)
         var excluded = resolveDomains(domains: rule.restrictedDomains)
 
         addUnlessDomainForThirdParty(rule: rule, domains: &excluded)
 
-        if (included.count > 0 && excluded.count > 0) {
+        if !included.isEmpty && !excluded.isEmpty {
             throw ConversionError.invalidDomains(message: "Safari does not support both permitted and restricted domains")
         }
 
-        if (included.count > 0) {
+        if !included.isEmpty {
             trigger.ifDomain = included
         }
 
-        if (excluded.count > 0) {
+        if !excluded.isEmpty {
             trigger.unlessDomain = excluded
         }
     }
@@ -364,11 +363,11 @@ class BlockerEntryFactory {
             return
         }
 
-        let networkRule = rule as! NetworkRule;
-        if (networkRule.isThirdParty) {
-            if (networkRule.permittedDomains.count == 0) {
+        let networkRule = rule as! NetworkRule
+        if networkRule.isThirdParty {
+            if networkRule.permittedDomains.isEmpty {
                 let res = NetworkRuleParser.extractDomain(pattern: networkRule.urlRuleText)
-                if (res.domain == "") {
+                if res.domain == "" {
                     return
                 }
 
@@ -398,13 +397,13 @@ class BlockerEntryFactory {
     ///     "if-domain": ["*example.org*"]
     /// }
     /// ```
-    private func updateTriggerForDocumentLevelExceptionRules(rule: NetworkRule, trigger: inout BlockerEntry.Trigger) throws -> Void {
-        if (!rule.isWhiteList) {
+    private func updateTriggerForDocumentLevelExceptionRules(rule: NetworkRule, trigger: inout BlockerEntry.Trigger) throws {
+        if !rule.isWhiteList {
             return
         }
 
-        if (rule.isDocumentWhiteList || rule.isUrlBlock || rule.isCssExceptionRule || rule.isJsInject) {
-            if (rule.isDocumentWhiteList) {
+        if rule.isDocumentWhiteList || rule.isUrlBlock || rule.isCssExceptionRule || rule.isJsInject {
+            if rule.isDocumentWhiteList {
                 // $document rules unblock everything so remove resourceType limitation.
                 trigger.resourceType = nil
             }

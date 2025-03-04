@@ -170,7 +170,7 @@ public class NetworkRuleParser {
     }
 
     /// Extracts domain from the rule pattern or text using extractPattern function and then validates the domain.
-    static func extractDomainAndValidate(pattern: String)  -> (domain: String, patternMatchesPath: Bool) {
+    static func extractDomainAndValidate(pattern: String) -> (domain: String, patternMatchesPath: Bool) {
         let res = extractDomain(pattern: pattern)
 
         if !res.domain.isEmpty && res.domain.firstMatch(for: DOMAIN_VALIDATION_REGEXP) != nil {

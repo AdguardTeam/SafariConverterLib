@@ -3,7 +3,6 @@ import XCTest
 @testable import FilterEngine  // Replace with the name of your module or project
 
 final class TrieNodeTests: XCTestCase {
-
     // MARK: - Basic functionality tests
 
     /// Test an empty trie

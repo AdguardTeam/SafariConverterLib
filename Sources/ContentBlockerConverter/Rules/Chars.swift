@@ -30,7 +30,7 @@ public class Chars {
     public static let COLON: UInt8 = 58                // ':'
     public static let EQUALS_SIGN: UInt8 = 61          // '='
     public static let CARET: UInt8 = 94                // '^'
-    public static let PLUS:UInt8 = 43                  // '+'
+    public static let PLUS: UInt8 = 43                  // '+'
 
     public static let TRIM_SINGLE_QUOTE = CharacterSet.whitespaces.union(CharacterSet(charactersIn: "'"))
     public static let TRIM_DOUBLE_QUOTE = CharacterSet.whitespaces.union(CharacterSet(charactersIn: "\""))

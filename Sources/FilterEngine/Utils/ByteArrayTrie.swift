@@ -121,7 +121,6 @@ public class ByteArrayTrie {
 // MARK: - Private Building/Reading Extensions
 
 extension ByteArrayTrie {
-
     /// Recursively build a node in `storage`, return the offset where it's placed.
     private func buildNode(node: TrieNode) -> UInt32 {
         // The offset where this node will begin in `storage`.
@@ -222,7 +221,6 @@ extension ByteArrayTrie {
 // MARK: - Private read/write numeric helpers
 
 extension ByteArrayTrie {
-
     private func appendUInt8(_ value: UInt8) {
         storage.append(value)
     }

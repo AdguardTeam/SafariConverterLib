@@ -32,8 +32,8 @@ public class ScriptletParser {
         // Now we just get an array of these arguments
         var args = try ScriptletParser.extractArguments(str: argumentsStr, delimiter: Chars.COMMA)
 
-        if (args.count < 1) {
-            throw SyntaxError.invalidRule(message: "Invalid scriptlet params");
+        if args.count < 1 {
+            throw SyntaxError.invalidRule(message: "Invalid scriptlet params")
         }
 
         let name = args[0]
@@ -59,8 +59,8 @@ public class ScriptletParser {
         var pendingQuoteChar: UInt8 = 0
 
         var result = [String]()
-        var argumentStartIndex: Int = 0;
-        var argumentEndIndex: Int;
+        var argumentStartIndex: Int = 0
+        var argumentEndIndex: Int
 
         for index in 0...maxIndex {
             let char = str.utf8[safeIndex: index]!
@@ -71,10 +71,10 @@ public class ScriptletParser {
                     pendingQuote = true
                     pendingQuoteChar = char
 
-                    argumentStartIndex = index + 1;
+                    argumentStartIndex = index + 1
                 } else if char == pendingQuoteChar {
                     // Ignore escaped quotes.
-                    if (index > 0 && str.utf8[safeIndex: index - 1] == Chars.BACKSLASH) {
+                    if index > 0 && str.utf8[safeIndex: index - 1] == Chars.BACKSLASH {
                         continue
                     }
 
@@ -82,26 +82,22 @@ public class ScriptletParser {
                     pendingQuote = false
 
                     // Now we can extract the quoted value (and drop the quotes).
-                    argumentEndIndex = index - 1;
+                    argumentEndIndex = index - 1
                     if argumentEndIndex > argumentStartIndex {
                         let startIdx = str.utf8.index(str.utf8.startIndex, offsetBy: argumentStartIndex)
                         let endIdx = str.utf8.index(str.utf8.startIndex, offsetBy: argumentEndIndex)
-                        result.append(String(str[startIdx...endIdx]))
+                        result.append(String(str[startIdx ... endIdx]))
                     } else {
                         result.append("")
                     }
                 }
-
-                break
             case delimiter, Chars.WHITESPACE:
                 // Ignore delimiter and whitespace characters, they're allowed.
                 break
-            default:
+                default:
                 if !pendingQuote {
                     throw SyntaxError.invalidRule(message: "Invalid scriptlet arguments string")
                 }
-
-                break
             }
         }
 

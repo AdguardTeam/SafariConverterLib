@@ -2,7 +2,6 @@ import Foundation
 
 /// Entry point into the SafariConverterLib, here the conversion process starts.
 public class ContentBlockerConverter {
-
     public init() {}
 
     /// Converts filter rules in AdGuard format to the format supported by Safari.
@@ -88,7 +87,7 @@ public class ContentBlockerConverter {
     ///
     /// This function is supposed to be used by the library users.
     public static func createAllowlistRule(by domain: String) -> String {
-        return "@@||\(domain)$document";
+        return "@@||\(domain)$document"
     }
 
     /// Creates inverted allowlist rule for provided domains.
@@ -96,7 +95,7 @@ public class ContentBlockerConverter {
     /// This function is supposed to be used by the library users.
     public static func createInvertedAllowlistRule(by domains: [String]) -> String? {
         let domainsString = domains.filter { !$0.isEmpty }.joined(separator: "|~")
-        return domainsString.count > 0 ? "@@||*$document,domain=~\(domainsString)" : nil
+        return !domainsString.isEmpty ? "@@||*$document,domain=~\(domainsString)" : nil
     }
 
     /// This is a list of modifiers that can affect how cosmetic and scriptlet rules are applied to the page.

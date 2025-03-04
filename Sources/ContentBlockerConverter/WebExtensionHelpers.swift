@@ -39,8 +39,7 @@ public class WebExtensionHelpers: WebExtensionHelpersProtocol {
                     ruleDomains += [ruleDomain.domain]
                 }
             }
-            return ruleDomains;
-
+            return ruleDomains
         } catch {
             return []
         }
@@ -50,7 +49,7 @@ public class WebExtensionHelpers: WebExtensionHelpersProtocol {
     public func userRuleIsAssociated(with domain: String, _ userRule: String) -> Bool {
         let ruleDomains = parseRuleDomains(ruleText: userRule)
 
-        return ruleDomains.contains{ $0 == domain }
+        return ruleDomains.contains { $0 == domain }
     }
 
     /// Converts domain to allowlist rule `@@||domain^$document`.

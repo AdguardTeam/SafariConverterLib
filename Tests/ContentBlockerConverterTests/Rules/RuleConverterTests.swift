@@ -87,9 +87,9 @@ final class RuleConverterTests: XCTestCase {
 
         let res = RuleConverter.convertRule(ruleText: rule)
 
-        XCTAssertEqual(res.count, 2);
-        XCTAssertEqual(res[0], exp1);
-        XCTAssertEqual(res[1], exp2);
+        XCTAssertEqual(res.count, 2)
+        XCTAssertEqual(res[0], exp1)
+        XCTAssertEqual(res[1], exp2)
     }
 
     func testConvertCssAGRules() {
@@ -97,13 +97,13 @@ final class RuleConverterTests: XCTestCase {
         let exp = "firmgoogle.com#$#.pub_300x250 {display:block!important;}"
         let res = RuleConverter.convertRule(ruleText: rule)
 
-        XCTAssertEqual(res, [exp]);
+        XCTAssertEqual(res, [exp])
 
         let whitelistCssRule = "example.com#@$#h1 { display: none!important; }"
         let expected = "example.com#@$#h1 { display: none!important; }"
         let actual = RuleConverter.convertRule(ruleText: whitelistCssRule)
 
-        XCTAssertEqual(actual, [expected]);
+        XCTAssertEqual(actual, [expected])
     }
 
     func testUboCssStyleRule() {
@@ -172,7 +172,7 @@ final class RuleConverterTests: XCTestCase {
         var exp: [String] = [
             "/banner.png$image,domain=example.org",
             "@@||test.com/banner.png$image,domain=example.org",
-            "@@||test.com/*/banner.png$image,domain=example.org",
+            "@@||test.com/*/banner.png$image,domain=example.org"
         ]
         var res = RuleConverter.convertRule(ruleText: ruleText)
         XCTAssertEqual(res, exp)
@@ -181,7 +181,7 @@ final class RuleConverterTests: XCTestCase {
         exp = [
             "banner.png$image,domain=example.org",
             "@@||test.com/banner.png$image,domain=example.org",
-            "@@||test.com/*/banner.png$image,domain=example.org",
+            "@@||test.com/*/banner.png$image,domain=example.org"
         ]
         res = RuleConverter.convertRule(ruleText: ruleText)
         XCTAssertEqual(res, exp)
@@ -192,7 +192,7 @@ final class RuleConverterTests: XCTestCase {
             "@@||test1.com/banner.png$image,domain=example.org",
             "@@||test1.com/*/banner.png$image,domain=example.org",
             "@@||test2.com/banner.png$image,domain=example.org",
-            "@@||test2.com/*/banner.png$image,domain=example.org",
+            "@@||test2.com/*/banner.png$image,domain=example.org"
         ]
         res = RuleConverter.convertRule(ruleText: ruleText)
         XCTAssertEqual(res, exp)
@@ -201,7 +201,7 @@ final class RuleConverterTests: XCTestCase {
         exp = [
             "@@/banner.png$image,domain=example.org",
             "||test.com/banner.png$image,domain=example.org,important",
-            "||test.com/*/banner.png$image,domain=example.org,important",
+            "||test.com/*/banner.png$image,domain=example.org,important"
         ]
         res = RuleConverter.convertRule(ruleText: ruleText)
         XCTAssertEqual(res, exp)
@@ -212,7 +212,7 @@ final class RuleConverterTests: XCTestCase {
             "||test1.com/banner.png$image,domain=example.org,important",
             "||test1.com/*/banner.png$image,domain=example.org,important",
             "||test2.com/banner.png$image,domain=example.org,important",
-            "||test2.com/*/banner.png$image,domain=example.org,important",
+            "||test2.com/*/banner.png$image,domain=example.org,important"
         ]
         res = RuleConverter.convertRule(ruleText: ruleText)
         XCTAssertEqual(res, exp)

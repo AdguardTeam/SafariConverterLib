@@ -2,14 +2,17 @@ excluded:
   - ${PWD}/Carthage
   - ${PWD}/Pods
   - ${PWD}/DerivedData
+  - ${PWD}/.build
+  - ${PWD}/.swiftpm
+  - ${PWD}/Extension
+  - ${PWD}/bamboo-specs
+  - ${PWD}/Tests
 
 disabled_rules:
   - discarded_notification_center_observer
   - notification_center_detachment
   - orphaned_doc_comment
   - todo
-  - unused_capture_list
-  - identifier_name
   - cyclomatic_complexity
 
 opt_in_rules:
@@ -48,11 +51,12 @@ opt_in_rules:
   - toggle_bool
   - trailing_closure
   - unneeded_parentheses_in_closure_argument
-  - unused_import
   - vertical_whitespace_closing_braces
   - vertical_whitespace_opening_braces
   - yoda_condition
 
+analyzer_rules:
+  - unused_import
 
 custom_rules:
   array_constructor:
