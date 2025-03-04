@@ -21,8 +21,8 @@ public class WebExtension {
     private static let BASE_DIR = ".webkit"
     
     /// UserDefaults key for storing the current schema version.
-    private static let ENGINE_SCHEMA_KEY = "com.adguard.safari-converter.schema-version"
-    
+    private static let ENGINE_SCHEMA_VERSION_KEY = "com.adguard.safari-converter.schema-version"
+
     /// UserDefaults key for storing the timestamp when the engine was last built.
     private static let ENGINE_TIMESTAMP_KEY = "com.adguard.safari-converter.engine-timestamp"
     
@@ -32,16 +32,30 @@ public class WebExtension {
     /// Name of the file storing the original, uncompiled filtering rules.
     private static let RULES_FILE_NAME = "rules.txt"
     
-    /// Name of the file storing the serialized FilterRuleStorage.
+    /// Name of the file storing the serialized `FilterRuleStorage`.
     private static let FILTER_RULE_STORAGE_FILE_NAME = "rules.bin"
     
-    /// Name of the file storing the serialized FilterEngine index.
+    /// Name of the file storing the serialized `FilterEngine` index.
     private static let FILTER_ENGINE_INDEX_FILE_NAME = "engine.bin"
 
+    /// Place where extension related files are to be stored.
     private let baseURL: URL
+
+    /// `UserDefaults` shared between the extension process and the host app process.
     private let sharedUserDefaults: UserDefaults
+
+    /// Safari version for which the engine should be built.
     private let version: SafariVersion
+
+    /// `FileLock` object to synchronize operations between the extension process and the host app process.
+    /// It protects access to file resources (`baseURL` etc).
     private let fileLock: FileLock?
+
+    /// Cached instance of `FilterEngine`.
+    private var filterEngine: FilterEngine?
+
+    /// Last time the `FilterEngine` was deserialized.
+    private var engineTimestamp: Double = 0
 
     /// Initializes a new instance of `WebExtension`.
     ///
@@ -116,7 +130,7 @@ extension WebExtension {
         // later.
         let currentTimestamp = Date().timeIntervalSince1970
         sharedUserDefaults.set(currentTimestamp, forKey: WebExtension.ENGINE_TIMESTAMP_KEY)
-        sharedUserDefaults.set(Schema.VERSION, forKey: WebExtension.ENGINE_SCHEMA_KEY)
+        sharedUserDefaults.set(Schema.VERSION, forKey: WebExtension.ENGINE_SCHEMA_VERSION_KEY)
 
         return engine
 
@@ -135,7 +149,66 @@ extension WebExtension {
 
 extension WebExtension {
 
-    private func readFilterEngine() {
+    /// Gets or creates an instance of `FilterEngine`.
+    private func getFilterEngine() -> FilterEngine? {
+        let engineTimestamp = sharedUserDefaults.double(forKey: WebExtension.ENGINE_TIMESTAMP_KEY)
+        if engineTimestamp == 0 {
+            // Engine was never initialized.
+            return nil
+        }
+
+        if engineTimestamp > self.engineTimestamp {
+            let schemaVersion = sharedUserDefaults.integer(forKey: WebExtension.ENGINE_SCHEMA_VERSION_KEY)
+            let engine = (schemaVersion == Schema.VERSION) ? readFilterEngine() : rebuildFilterEngine()
+
+            if engine != nil {
+                self.filterEngine = engine
+                self.engineTimestamp = engineTimestamp
+            }
+        }
+
+        return self.filterEngine
+    }
+
+    /// Re-builds the `FilterEngine` from the source rules
+    private func rebuildFilterEngine() -> FilterEngine? {
+        // TODO: Implement
+        return nil
+    }
+
+    /// Reads `FilterEngine` from the persistent storage.
+    private func readFilterEngine() -> FilterEngine? {
+        self.fileLock?.lock()
+        defer {
+            _ = self.fileLock?.unlock()
+        }
+
+
+
+        let filterRuleStorageURL = baseURL.appendingPathComponent(WebExtension.FILTER_RULE_STORAGE_FILE_NAME)
+        let filterEngineIndexURL = baseURL.appendingPathComponent(WebExtension.FILTER_ENGINE_INDEX_FILE_NAME)
+
+        // Check if the relevant files exist, otherwise bail out
+        guard FileManager.default.fileExists(atPath: filterRuleStorageURL.path),
+              FileManager.default.fileExists(atPath: filterEngineIndexURL.path) else {
+            // TODO(ameshkov): !!! Log this
+            return nil
+        }
+
+        // Deserialize the FilterRuleStorage.
+        guard let storage = try? FilterRuleStorage(fileURL: filterRuleStorageURL) else {
+            // TODO(ameshkov): !!! Log this
+            return nil
+        }
+
+        // Deserialize the engine.
+        guard let engine = try? FilterEngine(storage: storage, indexFileURL: filterEngineIndexURL) else {
+            // TODO(ameshkov): !!! Log this
+            return nil
+        }
+
+        return engine
+
         // TODO: acquire semaphore
         // TODO: read engine timestamp from userdefaults.
         // TODO: if engine timestamp is zero/empty/whatever - exit, engine was never prepared.

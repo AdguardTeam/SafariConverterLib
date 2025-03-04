@@ -65,4 +65,51 @@ class FileLockTests: XCTestCase {
         // Wait for the background thread to finish
         waitForExpectations(timeout: 3, handler: nil)
     }
+
+    func testReentrantBehavior() {
+        let filePath = NSTemporaryDirectory().appending("reentrantTest.lock")
+        guard let lock = FileLock(filePath: filePath) else {
+            XCTFail("Failed to create FileLock")
+            return
+        }
+
+        // First acquisition should succeed
+        lock.lock()
+
+        // Second acquisition from the SAME thread should also succeed without deadlocking
+        // This is testing the re-entrant behavior
+        lock.lock()
+
+        // Test that we can unlock multiple times without issues
+        XCTAssertTrue(lock.unlock(), "First unlock should succeed")
+        XCTAssertTrue(lock.unlock(), "Second unlock should succeed")
+
+        // After fully releasing the lock, trying to unlock again should fail
+        XCTAssertFalse(lock.unlock(), "Unlock after fully releasing should fail")
+
+        // Test that we can acquire the lock again after fully releasing it
+        lock.lock()
+        XCTAssertTrue(lock.unlock(), "Final unlock should succeed")
+    }
+
+    func testReentrantBehaviorWithDeadline() {
+        let filePath = NSTemporaryDirectory().appending("reentrantDeadlineTest.lock")
+        guard let lock = FileLock(filePath: filePath) else {
+            XCTFail("Failed to create FileLock")
+            return
+        }
+
+        // First acquisition with deadline should succeed
+        let firstDeadline = Date().addingTimeInterval(1)
+        XCTAssertTrue(lock.lock(before: firstDeadline), "First lock acquisition should succeed")
+
+        // Second acquisition with deadline should also succeed immediately
+        // This is testing the re-entrant behavior with deadlines
+        let secondDeadline = Date().addingTimeInterval(1)
+        XCTAssertTrue(lock.lock(before: secondDeadline), "Second lock acquisition should succeed immediately")
+
+        // Test that we can unlock multiple times without issues
+        XCTAssertTrue(lock.unlock(), "First unlock should succeed")
+        XCTAssertTrue(lock.unlock(), "Second unlock should succeed")
+    }
 }
