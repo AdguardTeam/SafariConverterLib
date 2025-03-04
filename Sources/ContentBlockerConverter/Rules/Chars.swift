@@ -4,7 +4,7 @@ import Foundation
 ///
 /// This is important that constants here must be defined as literals without any calculations
 /// as defining it differently greatly affects performance.
-public class Chars {
+public enum Chars {
     public static let EXCLAMATION: UInt8 = 33          // '!'
     public static let HASH: UInt8 = 35                 // '#'
     public static let AT_CHAR: UInt8 = 64              // '@'

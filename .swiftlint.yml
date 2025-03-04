@@ -14,6 +14,10 @@ disabled_rules:
   - orphaned_doc_comment
   - todo
   - cyclomatic_complexity
+  - inclusive_language
+  - file_length
+  - function_body_length
+  - type_body_length
 
 opt_in_rules:
   - array_init
@@ -76,8 +80,6 @@ attributes:
 
 force_cast: warning
 force_try: warning
-function_body_length:
-  warning: 60
 
 legacy_hashing: error
 
@@ -88,6 +90,8 @@ identifier_name:
     - x
     - y
     - z
+  max_length: 60
+  allowed_symbols: ["_"]
 
 indentation_width:
   indentation_width: 4

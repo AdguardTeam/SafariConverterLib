@@ -57,8 +57,8 @@ public class NetworkRule: Rule {
         let ruleParts = try NetworkRuleParser.parseRuleText(ruleText: ruleText)
         isWhiteList = ruleParts.whitelist
 
-        if ruleParts.options != nil && ruleParts.options != "" {
-            try loadOptions(options: ruleParts.options!, version: version)
+        if let options = ruleParts.options, !options.isEmpty {
+            try loadOptions(options: options, version: version)
         }
 
         urlRuleText = ruleParts.pattern
@@ -69,10 +69,12 @@ public class NetworkRule: Rule {
 
             urlRegExpSource = String(urlRuleText[startIndex..<endIndex])
         } else {
-            urlRuleText = NetworkRuleParser.encodeDomainIfRequired(pattern: urlRuleText)!
+            if let encodedPattern = NetworkRuleParser.encodeDomainIfRequired(pattern: urlRuleText) {
+                urlRuleText = encodedPattern
 
-            if !urlRuleText.isEmpty {
-                urlRegExpSource = try SimpleRegex.createRegexText(pattern: urlRuleText)
+                if !urlRuleText.isEmpty {
+                    urlRegExpSource = try SimpleRegex.createRegexText(pattern: urlRuleText)
+                }
             }
         }
 
@@ -148,10 +150,8 @@ public class NetworkRule: Rule {
             return true
         }
 
-        for elem in left {
-            if right.contains(elem) {
-                return true
-            }
+        for elem in left where right.contains(elem) {
+            return true
         }
 
         return false
@@ -159,7 +159,7 @@ public class NetworkRule: Rule {
 
     /// Sets rule domains from the $domain modifier.
     private func setNetworkRuleDomains(domains: String) throws {
-        if domains == "" {
+        if domains.isEmpty {
             throw SyntaxError.invalidModifier(message: "$domain cannot be empty")
         }
 
@@ -171,17 +171,19 @@ public class NetworkRule: Rule {
     /// - Throws: SyntaxError if the rule is not valid.
     private func validateRule(version: SafariVersion) throws {
         if urlRuleText == "||"
-                || urlRuleText == "*"
-                || urlRuleText == ""
-                || urlRuleText.utf8.count < 3 {
+            || urlRuleText == "*"
+            || urlRuleText.isEmpty
+            || urlRuleText.utf8.count < 3 {
             if permittedDomains.count < 1 {
                 // Rule matches too much and does not have any domain restriction
                 // We should not allow this kind of rules
-                throw SyntaxError.invalidPattern(message: "The rule is too wide, add domain restriction or make the pattern more specific")
+                throw SyntaxError.invalidPattern(
+                    message: "The rule is too wide, add domain restriction or make the pattern more specific"
+                )
             }
         }
 
-        if urlRegExpSource == "" {
+        if urlRegExpSource?.isEmpty ?? false {
             throw SyntaxError.invalidPattern(message: "Empty regular expression for URL")
         }
 
@@ -196,7 +198,9 @@ public class NetworkRule: Rule {
             permittedDomains.isEmpty &&
             !isWhiteList {
             // Due to https://github.com/AdguardTeam/AdguardBrowserExtension/issues/145
-            throw SyntaxError.invalidRule(message: "$subdocument blocking rules are allowed only along with third-party or if-domain modifiers")
+            throw SyntaxError.invalidRule(
+                message: "$subdocument blocking rules are allowed only along with third-party or if-domain modifiers"
+            )
         }
     }
 
@@ -208,10 +212,11 @@ public class NetworkRule: Rule {
             var optionName = option
             var optionValue = ""
 
-            let valueIndex = option.utf8.firstIndex(of: Chars.EQUALS_SIGN)
-            if valueIndex != nil {
-                optionName = String(option[..<valueIndex!])
-                optionValue = String(option[option.utf8.index(after: valueIndex!)...])
+            if let valueIndex = option.utf8.firstIndex(of: Chars.EQUALS_SIGN) {
+                optionName = String(option[..<valueIndex])
+                if let nextIndex = option.utf8.index(valueIndex, offsetBy: 1, limitedBy: option.utf8.endIndex) {
+                    optionValue = String(option[nextIndex...])
+                }
             }
 
             try loadOption(optionName: optionName, optionValue: optionValue, version: version)
@@ -331,7 +336,7 @@ public class NetworkRule: Rule {
             throw SyntaxError.invalidModifier(message: "Unsupported modifier: \(optionName)")
         }
 
-        if optionName != "domain" && optionName != "from" && optionValue != "" {
+        if optionName != "domain" && optionName != "from" && !optionValue.isEmpty {
             throw SyntaxError.invalidModifier(message: "Option \(optionName) must not have value")
         }
     }

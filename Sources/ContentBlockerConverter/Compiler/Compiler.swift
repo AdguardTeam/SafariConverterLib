@@ -25,22 +25,20 @@ class Compiler {
             !(progress?.isCancelled ?? false)
         }
 
-        var cssBlocking = [BlockerEntry]()
+        var cssBlocking: [BlockerEntry] = []
 
         // A list of domains disabled by $specifichide rules.
-        var specifichideExceptionDomains = [String]()
+        var specifichideExceptionDomains: [String] = []
 
         var compilationResult = CompilationResult()
 
         for rule in rules {
             guard shouldContinue else { return CompilationResult() }
 
-            if rule is NetworkRule {
-                let networkRule = rule as! NetworkRule
-
+            if let networkRule = rule as? NetworkRule {
                 if networkRule.isOptionEnabled(option: .specifichide) {
                     let res = NetworkRuleParser.extractDomain(pattern: networkRule.urlRuleText)
-                    if res.domain != "" && !res.patternMatchesPath {
+                    if !res.domain.isEmpty && !res.patternMatchesPath {
                         // Prepend wildcard as we'll be excluding wildcard domains.
                         specifichideExceptionDomains.append("*" + res.domain)
 
@@ -98,8 +96,8 @@ class Compiler {
             var item = blockingItems[index]
 
             for exception in specifichideExceptions {
-                if item.trigger.ifDomain?.contains(exception) != nil {
-                    item.trigger.ifDomain = item.trigger.ifDomain!.filter {
+                if let ifDomain = item.trigger.ifDomain, ifDomain.contains(exception) {
+                    item.trigger.ifDomain = ifDomain.filter {
                         $0 != exception
                     }
                 }
@@ -108,14 +106,10 @@ class Compiler {
             blockingItems[index].trigger = item.trigger
         }
 
-        var result = [BlockerEntry]()
+        var result: [BlockerEntry] = []
 
-        for r in blockingItems {
-            // skip entries with excluded ifDomain
-            if r.trigger.ifDomain?.count == 0 {
-                continue
-            }
-            result.append(r)
+        for rule in blockingItems where !(rule.trigger.ifDomain?.isEmpty ?? false) {
+            result.append(rule)
         }
 
         return result
@@ -130,22 +124,23 @@ class Compiler {
 
     /// Tries to compress CSS rules by combining generic rules into a single rule.
     static func compactCssRules(cssBlocking: [BlockerEntry]) -> CompactCssRulesData {
-        var cssBlockingWide = [BlockerEntry]()
-        var cssBlockingDomainSensitive = [BlockerEntry]()
-        var cssBlockingGenericDomainSensitive = [BlockerEntry]()
+        var cssBlockingWide: [BlockerEntry] = []
+        var cssBlockingDomainSensitive: [BlockerEntry] = []
+        var cssBlockingGenericDomainSensitive: [BlockerEntry] = []
 
-        var wideSelectors = [String]()
+        var wideSelectors: [String] = []
 
         for entry in cssBlocking {
-            if entry.trigger.ifDomain != nil {
+            if let domains = entry.trigger.ifDomain, !domains.isEmpty {
                 cssBlockingDomainSensitive.append(entry)
-            } else if entry.trigger.unlessDomain != nil {
+            } else if let domains = entry.trigger.unlessDomain, !domains.isEmpty {
                 cssBlockingGenericDomainSensitive.append(entry)
-            } else if entry.action.selector != nil && entry.trigger.urlFilter == BlockerEntryFactory.URL_FILTER_COSMETIC_RULES {
-                wideSelectors.append(entry.action.selector!)
-                if wideSelectors.count >= Compiler.MAX_SELECTORS_PER_RULE {
+            } else if let selector = entry.action.selector,
+                entry.trigger.urlFilter == BlockerEntryFactory.URL_FILTER_COSMETIC_RULES {
+                wideSelectors.append(selector)
+                if wideSelectors.count >= MAX_SELECTORS_PER_RULE {
                     cssBlockingWide.append(createWideRule(wideSelectors: wideSelectors))
-                    wideSelectors = [String]()
+                    wideSelectors = []
                 }
             } else {
                 cssBlockingWide.append(entry)
@@ -173,26 +168,22 @@ class Compiler {
     ///
     /// They will be essentially compacted to `example.org##.banner,.otherbanner`
     static func compactDomainCssRules(entries: [BlockerEntry]) -> [BlockerEntry] {
-        var result = [BlockerEntry]()
+        var result: [BlockerEntry] = []
+        var domainsDictionary: [String: [BlockerEntry]] = [:]
 
-        var domainsDictionary = [String: [BlockerEntry]]()
         for entry in entries {
             let urlFilter = entry.trigger.urlFilter
             let ifDomain = entry.trigger.ifDomain
             let unlessDomain = entry.trigger.unlessDomain
 
-            if ifDomain != nil && ifDomain?.count == 1 &&
-                urlFilter == BlockerEntryFactory.URL_FILTER_ANY_URL &&
-                (unlessDomain?.isEmpty ?? true) {
-                let domain = entry.trigger.ifDomain![0]
+            if let domains = ifDomain, domains.count == 1,
+                urlFilter == BlockerEntryFactory.URL_FILTER_ANY_URL,
+                unlessDomain?.isEmpty ?? true {
+                let domain = domains[0]
 
-                var current = domainsDictionary[domain]
-                if current == nil {
-                    current = [BlockerEntry]()
-                }
-
-                current!.append(entry)
-                domainsDictionary.updateValue(current!, forKey: domain)
+                var current = domainsDictionary[domain] ?? []
+                current.append(entry)
+                domainsDictionary[domain] = current
             } else {
                 // Not a domain sensitive entry
                 result.append(entry)
@@ -200,17 +191,16 @@ class Compiler {
         }
 
         for domain in domainsDictionary.keys {
-            let domainEntries = domainsDictionary[domain]
-            if domainEntries == nil {
+            guard let domainEntries = domainsDictionary[domain] else {
                 continue
             }
 
-            if domainEntries!.count <= 1 {
-                result.append(contentsOf: domainEntries!)
+            if domainEntries.count <= 1 {
+                result.append(contentsOf: domainEntries)
                 continue
             }
 
-            let compactEntries = Compiler.createDomainWideEntries(domain: domain, domainEntries: domainEntries!)
+            let compactEntries = Compiler.createDomainWideEntries(domain: domain, domainEntries: domainEntries)
             result.append(contentsOf: compactEntries)
         }
 
@@ -220,17 +210,16 @@ class Compiler {
     /// Takes several rules that are limited to the same domain and compacts them
     /// by uniting these rules into a single entry.
     private static func createDomainWideEntries(domain: String, domainEntries: [BlockerEntry]) -> [BlockerEntry] {
-        var result = [BlockerEntry]()
+        var result: [BlockerEntry] = []
 
         let trigger = BlockerEntry.Trigger(ifDomain: [domain], urlFilter: ".*")
 
         let chunked = domainEntries.chunked(into: MAX_SELECTORS_PER_RULE)
         for chunk in chunked {
-            var selectors = [String]()
+            var selectors: [String] = []
             for entry in chunk {
-                let selector = entry.action.selector
-                if selector != nil {
-                    selectors.append(entry.action.selector!)
+                if let selector = entry.action.selector {
+                    selectors.append(selector)
                 }
             }
 
