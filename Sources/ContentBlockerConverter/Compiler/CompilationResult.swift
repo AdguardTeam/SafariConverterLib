@@ -60,9 +60,7 @@ struct CompilationResult {
 
     /// Adds a new entry with action `ignore-previous-rules`.
     mutating func addIgnorePreviousTypedEntry(entry: BlockerEntry, rule: Rule) {
-        if rule is NetworkRule {
-            let networkRule = rule as! NetworkRule
-
+        if let networkRule = rule as? NetworkRule {
             if networkRule.isSingleOption(option: .generichide) {
                 cssBlockingGenericHideExceptions.append(entry)
             } else if networkRule.isSingleOption(option: .elemhide) {

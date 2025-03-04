@@ -1,7 +1,7 @@
 import Foundation
 
 /// Simplified logger (only enabled when #DEBUG is defined)
-public class Logger {
+public enum Logger {
     /// Flag to check if we're running in a test environment
     private static var isRunningTests: Bool = {
         return NSClassFromString("XCTest") != nil

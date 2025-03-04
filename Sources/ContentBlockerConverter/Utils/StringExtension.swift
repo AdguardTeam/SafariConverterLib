@@ -32,7 +32,9 @@ extension String {
             if lastNotEscapedIndex != startNonEscapedIndex {
                 result.append(String(self[startNonEscapedIndex..<lastNotEscapedIndex]))
             }
-            result.append(escapedSequence!)
+            if let escapedSequence = escapedSequence {
+                result.append(escapedSequence)
+            }
 
             lastNotEscapedIndex = utf8.index(after: lastNotEscapedIndex)
             startNonEscapedIndex = lastNotEscapedIndex
@@ -50,9 +52,14 @@ extension String {
         return result
     }
 
-    /// Replaces all occuriences of the target string with the specified string.
+    /// Replaces all occurrences of the target string with the specified string.
     public func replace(target: String, withString: String) -> String {
-        return self.replacingOccurrences(of: target, with: withString, options: NSString.CompareOptions.literal, range: nil)
+        return self.replacingOccurrences(
+            of: target,
+            with: withString,
+            options: NSString.CompareOptions.literal,
+            range: nil
+        )
     }
 
     /// Splits the string into parts by the specified delimiter.
@@ -63,7 +70,7 @@ extension String {
         let utf8 = self.utf8
 
         if utf8.isEmpty {
-            return []
+            return [String]()
         }
 
         // In case of AdGuard rules most of the rules have just one modifier
@@ -73,10 +80,10 @@ extension String {
             return [self]
         }
 
-        var result = [String]()
+        var result: [String] = []
         var currentIndex = utf8.startIndex
         var escaped = false
-        var buffer = [UInt8]()
+        var buffer: [UInt8] = []
 
         while currentIndex < utf8.endIndex {
             let char = utf8[currentIndex]
@@ -89,7 +96,9 @@ extension String {
                     escaped = false
                 } else {
                     if !buffer.isEmpty {
-                        result.append(String(decoding: buffer, as: UTF8.self))
+                        if let string = String(bytes: buffer, encoding: .utf8) {
+                            result.append(string)
+                        }
                         buffer.removeAll()
                     }
                 }
@@ -114,7 +123,9 @@ extension String {
 
         // Add the last part if there are remaining characters in the buffer
         if !buffer.isEmpty {
-            result.append(String(decoding: buffer, as: UTF8.self))
+            if let string = String(bytes: buffer, encoding: .utf8) {
+                result.append(string)
+            }
         }
 
         return result

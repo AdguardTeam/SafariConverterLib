@@ -15,6 +15,7 @@ public final class PrefixMatcher {
                 if current.children[byte] == nil {
                     current.children[byte] = TrieNode()
                 }
+                // swiftlint:disable:next force_unwrapping
                 current = current.children[byte]!
             }
             current.isEnd = true

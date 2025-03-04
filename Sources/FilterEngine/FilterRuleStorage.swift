@@ -105,9 +105,8 @@ public class FilterRuleStorage {
 
     // MARK: - Nested Iterator Class
 
+    /// Iterator for accessing FilterRules in the storage
     public class Iterator: IteratorProtocol {
-        public typealias Element = (FilterRuleStorage.Index, FilterRule)
-
         private let fileHandle: FileHandle
         private let totalCount: Int
         private var readCount = 0
@@ -210,8 +209,8 @@ public class FilterRuleStorage {
 
         // 5) Seek back to update the rule count
         handle.seek(toFileOffset: 4)
-        var c = writtenCount
-        handle.write(withUnsafeBytes(of: &c) { Data($0) })
+        var count = writtenCount
+        handle.write(withUnsafeBytes(of: &count) { Data($0) })
     }
 
     /// Reads the 4-byte magic and 4-byte count from the file header.

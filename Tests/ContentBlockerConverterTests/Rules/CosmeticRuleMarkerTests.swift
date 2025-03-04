@@ -15,83 +15,83 @@ final class CosmeticRuleMarkerTests: XCTestCase {
         let result = CosmeticRuleMarker.findCosmeticRuleMarker(ruleText: "##.banner")
 
         XCTAssertEqual(result.index, 0)
-        XCTAssertEqual(result.marker, CosmeticRuleMarker.ElementHiding)
+        XCTAssertEqual(result.marker, CosmeticRuleMarker.elementHiding)
     }
 
     func testElementHidingException() {
         let result = CosmeticRuleMarker.findCosmeticRuleMarker(ruleText: "example.org#@#.banner")
 
         XCTAssertEqual(result.index, 11)
-        XCTAssertEqual(result.marker, CosmeticRuleMarker.ElementHidingException)
+        XCTAssertEqual(result.marker, CosmeticRuleMarker.elementHidingException)
     }
 
     func testElementHidingExtCSS() {
         let result = CosmeticRuleMarker.findCosmeticRuleMarker(ruleText: "example.org#?#.textad")
 
         XCTAssertEqual(result.index, 11)
-        XCTAssertEqual(result.marker, CosmeticRuleMarker.ElementHidingExtCSS)
+        XCTAssertEqual(result.marker, CosmeticRuleMarker.elementHidingExtCSS)
     }
 
     func testElementHidingExtCSSException() {
         let result = CosmeticRuleMarker.findCosmeticRuleMarker(ruleText: "example.com#@?#h3:contains(cookies)")
 
         XCTAssertEqual(result.index, 11)
-        XCTAssertEqual(result.marker, CosmeticRuleMarker.ElementHidingExtCSSException)
+        XCTAssertEqual(result.marker, CosmeticRuleMarker.elementHidingExtCSSException)
     }
 
     func testCss() {
         let result = CosmeticRuleMarker.findCosmeticRuleMarker(ruleText: "example.org#$#.textad { visibility: hidden; }")
 
         XCTAssertEqual(result.index, 11)
-        XCTAssertEqual(result.marker, CosmeticRuleMarker.Css)
+        XCTAssertEqual(result.marker, CosmeticRuleMarker.css)
     }
 
     func testCssException() {
         let result = CosmeticRuleMarker.findCosmeticRuleMarker(ruleText: "example.com#@$#h3:contains(cookies) { display: none!important; }")
 
         XCTAssertEqual(result.index, 11)
-        XCTAssertEqual(result.marker, CosmeticRuleMarker.CssException)
+        XCTAssertEqual(result.marker, CosmeticRuleMarker.cssException)
     }
 
     func testCssExtCSS() {
         let result = CosmeticRuleMarker.findCosmeticRuleMarker(ruleText: "example.com#$?#h3:contains(cookies) { display: none!important; }")
 
         XCTAssertEqual(result.index, 11)
-        XCTAssertEqual(result.marker, CosmeticRuleMarker.CssExtCSS)
+        XCTAssertEqual(result.marker, CosmeticRuleMarker.cssExtCSS)
     }
 
     func testCssExtCSSException() {
         let result = CosmeticRuleMarker.findCosmeticRuleMarker(ruleText: "example.com#@$?#h3:contains(cookies) { display: none!important; }")
 
         XCTAssertEqual(result.index, 11)
-        XCTAssertEqual(result.marker, CosmeticRuleMarker.CssExtCSSException)
+        XCTAssertEqual(result.marker, CosmeticRuleMarker.cssExtCSSException)
     }
 
     func testJs() {
         let result = CosmeticRuleMarker.findCosmeticRuleMarker(ruleText: "example.org#%#test")
 
         XCTAssertEqual(result.index, 11)
-        XCTAssertEqual(result.marker, CosmeticRuleMarker.Js)
+        XCTAssertEqual(result.marker, CosmeticRuleMarker.javascript)
     }
 
     func testJsException() {
         let result = CosmeticRuleMarker.findCosmeticRuleMarker(ruleText: "example.org#@%#test")
 
         XCTAssertEqual(result.index, 11)
-        XCTAssertEqual(result.marker, CosmeticRuleMarker.JsException)
+        XCTAssertEqual(result.marker, CosmeticRuleMarker.javascriptException)
     }
 
     func testHtml() {
         let result = CosmeticRuleMarker.findCosmeticRuleMarker(ruleText: "example.org$$script[data-src=\"banner\"]")
 
         XCTAssertEqual(result.index, 11)
-        XCTAssertEqual(result.marker, CosmeticRuleMarker.Html)
+        XCTAssertEqual(result.marker, CosmeticRuleMarker.html)
     }
 
     func testHtmlException() {
         let result = CosmeticRuleMarker.findCosmeticRuleMarker(ruleText: "example.org$@$script[data-src=\"banner\"]")
 
         XCTAssertEqual(result.index, 11)
-        XCTAssertEqual(result.marker, CosmeticRuleMarker.HtmlException)
+        XCTAssertEqual(result.marker, CosmeticRuleMarker.htmlException)
     }
 }

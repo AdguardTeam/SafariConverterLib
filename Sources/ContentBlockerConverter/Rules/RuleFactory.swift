@@ -1,7 +1,7 @@
 import Foundation
 
 /// RuleFactory is responsible for parsing AdGuard rules.
-public final class RuleFactory {
+public enum RuleFactory {
     /// Creates AdGuard rules from the specified lines.
     ///
     /// `$badfilter` rules are interpreted when creating rules, the rules that are negated
@@ -14,7 +14,7 @@ public final class RuleFactory {
         for version: SafariVersion,
         errorsCounter: ErrorsCounter? = nil
     ) -> [Rule] {
-        var result = [Rule]()
+        var result: [Rule] = []
 
         for line in lines {
             var ruleLine = line
@@ -32,16 +32,14 @@ public final class RuleFactory {
             }
 
             let convertedLines = RuleConverter.convertRule(ruleText: ruleLine)
-            for convertedLine in convertedLines {
-                if convertedLine != nil {
-                    do {
-                        let rule = try RuleFactory.createRule(ruleText: convertedLine!, for: version)
-                        if rule != nil {
-                            result.append(rule!)
-                        }
-                    } catch {
-                        errorsCounter?.add()
+            for convertedLine in convertedLines where convertedLine != nil {
+                do {
+                    if let convertedText = convertedLine,
+                        let rule = try RuleFactory.createRule(ruleText: convertedText, for: version) {
+                        result.append(rule)
                     }
+                } catch {
+                    errorsCounter?.add()
                 }
             }
         }
@@ -64,13 +62,13 @@ public final class RuleFactory {
     /// be `~example.org##.banner`.
     /// ```
     public static func filterOutExceptions(from rules: [Rule]) -> [Rule] {
-        var networkRules = [NetworkRule]()
-        var cosmeticRules = [CosmeticRule]()
+        var networkRules: [NetworkRule] = []
+        var cosmeticRules: [CosmeticRule] = []
 
         var badfilterRules: [String: [NetworkRule]] = [:]
         var cosmeticExceptions: [String: [CosmeticRule]] = [:]
 
-        var result = [Rule]()
+        var result: [Rule] = []
 
         for rule in rules {
             if let networkRule = rule as? NetworkRule {
@@ -97,7 +95,7 @@ public final class RuleFactory {
     /// Creates an AdGuard rule from the rule text.
     public static func createRule(ruleText: String, for version: SafariVersion) throws -> Rule? {
         do {
-            if ruleText.isEmpty || isComment(ruleText: ruleText) {
+            if ruleText.isEmpty || RuleFactory.isComment(ruleText: ruleText) {
                 return nil
             }
 
@@ -111,7 +109,9 @@ public final class RuleFactory {
 
             return try NetworkRule(ruleText: ruleText, for: version)
         } catch {
-            Logger.log("(RuleFactory) - Unexpected error: \(error) while creating rule from: \(String(describing: ruleText))")
+            Logger.log(
+                "(RuleFactory) - Unexpected error: \(error) while creating rule from: \(String(describing: ruleText))"
+            )
             throw error
         }
     }
@@ -121,7 +121,7 @@ public final class RuleFactory {
         rules: [NetworkRule],
         badfilterRules: [String: [NetworkRule]]
     ) -> [Rule] {
-        var result = [Rule]()
+        var result: [Rule] = []
         for rule in rules {
             let negatingRule = badfilterRules[rule.urlRuleText]?.first { $0.negatesBadfilter(specifiedRule: rule) }
             if negatingRule == nil {
@@ -137,7 +137,7 @@ public final class RuleFactory {
         rules: [CosmeticRule],
         cosmeticExceptions: [String: [CosmeticRule]]
     ) -> [Rule] {
-        var result = [Rule]()
+        var result: [Rule] = []
 
         for rule in rules {
             if let exceptionRules = cosmeticExceptions[rule.content] {

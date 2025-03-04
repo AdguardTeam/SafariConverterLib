@@ -67,9 +67,10 @@ public class WebExtension {
     ///                         store the engine timestamp and schema version.
     ///   - version: Safari version for which the rules are compiled.
     /// - Throws: throws error if it fails to create a directory for shared files
-    public init(containerURL: URL,
-                sharedUserDefaults: UserDefaults,
-                version: SafariVersion
+    public init(
+        containerURL: URL,
+        sharedUserDefaults: UserDefaults,
+        version: SafariVersion
     ) throws {
         self.baseURL = containerURL.appendingPathComponent(WebExtension.BASE_DIR, isDirectory: true)
         self.sharedUserDefaults = sharedUserDefaults
@@ -186,9 +187,9 @@ extension WebExtension {
 
         // Check if the relevant files exist, otherwise bail out
         guard FileManager.default.fileExists(atPath: filterRuleStorageURL.path),
-              FileManager.default.fileExists(atPath: filterEngineIndexURL.path) else {
-            // TODO(ameshkov): !!! Log this
-            return nil
+            FileManager.default.fileExists(atPath: filterEngineIndexURL.path) else {
+                // TODO(ameshkov): !!! Log this
+                return nil
         }
 
         // Deserialize the FilterRuleStorage.
@@ -229,7 +230,7 @@ extension WebExtension {
     public struct Configuration {
         public let css: [String]
         public let extendedCss: [String]
-        public let js: [String]
+        public let javascripts: [String]
         public let scriptlets: [Scriptlet]
         public let engineTimestamp: Double
     }

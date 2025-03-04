@@ -14,8 +14,8 @@ public struct BlockerEntry: Codable, Equatable, CustomStringConvertible {
 
     // Define CodingKeys to guarantee the correct property order in the output.
     enum CodingKeys: String, CodingKey {
-        case trigger = "trigger"
-        case action = "action"
+        case trigger
+        case action
     }
 
     public var trigger: Trigger
@@ -25,13 +25,13 @@ public struct BlockerEntry: Codable, Equatable, CustomStringConvertible {
         let encoder = JSONEncoder()
 
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-        let json = try? encoder.encode(self)
 
-        if json == nil {
-            return "{}"
+        if let json = try? encoder.encode(self),
+            let jsonString = String(data: json, encoding: .utf8) {
+            return jsonString
         }
 
-        return String(data: json!, encoding: .utf8)!
+        return "{}"
     }
 
     /// Trigger is the "trigger" field of a content blocking rule, i.e. defines conditions when the rule is applied.
@@ -62,6 +62,7 @@ public struct BlockerEntry: Codable, Equatable, CustomStringConvertible {
         public var caseSensitive: Bool?
         public var loadContext: [String]?
 
+        // swiftlint:disable:next nesting
         enum CodingKeys: String, CodingKey {
             case ifDomain = "if-domain"
             case urlFilter = "url-filter"
@@ -94,9 +95,10 @@ public struct BlockerEntry: Codable, Equatable, CustomStringConvertible {
         public var type: String
         public var selector: String?
 
+        // swiftlint:disable:next nesting
         enum CodingKeys: String, CodingKey {
-            case type = "type"
-            case selector = "selector"
+            case type
+            case selector
         }
     }
 }

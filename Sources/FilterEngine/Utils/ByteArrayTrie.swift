@@ -79,18 +79,18 @@ public class ByteArrayTrie {
 
     /// Find exact word; returns the payload if found, or `nil` if not present.
     public func find(word: any StringProtocol) -> [UInt32]? {
-        var currentOffset = rootOffset
+        var currentNodeOffset = rootOffset
 
-        for ch in word.utf8 {
-            guard let childOffset = findChildOffset(parentOffset: currentOffset, char: ch) else {
+        for character in word.utf8 {
+            guard let childNodeOffset = findChildOffset(parentOffset: currentNodeOffset, char: character) else {
                 // Child not found => word not in trie
                 return nil
             }
-            currentOffset = childOffset
+            currentNodeOffset = childNodeOffset
         }
 
         // We've landed on the final node for this word.
-        let payload = readPayload(nodeOffset: currentOffset)
+        let payload = readPayload(nodeOffset: currentNodeOffset)
         return payload
     }
 
@@ -98,20 +98,20 @@ public class ByteArrayTrie {
     /// i.e., accumulate payload from the root, then from each node as we go deeper.
     /// If any character is not found, we stop.
     public func collectPayload(word: any StringProtocol) -> [UInt32] {
-        var currentOffset = rootOffset
+        var currentNodeOffset = rootOffset
         var result: [UInt32] = []
 
         // Add the root's payload (if any):
-        result.append(contentsOf: readPayload(nodeOffset: currentOffset))
+        result.append(contentsOf: readPayload(nodeOffset: currentNodeOffset))
 
-        for ch in word.utf8 {
-            guard let childOffset = findChildOffset(parentOffset: currentOffset, char: ch) else {
+        for character in word.utf8 {
+            guard let childNodeOffset = findChildOffset(parentOffset: currentNodeOffset, char: character) else {
                 // Path breaks here
                 return result
             }
-            currentOffset = childOffset
+            currentNodeOffset = childNodeOffset
             // Add child's payload
-            result.append(contentsOf: readPayload(nodeOffset: currentOffset))
+            result.append(contentsOf: readPayload(nodeOffset: currentNodeOffset))
         }
 
         return result
@@ -143,35 +143,35 @@ extension ByteArrayTrie {
         appendUInt16(payloadCount)
 
         // 3) payload items (4 bytes each, UInt32)
-        for p in node.payload {
-            let valBytes = withUnsafeBytes(of: p.littleEndian, Array.init)
-            storage.append(contentsOf: valBytes)
+        for payloadItem in node.payload {
+            let valueBytes = withUnsafeBytes(of: payloadItem.littleEndian, Array.init)
+            storage.append(contentsOf: valueBytes)
         }
 
         // Build children, patch them in
-        var i = 0
-        for (char, childNode) in node.children {
-            let childOffset = buildNode(node: childNode)
+        var childIndex = 0
+        for (character, childNode) in node.children {
+            let childNodeOffset = buildNode(node: childNode)
 
-            // The patch location = childrenStart + (i * 5)
-            let patchIndex = childrenStart + i * 5
+            // The patch location = childrenStart + (childIndex * 5)
+            let patchIndex = childrenStart + childIndex * 5
 
-            // 1 byte for char
-            storage[patchIndex] = char
+            // 1 byte for character
+            storage[patchIndex] = character
 
             // 4 bytes for offset
-            let offsetBytes = withUnsafeBytes(of: childOffset.littleEndian, Array.init)
-            for j in 0..<4 {
-                storage[patchIndex + 1 + j] = offsetBytes[j]
+            let offsetBytes = withUnsafeBytes(of: childNodeOffset.littleEndian, Array.init)
+            for index in 0..<4 {
+                storage[patchIndex + 1 + index] = offsetBytes[index]
             }
-            i += 1
+            childIndex += 1
         }
 
         // Return where this node began
         return nodeStartOffset
     }
 
-    /// Given a parent's node offset, find the offset of the child for `char`.
+    /// Given a parent's node offset, find the offset of the child for `character`.
     private func findChildOffset(parentOffset: UInt32, char: UInt8) -> UInt32? {
         var cursor = Int(parentOffset)
 
@@ -179,12 +179,12 @@ extension ByteArrayTrie {
         let childrenCount = readUInt8(at: cursor)
         cursor += 1
 
-        // 2) read each child's info: (1 byte char, 4 bytes offset)
+        // 2) read each child's info: (1 byte character, 4 bytes offset)
         for _ in 0..<childrenCount {
-            let c = storage[cursor]
+            let characterValue = storage[cursor]
             let offset = readUInt32(at: cursor + 1)
             cursor += 5
-            if c == char {
+            if characterValue == char {
                 return offset
             }
         }
@@ -202,15 +202,15 @@ extension ByteArrayTrie {
         cursor += 1 + (Int(childrenCount) * 5)
 
         // Now read payloadCount (2 bytes)
-        let pcount = readUInt16(at: cursor)
+        let payloadCount = readUInt16(at: cursor)
         cursor += 2
 
-        // Read pcount * 4 bytes
+        // Read payloadCount * 4 bytes
         var result: [UInt32] = []
-        result.reserveCapacity(Int(pcount))
-        for _ in 0..<pcount {
-            let val = readUInt32(at: cursor)
-            result.append(val)
+        result.reserveCapacity(Int(payloadCount))
+        for _ in 0..<payloadCount {
+            let value = readUInt32(at: cursor)
+            result.append(value)
             cursor += 4
         }
 
@@ -226,8 +226,8 @@ extension ByteArrayTrie {
     }
 
     private func appendUInt16(_ value: UInt16) {
-        let le = value.littleEndian
-        withUnsafeBytes(of: le) { storage.append(contentsOf: $0) }
+        let littleEndianValue = value.littleEndian
+        withUnsafeBytes(of: littleEndianValue) { storage.append(contentsOf: $0) }
     }
 
     private func readUInt8(at index: Int) -> UInt8 {
@@ -236,17 +236,17 @@ extension ByteArrayTrie {
 
     private func readUInt16(at index: Int) -> UInt16 {
         // Assuming the bytes in storage are in little-endian format
-        let b0 = UInt16(storage[index])
-        let b1 = UInt16(storage[index + 1]) << 8
-        return b0 | b1
+        let byte0 = UInt16(storage[index])
+        let byte1 = UInt16(storage[index + 1]) << 8
+        return byte0 | byte1
     }
 
     private func readUInt32(at index: Int) -> UInt32 {
         // Manual bit-shift
-        let b0 = UInt32(storage[index])
-        let b1 = UInt32(storage[index + 1]) << 8
-        let b2 = UInt32(storage[index + 2]) << 16
-        let b3 = UInt32(storage[index + 3]) << 24
-        return b0 | b1 | b2 | b3
+        let byte0 = UInt32(storage[index])
+        let byte1 = UInt32(storage[index + 1]) << 8
+        let byte2 = UInt32(storage[index + 2]) << 16
+        let byte3 = UInt32(storage[index + 3]) << 24
+        return byte0 | byte1 | byte2 | byte3
     }
 }

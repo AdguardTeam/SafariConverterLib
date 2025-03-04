@@ -101,13 +101,13 @@ extension FilterRule {
     /// Writes a String? into the buffer using [2-byte length] + [bytes].
     /// - If the string is nil or empty, writes 0 for length.
     private static func writeString(_ value: String?, to buffer: inout Data) throws {
-        guard let s = value, !s.isEmpty else {
+        guard let string = value, !string.isEmpty else {
             // zero length is nil
             try writeUInt16(0, to: &buffer)
             return
         }
 
-        let utf8Bytes = Array(s.utf8)
+        let utf8Bytes = Array(string.utf8)
         guard utf8Bytes.count <= UInt16.max else {
             throw FilterRuleCodingError.stringTooLong(
                 actualLength: utf8Bytes.count,
@@ -121,7 +121,7 @@ extension FilterRule {
 
     /// Reads a String? from the buffer using our [2-byte length] + [bytes] format.
     /// - If length == 0, returns nil
-    fileprivate static func readString(from data: Data, index: inout Int) throws -> String? {
+    private static func readString(from data: Data, index: inout Int) throws -> String? {
         let length = try readUInt16(from: data, index: &index)
         if length == 0 {
             return nil
@@ -140,7 +140,7 @@ extension FilterRule {
 
     /// Writes an array of strings as:
     ///   [2-byte arrayCount], then each string with writeString(...)
-    fileprivate static func writeStringArray(_ array: [String], to buffer: inout Data) throws {
+    private static func writeStringArray(_ array: [String], to buffer: inout Data) throws {
         guard array.count <= UInt16.max else {
             throw FilterRuleCodingError.dataCorrupted(
                 message: "Array has too many elements (\(array.count) > \(UInt16.max))"
@@ -153,26 +153,26 @@ extension FilterRule {
     }
 
     /// Reads an array of strings from the buffer (2-byte count + each string).
-    fileprivate static func readStringArray(from data: Data, index: inout Int) throws -> [String] {
+    private static func readStringArray(from data: Data, index: inout Int) throws -> [String] {
         let count = try readUInt16(from: data, index: &index)
-        var result = [String]()
+        var result: [String] = []
         result.reserveCapacity(Int(count))
         for _ in 0..<count {
-            let s = try readString(from: data, index: &index) ?? ""
-            result.append(s)
+            let string = try readString(from: data, index: &index) ?? ""
+            result.append(string)
         }
         return result
     }
 
     /// Writes a UInt16 as 2 big-endian bytes.
-    fileprivate static func writeUInt16(_ value: UInt16, to buffer: inout Data) throws {
+    private static func writeUInt16(_ value: UInt16, to buffer: inout Data) throws {
         // For clarity, we’ll store all multi-byte values in network (big-endian) order.
         buffer.append(UInt8(value >> 8 & 0xFF))
         buffer.append(UInt8(value & 0xFF))
     }
 
     /// Reads a UInt16 from 2 big-endian bytes in data[index...].
-    fileprivate static func readUInt16(from data: Data, index: inout Int) throws -> UInt16 {
+    private static func readUInt16(from data: Data, index: inout Int) throws -> UInt16 {
         guard index + 2 <= data.count else {
             throw FilterRuleCodingError.notEnoughBytes
         }

@@ -49,6 +49,7 @@ public class TrieNode {
             if current.children[byte] == nil {
                 current.children[byte] = TrieNode()
             }
+            // swiftlint:disable:next force_unwrapping
             current = current.children[byte]!
         }
         // Attach the payload at the final node for this word

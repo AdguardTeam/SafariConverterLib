@@ -2,6 +2,7 @@ import Foundation
 
 /// Represents the final conversion result.
 public struct ConversionResult: CustomStringConvertible {
+    // swiftlint:disable:next line_length
     public static let EMPTY_RESULT_JSON: String = "[{\"trigger\": {\"url-filter\": \".*\",\"if-domain\": [\"domain.com\"]},\"action\":{\"type\": \"ignore-previous-rules\"}}]"
 
     /// Helper function that creates an empty result.

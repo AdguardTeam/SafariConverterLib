@@ -8,8 +8,8 @@ public class Rule {
     public var isWhiteList = false
     public var isImportant = false
 
-    public var permittedDomains = [String]()
-    public var restrictedDomains = [String]()
+    public var permittedDomains: [String] = []
+    public var restrictedDomains: [String] = []
 
     init(ruleText: String, for version: SafariVersion = DEFAULT_SAFARI_VERSION) throws {
         self.ruleText = ruleText
@@ -32,6 +32,7 @@ public class Rule {
         var nonASCIIFound = false
 
         for i in 0...maxIndex {
+            // swiftlint:disable:next force_unwrapping
             let char = utfString[safeIndex: i]!
 
             if char == separator || i == maxIndex {
@@ -40,8 +41,8 @@ public class Rule {
                 }
 
                 var restricted = false
-                let firstDomainChar = utfString[safeIndex: previousSeparator]
-                if firstDomainChar == Chars.TILDE {
+                if let firstDomainChar = utfString[safeIndex: previousSeparator],
+                    firstDomainChar == Chars.TILDE {
                     restricted = true
                     previousSeparator += 1
                 }
@@ -51,13 +52,15 @@ public class Rule {
                 let utfEndIdx = utfString.index(utfString.startIndex, offsetBy: separatorIndex)
 
                 var domain = String(domainsStr[utfStartIdx..<utfEndIdx])
-                if nonASCIIFound {
-                    domain = domain.idnaEncoded!
+                if nonASCIIFound, let encodedDomain = domain.idnaEncoded {
+                    domain = encodedDomain
                 }
 
                 if domain.utf8.first == Chars.SLASH && domain.utf8.last == Chars.SLASH {
                     // https://github.com/AdguardTeam/SafariConverterLib/issues/53
-                    throw SyntaxError.invalidModifier(message: "Using regular expression for domain modifier is not supported")
+                    throw SyntaxError.invalidModifier(
+                        message: "Using regular expression for domain modifier is not supported"
+                    )
                 }
 
                 if restricted {

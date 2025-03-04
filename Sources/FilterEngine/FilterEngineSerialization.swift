@@ -6,6 +6,13 @@ extension FilterEngine {
     // A "magic" marker we'll write at the start of the file so we can validate it on read.
     private static let fileMagic: [UInt8] = [0x46, 0x49, 0x4C, 0x54] // e.g. "FILT" in ASCII
 
+    /// A simple struct for holding tries data.
+    struct SerializedData {
+        let domainTrie: ByteArrayTrie
+        let shortcutsTrie: ByteArrayTrie
+        let tailIndices: [UInt32]
+    }
+
     /// Writes engine's indexes (including both tries and tail indices) to the specified file.
     /// This file can then be used to quickly initialize `FilterEngine` by calling
     /// the init(storage:indexFileURL:) initializer.
@@ -58,7 +65,7 @@ extension FilterEngine {
     /// - Throws: An error if the file cannot be read or if it fails to pass validation checks.
     static func readTries(
         from indexFileURL: URL
-    ) throws -> (domainTrie: ByteArrayTrie, shortcutsTrie: ByteArrayTrie, tailIndices: [UInt32]) {
+    ) throws -> SerializedData {
         let data = try Data(contentsOf: indexFileURL)
         var cursor = 0
 
@@ -126,23 +133,27 @@ extension FilterEngine {
         let domainTrie = ByteArrayTrie(from: Data(domainData))
         let shortcutsTrie = ByteArrayTrie(from: Data(shortcutsData))
 
-        return (domainTrie, shortcutsTrie, tailIndices)
+        return SerializedData(
+            domainTrie: domainTrie,
+            shortcutsTrie: shortcutsTrie,
+            tailIndices: tailIndices
+        )
     }
 
     private static func appendUInt32(_ data: inout Data, _ value: UInt32) {
-        var le = value.littleEndian
-        withUnsafeBytes(of: &le) {
+        var littleEndianValue = value.littleEndian
+        withUnsafeBytes(of: &littleEndianValue) {
             data.append(contentsOf: $0)
         }
     }
 
     private static func readUInt32(_ data: Data, _ cursor: Int) -> UInt32 {
         // Manual bit-shift
-        let b0 = UInt32(data[cursor])
-        let b1 = UInt32(data[cursor + 1]) << 8
-        let b2 = UInt32(data[cursor + 2]) << 16
-        let b3 = UInt32(data[cursor + 3]) << 24
-        return b0 | b1 | b2 | b3
+        let byte0 = UInt32(data[cursor])
+        let byte1 = UInt32(data[cursor + 1]) << 8
+        let byte2 = UInt32(data[cursor + 2]) << 16
+        let byte3 = UInt32(data[cursor + 3]) << 24
+        return byte0 | byte1 | byte2 | byte3
     }
 }
 

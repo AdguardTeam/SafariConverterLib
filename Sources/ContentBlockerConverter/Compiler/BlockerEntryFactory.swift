@@ -61,10 +61,10 @@ class BlockerEntryFactory {
     /// - Returns: `BlockerEntry` or `nil` if the rule cannot be converted.
     func createBlockerEntry(rule: Rule) -> BlockerEntry? {
         do {
-            if rule is NetworkRule {
-                return try convertNetworkRule(rule: rule as! NetworkRule)
-            } else {
-                return try convertCosmeticRule(rule: rule as! CosmeticRule)
+            if let rule = rule as? NetworkRule {
+                return try convertNetworkRule(rule: rule)
+            } else if let rule = rule as? CosmeticRule {
+                return try convertCosmeticRule(rule: rule)
             }
         } catch {
             self.errorsCounter.add()
@@ -125,8 +125,10 @@ class BlockerEntryFactory {
         }
 
         // Special treatment for $path
-        let pathRegex = rule.pathRegExpSource!
-        let path = rule.pathModifier!
+        guard let pathRegex = rule.pathRegExpSource,
+            let path = rule.pathModifier else {
+            return BlockerEntryFactory.URL_FILTER_COSMETIC_RULES
+        }
 
         // First, validate custom regular expressions.
         if path.utf8.first == Chars.SLASH && path.utf8.last == Chars.SLASH {
@@ -134,7 +136,10 @@ class BlockerEntryFactory {
 
             switch result {
             case .success: break
-            case .failure(let error): throw ConversionError.unsupportedRegExp(message: "Unsupported regexp in $path: \(error)")
+            case .failure(let error):
+                throw ConversionError.unsupportedRegExp(
+                    message: "Unsupported regexp in $path: \(error)"
+                )
             }
         }
 
@@ -142,7 +147,8 @@ class BlockerEntryFactory {
             // If $path regular expression starts with '^', we need to prepend a regular expression
             // that will match the beginning of the URL as we'll put the result into 'url-filter'
             // which is applied to the full URL and not just to path.
-            return BlockerEntryFactory.URL_FILTER_PREFIX_CSS_RULES_PATH_START_STRING + pathRegex.dropFirst()
+            let prefix = BlockerEntryFactory.URL_FILTER_PREFIX_CSS_RULES_PATH_START_STRING
+            return prefix + pathRegex.dropFirst()
         }
 
         // In other cases just prepend "any URL" pattern.
@@ -156,13 +162,11 @@ class BlockerEntryFactory {
         let isWebSocket = rule.isWebSocket
 
         // Use a single standard regex for rules that are supposed to match every URL.
-        for anyUrlTmpl in BlockerEntryFactory.ANY_URL_TEMPLATES {
-            if rule.urlRuleText == anyUrlTmpl {
-                if isWebSocket {
-                    return BlockerEntryFactory.URL_FILTER_WS_ANY_URL
-                }
-                return BlockerEntryFactory.URL_FILTER_ANY_URL
+        for anyUrlTmpl in BlockerEntryFactory.ANY_URL_TEMPLATES where rule.urlRuleText == anyUrlTmpl {
+            if isWebSocket {
+                return BlockerEntryFactory.URL_FILTER_WS_ANY_URL
             }
+            return BlockerEntryFactory.URL_FILTER_ANY_URL
         }
 
         if rule.urlRegExpSource == nil {
@@ -170,7 +174,9 @@ class BlockerEntryFactory {
             return BlockerEntryFactory.URL_FILTER_ANY_URL
         }
 
-        let urlFilter = rule.urlRegExpSource!
+        guard let urlFilter = rule.urlRegExpSource else {
+            return BlockerEntryFactory.URL_FILTER_ANY_URL
+        }
 
         // Regex that we generate for basic non-regex rules are okay.
         // But if this is a regex rule, we can't be sure.
@@ -179,7 +185,10 @@ class BlockerEntryFactory {
 
             switch result {
             case .success: break
-            case .failure(let error): throw ConversionError.unsupportedRegExp(message: "Unsupported regexp rule: \(error)")
+            case .failure(let error):
+                throw ConversionError.unsupportedRegExp(
+                    message: "Unsupported regexp rule: \(error)"
+                )
             }
         }
 
@@ -294,7 +303,7 @@ class BlockerEntryFactory {
     /// We use this to apply $subdocument correctly in Safari, i.e. only apply it
     /// on the child frame level.
     private func addLoadContext(rule: NetworkRule, trigger: inout BlockerEntry.Trigger) {
-        var context = [String]()
+        var context: [String] = []
 
         // `child-frame` and `top-frame` contexts are supported since Safari 15
         if self.version.isSafari15orGreater() {
@@ -336,7 +345,9 @@ class BlockerEntryFactory {
         addUnlessDomainForThirdParty(rule: rule, domains: &excluded)
 
         if !included.isEmpty && !excluded.isEmpty {
-            throw ConversionError.invalidDomains(message: "Safari does not support both permitted and restricted domains")
+            throw ConversionError.invalidDomains(
+                message: "Safari does not support both permitted and restricted domains"
+            )
         }
 
         if !included.isEmpty {
@@ -363,17 +374,17 @@ class BlockerEntryFactory {
             return
         }
 
-        let networkRule = rule as! NetworkRule
-        if networkRule.isThirdParty {
-            if networkRule.permittedDomains.isEmpty {
-                let res = NetworkRuleParser.extractDomain(pattern: networkRule.urlRuleText)
-                if res.domain == "" {
-                    return
-                }
+        guard let networkRule = rule as? NetworkRule else { return }
+        guard networkRule.isThirdParty else { return }
 
-                // Prepend wildcard to cover subdomains.
-                domains.append("*" + res.domain)
+        if networkRule.permittedDomains.isEmpty {
+            let res = NetworkRuleParser.extractDomain(pattern: networkRule.urlRuleText)
+            if res.domain.isEmpty {
+                return
             }
+
+            // Prepend wildcard to cover subdomains.
+            domains.append("*" + res.domain)
         }
     }
 
@@ -409,7 +420,7 @@ class BlockerEntryFactory {
             }
 
             let ruleDomain = NetworkRuleParser.extractDomain(pattern: rule.urlRuleText)
-            if ruleDomain.domain == "" || ruleDomain.patternMatchesPath {
+            if ruleDomain.domain.isEmpty || ruleDomain.patternMatchesPath {
                 // Do not add if-domain limitation when the rule domain cannot be extracted
                 // or when the rule is more specific than just a domain, i.e. in the case
                 // of "@@||example.org/path" keep using "url-filter".
@@ -439,7 +450,7 @@ class BlockerEntryFactory {
     /// - In the case of AdGuard, $domain modifier includes all subdomains. For Safari these rules should be
     ///     transformed to `*domain.com` to signal that subdomains are included.
     private func resolveDomains(domains: [String]) -> [String] {
-        var result = [String]()
+        var result: [String] = []
 
         for domain in domains {
             if domain.utf8.last == Chars.WILDCARD {

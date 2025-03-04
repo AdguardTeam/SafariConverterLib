@@ -24,7 +24,14 @@ func encodeJson(_ result: ConversionResult) throws -> String {
     encoder.outputFormatting = .prettyPrinted
 
     let json = try encoder.encode(result)
-    return String(data: json, encoding: .utf8)!.replacingOccurrences(of: "\\/", with: "/")
+    guard let jsonString = String(data: json, encoding: .utf8) else {
+        throw NSError(
+            domain: "EncodingError",
+            code: 1,
+            userInfo: [NSLocalizedDescriptionKey: "Failed to encode JSON to string"]
+        )
+    }
+    return jsonString.replacingOccurrences(of: "\\/", with: "/")
 }
 
 /// Root command with two subcommands: convert and buildengine.
@@ -47,7 +54,7 @@ struct ConverterTool: ParsableCommand {
 struct Convert: ParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "convert",
-        abstract: "Convert AdGuard rules to Safari content blocking JSON and advanced rules for a web extension to interpret."
+        abstract: "Convert AdGuard rules to Safari content blocking JSON and advanced rules for a web extension."
     )
 
     @Option(name: .shortAndLong, help: "Safari version.")
@@ -99,14 +106,14 @@ struct Convert: ParsableCommand {
             writeToStdOut(str: encoded)
         }
 
-        if safariRulesJSONPath != nil {
+        if let safariRulesJSONPath = safariRulesJSONPath {
             let content = result.safariRulesJSON
-            try content.write(toFile: safariRulesJSONPath!, atomically: true, encoding: .utf8)
+            try content.write(toFile: safariRulesJSONPath, atomically: true, encoding: .utf8)
         }
 
-        if advancedBlockingRulesPath != nil {
+        if let advancedBlockingRulesPath = advancedBlockingRulesPath {
             let content = result.advancedRulesText ?? ""
-            try content.write(toFile: advancedBlockingRulesPath!, atomically: true, encoding: .utf8)
+            try content.write(toFile: advancedBlockingRulesPath, atomically: true, encoding: .utf8)
         }
     }
 }
@@ -144,8 +151,14 @@ struct BuildEngine: ParsableCommand {
 
         // Build the FilterEngine binary using the provided rules and safari version.
         // Remove any previous settings from sharedUserDefaults.
-        let sharedUserDefaults = UserDefaults(suiteName: #file)!
-        sharedUserDefaults.removePersistentDomain(forName: #file)
+        guard let sharedUserDefaults = EmptyDefaults(suiteName: #file) else {
+            throw NSError(
+                domain: "UserDefaultsError",
+                code: 1,
+                userInfo: [NSLocalizedDescriptionKey: "Failed to create UserDefaults"]
+            )
+        }
+        defer { sharedUserDefaults.removePersistentDomain(forName: #file) }
 
         // Create a URL from the output directory string.
         let containerURL = URL(fileURLWithPath: outputDir)
@@ -161,6 +174,24 @@ struct BuildEngine: ParsableCommand {
         _ = try webExtension.buildFilterEngine(rules: rules.joined(separator: "\n"))
 
         Logger.log("(BuildEngine) - FilterEngine files written to \(outputDir)")
+    }
+}
+
+/// EmptyDefaults is a UserDefaults instance that does not save or read anything.
+/// It is required to avoid creating unnecessary files.
+class EmptyDefaults: UserDefaults {
+    override func double(forKey defaultName: String) -> Double {
+        0
+    }
+
+    override func integer(forKey defaultName: String) -> Int {
+        0
+    }
+
+    override func set(_ value: Double, forKey defaultName: String) {
+    }
+
+    override func set(_ value: Int, forKey defaultName: String) {
     }
 }
 

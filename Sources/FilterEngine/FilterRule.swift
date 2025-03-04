@@ -56,10 +56,10 @@ public struct FilterRule: Codable {
     ///
     /// It can throw a `RuleError` if the specified rule is not supported.
     public init(from rule: Rule) throws {
-        if rule is NetworkRule {
-            try self.init(from: rule as! NetworkRule)
-        } else if rule is CosmeticRule {
-            try self.init(from: rule as! CosmeticRule)
+        if let networkRule = rule as? NetworkRule {
+            try self.init(from: networkRule)
+        } else if let cosmeticRule = rule as? CosmeticRule {
+            try self.init(from: cosmeticRule)
         } else {
             throw RuleError.unsupported(message: "Unsupported rule: \(rule.ruleText)")
         }
@@ -260,7 +260,6 @@ extension FilterRule {
     }
 }
 
-
 // MARK: - Extracting rule pattern shortcut
 
 extension FilterRule {
@@ -269,8 +268,10 @@ extension FilterRule {
     ///  - Must be at least 3 characters long
     ///  - Are collected in a single pass through the `pattern`'s UTF8View
     public static func extractShortcuts(from pattern: String) -> [String] {
-        var result = [String]()
-        var buffer = [UInt8]()  // Temporarily store bytes for the current shortcut
+        var result: [String] = []
+
+        // Temporarily store bytes for the current shortcut
+        var buffer: [UInt8] = []
 
         for byte in pattern.utf8 {
             switch byte {
@@ -278,7 +279,7 @@ extension FilterRule {
                 // We've hit a special character.
                 // If the buffer has at least 3 bytes, convert it and add to results.
                 if buffer.count >= 3,
-                   let shortcut = String(bytes: buffer, encoding: .utf8) {
+                    let shortcut = String(bytes: buffer, encoding: .utf8) {
                     result.append(shortcut)
                 }
                 // Reset the buffer for the next potential shortcut.
@@ -290,7 +291,7 @@ extension FilterRule {
 
         // End of string: check if there's a leftover shortcut in the buffer
         if buffer.count >= 3,
-           let shortcut = String(bytes: buffer, encoding: .utf8) {
+            let shortcut = String(bytes: buffer, encoding: .utf8) {
             result.append(shortcut)
         }
 
@@ -317,8 +318,9 @@ extension FilterRule {
 
         // Special regex characters that *end* a shortcut (while outside brackets).
         // Feel free to expand this set if your scenario demands it.
-        @inline(__always) func isSpecialCharacter(_ c: UInt8) -> Bool {
-            switch c {
+        @inline(__always)
+        func isSpecialCharacter(_ character: UInt8) -> Bool {
+            switch character {
             case UInt8(ascii: "^"),
                 UInt8(ascii: "$"),
                 UInt8(ascii: "."),
@@ -335,8 +337,9 @@ extension FilterRule {
         //   '(' matches ')'
         //   '[' matches ']'
         //   '{' matches '}'
-        @inline(__always) func getBracketPair(_ c: UInt8) -> UInt8? {
-            switch c {
+        @inline(__always)
+        func getBracketPair(_ character: UInt8) -> UInt8? {
+            switch character {
             case UInt8(ascii: "("): return UInt8(ascii: ")")
             case UInt8(ascii: "["): return UInt8(ascii: "]")
             case UInt8(ascii: "{"): return UInt8(ascii: "}")
@@ -344,10 +347,10 @@ extension FilterRule {
             }
         }
 
-        var bracketStack = [UInt8]()   // keeps track of opening brackets
-        var result = [String]()        // final shortcuts
-        var buffer = [UInt8]()         // accumulate outside-bracket chars
-        var isEscaped = false          // are we escaping the *next* character?
+        var bracketStack: [UInt8] = []  // keeps track of opening brackets
+        var result: [String] = []       // final shortcuts
+        var buffer: [UInt8] = []        // accumulate outside-bracket chars
+        var isEscaped = false           // are we escaping the *next* character?
 
         let utf8 = pattern.utf8
         var i = utf8.startIndex
@@ -355,11 +358,11 @@ extension FilterRule {
 
         // Helper function that flushes the current buffer and adds the shortcut
         // to the resulting array (given that the buffer is 3 or more characters).
-        @inline(__always) func flushBuffer() {
-            if buffer.count >= 3 {
-                if let str = String(bytes: buffer, encoding: .utf8), !str.isEmpty {
-                    result.append(str)
-                }
+        @inline(__always)
+        func flushBuffer() {
+            if buffer.count >= 3,
+                let shortcut = String(bytes: buffer, encoding: .utf8) {
+                result.append(shortcut)
             }
 
             if !buffer.isEmpty {
@@ -368,7 +371,8 @@ extension FilterRule {
         }
 
         // Helper function to peek the next character.
-        @inline(__always) func peekNext() -> UInt8? {
+        @inline(__always)
+        func peekNext() -> UInt8? {
             let next = utf8.index(after: i)
             guard next < end else { return nil }
             return utf8[next]

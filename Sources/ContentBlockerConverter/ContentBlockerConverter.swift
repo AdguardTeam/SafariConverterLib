@@ -113,8 +113,8 @@ public class ContentBlockerConverter {
     /// - Advanced rules (extended CSS, script, scriptlet, css injection)
     /// - Simple rules (network, element hiding)
     private static func splitSimpleAdvanced(_ rules: [Rule]) -> (simple: [Rule], advanced: [Rule]) {
-        var simple = [Rule]()
-        var advanced = [Rule]()
+        var simple: [Rule] = []
+        var advanced: [Rule] = []
 
         for rule in rules {
             if let rule = rule as? NetworkRule {

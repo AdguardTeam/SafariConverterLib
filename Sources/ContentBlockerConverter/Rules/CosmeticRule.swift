@@ -73,27 +73,31 @@ public class CosmeticRule: Rule {
             throw SyntaxError.invalidRule(message: "Not a cosmetic rule")
         }
 
-        let contentIndex = markerInfo.index + markerInfo.marker!.rawValue.utf8.count
+        guard let marker = markerInfo.marker else {
+            throw SyntaxError.invalidRule(message: "Invalid cosmetic rule marker")
+        }
+
+        let contentIndex = markerInfo.index + marker.rawValue.utf8.count
         let utfContentIndex = ruleText.utf8.index(ruleText.utf8.startIndex, offsetBy: contentIndex)
         self.content = String(ruleText[utfContentIndex...])
 
-        if self.content == "" {
+        if self.content.isEmpty {
             throw SyntaxError.invalidRule(message: "Rule content is empty")
         }
 
-        switch markerInfo.marker! {
-        case CosmeticRuleMarker.ElementHiding,
-            CosmeticRuleMarker.ElementHidingExtCSS,
-            CosmeticRuleMarker.ElementHidingException,
-            CosmeticRuleMarker.ElementHidingExtCSSException:
+        switch marker {
+        case .elementHiding,
+            .elementHidingExtCSS,
+            .elementHidingException,
+            .elementHidingExtCSSException:
             self.isElemhide = true
-        case CosmeticRuleMarker.Css,
-            CosmeticRuleMarker.CssExtCSS,
-            CosmeticRuleMarker.CssException,
-            CosmeticRuleMarker.CssExtCSSException:
+        case .css,
+            .cssExtCSS,
+            .cssException,
+            .cssExtCSSException:
             self.isInjectCss = true
-        case CosmeticRuleMarker.Js,
-            CosmeticRuleMarker.JsException:
+        case .javascript,
+            .javascriptException:
             self.isScript = true
         default:
             throw SyntaxError.invalidRule(message: "Unsupported rule type")
@@ -118,8 +122,8 @@ public class CosmeticRule: Rule {
             }
         }
 
-        isWhiteList = CosmeticRule.isWhiteList(marker: markerInfo.marker!)
-        isExtendedCss = CosmeticRule.isExtCssMarker(marker: markerInfo.marker!)
+        isWhiteList = CosmeticRule.isWhiteList(marker: marker)
+        isExtendedCss = CosmeticRule.isExtCssMarker(marker: marker)
         if !isExtendedCss && CosmeticRule.hasExtCSSIndicators(content: self.content, version: version) {
             // Additional check if rule is extended css rule by pseudo class indicators.
             isExtendedCss = true
@@ -150,10 +154,10 @@ public class CosmeticRule: Rule {
                 if content.utf8.dropFirst(i).starts(with: CosmeticRule.EXT_CSS_ATTR_INDICATOR.utf8) {
                     return true
                 }
-                case Chars.COLON:
+            case Chars.COLON:
                 insidePseudo = true
                 pseudoStartIndex = i + 1
-                case Chars.BRACKET_OPEN:
+            case Chars.BRACKET_OPEN:
                 if insidePseudo {
                     insidePseudo = false
                     let pseudoEndIndex = i - 1
@@ -199,12 +203,12 @@ public class CosmeticRule: Rule {
     /// Returns true if the rule marker is for an exception rule.
     private static func isWhiteList(marker: CosmeticRuleMarker) -> Bool {
         switch marker {
-        case CosmeticRuleMarker.ElementHidingException,
-            CosmeticRuleMarker.ElementHidingExtCSSException,
-            CosmeticRuleMarker.CssException,
-            CosmeticRuleMarker.CssExtCSSException,
-            CosmeticRuleMarker.JsException,
-            CosmeticRuleMarker.HtmlException:
+        case .elementHidingException,
+            .elementHidingExtCSSException,
+            .cssException,
+            .cssExtCSSException,
+            .javascriptException,
+            .htmlException:
             return true
         default:
             return false
@@ -214,10 +218,10 @@ public class CosmeticRule: Rule {
     /// Returns true if the rule is an extended CSS rule.
     private static func isExtCssMarker(marker: CosmeticRuleMarker) -> Bool {
         switch marker {
-        case CosmeticRuleMarker.CssExtCSS,
-            CosmeticRuleMarker.CssExtCSSException,
-            CosmeticRuleMarker.ElementHidingExtCSS,
-            CosmeticRuleMarker.ElementHidingExtCSSException:
+        case .cssExtCSS,
+            .cssExtCSSException,
+            .elementHidingExtCSS,
+            .elementHidingExtCSSException:
             return true
         default:
             return false
@@ -238,22 +242,26 @@ public class CosmeticRule: Rule {
             }
 
             pathModifier = value
-            if pathModifier!.utf8.count > 1 &&
-                pathModifier!.utf8.first == Chars.SLASH &&
-                pathModifier!.utf8.last == Chars.SLASH {
-                // Dealing with a regex.
-                let startIndex = pathModifier!.utf8.index(after: pathModifier!.utf8.startIndex)
-                let endIndex = pathModifier!.utf8.index(before: pathModifier!.utf8.endIndex)
 
-                pathRegExpSource = String(pathModifier![startIndex..<endIndex])
-            } else {
-                pathRegExpSource = try SimpleRegex.createRegexText(pattern: pathModifier!)
+            guard let pathMod = pathModifier else {
+                throw SyntaxError.invalidModifier(message: "Path modifier is nil")
             }
 
-            if pathRegExpSource == "" {
+            if pathMod.utf8.count > 1,
+                let first = pathMod.utf8.first, first == Chars.SLASH,
+                let last = pathMod.utf8.last, last == Chars.SLASH {
+                // Dealing with a regex.
+                let startIndex = pathMod.utf8.index(after: pathMod.utf8.startIndex)
+                let endIndex = pathMod.utf8.index(before: pathMod.utf8.endIndex)
+
+                pathRegExpSource = String(pathMod[startIndex..<endIndex])
+            } else {
+                pathRegExpSource = try SimpleRegex.createRegexText(pattern: pathMod)
+            }
+
+            guard let regExpSource = pathRegExpSource, !regExpSource.isEmpty else {
                 throw SyntaxError.invalidModifier(message: "Empty regular expression for path")
             }
-
         default:
             throw SyntaxError.invalidModifier(message: "Unsupported modifier \(name)")
         }
@@ -270,32 +278,32 @@ public class CosmeticRule: Rule {
     /// - Returns: what's left of the domains string or nil if the rule only has cosmetic options.
     private func parseCosmeticOptions(domains: String) throws -> String? {
         let startIndex = domains.utf8.index(domains.utf8.startIndex, offsetBy: 2)
-        let endIndex = domains.utf8.lastIndex(of: Chars.SQUARE_BRACKET_CLOSE)
+        guard let endIndex = domains.utf8.lastIndex(of: Chars.SQUARE_BRACKET_CLOSE) else {
+            throw SyntaxError.invalidModifier(message: "Invalid option format")
+        }
 
         if domains.utf8.count < 3 ||
-            domains.utf8[safeIndex: 1] != Chars.DOLLAR ||
-            endIndex == nil {
+            domains.utf8[safeIndex: 1] != Chars.DOLLAR {
             throw SyntaxError.invalidModifier(message: "Invalid cosmetic rule modifier")
         }
 
-        let optionsString = String(domains[startIndex..<endIndex!])
+        let optionsString = String(domains[startIndex..<endIndex])
         let options = optionsString.split(delimiter: Chars.COMMA, escapeChar: Chars.BACKSLASH)
 
         for option in options {
             var optionName = option
             var optionValue = ""
 
-            let valueIndex = option.utf8.firstIndex(of: Chars.EQUALS_SIGN)
-            if valueIndex != nil {
-                optionName = String(option[..<valueIndex!])
-                optionValue = String(option[option.utf8.index(after: valueIndex!)...])
+            if let valueIndex = option.utf8.firstIndex(of: Chars.EQUALS_SIGN) {
+                optionName = String(option[..<valueIndex])
+                optionValue = String(option[option.utf8.index(after: valueIndex)...])
             }
 
             try parseOption(name: optionName, value: optionValue)
         }
 
         // Parse what's left after the options string.
-        let domainsIndex = domains.index(after: endIndex!)
+        let domainsIndex = domains.index(after: endIndex)
         if domainsIndex < domains.endIndex {
             let domainsStr = domains[domainsIndex...]
             return String(domainsStr)
@@ -306,9 +314,8 @@ public class CosmeticRule: Rule {
 
     func setCosmeticRuleDomains(domains: String) throws {
         if domains.utf8.first == Chars.SQUARE_BRACKET_OPEN {
-            let remainingDomains = try parseCosmeticOptions(domains: domains)
-            if remainingDomains != nil && !remainingDomains!.isEmpty {
-                try addDomains(domainsStr: remainingDomains!, separator: Chars.COMMA)
+            if let remainingDomains = try parseCosmeticOptions(domains: domains), !remainingDomains.isEmpty {
+                try addDomains(domainsStr: remainingDomains, separator: Chars.COMMA)
             }
         } else {
             try addDomains(domainsStr: domains, separator: Chars.COMMA)

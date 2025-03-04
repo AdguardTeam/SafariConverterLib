@@ -1,7 +1,7 @@
 import Foundation
 
 /// Helper for working with scriptlet rules.
-public class ScriptletParser {
+public enum ScriptletParser {
     public static let SCRIPTLET_MASK = "//scriptlet("
     private static let SCRIPTLET_MASK_LEN = SCRIPTLET_MASK.count
 
@@ -24,13 +24,14 @@ public class ScriptletParser {
 
         // Without the scriptlet prefix the string looks like:
         // "scriptletname", "arg1", "arg2", etc
-        let argumentsStrIndex = cosmeticRuleContent.utf8.index(cosmeticRuleContent.utf8.startIndex, offsetBy: SCRIPTLET_MASK_LEN)
+        let utf8 = cosmeticRuleContent.utf8
+        let argumentsStrIndex = utf8.index(utf8.startIndex, offsetBy: SCRIPTLET_MASK_LEN)
         // Do not include the last character as it's a bracket.
-        let argumentsEndIndex = cosmeticRuleContent.utf8.index(cosmeticRuleContent.utf8.endIndex, offsetBy: -1)
+        let argumentsEndIndex = utf8.index(utf8.endIndex, offsetBy: -1)
         let argumentsStr = cosmeticRuleContent[argumentsStrIndex..<argumentsEndIndex]
 
         // Now we just get an array of these arguments
-        var args = try ScriptletParser.extractArguments(str: argumentsStr, delimiter: Chars.COMMA)
+        var args: [String] = try ScriptletParser.extractArguments(str: argumentsStr, delimiter: Chars.COMMA)
 
         if args.count < 1 {
             throw SyntaxError.invalidRule(message: "Invalid scriptlet params")
@@ -58,17 +59,18 @@ public class ScriptletParser {
         var pendingQuote = false
         var pendingQuoteChar: UInt8 = 0
 
-        var result = [String]()
+        var result: [String] = []
         var argumentStartIndex: Int = 0
         var argumentEndIndex: Int
 
         for index in 0...maxIndex {
-            let char = str.utf8[safeIndex: index]!
+            guard let char = str.utf8[safeIndex: index] else {
+                throw SyntaxError.invalidRule(message: "Invalid character at \(index)")
+            }
 
             switch char {
             case Chars.QUOTE_SINGLE, Chars.QUOTE_DOUBLE:
                 if !pendingQuote {
-                    pendingQuote = true
                     pendingQuoteChar = char
 
                     argumentStartIndex = index + 1
@@ -94,7 +96,7 @@ public class ScriptletParser {
             case delimiter, Chars.WHITESPACE:
                 // Ignore delimiter and whitespace characters, they're allowed.
                 break
-                default:
+            default:
                 if !pendingQuote {
                     throw SyntaxError.invalidRule(message: "Invalid scriptlet arguments string")
                 }

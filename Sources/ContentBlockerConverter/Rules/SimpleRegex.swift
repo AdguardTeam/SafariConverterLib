@@ -1,30 +1,30 @@
 import Foundation
 
-/// This class provides logic for converting network rules patterns to regular expressions.
+/// This enum provides logic for converting network rules patterns to regular expressions.
 ///
 /// AdGuard's network rules mostly use a simplified syntax for matching URLs instead
 /// of full-scale regular expressions. These patterns can be converted to regular expressions
 /// that are supported by Safari content blocking rules.
-public class SimpleRegex {
+public enum SimpleRegex {
     private static let maskStartUrl = "||"
     private static let maskPipe = "|"
     private static let maskSeparator = "^"
     private static let maskAnySymbol = "*"
 
     private static let regexAnySymbol = ".*"
-    private static let regexAnySymbolChars = Array(".*".utf8)
-    private static let regexStartString = Array("^".utf8)
-    private static let regexEndString = Array("$".utf8)
+    private static let regexAnySymbolChars: [UInt8] = Array(".*".utf8)
+    private static let regexStartString: [UInt8] = Array("^".utf8)
+    private static let regexEndString: [UInt8] = Array("$".utf8)
 
     /// Improved regular expression instead of UrlFilterRule.REGEXP_START_URL (||).
     ///
     /// Please note, that this regular expression matches only ONE level of subdomains.
     /// Using ([a-z0-9-.]+\\.)? instead increases memory usage by 10Mb
-    private static let regexStartUrl = Array(#"^[htpsw]+:\/\/([a-z0-9-]+\.)?"#.utf8)
+    private static let regexStartUrl: [UInt8] = Array(#"^[htpsw]+:\/\/([a-z0-9-]+\.)?"#.utf8)
 
     /// Simplified separator (to fix an issue with $ restriction - it can be only in the end of regexp).
-    private static let regexEndSeparator = Array("([\\/:&\\?].*)?$".utf8)
-    private static let regexSeparator = Array("[/:&?]?".utf8)
+    private static let regexEndSeparator: [UInt8] = Array("([\\/:&\\?].*)?$".utf8)
+    private static let regexSeparator: [UInt8] = Array("[/:&?]?".utf8)
 
     /// Creates a regular expression from a network rule pattern.
     ///
@@ -33,18 +33,19 @@ public class SimpleRegex {
     /// - Returns: regular expression corresponding to that pattern.
     /// - Throws: SyntaxError if the pattern contains non-ASCII characters.
     public static func createRegexText(pattern: String) throws -> String {
-        if pattern == "" ||
+        if pattern.isEmpty ||
             pattern == maskStartUrl ||
             pattern == maskPipe ||
             pattern == maskAnySymbol {
             return regexAnySymbol
         }
 
-        var resultChars = [UInt8]()
+        var resultChars: [UInt8] = []
         let utf8 = pattern.utf8
         var currentIndex = utf8.startIndex
 
-        @inline(__always) func peekNext() -> UInt8? {
+        @inline(__always)
+        func peekNext() -> UInt8? {
             let next = utf8.index(after: currentIndex)
             guard next < utf8.endIndex else { return nil }
             return utf8[next]
@@ -109,6 +110,11 @@ public class SimpleRegex {
             currentIndex = utf8.index(after: currentIndex)
         }
 
-        return String(decoding: resultChars, as: UTF8.self)
+        if let string = String(bytes: resultChars, encoding: .utf8) {
+            return string
+        }
+
+        // This should never happen as we're only dealing with ASCII characters
+        return regexAnySymbol
     }
 }

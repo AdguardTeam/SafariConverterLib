@@ -45,17 +45,17 @@ public class FilterEngine {
     let shortcutsTrie: ByteArrayTrie
 
     /// Tail array contains indexes for rules that don't have permittedDomains or shortcuts.
-    var tailIndices = [UInt32]()
+    var tailIndices: [UInt32] = []
 
     /// TODO(ameshkov): !!! Comment
     public init(storage: FilterRuleStorage) throws {
         self.storage = storage
 
-        let tries = try FilterEngine.buildTries(from: storage)
+        let trieData = try FilterEngine.buildTries(from: storage)
 
-        domainTrie = tries.domainTrie
-        shortcutsTrie = tries.shortcutsTrie
-        tailIndices = tries.tailIndices
+        self.domainTrie = trieData.domainTrie
+        self.shortcutsTrie = trieData.shortcutsTrie
+        self.tailIndices = trieData.tailIndices
     }
 
     /// TODO(ameshkov): !!! Comment
@@ -99,13 +99,12 @@ extension FilterEngine {
     private func filterMatchResult(result: MatchResult) -> [FilterRule] {
         var filteredCosmeticRules: [FilterRule] = []
 
-        let action = result.networkRule?.action
-
-        for rule in result.cosmeticRules {
-            // Check if the rule is not disabled by the network rule.
-            if action == nil || isRuleEnabled(cosmeticRule: rule, action: action!) {
+        if let action = result.networkRule?.action, !result.cosmeticRules.isEmpty {
+            for rule in result.cosmeticRules where isRuleEnabled(cosmeticRule: rule, action: action) {
                 filteredCosmeticRules.append(rule)
             }
+        } else if result.networkRule?.action == nil {
+            filteredCosmeticRules = result.cosmeticRules
         }
 
         return filteredCosmeticRules
@@ -234,7 +233,7 @@ extension FilterEngine {
     private func ruleMatches(rule: FilterRule, url: URL) -> Bool {
         // 1. Make sure the URL has a host
         let host = FilterEngine.host(from: url)
-        if host == "" {
+        if host.isEmpty {
             return false
         }
 
@@ -300,8 +299,8 @@ extension FilterEngine {
 
 
     /// A helper structure for caching compiled NSRegularExpression objects.
-    private struct RegexCache {
-        static var cache = [String: NSRegularExpression]()
+    private enum RegexCache {
+        static var cache: [String: NSRegularExpression] = [:]
 
         /// Returns a compiled NSRegularExpression for the given pattern.
         /// If it has been previously compiled, returns the cached instance.
@@ -326,10 +325,17 @@ extension FilterEngine {
 // MARK: - Trie initialization
 
 extension FilterEngine {
+    /// A simple struct for holding tries data.
+    private struct TrieData {
+        let domainTrie: ByteArrayTrie
+        let shortcutsTrie: ByteArrayTrie
+        let tailIndices: [UInt32]
+    }
+
     // TODO(ameshkov): !!! Comment
     private static func buildTries(
         from storage: FilterRuleStorage
-    ) throws -> (domainTrie: ByteArrayTrie, shortcutsTrie: ByteArrayTrie, tailIndices: [UInt32]) {
+    ) throws -> TrieData {
         let domainTrieRoot = TrieNode()
         let shortcutsTrieRoot = TrieNode()
         var tailIndices: [UInt32] = []
@@ -346,8 +352,9 @@ extension FilterEngine {
             } else {
                 // If there are no permitted domains, attempt to extract shortcuts.
                 let shortcuts: [String]
-                if isRegexPattern(rule.urlPattern) {
-                    shortcuts = FilterRule.extractRegexShortcuts(from: rule.urlRegex!)
+                if isRegexPattern(rule.urlPattern),
+                    let urlRegex = rule.urlRegex {
+                    shortcuts = FilterRule.extractRegexShortcuts(from: urlRegex)
                 } else {
                     shortcuts = FilterRule.extractShortcuts(from: rule.urlPattern)
                 }
@@ -368,7 +375,11 @@ extension FilterEngine {
         let domainTrie = ByteArrayTrie(from: domainTrieRoot)
         let shortcutsTrie = ByteArrayTrie(from: shortcutsTrieRoot)
 
-        return (domainTrie, shortcutsTrie, tailIndices)
+        return TrieData(
+            domainTrie: domainTrie,
+            shortcutsTrie: shortcutsTrie,
+            tailIndices: tailIndices
+        )
     }
 
     /// This is a helper function that helps us choose the best search shortcut among available.
@@ -413,7 +424,7 @@ extension FilterEngine {
     private static func extractHostnames(from url: URL) -> [String] {
         let host = FilterEngine.host(from: url)
 
-        if host == "" {
+        if host.isEmpty {
             return []
         }
 

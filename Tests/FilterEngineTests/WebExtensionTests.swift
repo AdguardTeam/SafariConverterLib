@@ -21,8 +21,7 @@ final class WebExtensionTests: XCTestCase {
     }
 
     func testBuildFilterEngine() throws {
-        let sharedUserDefaults = UserDefaults(suiteName: #file)!
-        sharedUserDefaults.removePersistentDomain(forName: #file)
+        let sharedUserDefaults = EmptyDefaults(suiteName: #file)!
 
         let webExtension = try WebExtension(
             containerURL: tempDirectory,
@@ -33,5 +32,21 @@ final class WebExtensionTests: XCTestCase {
         let rules = engine.findAll(for: URL(string: "https://example.org/")!)
 
         XCTAssertEqual(rules.count, 1)
+    }
+}
+
+class EmptyDefaults: UserDefaults {
+    override func double(forKey defaultName: String) -> Double {
+        0
+    }
+
+    override func integer(forKey defaultName: String) -> Int {
+        0
+    }
+
+    override func set(_ value: Double, forKey defaultName: String) {
+    }
+
+    override func set(_ value: Int, forKey defaultName: String) {
     }
 }

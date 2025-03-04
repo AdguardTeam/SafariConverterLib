@@ -1,6 +1,6 @@
 /// SafariCbBuilder is responsible for building a Safari content blocking JSON
 /// from the `CompilationResult`.
-final class SafariCbBuilder {
+enum SafariCbBuilder {
     /// Represents the result of building a content blocker.
     struct Result {
         /// Final content blocker JSON.
@@ -50,7 +50,7 @@ final class SafariCbBuilder {
 
     /// Creates an array of rules for Safari content blocker in the correct order.
     private static func createEntries(from result: CompilationResult) -> [BlockerEntry] {
-        var entries = [BlockerEntry]()
+        var entries: [BlockerEntry] = []
 
         entries.append(contentsOf: result.cssBlockingWide)
         entries.append(contentsOf: result.cssBlockingGenericDomainSensitive)

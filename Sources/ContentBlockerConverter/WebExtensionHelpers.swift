@@ -29,13 +29,15 @@ public class WebExtensionHelpers: WebExtensionHelpersProtocol {
     /// Parses domains from the provided rule.
     func parseRuleDomains(ruleText: String) -> [String] {
         do {
-            guard let rule = try RuleFactory.createRule(ruleText: ruleText, for: DEFAULT_SAFARI_VERSION) else { return [] }
+            guard let rule = try RuleFactory.createRule(ruleText: ruleText, for: DEFAULT_SAFARI_VERSION) else {
+                return []
+            }
 
             var ruleDomains = rule.permittedDomains + rule.restrictedDomains
 
-            if rule is NetworkRule {
-                let ruleDomain = NetworkRuleParser.extractDomain(pattern: (rule as! NetworkRule).urlRuleText)
-                if ruleDomain.domain != "" {
+            if let networkRule = rule as? NetworkRule {
+                let ruleDomain = NetworkRuleParser.extractDomain(pattern: networkRule.urlRuleText)
+                if !ruleDomain.domain.isEmpty {
                     ruleDomains += [ruleDomain.domain]
                 }
             }
@@ -90,7 +92,7 @@ public class WebExtensionHelpers: WebExtensionHelpersProtocol {
         var rule = domain
 
         if !rule.hasPrefix(Self.invertedAllowlistPrefix) {
-            rule = Self.invertedAllowlistPrefix + rule
+            rule = Self.invertedAllowlistPrefix + domain
         }
 
         return rule

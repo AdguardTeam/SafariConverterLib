@@ -73,9 +73,9 @@ class BlockerEntryEncoder {
         result.append(action.type)
         result.append("\"")
 
-        if action.selector != nil {
+        if let selector = action.selector {
             result.append(",\"selector\":\"")
-            result.append(action.selector!.escapeForJSON())
+            result.append(selector.escapeForJSON())
             result.append("\"")
         }
 
@@ -88,37 +88,37 @@ class BlockerEntryEncoder {
         var result = "{"
 
         result.append("\"url-filter\":\"")
-        result.append(trigger.urlFilter!.escapeForJSON())
+        result.append(trigger.urlFilter?.escapeForJSON() ?? "")
         result.append("\"")
 
-        if trigger.caseSensitive != nil {
+        if let caseSensitive = trigger.caseSensitive {
             result.append(",\"url-filter-is-case-sensitive\":")
-            result.append(trigger.caseSensitive! ? "true" : "false")
+            result.append(caseSensitive ? "true" : "false")
         }
 
-        if trigger.loadType != nil {
+        if let loadType = trigger.loadType {
             result.append(",\"load-type\":")
-            result.append(trigger.loadType!.encodeToJSON())
+            result.append(loadType.encodeToJSON())
         }
 
-        if trigger.resourceType != nil {
+        if let resourceType = trigger.resourceType {
             result.append(",\"resource-type\":")
-            result.append(trigger.resourceType!.encodeToJSON())
+            result.append(resourceType.encodeToJSON())
         }
 
-        if trigger.loadContext != nil {
+        if let loadContext = trigger.loadContext {
             result.append(",\"load-context\":")
-            result.append(trigger.loadContext!.encodeToJSON())
+            result.append(loadContext.encodeToJSON())
         }
 
-        if trigger.ifDomain != nil {
+        if let ifDomain = trigger.ifDomain {
             result.append(",\"if-domain\":")
-            result.append(trigger.ifDomain!.encodeToJSON(escape: true))
+            result.append(ifDomain.encodeToJSON(escape: true))
         }
 
-        if trigger.unlessDomain != nil {
+        if let unlessDomain = trigger.unlessDomain {
             result.append(",\"unless-domain\":")
-            result.append(trigger.unlessDomain!.encodeToJSON(escape: true))
+            result.append(unlessDomain.encodeToJSON(escape: true))
         }
 
         result.append("}")

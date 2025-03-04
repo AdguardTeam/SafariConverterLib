@@ -1,5 +1,5 @@
 /// The purpose of this class is to define constants that are used in the FilterEngine library.
-class Schema {
+public enum Schema {
     /// Defines schema version. Whenever any change is made to the serialization logic this number
     /// **MUST** be incremented.
     ///
