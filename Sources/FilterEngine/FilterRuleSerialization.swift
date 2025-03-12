@@ -23,19 +23,25 @@ extension FilterRule {
         // 3) Write urlRegex
         try FilterRule.writeString(urlRegex, to: &buffer)
 
-        // 4) Write pathRegex
+        // 4) Write thirdParty
+        FilterRule.writeOptionalBool(thirdParty, to: &buffer)
+
+        // 5) Write subdocument
+        FilterRule.writeOptionalBool(subdocument, to: &buffer)
+
+        // 6) Write pathRegex
         try FilterRule.writeString(pathRegex, to: &buffer)
 
-        // 5) Write priority as 1 byte
+        // 7) Write priority as 1 byte
         buffer.append(priority)
 
-        // 6) Write permittedDomains array
+        // 8) Write permittedDomains array
         try FilterRule.writeStringArray(permittedDomains, to: &buffer)
 
-        // 7) Write restrictedDomains array
+        // 9) Write restrictedDomains array
         try FilterRule.writeStringArray(restrictedDomains, to: &buffer)
 
-        // 8) Write cosmeticContent
+        // 10) Write cosmeticContent
         try FilterRule.writeString(cosmeticContent, to: &buffer)
 
         return buffer
@@ -65,27 +71,35 @@ extension FilterRule {
         // 3) Read urlRegex
         let urlRegex = try readString(from: data, index: &index)
 
-        // 4) Read pathRegex
+        // 4) Read thirdParty
+        let thirdParty = try readOptionalBool(from: data, index: &index)
+
+        // 5) Read subdocument
+        let subdocument = try readOptionalBool(from: data, index: &index)
+
+        // 6) Read pathRegex
         let pathRegex = try readString(from: data, index: &index)
 
-        // 5) Read priority (1 byte)
+        // 7) Read priority (1 byte)
         try requireBytes(1)
         let priority = data[index]
         index += 1
 
-        // 6) Read permittedDomains array
+        // 8) Read permittedDomains array
         let permittedDomains = try readStringArray(from: data, index: &index)
 
-        // 7) Read restrictedDomains array
+        // 9) Read restrictedDomains array
         let restrictedDomains = try readStringArray(from: data, index: &index)
 
-        // 8) Read cosmeticContent
+        // 10) Read cosmeticContent
         let cosmeticContent = try readString(from: data, index: &index)
 
         return FilterRule(
             action: action,
             urlPattern: urlPattern,
             urlRegex: urlRegex,
+            thirdParty: thirdParty,
+            subdocument: subdocument,
             pathRegex: pathRegex,
             priority: priority,
             permittedDomains: permittedDomains,
@@ -103,7 +117,7 @@ extension FilterRule {
     private static func writeString(_ value: String?, to buffer: inout Data) throws {
         guard let string = value, !string.isEmpty else {
             // zero length is nil
-            try writeUInt16(0, to: &buffer)
+            writeUInt16(0, to: &buffer)
             return
         }
 
@@ -115,7 +129,7 @@ extension FilterRule {
             )
         }
 
-        try writeUInt16(UInt16(utf8Bytes.count), to: &buffer)
+        writeUInt16(UInt16(utf8Bytes.count), to: &buffer)
         buffer.append(contentsOf: utf8Bytes)
     }
 
@@ -146,7 +160,7 @@ extension FilterRule {
                 message: "Array has too many elements (\(array.count) > \(UInt16.max))"
             )
         }
-        try writeUInt16(UInt16(array.count), to: &buffer)
+        writeUInt16(UInt16(array.count), to: &buffer)
         for str in array {
             try writeString(str, to: &buffer)
         }
@@ -165,7 +179,7 @@ extension FilterRule {
     }
 
     /// Writes a UInt16 as 2 big-endian bytes.
-    private static func writeUInt16(_ value: UInt16, to buffer: inout Data) throws {
+    private static func writeUInt16(_ value: UInt16, to buffer: inout Data) {
         // For clarity, we’ll store all multi-byte values in network (big-endian) order.
         buffer.append(UInt8(value >> 8 & 0xFF))
         buffer.append(UInt8(value & 0xFF))
@@ -180,5 +194,34 @@ extension FilterRule {
         let low  = data[index + 1]
         index += 2
         return (UInt16(high) << 8) | UInt16(low)
+    }
+
+    /// Writes Bool? (1 byte: 0 = nil, 1 = true, 2 = false)
+    private static func writeOptionalBool(_ value: Bool?, to buffer: inout Data) {
+        if let val = value {
+            buffer.append(val ? 1 : 2)
+        } else {
+            buffer.append(0)
+        }
+    }
+
+    /// Reads Bool? (1 byte: 0 = nil, 1 = true, 2 = false)
+    private static func readOptionalBool(from data: Data, index: inout Int) throws -> Bool? {
+        guard index + 1 <= data.count else {
+            throw FilterRuleCodingError.notEnoughBytes
+        }
+
+        let val = data[index]
+        index += 1
+
+        switch val {
+        case 1:
+            return true
+        case 2:
+            return false
+        default:
+            // 0 or any other value means nil
+            return nil
+        }
     }
 }

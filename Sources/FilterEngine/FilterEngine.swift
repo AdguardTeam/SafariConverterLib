@@ -80,16 +80,37 @@ extension FilterEngine {
     }
 
     /// TODO(ameshkov): !!! Comment
-    public func findAll(for url: URL) -> [FilterRule] {
+    public func findAll(for url: URL, subdocument: Bool = false, thirdParty: Bool = false) -> [FilterRule] {
         let domainIndices = lookupDomainTrie(for: url)
         let shortcutIndices = lookupShortcutsTrie(for: url)
 
         var ruleIndices: [UInt32: Bool] = [:]
         var res: MatchResult = .init()
 
-        addMatchingRules(for: url, from: domainIndices, except: &ruleIndices, to: &res)
-        addMatchingRules(for: url, from: shortcutIndices, except: &ruleIndices, to: &res)
-        addMatchingRules(for: url, from: tailIndices, except: &ruleIndices, to: &res)
+        addMatchingRules(
+            for: url,
+            subdocument: subdocument,
+            thirdParty: thirdParty,
+            from: domainIndices,
+            except: &ruleIndices,
+            to: &res
+        )
+        addMatchingRules(
+            for: url,
+            subdocument: subdocument,
+            thirdParty: thirdParty,
+            from: shortcutIndices,
+            except: &ruleIndices,
+            to: &res
+        )
+        addMatchingRules(
+            for: url,
+            subdocument: subdocument,
+            thirdParty: thirdParty,
+            from: tailIndices,
+            except: &ruleIndices,
+            to: &res
+        )
 
         return filterMatchResult(result: res)
     }
@@ -144,6 +165,8 @@ extension FilterEngine {
     /// track of what's added in `ruleIndices`.
     private func addMatchingRules(
         for url: URL,
+        subdocument: Bool,
+        thirdParty: Bool,
         from indices: [UInt32],
         except ruleIndices: inout [UInt32: Bool],
         to result: inout MatchResult
@@ -155,7 +178,12 @@ extension FilterEngine {
 
             do {
                 let rule = try getRule(by: index)
-                if !ruleMatches(rule: rule, url: url) {
+                if !ruleMatches(
+                    rule: rule,
+                    url: url,
+                    subdocument: subdocument,
+                    thirdParty: thirdParty
+                ) {
                     continue
                 }
 
@@ -230,7 +258,7 @@ extension FilterEngine {
 
 extension FilterEngine {
     /// Checks if the given rule matches the specified URL.
-    private func ruleMatches(rule: FilterRule, url: URL) -> Bool {
+    private func ruleMatches(rule: FilterRule, url: URL, subdocument: Bool, thirdParty: Bool) -> Bool {
         // 1. Make sure the URL has a host
         let host = FilterEngine.host(from: url)
         if host.isEmpty {
@@ -258,7 +286,17 @@ extension FilterEngine {
             return false
         }
 
-        // 4. Check urlRegex
+        // 4. Check thirdParty
+        if let ruleThirdParty = rule.thirdParty, ruleThirdParty != thirdParty {
+            return false
+        }
+
+        // 5. Check subdocument
+        if let ruleSubdocument = rule.subdocument, ruleSubdocument != subdocument {
+            return false
+        }
+
+        // 6. Check urlRegex
         //    If urlRegex is not specified, *any* URL is considered valid.
         if let urlRegex = rule.urlRegex {
             guard let regex = RegexCache.regex(for: urlRegex) else {
@@ -273,7 +311,7 @@ extension FilterEngine {
             }
         }
 
-        // 5. Check pathRegex
+        // 7. Check pathRegex
         //    If pathRegex is specified, it is tested against the path + query string, e.g. "/path?p=1".
         if let pathRegex = rule.pathRegex {
             guard let regex = RegexCache.regex(for: pathRegex) else {
@@ -353,7 +391,7 @@ extension FilterEngine {
                 // If there are no permitted domains, attempt to extract shortcuts.
                 let shortcuts: [String]
                 if isRegexPattern(rule.urlPattern),
-                    let urlRegex = rule.urlRegex {
+                   let urlRegex = rule.urlRegex {
                     shortcuts = FilterRule.extractRegexShortcuts(from: urlRegex)
                 } else {
                     shortcuts = FilterRule.extractShortcuts(from: rule.urlPattern)

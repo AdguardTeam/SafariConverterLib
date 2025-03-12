@@ -1,4 +1,4 @@
-// swift-tools-version:5.5
+// swift-tools-version:5.6
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -20,9 +20,9 @@ let package = Package(
     dependencies: [
         // Dependencies declare other packages that this package depends on.
         // .package(url: /* package url */, from: "1.0.0"),
-        .package(url: "https://github.com/gumob/PunycodeSwift.git", .exact("3.0.0")),
-        .package(url: "https://github.com/apple/swift-argument-parser", .exact("1.5.0")),
-        .package(url: "https://github.com/apple/swift-collections.git", .exact("1.1.4"))
+        .package(url: "https://github.com/gumob/PunycodeSwift.git", exact: "3.0.0"),
+        .package(url: "https://github.com/apple/swift-argument-parser", exact: "1.5.0"),
+        .package(url: "https://github.com/ameshkov/swift-psl", "1.1.0"..<"2.0.0")
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -42,7 +42,7 @@ let package = Package(
             name: "FilterEngine",
             dependencies: [
                 "ContentBlockerConverter",
-                .product(name: "Collections", package: "swift-collections")
+                .product(name: "PublicSuffixList", package: "swift-psl")
             ]),
         .executableTarget(
             name: "FileLockTester",

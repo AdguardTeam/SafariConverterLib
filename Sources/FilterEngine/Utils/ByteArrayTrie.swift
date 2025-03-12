@@ -13,6 +13,19 @@ import Foundation
 /// in a single `[UInt8]`, this trie can be written to disk or transferred across
 /// processes or networks with minimal overhead.
 ///
+/// **Binary representation of a trie node**:
+/// Each node in the trie is stored as a sequence of bytes in the following format:
+///  - 1 byte: Number of children (UInt8)
+///  - For each child:
+///    - 1 byte: Character (UInt8)
+///    - 4 bytes: Offset to child node (UInt32, little-endian)
+///  - 2 bytes: Payload count (UInt16, little-endian)
+///  - For each payload item:
+///    - 4 bytes: Payload value (UInt32, little-endian)
+///
+/// This compact binary representation allows for efficient storage and traversal,
+/// as nodes are accessed by simple offset calculations within the byte array.
+///
 /// **Key highlights**:
 ///  - Each node’s children count, characters, offsets, and payload are packed in a
 ///    compact format (using just enough bytes to store the relevant data).
@@ -79,42 +92,54 @@ public class ByteArrayTrie {
 
     /// Find exact word; returns the payload if found, or `nil` if not present.
     public func find(word: any StringProtocol) -> [UInt32]? {
-        var currentNodeOffset = rootOffset
+        return storage.withUnsafeBytes { buffer in
+            var currentNodeOffset = rootOffset
 
-        for character in word.utf8 {
-            guard let childNodeOffset = findChildOffset(parentOffset: currentNodeOffset, char: character) else {
-                // Child not found => word not in trie
-                return nil
+            for character in word.utf8 {
+                guard let childNodeOffset = findChildOffset(
+                    buffer: buffer,
+                    parentOffset: currentNodeOffset,
+                    char: character
+                ) else {
+                    // Child not found => word not in trie
+                    return nil
+                }
+                currentNodeOffset = childNodeOffset
             }
-            currentNodeOffset = childNodeOffset
-        }
 
-        // We've landed on the final node for this word.
-        let payload = readPayload(nodeOffset: currentNodeOffset)
-        return payload
+            // We've landed on the final node for this word.
+            let payload = readPayload(buffer: buffer, nodeOffset: currentNodeOffset)
+            return payload
+        }
     }
 
     /// Collect all payload values along the path of the word.
     /// i.e., accumulate payload from the root, then from each node as we go deeper.
     /// If any character is not found, we stop.
     public func collectPayload(word: any StringProtocol) -> [UInt32] {
-        var currentNodeOffset = rootOffset
-        var result: [UInt32] = []
+        return storage.withUnsafeBytes { buffer in
+            var currentNodeOffset = rootOffset
+            var result: [UInt32] = []
 
-        // Add the root's payload (if any):
-        result.append(contentsOf: readPayload(nodeOffset: currentNodeOffset))
+            // Add the root's payload (if any):
+            result.append(contentsOf: readPayload(buffer: buffer, nodeOffset: currentNodeOffset))
 
-        for character in word.utf8 {
-            guard let childNodeOffset = findChildOffset(parentOffset: currentNodeOffset, char: character) else {
-                // Path breaks here
-                return result
+            for character in word.utf8 {
+                guard let childNodeOffset = findChildOffset(
+                    buffer: buffer,
+                    parentOffset: currentNodeOffset,
+                    char: character
+                ) else {
+                    // Path breaks here
+                    return result
+                }
+                currentNodeOffset = childNodeOffset
+                // Add child's payload
+                result.append(contentsOf: readPayload(buffer: buffer, nodeOffset: currentNodeOffset))
             }
-            currentNodeOffset = childNodeOffset
-            // Add child's payload
-            result.append(contentsOf: readPayload(nodeOffset: currentNodeOffset))
-        }
 
-        return result
+            return result
+        }
     }
 }
 
@@ -149,67 +174,72 @@ extension ByteArrayTrie {
         }
 
         // Build children, patch them in
-        var childIndex = 0
-        for (character, childNode) in node.children {
-            let childNodeOffset = buildNode(node: childNode)
+        let sortedChildren = node.children.sorted { $0.key < $1.key }
+        for (index, (character, childNode)) in sortedChildren.enumerated() {
+            let childOffset = buildNode(node: childNode)
 
-            // The patch location = childrenStart + (childIndex * 5)
-            let patchIndex = childrenStart + childIndex * 5
-
-            // 1 byte for character
+            // Patch back (char, childOffset)
+            let patchIndex = childrenStart + index * 5
             storage[patchIndex] = character
 
-            // 4 bytes for offset
-            let offsetBytes = withUnsafeBytes(of: childNodeOffset.littleEndian, Array.init)
-            for index in 0..<4 {
-                storage[patchIndex + 1 + index] = offsetBytes[index]
+            let offsetBytes = withUnsafeBytes(of: childOffset.littleEndian, Array.init)
+            for i in 0..<4 {
+                storage[patchIndex + 1 + i] = offsetBytes[i]
             }
-            childIndex += 1
         }
 
         // Return where this node began
         return nodeStartOffset
     }
 
-    /// Given a parent's node offset, find the offset of the child for `character`.
-    private func findChildOffset(parentOffset: UInt32, char: UInt8) -> UInt32? {
+    /// Perform a binary search over the children’s `(char, offset)` pairs.
+    private func findChildOffset(buffer: UnsafeRawBufferPointer, parentOffset: UInt32, char: UInt8) -> UInt32? {
         var cursor = Int(parentOffset)
 
-        // 1) read childrenCount (1 byte)
-        let childrenCount = readUInt8(at: cursor)
+        let childrenCount = readUInt8(buffer: buffer, at: cursor)
         cursor += 1
 
-        // 2) read each child's info: (1 byte character, 4 bytes offset)
-        for _ in 0..<childrenCount {
-            let characterValue = storage[cursor]
-            let offset = readUInt32(at: cursor + 1)
-            cursor += 5
-            if characterValue == char {
-                return offset
+        // Each child has 5 bytes: 1 for char, 4 for offset.
+        let start = cursor
+        let childStride = 5
+
+        var low = 0
+        var high = Int(childrenCount) - 1
+
+        while low <= high {
+            let mid = (low + high) >> 1
+            let childRecordOffset = start + mid * childStride
+
+            let childChar = readUInt8(buffer: buffer, at: childRecordOffset)
+            if childChar == char {
+                return readUInt32(buffer: buffer, at: childRecordOffset + 1)
+            } else if childChar < char {
+                low = mid + 1
+            } else {
+                high = mid - 1
             }
         }
 
-        // Not found
         return nil
     }
 
     /// Read the payload array for a node at `nodeOffset`.
-    private func readPayload(nodeOffset: UInt32) -> [UInt32] {
+    private func readPayload(buffer: UnsafeRawBufferPointer, nodeOffset: UInt32) -> [UInt32] {
         var cursor = Int(nodeOffset)
 
         // Skip children
-        let childrenCount = readUInt8(at: cursor)
+        let childrenCount = readUInt8(buffer: buffer, at: cursor)
         cursor += 1 + (Int(childrenCount) * 5)
 
         // Now read payloadCount (2 bytes)
-        let payloadCount = readUInt16(at: cursor)
+        let payloadCount = readUInt16(buffer: buffer, at: cursor)
         cursor += 2
 
         // Read payloadCount * 4 bytes
         var result: [UInt32] = []
         result.reserveCapacity(Int(payloadCount))
         for _ in 0..<payloadCount {
-            let value = readUInt32(at: cursor)
+            let value = readUInt32(buffer: buffer, at: cursor)
             result.append(value)
             cursor += 4
         }
@@ -230,23 +260,21 @@ extension ByteArrayTrie {
         withUnsafeBytes(of: littleEndianValue) { storage.append(contentsOf: $0) }
     }
 
-    private func readUInt8(at index: Int) -> UInt8 {
-        return storage[index]
+    private func readUInt8(buffer: UnsafeRawBufferPointer, at index: Int) -> UInt8 {
+        return buffer[index]
     }
 
-    private func readUInt16(at index: Int) -> UInt16 {
-        // Assuming the bytes in storage are in little-endian format
-        let byte0 = UInt16(storage[index])
-        let byte1 = UInt16(storage[index + 1]) << 8
+    private func readUInt16(buffer: UnsafeRawBufferPointer, at index: Int) -> UInt16 {
+        let byte0 = UInt16(buffer[index])
+        let byte1 = UInt16(buffer[index + 1]) << 8
         return byte0 | byte1
     }
 
-    private func readUInt32(at index: Int) -> UInt32 {
-        // Manual bit-shift
-        let byte0 = UInt32(storage[index])
-        let byte1 = UInt32(storage[index + 1]) << 8
-        let byte2 = UInt32(storage[index + 2]) << 16
-        let byte3 = UInt32(storage[index + 3]) << 24
+    private func readUInt32(buffer: UnsafeRawBufferPointer, at index: Int) -> UInt32 {
+        let byte0 = UInt32(buffer[index])
+        let byte1 = UInt32(buffer[index + 1]) << 8
+        let byte2 = UInt32(buffer[index + 2]) << 16
+        let byte3 = UInt32(buffer[index + 3]) << 24
         return byte0 | byte1 | byte2 | byte3
     }
 }

@@ -145,47 +145,75 @@ final class TrieNodeTests: XCTestCase {
 
     /// Performance test that checks how long it takes to build a trie.
     func testPerformanceBuildTrie() {
+        let alphabet = Array("abcdefghijklmnopqrstuvwxyz0123456789")
+        var words = [String]()
+
+        // Generate and insert 10,000 random words
+        for _ in 0..<10_000 {
+            let wordLength = Int.random(in: 3...30)
+            let word = String((0..<wordLength).map { _ in alphabet.randomElement()! })
+            words.append(word)
+        }
+
         self.measure {
             let root = TrieNode()
 
             // Insert a bunch of words
-            for i in 0..<10_000 {
-                let word = "word\(i)"
-                root.insert(word: word, payload: [UInt32(i)])
+            for word in words {
+                root.insert(word: word, payload: [0])
             }
         }
     }
 
     /// Performance test that checks how long a single lookup takes.
     func testPerformanceFind() {
-        let root = TrieNode()
-        // Insert a bunch of words
-        for i in 0..<10_000 {
-            let word = "word\(i)"
-            root.insert(word: word, payload: [UInt32(i)])
+        let trie = TrieNode()
+        let alphabet = Array("abcdefghijklmnopqrstuvwxyz0123456789")
+        var words = [String]()
+
+        // Generate and insert 10,000 random words
+        for _ in 0..<10_000 {
+            let wordLength = Int.random(in: 3...30)
+            let word = String((0..<wordLength).map { _ in alphabet.randomElement()! })
+            words.append(word)
+            trie.insert(word: word, payload: [UInt32.random(in: 0..<UInt32.max)])
         }
 
         self.measure {
-            // Now do some random lookups
-            for i in stride(from: 0, to: 10_000, by: 1000) {
-                _ = root.find(word: "word\(i)")
+            // Perform lookups on each generated word
+            for word in words {
+                guard trie.find(word: word) != nil else {
+                    XCTFail("Did not find word: \(word)")
+
+                    return
+                }
             }
         }
     }
 
     /// Performance test that checks how long collecting payload takes.
     func testPerformanceCollectPayload() {
-        let root = TrieNode()
-        // Insert a bunch of words
-        for i in 0..<10_000 {
-            let word = "word\(i)"
-            root.insert(word: word, payload: [UInt32(i)])
+        let trie = TrieNode()
+        let alphabet = Array("abcdefghijklmnopqrstuvwxyz0123456789")
+        var words = [String]()
+
+        // Generate and insert 10,000 random words
+        for _ in 0..<10_000 {
+            let wordLength = Int.random(in: 3...30)
+            let word = String((0..<wordLength).map { _ in alphabet.randomElement()! })
+            words.append(word)
+            trie.insert(word: word, payload: [UInt32.random(in: 0..<UInt32.max)])
         }
 
         self.measure {
-            // Now do some random lookups
-            for i in stride(from: 0, to: 10_000, by: 1000) {
-                _ = root.collectPayload(word: "word\(i)")
+            // Perform lookups on each generated word
+            for word in words {
+                let res = trie.collectPayload(word: word)
+                guard !res.isEmpty else {
+                    XCTFail("Did not find payload for word: \(word)")
+
+                    return
+                }
             }
         }
     }

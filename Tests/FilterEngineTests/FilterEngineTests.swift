@@ -27,6 +27,8 @@ final class FilterEngineTests: XCTestCase {
             let name: String
             let rules: [String]
             let urlString: String
+            var subdocument: Bool?
+            var thirdParty: Bool?
             let expectedCosmeticContent: [String]
         }
 
@@ -114,6 +116,50 @@ final class FilterEngineTests: XCTestCase {
                     "###banner"
                 ],
                 urlString: "https://example.org/",
+                expectedCosmeticContent: []
+            ),
+            TestCase(
+                name: "disabled only for subdocument (not for document)",
+                rules: [
+                    "@@||example.org^$elemhide,subdocument",
+                    "example.org##.banner",
+                    "###banner"
+                ],
+                urlString: "https://example.org/",
+                expectedCosmeticContent: [".banner", "#banner"]
+            ),
+            TestCase(
+                name: "disabled css for subdocument",
+                rules: [
+                    "@@||example.org^$elemhide,subdocument",
+                    "example.org##.banner",
+                    "###banner"
+                ],
+                urlString: "https://example.org/",
+                subdocument: true,
+                expectedCosmeticContent: []
+            ),
+            TestCase(
+                name: "disabled css for third-party subdocuments (not for first-party req)",
+                rules: [
+                    "@@||example.org^$elemhide,subdocument,third-party",
+                    "example.org##.banner",
+                    "###banner"
+                ],
+                urlString: "https://example.org/",
+                subdocument: true,
+                expectedCosmeticContent: [".banner", "#banner"]
+            ),
+            TestCase(
+                name: "disabled css for third-party subdocuments",
+                rules: [
+                    "@@||example.org^$elemhide,subdocument,third-party",
+                    "example.org##.banner",
+                    "###banner"
+                ],
+                urlString: "https://example.org/",
+                subdocument: true,
+                thirdParty: true,
                 expectedCosmeticContent: []
             ),
             TestCase(
@@ -207,7 +253,11 @@ final class FilterEngineTests: XCTestCase {
 
             // Check that rules are found for example.org
             let url = URL(string: testCase.urlString)!
-            let rules = engine.findAll(for: url)
+            let rules = engine.findAll(
+                for: url,
+                subdocument: testCase.subdocument ?? false,
+                thirdParty: testCase.thirdParty ?? false
+            )
 
             XCTAssertEqual(rules.map(\.cosmeticContent), testCase.expectedCosmeticContent, "Failed \(testCase.name)")
         }

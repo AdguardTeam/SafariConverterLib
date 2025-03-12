@@ -9,6 +9,8 @@ final class FilterRuleSerializationTests: XCTestCase {
         XCTAssertEqual(lhs.action.rawValue, rhs.action.rawValue, "action mismatch", file: file, line: line)
         XCTAssertEqual(lhs.urlPattern, rhs.urlPattern, "urlPattern mismatch", file: file, line: line)
         XCTAssertEqual(lhs.urlRegex, rhs.urlRegex, "urlRegex mismatch", file: file, line: line)
+        XCTAssertEqual(lhs.thirdParty, rhs.thirdParty, "thirdParty mismatch", file: file, line: line)
+        XCTAssertEqual(lhs.subdocument, rhs.subdocument, "subdocument mismatch", file: file, line: line)
         XCTAssertEqual(lhs.pathRegex, rhs.pathRegex, "pathRegex mismatch", file: file, line: line)
         XCTAssertEqual(lhs.priority, rhs.priority, "priority mismatch", file: file, line: line)
         XCTAssertEqual(lhs.permittedDomains, rhs.permittedDomains, "permittedDomains mismatch", file: file, line: line)
@@ -53,5 +55,61 @@ final class FilterRuleSerializationTests: XCTestCase {
 
         // Assert
         assertEqualRules(originalRule, decodedRule)
+    }
+
+    func testSerializeDeserializeThirdPartyModifier() throws {
+        // Arrange: create a rule with third-party modifier
+        let networkRule = try NetworkRule(ruleText: "@@||example.com^$elemhide,third-party")
+        let originalRule = try FilterRule(from: networkRule)
+
+        // Act
+        let data = try originalRule.toData()
+        let decodedRule = try FilterRule.fromData(data)
+
+        // Assert
+        assertEqualRules(originalRule, decodedRule)
+        XCTAssertEqual(decodedRule.thirdParty, true)
+    }
+
+    func testSerializeDeserializeFirstPartyModifier() throws {
+        // Arrange: create a rule with first-party modifier
+        let networkRule = try NetworkRule(ruleText: "@@||example.com^$elemhide,~third-party")
+        let originalRule = try FilterRule(from: networkRule)
+
+        // Act
+        let data = try originalRule.toData()
+        let decodedRule = try FilterRule.fromData(data)
+
+        // Assert
+        assertEqualRules(originalRule, decodedRule)
+        XCTAssertEqual(decodedRule.thirdParty, false)
+    }
+
+    func testSerializeDeserializeSubdocumentModifier() throws {
+        // Arrange: create a rule with subdocument modifier
+        let networkRule = try NetworkRule(ruleText: "@@||example.com^$elemhide,subdocument")
+        let originalRule = try FilterRule(from: networkRule)
+
+        // Act
+        let data = try originalRule.toData()
+        let decodedRule = try FilterRule.fromData(data)
+
+        // Assert
+        assertEqualRules(originalRule, decodedRule)
+        XCTAssertEqual(decodedRule.subdocument, true)
+    }
+
+    func testSerializeDeserializeRestrictSubdocumentModifier() throws {
+        // Arrange: create a rule that restricts subdocuments
+        let networkRule = try NetworkRule(ruleText: "@@||example.com^$elemhide,~subdocument")
+        let originalRule = try FilterRule(from: networkRule)
+
+        // Act
+        let data = try originalRule.toData()
+        let decodedRule = try FilterRule.fromData(data)
+
+        // Assert
+        assertEqualRules(originalRule, decodedRule)
+        XCTAssertEqual(decodedRule.subdocument, false)
     }
 }

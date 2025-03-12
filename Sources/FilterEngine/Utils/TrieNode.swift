@@ -23,10 +23,7 @@ import OrderedCollections
 public class TrieNode {
     /// Children keyed by ASCII character byte.
     /// Each key is a `UInt8` representing one character (0–127 if strictly ASCII).
-    ///
-    /// `TrieNode` is used to build `ByteArrayTrie` and to guarantee the consistent result
-    /// we are using `OrderedDictionary` here.
-    public var children: OrderedDictionary<UInt8, TrieNode> = OrderedDictionary()
+    public var children: [UInt8: TrieNode] = [:]
 
     /// Optional payload stored at this node.
     /// In many trie designs, the payload is nonempty only if this node represents

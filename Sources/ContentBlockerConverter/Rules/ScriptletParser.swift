@@ -64,13 +64,13 @@ public enum ScriptletParser {
         var argumentEndIndex: Int
 
         for index in 0...maxIndex {
-            guard let char = str.utf8[safeIndex: index] else {
-                throw SyntaxError.invalidRule(message: "Invalid character at \(index)")
-            }
+            // swiftlint:disable:next force_unwrapping
+            let char = str.utf8[safeIndex: index]!
 
             switch char {
             case Chars.QUOTE_SINGLE, Chars.QUOTE_DOUBLE:
                 if !pendingQuote {
+                    pendingQuote = true
                     pendingQuoteChar = char
 
                     argumentStartIndex = index + 1

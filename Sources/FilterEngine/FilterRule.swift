@@ -10,8 +10,6 @@ import ContentBlockerConverter
 /// subset of functionality (see `Action`) which is possible to be implement in
 /// Safari WebExtension, i.e. it only supports cosmetic rules and those allowlist rules
 /// that can disable cosmetics.
-///
-/// TODO(ameshkov): !!! Does not support `$subdocument`, `$third-party`.
 public struct FilterRule: Codable {
     /// Priority value for @@$important (important network exception) rules.
     public static let PRIORITY_IMPORTANT: UInt8 = 2
@@ -29,6 +27,18 @@ public struct FilterRule: Codable {
     /// Regular expression for matching URLs.
     /// If not set, any URL is accepted.
     public let urlRegex: String?
+
+    /// Indicates if the rule should match third-party requests.
+    /// - `true` if the rule should only match third-party requests
+    /// - `false` if the rule should only match first-party requests
+    /// - `nil` if the rule doesn't have third-party restriction
+    public let thirdParty: Bool?
+
+    /// Indicates if the rule should match subdocument requests.
+    /// - `true` if the rule should only match subdocument requests
+    /// - `false` if the rule should only match document requests
+    /// - `nil` if the rule doesn't have subdocument restriction
+    public let subdocument: Bool?
 
     /// Regular expression for matching URL path. It comes from `$path` modifier
     /// of a cosmetic rule. /// If not set, any path is accepted.
@@ -87,6 +97,19 @@ public struct FilterRule: Codable {
         permittedDomains = rule.permittedDomains
         restrictedDomains = rule.restrictedDomains
 
+        // Set third-party value if the rule has this check
+        thirdParty = rule.isCheckThirdParty ? rule.isThirdParty : nil
+
+        // Set subdocument value based on content type
+        // Check if the rule specifically targets subdocument content type
+        if rule.isContentType(contentType: .subdocument) {
+            subdocument = true
+        } else if rule.hasRestrictedContentType(contentType: .subdocument) {
+            subdocument = false
+        } else {
+            subdocument = nil
+        }
+
         // We're dealing with a very simplified case where we only have
         // whitelist rules and cosmetic rules. The priority would be
         // the following:
@@ -118,6 +141,10 @@ public struct FilterRule: Codable {
         permittedDomains = rule.permittedDomains
         restrictedDomains = rule.restrictedDomains
         cosmeticContent = rule.content
+
+        // These modifiers don't make sense for cosmetic rules
+        thirdParty = nil
+        subdocument = nil
     }
 
     /// A convenient public initializer to allow creating a FilterRule with explicit parameters.
@@ -128,6 +155,8 @@ public struct FilterRule: Codable {
         action: Action,
         urlPattern: String,
         urlRegex: String?,
+        thirdParty: Bool? = nil,
+        subdocument: Bool? = nil,
         pathRegex: String?,
         priority: UInt8,
         permittedDomains: [String],
@@ -137,6 +166,8 @@ public struct FilterRule: Codable {
         self.action = action
         self.urlPattern = urlPattern
         self.urlRegex = urlRegex
+        self.thirdParty = thirdParty
+        self.subdocument = subdocument
         self.pathRegex = pathRegex
         self.priority = priority
         self.permittedDomains = permittedDomains

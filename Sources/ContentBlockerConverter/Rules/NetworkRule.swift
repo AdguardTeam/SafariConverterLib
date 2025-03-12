@@ -192,11 +192,11 @@ public class NetworkRule: Rule {
         }
 
         if !version.isSafari15orGreater() &&
+            !isWhiteList &&
             !isContentType(contentType: .all) &&
             hasContentType(contentType: .subdocument) &&
             !isThirdParty &&
-            permittedDomains.isEmpty &&
-            !isWhiteList {
+            permittedDomains.isEmpty {
             // Due to https://github.com/AdguardTeam/AdguardBrowserExtension/issues/145
             throw SyntaxError.invalidRule(
                 message: "$subdocument blocking rules are allowed only along with third-party or if-domain modifiers"
@@ -226,7 +226,9 @@ public class NetworkRule: Rule {
         // $jsinject, $elemhide, $urlblock, $genericblock, $generichide and $content for whitelist rules.
         // $popup - for url blocking
         if !enabledOptions.isDisjoint(with: .documentLevel) {
-            permittedContentType = .document
+            if permittedContentType != .subdocument {
+                permittedContentType = .document
+            }
         }
     }
 

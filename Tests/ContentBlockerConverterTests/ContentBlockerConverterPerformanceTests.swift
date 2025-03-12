@@ -1,7 +1,7 @@
 import XCTest
 @testable import ContentBlockerConverter
 
-/// Performance tests..
+/// Performance tests.
 extension ContentBlockerConverterTests {
     /// Single run of the rule converter so that it was easier to profile it.
     func testPerformanceSingleRun() {
