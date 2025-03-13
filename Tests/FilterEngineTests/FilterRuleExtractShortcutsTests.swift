@@ -105,6 +105,16 @@ final class FilterRuleExtractShortcutsTests: XCTestCase {
 
     /// A performance test that generates a series of random patterns of varying lengths,
     /// then measures the time required to parse them using `extractShortcuts(from:)`.
+    ///
+    /// Baseline results (March 2025):
+    /// - Machine: MacBook Pro M1 Max, 32GB RAM
+    /// - OS: macOS 15.1
+    /// - Swift: 6.0
+    /// - Average execution time: ~0.023 seconds
+    ///
+    /// To get your machine info: `system_profiler SPHardwareDataType`
+    /// To get your macOS version: `sw_vers`
+    /// To get your Swift version: `swift --version`
     func testExtractShortcutsPerformanceRandomPatterns() {
         // Number of random patterns we want to generate and test.
         let iterationCount = 10_000

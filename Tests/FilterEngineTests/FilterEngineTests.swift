@@ -241,6 +241,50 @@ final class FilterEngineTests: XCTestCase {
                 ],
                 urlString: "https://example.org/",
                 expectedCosmeticContent: []
+            ),
+            TestCase(
+                // The current algorithm is that the last rule found will
+                // be preferred. It's not critical and can be changed,
+                // but having this test here is still useful.
+                name: "test network rules priority",
+                rules: [
+                    "@@||example.org^$elemhide",
+                    "@@||example.org^$jsinject",
+                    "example.org##.banner",
+                    "example.org#%#//scriptlet('set-constant', 'test', '1')"
+                ],
+                urlString: "https://example.org/",
+                expectedCosmeticContent: [
+                    ".banner"
+                ]
+            ),
+            TestCase(
+                // Make sure that $important rule overrides the others
+                name: "test network rules priority",
+                rules: [
+                    "@@||example.org^$elemhide,important",
+                    "@@||example.org^$jsinject",
+                    "example.org##.banner",
+                    "example.org#%#//scriptlet('set-constant', 'test', '1')"
+                ],
+                urlString: "https://example.org/",
+                expectedCosmeticContent: [
+                    "//scriptlet('set-constant', 'test', '1')"
+                ]
+            ),
+            TestCase(
+                // Make sure that invalid regex is simply ignored.
+                // Second rule is required to cover the invalid regexes cache.
+                name: "test invalid regex",
+                rules: [
+                    "@@/[z-a]/$elemhide,important",
+                    "@@/[z-a]/$document",
+                    "example.org##.banner",
+                ],
+                urlString: "https://example.org/",
+                expectedCosmeticContent: [
+                    ".banner"
+                ]
             )
         ]
 

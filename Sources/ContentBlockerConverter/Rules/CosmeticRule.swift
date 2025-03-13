@@ -247,14 +247,8 @@ public class CosmeticRule: Rule {
                 throw SyntaxError.invalidModifier(message: "Path modifier is nil")
             }
 
-            if pathMod.utf8.count > 1,
-                let first = pathMod.utf8.first, first == Chars.SLASH,
-                let last = pathMod.utf8.last, last == Chars.SLASH {
-                // Dealing with a regex.
-                let startIndex = pathMod.utf8.index(after: pathMod.utf8.startIndex)
-                let endIndex = pathMod.utf8.index(before: pathMod.utf8.endIndex)
-
-                pathRegExpSource = String(pathMod[startIndex..<endIndex])
+            if let regex = SimpleRegex.extractRegex(pathMod) {
+                pathRegExpSource = regex
             } else {
                 pathRegExpSource = try SimpleRegex.createRegexText(pattern: pathMod)
             }

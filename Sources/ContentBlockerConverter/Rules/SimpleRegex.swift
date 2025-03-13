@@ -117,4 +117,23 @@ public enum SimpleRegex {
         // This should never happen as we're only dealing with ASCII characters
         return regexAnySymbol
     }
+
+    /// Checks if the rule pattern is a regex rule, i.e. enclosed in `/`.
+    ///
+    /// Example: `/regex/`.
+    public static func isRegexPattern(_ pattern: String) -> Bool {
+        pattern.utf8.count > 2 && pattern.utf8.first == Chars.SLASH && pattern.utf8.last == Chars.SLASH
+    }
+
+    /// Extracts a regex pattern from a regex rule. Returns `nil` if this is not a regex rule.
+    public static func extractRegex(_ pattern: String) -> String? {
+        if !isRegexPattern(pattern) {
+            return nil
+        }
+
+        let startIndex = pattern.utf8.index(after: pattern.utf8.startIndex)
+        let endIndex = pattern.utf8.index(before: pattern.utf8.endIndex)
+
+        return String(pattern[startIndex..<endIndex])
+    }
 }

@@ -63,18 +63,16 @@ public class NetworkRule: Rule {
 
         urlRuleText = ruleParts.pattern
 
-        if isRegexRule() {
-            let startIndex = urlRuleText.utf8.index(after: urlRuleText.utf8.startIndex)
-            let endIndex = urlRuleText.utf8.index(before: urlRuleText.utf8.endIndex)
-
-            urlRegExpSource = String(urlRuleText[startIndex..<endIndex])
+        if let regex = SimpleRegex.extractRegex(urlRuleText) {
+            urlRegExpSource = regex
         } else {
-            if let encodedPattern = NetworkRuleParser.encodeDomainIfRequired(pattern: urlRuleText) {
-                urlRuleText = encodedPattern
+            guard let encodedPattern = NetworkRuleParser.encodeDomainIfRequired(pattern: urlRuleText) else {
+                throw SyntaxError.invalidRule(message: "Failed to encode the domain in \(ruleText)")
+            }
 
-                if !urlRuleText.isEmpty {
-                    urlRegExpSource = try SimpleRegex.createRegexText(pattern: urlRuleText)
-                }
+            urlRuleText = encodedPattern
+            if !urlRuleText.isEmpty {
+                urlRegExpSource = try SimpleRegex.createRegexText(pattern: urlRuleText)
             }
         }
 
@@ -88,7 +86,7 @@ public class NetworkRule: Rule {
 
     /// Returns true if rule pattern is a regular expression.
     public func isRegexRule() -> Bool {
-        urlRuleText.utf8.count > 1 && urlRuleText.utf8.first == Chars.SLASH && urlRuleText.utf8.last == Chars.SLASH
+        return SimpleRegex.isRegexPattern(urlRuleText)
     }
 
     /// Checks if rule targets specified content type.

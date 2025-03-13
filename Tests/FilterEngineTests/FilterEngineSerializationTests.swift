@@ -75,6 +75,17 @@ final class FilterEngineSerializationTests: XCTestCase {
         }
     }
 
+    /// Test how fast the engine and storage can be serialized to a file.
+    ///
+    /// Baseline results (March 2025):
+    /// - Machine: MacBook Pro M1 Max, 32GB RAM
+    /// - OS: macOS 15.1
+    /// - Swift: 6.0
+    /// - Average execution time: ~2.488 seconds
+    ///
+    /// To get your machine info: `system_profiler SPHardwareDataType`
+    /// To get your macOS version: `sw_vers`
+    /// To get your Swift version: `swift --version`
     func testPerformanceSerialization() {
         let thisSourceFile = URL(fileURLWithPath: #file)
         let thisDirectory = thisSourceFile.deletingLastPathComponent()
@@ -84,19 +95,40 @@ final class FilterEngineSerializationTests: XCTestCase {
         let rules = content.components(separatedBy: "\n")
 
         self.measure {
-            XCTAssertNoThrow {
-                // Build a FilterRuleStorage from the rules
-                let storage = try FilterRuleStorage(from: rules, for: .safari16_4, fileURL: self.tempRulesFileURL)
+             // Build a FilterRuleStorage from the rules
+            let storage = try? FilterRuleStorage(from: rules, for: .safari16_4, fileURL: self.tempRulesFileURL)
+            guard let storage = storage else {
+                XCTFail("Failed to build FilterRuleStorage")
+                return
+            }
 
-                // Build engine
-                let engine = try FilterEngine(storage: storage)
+            // Build engine
+            let engine = try? FilterEngine(storage: storage)
+            guard let engine = engine else {
+                XCTFail("Failed to build FilterEngine")
+                return
+            }
 
-                // Serialize the engine to a file
+            // Serialize the engine to a file
+            do {
                 try engine.write(to: self.tempRulesFileURL)
+            } catch {
+                XCTFail("Failed to write engine: \(error)")
             }
         }
     }
 
+    /// Test how fast the engine can be deserialized.
+    ///
+    /// Baseline results (March 2025):
+    /// - Machine: MacBook Pro M1 Max, 32GB RAM
+    /// - OS: macOS 15.1
+    /// - Swift: 6.0
+    /// - Average execution time: ~0.001 seconds
+    ///
+    /// To get your machine info: `system_profiler SPHardwareDataType`
+    /// To get your macOS version: `sw_vers`
+    /// To get your Swift version: `swift --version`
     func testPerformanceDeserialization() {
         let thisSourceFile = URL(fileURLWithPath: #file)
         let thisDirectory = thisSourceFile.deletingLastPathComponent()
@@ -105,7 +137,7 @@ final class FilterEngineSerializationTests: XCTestCase {
         let content = try! String(contentsOf: resourceURL, encoding: String.Encoding.utf8)
         let rules = content.components(separatedBy: "\n")
 
-        XCTAssertNoThrow {
+        do {
             // Build a FilterRuleStorage from the rules
             let storage = try FilterRuleStorage(from: rules, for: .safari16_4, fileURL: self.tempRulesFileURL)
 
@@ -113,16 +145,20 @@ final class FilterEngineSerializationTests: XCTestCase {
             let engine = try FilterEngine(storage: storage)
 
             // Serialize the engine to a file
-            try engine.write(to: self.tempRulesFileURL)
+            try engine.write(to: self.tempIndexFileURL)
+        } catch {
+            XCTFail("Failed to initialize engine and storage files: \(error)")
         }
 
         self.measure {
-            XCTAssertNoThrow {
+            do {
                 // Deserialize the FilterRuleStorage.
                 let storage = try FilterRuleStorage(fileURL: self.tempRulesFileURL)
 
                 // Deserialize the engine.
                 _ = try FilterEngine(storage: storage, indexFileURL: self.tempIndexFileURL)
+            } catch {
+                XCTFail("Failed to init storage or engine: \(error)")
             }
         }
     }

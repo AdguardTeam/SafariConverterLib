@@ -22,4 +22,43 @@ final class SimpleRegexTests: XCTestCase {
             }
         }
     }
+
+    func testIsRegexPattern() {
+        let testCases: [(pattern: String, expected: Bool)] = [
+            ("/regex/", true),
+            ("//", false),  // Do not consider this a regex
+            ("/a/", true),  // Minimal valid regex
+            ("/regex", false),  // Missing closing slash
+            ("regex/", false),  // Missing opening slash
+            ("regex", false),   // No slashes
+            ("", false),        // Empty string
+            ("||example.org", false),  // Domain pattern
+            ("|example.org|", false),  // Pipe-enclosed pattern
+            ("/regex\\/with\\/escaped\\/slashes/", true)  // Regex with escaped slashes
+        ]
+
+        for (pattern, expected) in testCases {
+            let result = SimpleRegex.isRegexPattern(pattern)
+            XCTAssertEqual(result, expected, "Pattern '\(pattern)': expected isRegexPattern to be \(expected), but got \(result)")
+        }
+    }
+
+    func testExtractRegex() {
+        let testCases: [(pattern: String, expected: String?)] = [
+            ("/regex/", "regex"),
+            ("//", nil),  // Not a regex
+            ("/a/", "a"),  // Minimal valid regex
+            ("/complex\\d+regex[a-z]*/", "complex\\d+regex[a-z]*"),
+            ("/regex\\/with\\/escaped\\/slashes/", "regex\\/with\\/escaped\\/slashes"),
+            ("regex", nil),  // Not a regex pattern
+            ("", nil),       // Empty string
+            ("||example.org", nil),  // Domain pattern
+            ("|test|", nil)  // Not a regex pattern
+        ]
+
+        for (pattern, expected) in testCases {
+            let result = SimpleRegex.extractRegex(pattern)
+            XCTAssertEqual(result, expected, "Pattern '\(pattern)': expected extractRegex to be \(expected ?? "nil"), but got \(result ?? "nil"))")
+        }
+    }
 }

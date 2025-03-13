@@ -14,6 +14,12 @@ import ContentBlockerConverter
 /// 2. Subscript access by a `FilterRuleStorage.Index` to retrieve a single rule in O(1) file I/O.
 /// 3. An iterator (`FilterRuleStorage.Iterator`) to read all rules sequentially, yielding (`Index`, `FilterRule`) pairs.
 public class FilterRuleStorage {
+    /// Magic string that's written to the file header. This is how we can detect that the file is serialized `FilterRuleStorage`.
+    /// "FRS0" stands for "Filter Rule Storage version 0".
+    ///
+    /// If magic string is changed, `Schema.VERSION` **MUST** be incremented.
+    private static let MAGIC_STR = "FRS0"
+
     private let fileURL: URL
     private var rulesCount: Int = 0
 
@@ -220,9 +226,7 @@ public class FilterRuleStorage {
 
         // 1) Read magic
         let magicData = handle.readData(ofLength: 4)
-
-        // TODO(ameshkov): !!! Put magic to constants
-        guard let magicStr = String(data: magicData, encoding: .utf8), magicStr == "FRS0" else {
+        guard let magicStr = String(data: magicData, encoding: .utf8), magicStr == Self.MAGIC_STR else {
             throw FilterRuleStorageError.fileFormatError(reason: "Wrong magic header")
         }
 

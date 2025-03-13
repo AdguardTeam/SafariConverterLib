@@ -6,7 +6,7 @@ final class NetworkRuleTests: XCTestCase {
     let START_URL_UNESCAPED = "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?"
     let URL_FILTER_REGEXP_END_SEPARATOR = "([\\/:&\\?].*)?$"
 
-    func testNetworkRule() {
+    func testNetworkRule() throws {
         struct TestCase {
             let ruleText: String
             var version: SafariVersion = DEFAULT_SAFARI_VERSION
@@ -192,6 +192,11 @@ final class NetworkRuleTests: XCTestCase {
                 expectedUrlRegExpSource: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
                 expectedPermittedDomains: ["example.org"]),
             TestCase(
+                ruleText: "//$from=example.org",
+                expectedUrlRuleText: "//",
+                expectedUrlRegExpSource: "\\/\\/",
+                expectedPermittedDomains: ["example.org"]),
+            TestCase(
                 ruleText: "/regex/",
                 expectedUrlRuleText: "/regex/",
                 expectedUrlRegExpSource: "regex"),
@@ -275,7 +280,7 @@ final class NetworkRuleTests: XCTestCase {
         ]
 
         for testCase in testCases {
-            let result = try! NetworkRule(ruleText: testCase.ruleText, for: testCase.version)
+            let result = try NetworkRule(ruleText: testCase.ruleText, for: testCase.version)
 
             let msg = "Rule (\(testCase.ruleText)) does not match expected"
 
@@ -339,8 +344,6 @@ final class NetworkRuleTests: XCTestCase {
         XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org^$domain=/example.org/"))
         // $domain with regexes are not supported.
         XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org^$domain=example.org|/test.com/"))
-        // Empty regular expressions make no sense.
-        XCTAssertThrowsError(try NetworkRule(ruleText: "//$domain=example.com"))
         // Non-ASCII symbols outside the domain are not supported and not encoded.
         XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org/почта"))
         // $ping is not supported in the older Safari versions

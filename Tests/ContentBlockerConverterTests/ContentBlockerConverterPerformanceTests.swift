@@ -26,6 +26,15 @@ extension ContentBlockerConverterTests {
         XCTAssertEqual(conversionResult.discardedSafariRules, 0)
     }
 
+    /// Baseline results (March 2025):
+    /// - Machine: MacBook Pro M1 Max, 32GB RAM
+    /// - OS: macOS 15.1
+    /// - Swift: 6.0
+    /// - Average execution time: ~1.383 seconds
+    ///
+    /// To get your machine info: `system_profiler SPHardwareDataType`
+    /// To get your macOS version: `sw_vers`
+    /// To get your Swift version: `swift --version`
     func testPerformance() {
         let thisSourceFile = URL(fileURLWithPath: #file)
         let thisDirectory = thisSourceFile.deletingLastPathComponent()
@@ -34,7 +43,6 @@ extension ContentBlockerConverterTests {
         let content = try! String(contentsOf: resourceURL, encoding: String.Encoding.utf8)
         let rules = content.components(separatedBy: "\n")
 
-        // Expected 1.455 seconds on MBP M1 Max 2021 32GB
         self.measure {
             let conversionResult = ContentBlockerConverter().convertArray(rules: rules, advancedBlocking: true)
 
@@ -47,6 +55,15 @@ extension ContentBlockerConverterTests {
         }
     }
 
+    /// Baseline results (March 2025):
+    /// - Machine: MacBook Pro M1 Max, 32GB RAM
+    /// - OS: macOS 15.1
+    /// - Swift: 6.0
+    /// - Average execution time: ~0.300 seconds
+    ///
+    /// To get your machine info: `system_profiler SPHardwareDataType`
+    /// To get your macOS version: `sw_vers`
+    /// To get your Swift version: `swift --version`
     func testSpecifichidePerformance() {
         let rulePairsCount: Int = 1000
         var rules = [String]()
@@ -56,7 +73,6 @@ extension ContentBlockerConverterTests {
             rules.append("@@||example\(index).org^$specifichide")
         }
 
-        // Expected 0.7 seconds on MBP M1 Max 2021 32GB
         self.measure {
             let conversionResult = ContentBlockerConverter().convertArray(rules: rules)
 

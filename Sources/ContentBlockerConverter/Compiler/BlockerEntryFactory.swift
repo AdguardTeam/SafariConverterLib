@@ -131,7 +131,7 @@ class BlockerEntryFactory {
         }
 
         // First, validate custom regular expressions.
-        if path.utf8.first == Chars.SLASH && path.utf8.last == Chars.SLASH {
+        if SimpleRegex.isRegexPattern(path) {
             let result = SafariRegex.isSupported(pattern: pathRegex)
 
             switch result {

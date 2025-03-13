@@ -303,6 +303,17 @@ final class FilterRuleExtractRegexShortcutsTests: XCTestCase {
 
     // MARK: - Performance tests
 
+    /// Test how fast regex shortcuts are extracted.
+    ///
+    /// Baseline results (March 2025):
+    /// - Machine: MacBook Pro M1 Max, 32GB RAM
+    /// - OS: macOS 15.1
+    /// - Swift: 6.0
+    /// - Average execution time: ~0.063 seconds
+    ///
+    /// To get your machine info: `system_profiler SPHardwareDataType`
+    /// To get your macOS version: `sw_vers`
+    /// To get your Swift version: `swift --version`
     func testPerformanceExtractRegexShortcuts() {
         // Number of random patterns to generate
         let patternCount = 10_000

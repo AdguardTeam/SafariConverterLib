@@ -36,18 +36,26 @@ public class FilterEngine {
 
     /// Trie for domain lookups.
     ///
-    /// TODO(ameshkov): !!! Comment
+    /// This trie stores rule indices indexed by domain names from the rules' permittedDomains.
+    /// When looking up rules for a URL, we extract all domain levels from the URL's host
+    /// and use them to find matching rules in this trie.
     let domainTrie: ByteArrayTrie
 
     /// Trie for shortcuts (either extracted from urlPattern or urlRegex).
     ///
-    /// TODO(ameshkov): !!! Comment
+    /// This trie stores rule indices indexed by shortcuts extracted from the rules' patterns.
+    /// When looking up rules for a URL, we scan the URL string character by character and
+    /// use each suffix as a key to find matching rules in this trie.
     let shortcutsTrie: ByteArrayTrie
 
     /// Tail array contains indexes for rules that don't have permittedDomains or shortcuts.
     var tailIndices: [UInt32] = []
 
-    /// TODO(ameshkov): !!! Comment
+    /// Initializes a new FilterEngine instance with the given rule storage.
+    ///
+    /// This constructor builds the domain and shortcuts tries from scratch by iterating
+    /// through all rules in the storage. Rules with permittedDomains are added to the domain trie,
+    /// rules with shortcuts are added to the shortcuts trie, and rules with neither are added to the tail.
     public init(storage: FilterRuleStorage) throws {
         self.storage = storage
 
@@ -58,7 +66,11 @@ public class FilterEngine {
         self.tailIndices = trieData.tailIndices
     }
 
-    /// TODO(ameshkov): !!! Comment
+    /// Initializes a new FilterEngine instance with the given rule storage and pre-built index file.
+    ///
+    /// This constructor reads the domain and shortcuts tries from an existing index file
+    /// instead of building them from scratch. This is more efficient for subsequent launches
+    /// as it avoids the expensive trie building process.
     public init(storage: FilterRuleStorage, indexFileURL: URL) throws {
         self.storage = storage
 
@@ -79,7 +91,14 @@ extension FilterEngine {
         public var cosmeticRules: [FilterRule] = []
     }
 
-    /// TODO(ameshkov): !!! Comment
+    /// Finds all filter rules that match the given URL.
+    ///
+    /// This method looks up rules in three different places:
+    /// 1. The domain trie (for rules with permittedDomains)
+    /// 2. The shortcuts trie (for rules with shortcuts)
+    /// 3. The tail array (for rules with neither)
+    ///
+    /// It then filters the results to only include rules that match the URL and other conditions.
     public func findAll(for url: URL, subdocument: Bool = false, thirdParty: Bool = false) -> [FilterRule] {
         let domainIndices = lookupDomainTrie(for: url)
         let shortcutIndices = lookupShortcutsTrie(for: url)
@@ -192,18 +211,17 @@ extension FilterEngine {
 
                 switch rule.action {
                 case _ where !rule.action.isDisjoint(with: .network):
-                    // TODO(ameshkov): !!! Check priority before replacing it!!!
-                    // TODO(ameshkov): !!! Add test with several network rules!!!
-                    result.networkRule = rule
+                    if result.networkRule == nil || rule.priority >= (result.networkRule?.priority ?? 0) {
+                        result.networkRule = rule
+                    }
                 case _ where !rule.action.isDisjoint(with: .cosmetic):
                     result.cosmeticRules.append(rule)
                 default:
-                    // TODO(ameshkov): !!! Log the problem
+                    Logger.log("Found a rule that cannot be evaluated by the engine")
                     continue
                 }
             } catch {
-                // Skip corrupt rule
-                // TODO(ameshkov): !!! Log the problem
+                Logger.log("Encountered a corrupted rule with index \(index): \(error)")
             }
         }
     }
@@ -338,6 +356,7 @@ extension FilterEngine {
 
     /// A helper structure for caching compiled NSRegularExpression objects.
     private enum RegexCache {
+        static var invalidRegexes: [String: Bool] = [:]
         static var cache: [String: NSRegularExpression] = [:]
 
         /// Returns a compiled NSRegularExpression for the given pattern.
@@ -346,14 +365,23 @@ extension FilterEngine {
             if let cached = cache[pattern] {
                 return cached
             }
+
+            // Do not waste time on attempts to recompile invalid regexes.
+            if invalidRegexes[pattern] != nil {
+                return nil
+            }
+
             do {
                 let regex = try NSRegularExpression(pattern: pattern, options: [])
                 cache[pattern] = regex
 
                 return regex
             } catch {
-                // If the pattern cannot be compiled, return nil
-                // TODO(ameshkov): !!! Log error, add a test?
+                Logger.log("Failed to compile regex \(pattern)")
+
+                // Save invalid regex in the dictionary to avoid compiling it again.
+                invalidRegexes[pattern] = true
+
                 return nil
             }
         }
@@ -370,7 +398,14 @@ extension FilterEngine {
         let tailIndices: [UInt32]
     }
 
-    // TODO(ameshkov): !!! Comment
+    /// Builds the domain and shortcuts tries from the given rule storage.
+    ///
+    /// This method iterates through all rules in the storage and:
+    /// 1. Adds rules with permittedDomains to the domain trie
+    /// 2. Adds rules with shortcuts to the shortcuts trie
+    /// 3. Adds rules with neither to the tail array
+    ///
+    /// It also builds a histogram of shortcut usage to select the best shortcut for each rule.
     private static func buildTries(
         from storage: FilterRuleStorage
     ) throws -> TrieData {
@@ -390,7 +425,7 @@ extension FilterEngine {
             } else {
                 // If there are no permitted domains, attempt to extract shortcuts.
                 let shortcuts: [String]
-                if isRegexPattern(rule.urlPattern),
+                if SimpleRegex.isRegexPattern(rule.urlPattern),
                    let urlRegex = rule.urlRegex {
                     shortcuts = FilterRule.extractRegexShortcuts(from: urlRegex)
                 } else {
@@ -480,12 +515,5 @@ extension FilterEngine {
         }
 
         return hostnames
-    }
-
-    // TODO(ameshkov): !!! Move to utils
-    private static func isRegexPattern(_ pattern: String) -> Bool {
-        pattern.utf8.count > 1 &&
-        pattern.utf8.first == UInt8(ascii: "/") &&
-        pattern.utf8.last == UInt8(ascii: "/")
     }
 }

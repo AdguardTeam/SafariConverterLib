@@ -203,6 +203,172 @@ final class WebExtensionTests: XCTestCase {
         XCTAssertNotEqual(conf.engineTimestamp, firstBuildTimestamp, "Engine timestamp should be newer")
         XCTAssertGreaterThan(conf.engineTimestamp, 0, "Engine timestamp should be set")
     }
+
+    /// Test that lookup properly handles subdocument and third-party detection.
+    func testLookupWithSubdocumentAndThirdParty() throws {
+        let sharedUserDefaults = InMemoryDefaults(suiteName: #file)!
+
+        let builder = try WebExtension(
+            containerURL: tempDirectory,
+            sharedUserDefaults: sharedUserDefaults,
+            version: SafariVersion.safari16_4
+        )
+
+        // Create rules that specifically target subdocuments
+        let filterList = [
+            // Disable cosmetics on example.org iframes
+            "@@||example.org^$subdocument,elemhide",
+            // Cosmetic rule for example.com
+            "example.org###banner",
+            // Disable cosmetics on example.com iframes in third-party context
+            "@@||example.com^$subdocument,elemhide,third-party",
+            // Cosmetic rule for example.com
+            "example.com###banner"
+        ].joined(separator: "\n")
+
+        _ = try builder.buildFilterEngine(rules: filterList)
+
+        // Create a new WebExtension instance for lookups
+        let webExtension = try WebExtension(
+            containerURL: tempDirectory,
+            sharedUserDefaults: sharedUserDefaults,
+            version: SafariVersion.safari16_4
+        )
+
+        // Test case 1: Main document (no subdocument)
+        let mainPageUrl = URL(string: "https://example.org/")!
+        let mainPageConf = webExtension.lookup(pageUrl: mainPageUrl, topUrl: nil)
+
+        XCTAssertNotNil(mainPageConf, "Expected configuration to be selected for main page")
+        guard let mainPageConf = mainPageConf else { return }
+
+        // Only the regular rule should apply to the main document
+        XCTAssertEqual(mainPageConf.css, ["#banner"], "Only one CSS rule should apply to main document")
+
+        // Test case 2: Subdocument (third-party=false)
+        let sameDomainIframeUrl = URL(string: "https://example.org/")!
+        let sameDomainIframeConf = webExtension.lookup(pageUrl: sameDomainIframeUrl, topUrl: mainPageUrl)
+
+        XCTAssertNotNil(sameDomainIframeConf, "Expected configuration to be selected for same-domain iframe")
+        guard let sameDomainIframeConf = sameDomainIframeConf else { return }
+
+        // Cosmetic rules should be disabled by the elemhide rule for iframes
+        XCTAssertEqual(sameDomainIframeConf.css, [], "Cosmetic rules should be disabled")
+
+        // Test case 3: Example.com subdocument (third-party=false)
+        let mainFrameExampleComUrl = URL(string: "https://example.com/")!
+        let mainFrameExampleComConf = webExtension.lookup(
+            pageUrl: mainFrameExampleComUrl,
+            topUrl: mainFrameExampleComUrl
+        )
+
+        XCTAssertNotNil(mainFrameExampleComConf, "Expected configuration to be selected for iframe")
+
+        guard let mainFrameExampleComConf = mainFrameExampleComConf else { return }
+
+        // Only the regular rule should apply to the frame
+        XCTAssertEqual(mainFrameExampleComConf.css, ["#banner"], "Only one CSS rule should apply to iframe")
+
+        // Test case 4: Third-party subdocument (subdocument=true, third-party=true)
+        let thirdPartyIframeUrl = URL(string: "https://example.com/iframe.html")!
+        let thirdPartyIframeConf = webExtension.lookup(pageUrl: thirdPartyIframeUrl, topUrl: mainPageUrl)
+
+        XCTAssertNotNil(thirdPartyIframeConf, "Expected configuration to be selected for third-party iframe")
+
+        guard let thirdPartyIframeConf = thirdPartyIframeConf else { return }
+
+        // All rules should apply to third-party subdocument
+        // Cosmetic rules should be disabled by the elemhide rule for third-party frames
+        XCTAssertEqual(thirdPartyIframeConf.css, [], "Cosmetic rules should be disabled")
+    }
+
+    /// Benchmark test for the buildFilterEngine method
+    ///
+    /// Baseline results (March 2025):
+    /// - Machine: MacBook Pro M1 Max, 32GB RAM
+    /// - OS: macOS 15.1
+    /// - Swift: 6.0
+    /// - Average execution time: ~0.212 seconds
+    ///
+    /// To get your machine info: `system_profiler SPHardwareDataType`
+    /// To get your macOS version: `sw_vers`
+    /// To get your Swift version: `swift --version`
+    func testBuildFilterEngineBenchmark() throws {
+        let sharedUserDefaults = InMemoryDefaults(suiteName: #file)!
+
+        // Create a large filter list with many rules
+        var filterRules: [String] = []
+        for i in 1...1000 {
+            filterRules.append("example\(i).org###banner")
+            filterRules.append("example\(i).org#$##banner { visibility: hidden }")
+            filterRules.append("example\(i).org#?##banner:has(div)")
+            filterRules.append("example\(i).org#%#console.log('test')")
+            filterRules.append("example\(i).org#%#//scriptlet('log', 'test')")
+        }
+        let filterList = filterRules.joined(separator: "\n")
+
+        // Measure the performance of building the filter engine
+        measure {
+            let webExtension = try! WebExtension(
+                containerURL: tempDirectory,
+                sharedUserDefaults: sharedUserDefaults,
+                version: SafariVersion.safari16_4
+            )
+
+            _ = try! webExtension.buildFilterEngine(rules: filterList)
+        }
+    }
+
+    /// Benchmark test for the lookup method
+    ///
+    /// Baseline results (March 2025):
+    /// - Machine: MacBook Pro M1 Max, 32GB RAM
+    /// - OS: macOS 15.1
+    /// - Swift: 6.0
+    /// - Average execution time: ~0.017 seconds
+    ///
+    /// To get your machine info: `system_profiler SPHardwareDataType`
+    /// To get your macOS version: `sw_vers`
+    /// To get your Swift version: `swift --version`
+    func testLookupBenchmark() throws {
+        let sharedUserDefaults = InMemoryDefaults(suiteName: #file)!
+
+        // Create a filter list with many rules
+        var filterRules: [String] = []
+        for i in 1...1000 {
+            filterRules.append("example\(i).org###banner")
+            filterRules.append("example\(i).org#$##banner { visibility: hidden }")
+            filterRules.append("example\(i).org#?##banner:has(div)")
+            filterRules.append("example\(i).org#%#console.log('test')")
+            filterRules.append("example\(i).org#%#//scriptlet('log', 'test')")
+        }
+        let filterList = filterRules.joined(separator: "\n")
+
+        // Build the filter engine first
+        let builder = try WebExtension(
+            containerURL: tempDirectory,
+            sharedUserDefaults: sharedUserDefaults,
+            version: SafariVersion.safari16_4
+        )
+        _ = try builder.buildFilterEngine(rules: filterList)
+
+        // Create a new WebExtension instance for lookup
+        let webExtension = try WebExtension(
+            containerURL: tempDirectory,
+            sharedUserDefaults: sharedUserDefaults,
+            version: SafariVersion.safari16_4
+        )
+
+        // Create a list of URLs to test
+        let urls = (1...100).map { URL(string: "https://example\($0).org/")! }
+
+        // Measure the performance of lookup
+        measure {
+            for url in urls {
+                _ = webExtension.lookup(pageUrl: url, topUrl: nil)
+            }
+        }
+    }
 }
 
 /// Helper class that overrides `UserDefaults` avoids storing data in a file.

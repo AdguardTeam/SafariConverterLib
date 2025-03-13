@@ -180,20 +180,23 @@ extension WebExtension {
 
         // Check if the relevant files exist, otherwise bail out
         guard FileManager.default.fileExists(atPath: filterRuleStorageURL.path),
-            FileManager.default.fileExists(atPath: filterEngineIndexURL.path) else {
-                // TODO(ameshkov): !!! Log this
-                return nil
+              FileManager.default.fileExists(atPath: filterEngineIndexURL.path) else {
+            Logger.log("Not found filter rule storage and engine files")
+
+            return nil
         }
 
         // Deserialize the FilterRuleStorage.
         guard let storage = try? FilterRuleStorage(fileURL: filterRuleStorageURL) else {
-            // TODO(ameshkov): !!! Log this
+            Logger.log("Failed to deserialize the rule storage")
+
             return nil
         }
 
         // Deserialize the engine.
         guard let engine = try? FilterEngine(storage: storage, indexFileURL: filterEngineIndexURL) else {
-            // TODO(ameshkov): !!! Log this
+            Logger.log("Failed to deserialize the engine")
+
             return nil
         }
 
@@ -206,20 +209,44 @@ extension WebExtension {
 extension WebExtension {
     /// Represents scriptlet data: its name and arguments.
     ///
-    /// TODO(ameshkov): !!! Link the extension
+    /// The scriptlets are evaluated using the scriptlets JS library:
+    /// https://github.com/AdguardTeam/Scriptlets
+    ///
+    /// This object is passed as a part of `Configuration` to the extension's content script.
+    /// See the `Extension` code to learn how it's used.
     public struct Scriptlet: Equatable {
+        /// Scriptlet name.
         public let name: String
+
+        /// Scriptlet arguments
         public let args: [String]
     }
 
     /// Represents content script configuration that needs to be applied.
     ///
-    /// TODO(ameshkov): !!! Link the extension
+    /// This object is then interpreted by the content script and the rules from the configuration
+    /// are applied to the web page.
     public struct Configuration: Equatable {
+        /// A list of CSS rules to be added to the page.
+        ///
+        /// CSS rule can be a CSS selector (in this case a `display: none` rule is added),
+        /// or a valid CSS rule with styles.
         public let css: [String]
+
+        /// A list of extended CSS rules to be aded to the page.
+        ///
+        /// These rules are evaluated in the same way as regular CSS rules with one difference:
+        /// they're applied using a JS library: https://github.com/AdguardTeam/ExtendedCss
         public let extendedCss: [String]
+
+        /// A list of JS snippets to be evaluated on the page.
         public let js: [String]
+
+        /// A list of scriptlets to be executed on the page.
         public let scriptlets: [Scriptlet]
+
+        /// The timestamp of when the engine was built. This field is supposed to be used
+        /// to implement caching on the extension side.
         public let engineTimestamp: Double
     }
 
@@ -239,7 +266,7 @@ extension WebExtension {
 
         // If page address is different from the top frame address then we can
         // assume that we're dealing with a subdocument.
-        let subdocument = pageHostname != "" && topHostname != "" && pageHostname != topHostname
+        let subdocument = pageHostname != "" && topHostname != ""
         var thirdParty = false
         if subdocument {
             // It only makes sense to distinguish third-party from first-party requests

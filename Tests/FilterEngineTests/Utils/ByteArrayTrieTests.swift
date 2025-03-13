@@ -291,6 +291,16 @@ final class ByteArrayTrieTests: XCTestCase {
     // MARK: - Performance Tests
 
     /// Performance test that checks how long it takes to build a trie.
+    ///
+    /// Baseline results (March 2025):
+    /// - Machine: MacBook Pro M1 Max, 32GB RAM
+    /// - OS: macOS 15.1
+    /// - Swift: 6.0
+    /// - Average execution time: ~0.657 seconds
+    ///
+    /// To get your machine info: `system_profiler SPHardwareDataType`
+    /// To get your macOS version: `sw_vers`
+    /// To get your Swift version: `swift --version`
     func testPerformanceBuildTrie() {
         let alphabet = Array("abcdefghijklmnopqrstuvwxyz0123456789")
         var words = [String]()
@@ -316,6 +326,16 @@ final class ByteArrayTrieTests: XCTestCase {
     }
 
     /// Performance test that checks how long a single lookup takes.
+    ///
+    /// Baseline results (March 2025):
+    /// - Machine: MacBook Pro M1 Max, 32GB RAM
+    /// - OS: macOS 15.1
+    /// - Swift: 6.0
+    /// - Average execution time: ~0.051 seconds
+    ///
+    /// To get your machine info: `system_profiler SPHardwareDataType`
+    /// To get your macOS version: `sw_vers`
+    /// To get your Swift version: `swift --version`
     func testPerformanceFind() {
         let root = TrieNode()
         let alphabet = Array("abcdefghijklmnopqrstuvwxyz0123456789")
@@ -344,6 +364,16 @@ final class ByteArrayTrieTests: XCTestCase {
     }
 
     /// Performance test that checks how long collecting payload takes.
+    ///
+    /// Baseline results (March 2025):
+    /// - Machine: MacBook Pro M1 Max, 32GB RAM
+    /// - OS: macOS 15.1
+    /// - Swift: 6.0
+    /// - Average execution time: ~0.121 seconds
+    ///
+    /// To get your machine info: `system_profiler SPHardwareDataType`
+    /// To get your macOS version: `sw_vers`
+    /// To get your Swift version: `swift --version`
     func testPerformanceCollectPayload() {
         let root = TrieNode()
         let alphabet = Array("abcdefghijklmnopqrstuvwxyz0123456789")
