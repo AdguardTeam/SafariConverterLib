@@ -4,6 +4,8 @@
 
 /**
  * Represents configuration for the content script.
+ *
+ * This object is mapped to `WebExtension.Configuration` in Swift code.
  */
 interface Configuration {
     /**
@@ -41,6 +43,8 @@ interface Configuration {
 
 /**
  * Represents scriptlet data that will be used to run "scriptlets" on the page.
+ *
+ * This object is mapped to `WebExtension.Scriptlet` in Swift code.
  */
 interface Scriptlet {
     /**

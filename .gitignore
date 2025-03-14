@@ -1,7 +1,7 @@
 .DS_Store
 
 # Swift
-.swiftpm
+/.swiftpm
 /.build
 /Packages
 /*.xcodeproj
