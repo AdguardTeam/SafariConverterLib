@@ -1,6 +1,7 @@
-import XCTest
-import Foundation
 import ContentBlockerConverter
+import Foundation
+import XCTest
+
 @testable import FilterEngine
 
 final class FilterRuleStorageTests: XCTestCase {
@@ -11,7 +12,10 @@ final class FilterRuleStorageTests: XCTestCase {
         try super.setUpWithError()
         tempDirectory = FileManager.default.temporaryDirectory
             .appendingPathComponent(UUID().uuidString)
-        try FileManager.default.createDirectory(at: tempDirectory, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(
+            at: tempDirectory,
+            withIntermediateDirectories: true
+        )
         tempFileURL = tempDirectory.appendingPathComponent("filterRules.bin")
     }
 
@@ -25,9 +29,9 @@ final class FilterRuleStorageTests: XCTestCase {
     func testInitFromLinesWithValidRules() throws {
         // Arrange
         let lines = [
-            "@@||example.org^$jsinject",      // An allowlist jsinject rule
-            "##.banner",                      // A cosmetic rule
-            "@@||example.com^$elemhide"       // An allowlist elemhide rule
+            "@@||example.org^$jsinject",  // An allowlist jsinject rule
+            "##.banner",  // A cosmetic rule
+            "@@||example.com^$elemhide",  // An allowlist elemhide rule
         ]
 
         // Act
@@ -41,9 +45,9 @@ final class FilterRuleStorageTests: XCTestCase {
         // Arrange
         // One rule is definitely invalid, so it should be skipped in writing
         let lines = [
-            "||example.org^",                 // Blocking rules will be discarded
-            "##.banner",                      // A cosmetic rule
-            "@@||example.com^$elemhide"       // An allowlist elemhide rule
+            "||example.org^",  // Blocking rules will be discarded
+            "##.banner",  // A cosmetic rule
+            "@@||example.com^$elemhide",  // An allowlist elemhide rule
         ]
 
         // Act
@@ -69,7 +73,7 @@ final class FilterRuleStorageTests: XCTestCase {
         // Arrange
         let lines = [
             "@@||example.org^$document",
-            "##.ad-banner"
+            "##.ad-banner",
         ]
         _ = try FilterRuleStorage(from: lines, for: .safari16_4, fileURL: tempFileURL)
 
@@ -86,7 +90,7 @@ final class FilterRuleStorageTests: XCTestCase {
         // For now this works.
         let lines = [
             "##.banner",
-            "##.ad-banner"
+            "##.ad-banner",
         ]
         let storage = try FilterRuleStorage(from: lines, for: .safari16_4, fileURL: tempFileURL)
 
@@ -112,7 +116,7 @@ final class FilterRuleStorageTests: XCTestCase {
         let lines = [
             "@@||example.org^$jsinject",
             "@@||example.net^$elemhide",
-            "##.sidebar"
+            "##.sidebar",
         ]
         let storage = try FilterRuleStorage(from: lines, for: .safari16_4, fileURL: tempFileURL)
 
@@ -139,7 +143,7 @@ final class FilterRuleStorageTests: XCTestCase {
         // Act
         let iterator = try storage.makeIterator()
         let first = iterator.next()
-        let second = iterator.next() // should be nil after first
+        let second = iterator.next()  // should be nil after first
 
         // Assert
         XCTAssertNotNil(first)
@@ -153,7 +157,8 @@ final class FilterRuleStorageTests: XCTestCase {
 
         // Attempt to open storage
         XCTAssertThrowsError(try FilterRuleStorage(fileURL: tempFileURL)) { error in
-            guard case FilterRuleStorage.FilterRuleStorageError.fileFormatError(let reason) = error else {
+            guard case FilterRuleStorage.FilterRuleStorageError.fileFormatError(let reason) = error
+            else {
                 XCTFail("Expected fileFormatError, got \(error)")
                 return
             }
@@ -163,13 +168,14 @@ final class FilterRuleStorageTests: XCTestCase {
 
     func testMissingRuleCountThrows() throws {
         // Arrange
-        let data = Data("FRS0".utf8) // correct magic
+        let data = Data("FRS0".utf8)  // correct magic
         // but no 4-byte count
         try data.write(to: tempFileURL)
 
         // Attempt to open
         XCTAssertThrowsError(try FilterRuleStorage(fileURL: tempFileURL)) { error in
-            guard case FilterRuleStorage.FilterRuleStorageError.fileFormatError(let reason) = error else {
+            guard case FilterRuleStorage.FilterRuleStorageError.fileFormatError(let reason) = error
+            else {
                 XCTFail("Expected fileFormatError, got \(error)")
                 return
             }
@@ -181,7 +187,7 @@ final class FilterRuleStorageTests: XCTestCase {
         // Arrange
         let lines = [
             "@@||example.com^$jsinject",
-            "@@||example.org^$elemhide"
+            "@@||example.org^$elemhide",
         ]
         let storage = try FilterRuleStorage(from: lines, for: .safari16_4, fileURL: tempFileURL)
 
@@ -201,7 +207,11 @@ final class FilterRuleStorageTests: XCTestCase {
 
     func testAccessOutOfBoundsIndexThrows() throws {
         // Arrange
-        let storage = try FilterRuleStorage(from: ["||test.com^"], for: .safari16_4, fileURL: tempFileURL)
+        let storage = try FilterRuleStorage(
+            from: ["||test.com^"],
+            for: .safari16_4,
+            fileURL: tempFileURL
+        )
         let largeOffset = UInt32(9999999)
         let index = FilterRuleStorage.Index(offset: largeOffset)
 
@@ -247,7 +257,7 @@ final class FilterRuleStorageTests: XCTestCase {
         // Act
         let storage = try FilterRuleStorage(fileURL: tempFileURL)
         let iterator = try storage.makeIterator()
-        let firstItem = iterator.next() // returns nil on decode error
+        let firstItem = iterator.next()  // returns nil on decode error
 
         // Assert
         XCTAssertNil(firstItem, "Iterator should skip corrupted rule and return nil immediately")

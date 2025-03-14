@@ -1,6 +1,6 @@
 import XCTest
-@testable import ContentBlockerConverter
 
+@testable import ContentBlockerConverter
 
 final class ContentBlockerConverterTests: XCTestCase {
     func testConvertArrayEmptyOrComments() {
@@ -20,7 +20,7 @@ final class ContentBlockerConverterTests: XCTestCase {
             TestCase(
                 rules: ["! just a comment", "! other comment"],
                 expectedSafariRulesJSON: ConversionResult.EMPTY_RESULT_JSON
-            )
+            ),
         ]
 
         runTests(testCases)
@@ -31,23 +31,23 @@ final class ContentBlockerConverterTests: XCTestCase {
             TestCase(
                 rules: ["@@||example.org^$third-party"],
                 expectedSafariRulesJSON: #"""
-                                    [
-                                      {
-                                        "action" : {
-                                          "type" : "ignore-previous-rules"
-                                        },
-                                        "trigger" : {
-                                          "load-type" : [
-                                            "third-party"
-                                          ],
-                                          "unless-domain" : [
-                                            "*example.org"
-                                          ],
-                                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
-                                        }
-                                      }
-                                    ]
-                                    """#,
+                    [
+                      {
+                        "action" : {
+                          "type" : "ignore-previous-rules"
+                        },
+                        "trigger" : {
+                          "load-type" : [
+                            "third-party"
+                          ],
+                          "unless-domain" : [
+                            "*example.org"
+                          ],
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 1,
                 expectedSourceSafariCompatibleRulesCount: 1,
                 expectedSafariRulesCount: 1
@@ -55,20 +55,20 @@ final class ContentBlockerConverterTests: XCTestCase {
             TestCase(
                 rules: ["@@||adriver.ru^$~third-party"],
                 expectedSafariRulesJSON: #"""
-                                    [
-                                      {
-                                        "action" : {
-                                          "type" : "ignore-previous-rules"
-                                        },
-                                        "trigger" : {
-                                          "load-type" : [
-                                            "first-party"
-                                          ],
-                                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?adriver\\.ru([\\\/:&\\?].*)?$"
-                                        }
-                                      }
-                                    ]
-                                    """#,
+                    [
+                      {
+                        "action" : {
+                          "type" : "ignore-previous-rules"
+                        },
+                        "trigger" : {
+                          "load-type" : [
+                            "first-party"
+                          ],
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?adriver\\.ru([\\\/:&\\?].*)?$"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 1,
                 expectedSourceSafariCompatibleRulesCount: 1,
                 expectedSafariRulesCount: 1
@@ -78,20 +78,20 @@ final class ContentBlockerConverterTests: XCTestCase {
                 rules: ["@@||example.org/*/test.js$1p"],
                 version: SafariVersion.safari16_4,
                 expectedSafariRulesJSON: #"""
-                                    [
-                                      {
-                                        "action" : {
-                                          "type" : "ignore-previous-rules"
-                                        },
-                                        "trigger" : {
-                                          "load-type" : [
-                                            "first-party"
-                                          ],
-                                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org\\\/.*\\\/test\\.js"
-                                        }
-                                      }
-                                    ]
-                                    """#,
+                    [
+                      {
+                        "action" : {
+                          "type" : "ignore-previous-rules"
+                        },
+                        "trigger" : {
+                          "load-type" : [
+                            "first-party"
+                          ],
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org\\\/.*\\\/test\\.js"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 1,
                 expectedSourceSafariCompatibleRulesCount: 1,
                 expectedSafariRulesCount: 1
@@ -101,24 +101,24 @@ final class ContentBlockerConverterTests: XCTestCase {
                 rules: ["@@||example.org/*/test.js$3p"],
                 version: SafariVersion.safari16_4,
                 expectedSafariRulesJSON: #"""
-                                    [
-                                      {
-                                        "action" : {
-                                          "type" : "ignore-previous-rules"
-                                        },
-                                        "trigger" : {
-                                          "load-type" : [
-                                            "third-party"
-                                          ],
-                                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org\\\/.*\\\/test\\.js"
-                                        }
-                                      }
-                                    ]
-                                    """#,
+                    [
+                      {
+                        "action" : {
+                          "type" : "ignore-previous-rules"
+                        },
+                        "trigger" : {
+                          "load-type" : [
+                            "third-party"
+                          ],
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org\\\/.*\\\/test\\.js"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 1,
                 expectedSourceSafariCompatibleRulesCount: 1,
                 expectedSafariRulesCount: 1
-            )
+            ),
         ]
 
         runTests(testCases)
@@ -130,34 +130,34 @@ final class ContentBlockerConverterTests: XCTestCase {
                 // Check that $domain and its aliases are supported.
                 rules: [
                     "||example.org^$domain=example.net",
-                    "||example.org^$from=example.net"
+                    "||example.org^$from=example.net",
                 ],
                 expectedSafariRulesJSON: #"""
-                                    [
-                                      {
-                                        "action" : {
-                                          "type" : "block"
-                                        },
-                                        "trigger" : {
-                                          "if-domain" : [
-                                            "*example.net"
-                                          ],
-                                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
-                                        }
-                                      },
-                                      {
-                                        "action" : {
-                                          "type" : "block"
-                                        },
-                                        "trigger" : {
-                                          "if-domain" : [
-                                            "*example.net"
-                                          ],
-                                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
-                                        }
-                                      }
-                                    ]
-                                    """#,
+                    [
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*example.net"
+                          ],
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*example.net"
+                          ],
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 2,
                 expectedSourceSafariCompatibleRulesCount: 2,
                 expectedSafariRulesCount: 2
@@ -172,18 +172,18 @@ final class ContentBlockerConverterTests: XCTestCase {
             TestCase(
                 rules: ["eXamPle.com$match-case"],
                 expectedSafariRulesJSON: #"""
-                                    [
-                                      {
-                                        "action" : {
-                                          "type" : "block"
-                                        },
-                                        "trigger" : {
-                                          "url-filter" : "eXamPle\\.com",
-                                          "url-filter-is-case-sensitive" : true
-                                        }
-                                      }
-                                    ]
-                                    """#,
+                    [
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "url-filter" : "eXamPle\\.com",
+                          "url-filter-is-case-sensitive" : true
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 1,
                 expectedSourceSafariCompatibleRulesCount: 1,
                 expectedSafariRulesCount: 1
@@ -199,45 +199,45 @@ final class ContentBlockerConverterTests: XCTestCase {
                 rules: [
                     "||example1.com$document",
                     "||example2.com$document,popup",
-                    "||example5.com$popup,document"
+                    "||example5.com$popup,document",
                 ],
                 expectedSafariRulesJSON: #"""
-                                   [
-                                     {
-                                       "action" : {
-                                         "type" : "block"
-                                       },
-                                       "trigger" : {
-                                         "resource-type" : [
-                                           "document"
-                                         ],
-                                         "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example1\\.com"
-                                       }
-                                     },
-                                     {
-                                       "action" : {
-                                         "type" : "block"
-                                       },
-                                       "trigger" : {
-                                         "resource-type" : [
-                                           "document"
-                                         ],
-                                         "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example2\\.com"
-                                       }
-                                     },
-                                     {
-                                       "action" : {
-                                         "type" : "block"
-                                       },
-                                       "trigger" : {
-                                         "resource-type" : [
-                                           "document"
-                                         ],
-                                         "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example5\\.com"
-                                       }
-                                     }
-                                   ]
-                                   """#,
+                    [
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "resource-type" : [
+                            "document"
+                          ],
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example1\\.com"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "resource-type" : [
+                            "document"
+                          ],
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example2\\.com"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "resource-type" : [
+                            "document"
+                          ],
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example5\\.com"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 3,
                 expectedSourceSafariCompatibleRulesCount: 3,
                 expectedSafariRulesCount: 3
@@ -245,26 +245,26 @@ final class ContentBlockerConverterTests: XCTestCase {
             TestCase(
                 rules: ["||getsecuredfiles.com^$popup,third-party"],
                 expectedSafariRulesJSON: #"""
-                                    [
-                                      {
-                                        "action" : {
-                                          "type" : "block"
-                                        },
-                                        "trigger" : {
-                                          "load-type" : [
-                                            "third-party"
-                                          ],
-                                          "resource-type" : [
-                                            "document"
-                                          ],
-                                          "unless-domain" : [
-                                            "*getsecuredfiles.com"
-                                          ],
-                                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?getsecuredfiles\\.com([\\\/:&\\?].*)?$"
-                                        }
-                                      }
-                                    ]
-                                    """#,
+                    [
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "load-type" : [
+                            "third-party"
+                          ],
+                          "resource-type" : [
+                            "document"
+                          ],
+                          "unless-domain" : [
+                            "*getsecuredfiles.com"
+                          ],
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?getsecuredfiles\\.com([\\\/:&\\?].*)?$"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 1,
                 expectedSourceSafariCompatibleRulesCount: 1,
                 expectedSafariRulesCount: 1
@@ -274,39 +274,39 @@ final class ContentBlockerConverterTests: XCTestCase {
                 // Note, that load-context is not used here (we only use it for $subdocument).
                 rules: [
                     "||example.net^$document",
-                    "@@||example.org^$document"
+                    "@@||example.org^$document",
                 ],
                 version: SafariVersion.safari15,
                 expectedSafariRulesJSON: #"""
-                                         [
-                                           {
-                                             "action" : {
-                                               "type" : "block"
-                                             },
-                                             "trigger" : {
-                                               "resource-type" : [
-                                                 "document"
-                                               ],
-                                               "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.net([\\\/:&\\?].*)?$"
-                                             }
-                                           },
-                                           {
-                                             "action" : {
-                                               "type" : "ignore-previous-rules"
-                                             },
-                                             "trigger" : {
-                                               "if-domain" : [
-                                                 "*example.org"
-                                               ],
-                                               "url-filter" : ".*"
-                                             }
-                                           }
-                                         ]
-                                         """#,
+                    [
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "resource-type" : [
+                            "document"
+                          ],
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.net([\\\/:&\\?].*)?$"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "type" : "ignore-previous-rules"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*example.org"
+                          ],
+                          "url-filter" : ".*"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 2,
                 expectedSourceSafariCompatibleRulesCount: 2,
                 expectedSafariRulesCount: 2
-            )
+            ),
         ]
 
         runTests(testCases)
@@ -358,11 +358,11 @@ final class ContentBlockerConverterTests: XCTestCase {
                 // $domain modifier with regular expression are not supported.
                 rules: [
                     "||example.com^$domain=/test\\.com/",
-                    "[$domain=/test\\.com/]##.banner"
+                    "[$domain=/test\\.com/]##.banner",
                 ],
                 expectedSafariRulesJSON: ConversionResult.EMPTY_RESULT_JSON,
                 expectedErrorsCount: 2
-            )
+            ),
         ]
 
         runTests(testCases)
@@ -375,20 +375,20 @@ final class ContentBlockerConverterTests: XCTestCase {
                 rules: ["||test.com^$websocket"],
                 version: SafariVersion.safari13,
                 expectedSafariRulesJSON: #"""
-                                    [
-                                      {
-                                        "action" : {
-                                          "type" : "block"
-                                        },
-                                        "trigger" : {
-                                          "resource-type" : [
-                                            "raw"
-                                          ],
-                                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
-                                        }
-                                      }
-                                    ]
-                                    """#,
+                    [
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "resource-type" : [
+                            "raw"
+                          ],
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 1,
                 expectedSourceSafariCompatibleRulesCount: 1,
                 expectedSafariRulesCount: 1
@@ -398,23 +398,23 @@ final class ContentBlockerConverterTests: XCTestCase {
                 rules: ["$websocket,domain=123movies.is"],
                 version: SafariVersion.safari13,
                 expectedSafariRulesJSON: #"""
-                                    [
-                                      {
-                                        "action" : {
-                                          "type" : "block"
-                                        },
-                                        "trigger" : {
-                                          "if-domain" : [
-                                            "*123movies.is"
-                                          ],
-                                          "resource-type" : [
-                                            "raw"
-                                          ],
-                                          "url-filter" : "^wss?:\\\/\\\/"
-                                        }
-                                      }
-                                    ]
-                                    """#,
+                    [
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*123movies.is"
+                          ],
+                          "resource-type" : [
+                            "raw"
+                          ],
+                          "url-filter" : "^wss?:\\\/\\\/"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 1,
                 expectedSourceSafariCompatibleRulesCount: 1,
                 expectedSafariRulesCount: 1
@@ -424,23 +424,23 @@ final class ContentBlockerConverterTests: XCTestCase {
                 rules: [".rocks^$third-party,websocket"],
                 version: SafariVersion.safari13,
                 expectedSafariRulesJSON: #"""
-                                    [
-                                      {
-                                        "action" : {
-                                          "type" : "block"
-                                        },
-                                        "trigger" : {
-                                          "load-type" : [
-                                            "third-party"
-                                          ],
-                                          "resource-type" : [
-                                            "raw"
-                                          ],
-                                          "url-filter" : "^wss?:\\\/\\\/.*\\.rocks([\\\/:&\\?].*)?$"
-                                        }
-                                      }
-                                    ]
-                                    """#,
+                    [
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "load-type" : [
+                            "third-party"
+                          ],
+                          "resource-type" : [
+                            "raw"
+                          ],
+                          "url-filter" : "^wss?:\\\/\\\/.*\\.rocks([\\\/:&\\?].*)?$"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 1,
                 expectedSourceSafariCompatibleRulesCount: 1,
                 expectedSafariRulesCount: 1
@@ -450,20 +450,20 @@ final class ContentBlockerConverterTests: XCTestCase {
                 rules: ["||test.com^$websocket"],
                 version: SafariVersion.safari15,
                 expectedSafariRulesJSON: #"""
-                                    [
-                                      {
-                                        "action" : {
-                                          "type" : "block"
-                                        },
-                                        "trigger" : {
-                                          "resource-type" : [
-                                            "websocket"
-                                          ],
-                                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
-                                        }
-                                      }
-                                    ]
-                                    """#,
+                    [
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "resource-type" : [
+                            "websocket"
+                          ],
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 1,
                 expectedSourceSafariCompatibleRulesCount: 1,
                 expectedSafariRulesCount: 1
@@ -473,31 +473,31 @@ final class ContentBlockerConverterTests: XCTestCase {
                 rules: ["||test.com^$~websocket,domain=example.org"],
                 version: SafariVersion.safari15,
                 expectedSafariRulesJSON: #"""
-                                    [
-                                      {
-                                        "action" : {
-                                          "type" : "block"
-                                        },
-                                        "trigger" : {
-                                          "if-domain" : [
-                                            "*example.org"
-                                          ],
-                                          "resource-type" : [
-                                            "image",
-                                            "style-sheet",
-                                            "script",
-                                            "media",
-                                            "fetch",
-                                            "other",
-                                            "font",
-                                            "ping",
-                                            "document"
-                                          ],
-                                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
-                                        }
-                                      }
-                                    ]
-                                    """#,
+                    [
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*example.org"
+                          ],
+                          "resource-type" : [
+                            "image",
+                            "style-sheet",
+                            "script",
+                            "media",
+                            "fetch",
+                            "other",
+                            "font",
+                            "ping",
+                            "document"
+                          ],
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 1,
                 expectedSourceSafariCompatibleRulesCount: 1,
                 expectedSafariRulesCount: 1
@@ -508,40 +508,40 @@ final class ContentBlockerConverterTests: XCTestCase {
                 // but only for blocking rules.
                 rules: [
                     "||example.org^$websocket",
-                    "||example.com^$~websocket"
+                    "||example.com^$~websocket",
                 ],
                 expectedSafariRulesJSON: #"""
-                                         [
-                                           {
-                                             "action" : {
-                                               "type" : "block"
-                                             },
-                                             "trigger" : {
-                                               "resource-type" : [
-                                                 "raw"
-                                               ],
-                                               "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
-                                             }
-                                           },
-                                           {
-                                             "action" : {
-                                               "type" : "block"
-                                             },
-                                             "trigger" : {
-                                               "resource-type" : [
-                                                 "image",
-                                                 "style-sheet",
-                                                 "script",
-                                                 "media",
-                                                 "raw",
-                                                 "font",
-                                                 "document"
-                                               ],
-                                               "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.com([\\\/:&\\?].*)?$"
-                                             }
-                                           }
-                                         ]
-                                         """#,
+                    [
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "resource-type" : [
+                            "raw"
+                          ],
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "resource-type" : [
+                            "image",
+                            "style-sheet",
+                            "script",
+                            "media",
+                            "raw",
+                            "font",
+                            "document"
+                          ],
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.com([\\\/:&\\?].*)?$"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 2,
                 expectedSourceSafariCompatibleRulesCount: 2,
                 expectedSafariRulesCount: 2
@@ -551,47 +551,47 @@ final class ContentBlockerConverterTests: XCTestCase {
                 // $websocket is converted to "websocket".
                 rules: [
                     "||example.org^$websocket",
-                    "||example.com^$~websocket"
+                    "||example.com^$~websocket",
                 ],
                 version: SafariVersion.safari15,
                 expectedSafariRulesJSON: #"""
-                                         [
-                                           {
-                                             "action" : {
-                                               "type" : "block"
-                                             },
-                                             "trigger" : {
-                                               "resource-type" : [
-                                                 "websocket"
-                                               ],
-                                               "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
-                                             }
-                                           },
-                                           {
-                                             "action" : {
-                                               "type" : "block"
-                                             },
-                                             "trigger" : {
-                                               "resource-type" : [
-                                                 "image",
-                                                 "style-sheet",
-                                                 "script",
-                                                 "media",
-                                                 "fetch",
-                                                 "other",
-                                                 "font",
-                                                 "ping",
-                                                 "document"
-                                               ],
-                                               "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.com([\\\/:&\\?].*)?$"
-                                             }
-                                           }
-                                         ]
-                                         """#,
+                    [
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "resource-type" : [
+                            "websocket"
+                          ],
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "resource-type" : [
+                            "image",
+                            "style-sheet",
+                            "script",
+                            "media",
+                            "fetch",
+                            "other",
+                            "font",
+                            "ping",
+                            "document"
+                          ],
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.com([\\\/:&\\?].*)?$"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 2,
                 expectedSourceSafariCompatibleRulesCount: 2,
                 expectedSafariRulesCount: 2
-            )
+            ),
         ]
 
         runTests(testCases)
@@ -604,28 +604,28 @@ final class ContentBlockerConverterTests: XCTestCase {
                 rules: ["||test.com^$~script,domain=example.com"],
                 version: SafariVersion.safari13,
                 expectedSafariRulesJSON: #"""
-                                    [
-                                      {
-                                        "action" : {
-                                          "type" : "block"
-                                        },
-                                        "trigger" : {
-                                          "if-domain" : [
-                                            "*example.com"
-                                          ],
-                                          "resource-type" : [
-                                            "image",
-                                            "style-sheet",
-                                            "media",
-                                            "raw",
-                                            "font",
-                                            "document"
-                                          ],
-                                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
-                                        }
-                                      }
-                                    ]
-                                    """#,
+                    [
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*example.com"
+                          ],
+                          "resource-type" : [
+                            "image",
+                            "style-sheet",
+                            "media",
+                            "raw",
+                            "font",
+                            "document"
+                          ],
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 1,
                 expectedSourceSafariCompatibleRulesCount: 1,
                 expectedSafariRulesCount: 1
@@ -635,31 +635,31 @@ final class ContentBlockerConverterTests: XCTestCase {
                 rules: ["||test.com^$~script,domain=example.com"],
                 version: SafariVersion.safari16_4,
                 expectedSafariRulesJSON: #"""
-                                    [
-                                      {
-                                        "action" : {
-                                          "type" : "block"
-                                        },
-                                        "trigger" : {
-                                          "if-domain" : [
-                                            "*example.com"
-                                          ],
-                                          "resource-type" : [
-                                            "image",
-                                            "style-sheet",
-                                            "media",
-                                            "fetch",
-                                            "other",
-                                            "websocket",
-                                            "font",
-                                            "ping",
-                                            "document"
-                                          ],
-                                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
-                                        }
-                                      }
-                                    ]
-                                    """#,
+                    [
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*example.com"
+                          ],
+                          "resource-type" : [
+                            "image",
+                            "style-sheet",
+                            "media",
+                            "fetch",
+                            "other",
+                            "websocket",
+                            "font",
+                            "ping",
+                            "document"
+                          ],
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 1,
                 expectedSourceSafariCompatibleRulesCount: 1,
                 expectedSafariRulesCount: 1
@@ -669,23 +669,23 @@ final class ContentBlockerConverterTests: XCTestCase {
                 rules: ["||test.com^$third-party"],
                 version: SafariVersion.safari13,
                 expectedSafariRulesJSON: #"""
-                                    [
-                                      {
-                                        "action" : {
-                                          "type" : "block"
-                                        },
-                                        "trigger" : {
-                                          "load-type" : [
-                                            "third-party"
-                                          ],
-                                          "unless-domain" : [
-                                            "*test.com"
-                                          ],
-                                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
-                                        }
-                                      }
-                                    ]
-                                    """#,
+                    [
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "load-type" : [
+                            "third-party"
+                          ],
+                          "unless-domain" : [
+                            "*test.com"
+                          ],
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 1,
                 expectedSourceSafariCompatibleRulesCount: 1,
                 expectedSafariRulesCount: 1
@@ -695,24 +695,24 @@ final class ContentBlockerConverterTests: XCTestCase {
                 rules: ["||test.com^$third-party"],
                 version: SafariVersion.safari16_4,
                 expectedSafariRulesJSON: #"""
-                                    [
-                                      {
-                                        "action" : {
-                                          "type" : "block"
-                                        },
-                                        "trigger" : {
-                                          "load-type" : [
-                                            "third-party"
-                                          ],
-                                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
-                                        }
-                                      }
-                                    ]
-                                    """#,
+                    [
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "load-type" : [
+                            "third-party"
+                          ],
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 1,
                 expectedSourceSafariCompatibleRulesCount: 1,
                 expectedSafariRulesCount: 1
-            )
+            ),
         ]
 
         runTests(testCases)
@@ -731,23 +731,23 @@ final class ContentBlockerConverterTests: XCTestCase {
                 rules: ["||test.com^$subdocument,domain=example.com"],
                 version: SafariVersion.safari13,
                 expectedSafariRulesJSON: #"""
-                                   [
-                                     {
-                                       "action" : {
-                                         "type" : "block"
-                                       },
-                                       "trigger" : {
-                                         "if-domain" : [
-                                           "*example.com"
-                                         ],
-                                         "resource-type" : [
-                                           "document"
-                                         ],
-                                         "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
-                                       }
-                                     }
-                                   ]
-                                   """#,
+                    [
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*example.com"
+                          ],
+                          "resource-type" : [
+                            "document"
+                          ],
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 1,
                 expectedSourceSafariCompatibleRulesCount: 1,
                 expectedSafariRulesCount: 1
@@ -757,23 +757,23 @@ final class ContentBlockerConverterTests: XCTestCase {
                 rules: ["||test.com^$subdocument,1p"],
                 version: SafariVersion.safari16_4,
                 expectedSafariRulesJSON: #"""
-                                    [
-                                      {
-                                        "action" : {
-                                          "type" : "block"
-                                        },
-                                        "trigger" : {
-                                          "load-context" : [
-                                            "child-frame"
-                                          ],
-                                          "load-type" : [
-                                            "first-party"
-                                          ],
-                                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
-                                        }
-                                      }
-                                    ]
-                                    """#,
+                    [
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "load-context" : [
+                            "child-frame"
+                          ],
+                          "load-type" : [
+                            "first-party"
+                          ],
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 1,
                 expectedSourceSafariCompatibleRulesCount: 1,
                 expectedSafariRulesCount: 1
@@ -783,36 +783,36 @@ final class ContentBlockerConverterTests: XCTestCase {
                 rules: ["||test.com^$~subdocument"],
                 version: SafariVersion.safari16_4,
                 expectedSafariRulesJSON: #"""
-                                    [
-                                      {
-                                        "action" : {
-                                          "type" : "block"
-                                        },
-                                        "trigger" : {
-                                          "load-context" : [
-                                            "top-frame"
-                                          ],
-                                          "resource-type" : [
-                                            "image",
-                                            "style-sheet",
-                                            "script",
-                                            "media",
-                                            "fetch",
-                                            "other",
-                                            "websocket",
-                                            "font",
-                                            "ping",
-                                            "document"
-                                          ],
-                                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
-                                        }
-                                      }
-                                    ]
-                                    """#,
+                    [
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "load-context" : [
+                            "top-frame"
+                          ],
+                          "resource-type" : [
+                            "image",
+                            "style-sheet",
+                            "script",
+                            "media",
+                            "fetch",
+                            "other",
+                            "websocket",
+                            "font",
+                            "ping",
+                            "document"
+                          ],
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 1,
                 expectedSourceSafariCompatibleRulesCount: 1,
                 expectedSafariRulesCount: 1
-            )
+            ),
         ]
 
         runTests(testCases)
@@ -824,23 +824,23 @@ final class ContentBlockerConverterTests: XCTestCase {
                 // Convert empty regex (i.e. match all urls).
                 rules: ["@@$image,domain=moonwalk.cc"],
                 expectedSafariRulesJSON: #"""
-                                    [
-                                      {
-                                        "action" : {
-                                          "type" : "ignore-previous-rules"
-                                        },
-                                        "trigger" : {
-                                          "if-domain" : [
-                                            "*moonwalk.cc"
-                                          ],
-                                          "resource-type" : [
-                                            "image"
-                                          ],
-                                          "url-filter" : ".*"
-                                        }
-                                      }
-                                    ]
-                                    """#,
+                    [
+                      {
+                        "action" : {
+                          "type" : "ignore-previous-rules"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*moonwalk.cc"
+                          ],
+                          "resource-type" : [
+                            "image"
+                          ],
+                          "url-filter" : ".*"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 1,
                 expectedSourceSafariCompatibleRulesCount: 1,
                 expectedSafariRulesCount: 1
@@ -858,26 +858,26 @@ final class ContentBlockerConverterTests: XCTestCase {
                 rules: [
                     "##.banner",
                     "example.org,example.net#@#.banner",
-                    "example.com#@#.banner"
+                    "example.com#@#.banner",
                 ],
                 expectedSafariRulesJSON: #"""
-                                    [
-                                      {
-                                        "action" : {
-                                          "selector" : ".banner",
-                                          "type" : "css-display-none"
-                                        },
-                                        "trigger" : {
-                                          "unless-domain" : [
-                                            "*example.org",
-                                            "*example.net",
-                                            "*example.com"
-                                          ],
-                                          "url-filter" : ".*"
-                                        }
-                                      }
-                                    ]
-                                    """#,
+                    [
+                      {
+                        "action" : {
+                          "selector" : ".banner",
+                          "type" : "css-display-none"
+                        },
+                        "trigger" : {
+                          "unless-domain" : [
+                            "*example.org",
+                            "*example.net",
+                            "*example.com"
+                          ],
+                          "url-filter" : ".*"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 3,
                 expectedSourceSafariCompatibleRulesCount: 3,
                 expectedSafariRulesCount: 1
@@ -887,7 +887,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                 // Cancel each other.
                 rules: [
                     "example.org##.banner",
-                    "example.org#@#.banner"
+                    "example.org#@#.banner",
                 ],
                 expectedSafariRulesJSON: ConversionResult.EMPTY_RESULT_JSON,
                 expectedSourceRulesCount: 2,
@@ -902,7 +902,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                     "[$path=page.html]example.com##.banner",
                     "example.net##.banner",
                     "example.org##.banner",
-                    "#@#.banner"
+                    "#@#.banner",
                 ],
                 expectedSafariRulesJSON: ConversionResult.EMPTY_RESULT_JSON,
                 expectedSourceRulesCount: 5,
@@ -914,24 +914,24 @@ final class ContentBlockerConverterTests: XCTestCase {
                 // Whitelist rule is discarded because of the mixed if-domain / unless-domain issue.
                 rules: [
                     "example.net##.banner",
-                    "example.org#@#.banner"
+                    "example.org#@#.banner",
                 ],
                 expectedSafariRulesJSON: #"""
-                                   [
-                                     {
-                                       "action" : {
-                                         "selector" : ".banner",
-                                         "type" : "css-display-none"
-                                       },
-                                       "trigger" : {
-                                         "if-domain" : [
-                                           "*example.net"
-                                         ],
-                                         "url-filter" : ".*"
-                                       }
-                                     }
-                                   ]
-                                   """#,
+                    [
+                      {
+                        "action" : {
+                          "selector" : ".banner",
+                          "type" : "css-display-none"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*example.net"
+                          ],
+                          "url-filter" : ".*"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 2,
                 expectedSourceSafariCompatibleRulesCount: 2,
                 expectedSafariRulesCount: 1
@@ -940,24 +940,24 @@ final class ContentBlockerConverterTests: XCTestCase {
                 // Keep 1 domain, remove the other.
                 rules: [
                     "test.com,example.org###banner",
-                    "example.org#@##banner"
+                    "example.org#@##banner",
                 ],
                 expectedSafariRulesJSON: #"""
-                                   [
-                                     {
-                                       "action" : {
-                                         "selector" : "#banner",
-                                         "type" : "css-display-none"
-                                       },
-                                       "trigger" : {
-                                         "if-domain" : [
-                                           "*test.com"
-                                         ],
-                                         "url-filter" : ".*"
-                                       }
-                                     }
-                                   ]
-                                   """#,
+                    [
+                      {
+                        "action" : {
+                          "selector" : "#banner",
+                          "type" : "css-display-none"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*test.com"
+                          ],
+                          "url-filter" : ".*"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 2,
                 expectedSourceSafariCompatibleRulesCount: 2,
                 expectedSafariRulesCount: 1
@@ -966,24 +966,24 @@ final class ContentBlockerConverterTests: XCTestCase {
                 // Keep 1 domain, remove the other.
                 rules: [
                     "test.com,example.org###banner",
-                    "example.com,example.org#@##banner"
+                    "example.com,example.org#@##banner",
                 ],
                 expectedSafariRulesJSON: #"""
-                                   [
-                                     {
-                                       "action" : {
-                                         "selector" : "#banner",
-                                         "type" : "css-display-none"
-                                       },
-                                       "trigger" : {
-                                         "if-domain" : [
-                                           "*test.com"
-                                         ],
-                                         "url-filter" : ".*"
-                                       }
-                                     }
-                                   ]
-                                   """#,
+                    [
+                      {
+                        "action" : {
+                          "selector" : "#banner",
+                          "type" : "css-display-none"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*test.com"
+                          ],
+                          "url-filter" : ".*"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 2,
                 expectedSourceSafariCompatibleRulesCount: 2,
                 expectedSafariRulesCount: 1
@@ -992,24 +992,24 @@ final class ContentBlockerConverterTests: XCTestCase {
                 // Keep 1 domain, remove 2 other domains.
                 rules: [
                     "test1.com,example.org,test2.com###banner",
-                    "example.com,example.org,test1.com#@##banner"
+                    "example.com,example.org,test1.com#@##banner",
                 ],
                 expectedSafariRulesJSON: #"""
-                                   [
-                                     {
-                                       "action" : {
-                                         "selector" : "#banner",
-                                         "type" : "css-display-none"
-                                       },
-                                       "trigger" : {
-                                         "if-domain" : [
-                                           "*test2.com"
-                                         ],
-                                         "url-filter" : ".*"
-                                       }
-                                     }
-                                   ]
-                                   """#,
+                    [
+                      {
+                        "action" : {
+                          "selector" : "#banner",
+                          "type" : "css-display-none"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*test2.com"
+                          ],
+                          "url-filter" : ".*"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 2,
                 expectedSourceSafariCompatibleRulesCount: 2,
                 expectedSafariRulesCount: 1
@@ -1020,28 +1020,28 @@ final class ContentBlockerConverterTests: XCTestCase {
                     "test1.com,test2.com,test3.com###banner",
                     "example1.org,example2.org###banner",
                     "test1.com,example2.org#@##banner",
-                    "test2.com,example1.org#@##banner"
+                    "test2.com,example1.org#@##banner",
                 ],
                 expectedSafariRulesJSON: #"""
-                                   [
-                                     {
-                                       "action" : {
-                                         "selector" : "#banner",
-                                         "type" : "css-display-none"
-                                       },
-                                       "trigger" : {
-                                         "if-domain" : [
-                                           "*test3.com"
-                                         ],
-                                         "url-filter" : ".*"
-                                       }
-                                     }
-                                   ]
-                                   """#,
+                    [
+                      {
+                        "action" : {
+                          "selector" : "#banner",
+                          "type" : "css-display-none"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*test3.com"
+                          ],
+                          "url-filter" : ".*"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 4,
                 expectedSourceSafariCompatibleRulesCount: 4,
                 expectedSafariRulesCount: 1
-            )
+            ),
         ]
 
         runTests(testCases)
@@ -1055,21 +1055,21 @@ final class ContentBlockerConverterTests: XCTestCase {
                     "@@||*$document,domain=~whitelisted.domain.com|~whitelisted.domain2.com"
                 ],
                 expectedSafariRulesJSON: #"""
-                                   [
-                                     {
-                                       "action" : {
-                                         "type" : "ignore-previous-rules"
-                                       },
-                                       "trigger" : {
-                                         "unless-domain" : [
-                                           "*whitelisted.domain.com",
-                                           "*whitelisted.domain2.com"
-                                         ],
-                                         "url-filter" : ".*"
-                                       }
-                                     }
-                                   ]
-                                   """#,
+                    [
+                      {
+                        "action" : {
+                          "type" : "ignore-previous-rules"
+                        },
+                        "trigger" : {
+                          "unless-domain" : [
+                            "*whitelisted.domain.com",
+                            "*whitelisted.domain2.com"
+                          ],
+                          "url-filter" : ".*"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 1,
                 expectedSourceSafariCompatibleRulesCount: 1,
                 expectedSafariRulesCount: 1
@@ -1087,20 +1087,20 @@ final class ContentBlockerConverterTests: XCTestCase {
                     "@@||hulu.com/page$generichide"
                 ],
                 expectedSafariRulesJSON: #"""
-                                   [
-                                     {
-                                       "action" : {
-                                         "type" : "ignore-previous-rules"
-                                       },
-                                       "trigger" : {
-                                         "resource-type" : [
-                                           "document"
-                                         ],
-                                         "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?hulu\\.com\\\/page"
-                                       }
-                                     }
-                                   ]
-                                   """#,
+                    [
+                      {
+                        "action" : {
+                          "type" : "ignore-previous-rules"
+                        },
+                        "trigger" : {
+                          "resource-type" : [
+                            "document"
+                          ],
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?hulu\\.com\\\/page"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 1,
                 expectedSourceSafariCompatibleRulesCount: 1,
                 expectedSafariRulesCount: 1
@@ -1111,48 +1111,48 @@ final class ContentBlockerConverterTests: XCTestCase {
                 rules: [
                     "@@||example.org^$generichide",
                     "##.generic",
-                    "example.org##.specific"
+                    "example.org##.specific",
                 ],
                 expectedSafariRulesJSON: #"""
-                                   [
-                                     {
-                                       "action" : {
-                                         "selector" : ".generic",
-                                         "type" : "css-display-none"
-                                       },
-                                       "trigger" : {
-                                         "url-filter" : ".*"
-                                       }
-                                     },
-                                     {
-                                       "action" : {
-                                         "type" : "ignore-previous-rules"
-                                       },
-                                       "trigger" : {
-                                         "if-domain" : [
-                                           "*example.org"
-                                         ],
-                                         "url-filter" : ".*"
-                                       }
-                                     },
-                                     {
-                                       "action" : {
-                                         "selector" : ".specific",
-                                         "type" : "css-display-none"
-                                       },
-                                       "trigger" : {
-                                         "if-domain" : [
-                                           "*example.org"
-                                         ],
-                                         "url-filter" : ".*"
-                                       }
-                                     }
-                                   ]
-                                   """#,
+                    [
+                      {
+                        "action" : {
+                          "selector" : ".generic",
+                          "type" : "css-display-none"
+                        },
+                        "trigger" : {
+                          "url-filter" : ".*"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "type" : "ignore-previous-rules"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*example.org"
+                          ],
+                          "url-filter" : ".*"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "selector" : ".specific",
+                          "type" : "css-display-none"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*example.org"
+                          ],
+                          "url-filter" : ".*"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 3,
                 expectedSourceSafariCompatibleRulesCount: 3,
                 expectedSafariRulesCount: 3
-            )
+            ),
         ]
 
         runTests(testCases)
@@ -1167,52 +1167,52 @@ final class ContentBlockerConverterTests: XCTestCase {
                     "@@||example.org^$elemhide",
                     "##.generic",
                     "example.org##.specific",
-                    "||example.org^"
+                    "||example.org^",
                 ],
                 expectedSafariRulesJSON: #"""
-                                   [
-                                     {
-                                       "action" : {
-                                         "selector" : ".generic",
-                                         "type" : "css-display-none"
-                                       },
-                                       "trigger" : {
-                                         "url-filter" : ".*"
-                                       }
-                                     },
-                                     {
-                                       "action" : {
-                                         "selector" : ".specific",
-                                         "type" : "css-display-none"
-                                       },
-                                       "trigger" : {
-                                         "if-domain" : [
-                                           "*example.org"
-                                         ],
-                                         "url-filter" : ".*"
-                                       }
-                                     },
-                                     {
-                                       "action" : {
-                                         "type" : "ignore-previous-rules"
-                                       },
-                                       "trigger" : {
-                                         "if-domain" : [
-                                           "*example.org"
-                                         ],
-                                         "url-filter" : ".*"
-                                       }
-                                     },
-                                     {
-                                       "action" : {
-                                         "type" : "block"
-                                       },
-                                       "trigger" : {
-                                         "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
-                                       }
-                                     }
-                                   ]
-                                   """#,
+                    [
+                      {
+                        "action" : {
+                          "selector" : ".generic",
+                          "type" : "css-display-none"
+                        },
+                        "trigger" : {
+                          "url-filter" : ".*"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "selector" : ".specific",
+                          "type" : "css-display-none"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*example.org"
+                          ],
+                          "url-filter" : ".*"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "type" : "ignore-previous-rules"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*example.org"
+                          ],
+                          "url-filter" : ".*"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 4,
                 expectedSourceSafariCompatibleRulesCount: 4,
                 expectedSafariRulesCount: 4
@@ -1229,21 +1229,21 @@ final class ContentBlockerConverterTests: XCTestCase {
                 rules: [
                     "###selector-one",
                     "###selector-two",
-                    "###selector-three"
+                    "###selector-three",
                 ],
                 expectedSafariRulesJSON: #"""
-                                   [
-                                     {
-                                       "action" : {
-                                         "selector" : "#selector-one, #selector-two, #selector-three",
-                                         "type" : "css-display-none"
-                                       },
-                                       "trigger" : {
-                                         "url-filter" : ".*"
-                                       }
-                                     }
-                                   ]
-                                   """#,
+                    [
+                      {
+                        "action" : {
+                          "selector" : "#selector-one, #selector-two, #selector-three",
+                          "type" : "css-display-none"
+                        },
+                        "trigger" : {
+                          "url-filter" : ".*"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 3,
                 expectedSourceSafariCompatibleRulesCount: 3,
                 expectedSafariRulesCount: 1
@@ -1253,24 +1253,24 @@ final class ContentBlockerConverterTests: XCTestCase {
                 rules: [
                     "example.org###selector-one",
                     "example.org###selector-two",
-                    "example.org###selector-three"
+                    "example.org###selector-three",
                 ],
                 expectedSafariRulesJSON: #"""
-                                   [
-                                     {
-                                       "action" : {
-                                         "selector" : "#selector-one, #selector-two, #selector-three",
-                                         "type" : "css-display-none"
-                                       },
-                                       "trigger" : {
-                                         "if-domain" : [
-                                           "*example.org"
-                                         ],
-                                         "url-filter" : ".*"
-                                       }
-                                     }
-                                   ]
-                                   """#,
+                    [
+                      {
+                        "action" : {
+                          "selector" : "#selector-one, #selector-two, #selector-three",
+                          "type" : "css-display-none"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*example.org"
+                          ],
+                          "url-filter" : ".*"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 3,
                 expectedSourceSafariCompatibleRulesCount: 3,
                 expectedSafariRulesCount: 1
@@ -1281,40 +1281,40 @@ final class ContentBlockerConverterTests: XCTestCase {
                 rules: [
                     "[$path=page.html]example.org###selector-one",
                     "[$domain=example.org]###selector-two",
-                    "example.org###selector-three"
+                    "example.org###selector-three",
                 ],
                 expectedSafariRulesJSON: #"""
-                                   [
-                                     {
-                                       "action" : {
-                                         "selector" : "#selector-one",
-                                         "type" : "css-display-none"
-                                       },
-                                       "trigger" : {
-                                         "if-domain" : [
-                                           "*example.org"
-                                         ],
-                                         "url-filter" : ".*page\\.html"
-                                       }
-                                     },
-                                     {
-                                       "action" : {
-                                         "selector" : "#selector-two, #selector-three",
-                                         "type" : "css-display-none"
-                                       },
-                                       "trigger" : {
-                                         "if-domain" : [
-                                           "*example.org"
-                                         ],
-                                         "url-filter" : ".*"
-                                       }
-                                     }
-                                   ]
-                                   """#,
+                    [
+                      {
+                        "action" : {
+                          "selector" : "#selector-one",
+                          "type" : "css-display-none"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*example.org"
+                          ],
+                          "url-filter" : ".*page\\.html"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "selector" : "#selector-two, #selector-three",
+                          "type" : "css-display-none"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*example.org"
+                          ],
+                          "url-filter" : ".*"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 3,
                 expectedSourceSafariCompatibleRulesCount: 3,
                 expectedSafariRulesCount: 2
-            )
+            ),
         ]
 
         runTests(testCases)
@@ -1326,28 +1326,28 @@ final class ContentBlockerConverterTests: XCTestCase {
                 // Rules with Cyrillic letters.
                 rules: [
                     "меил.рф",
-                    "||меил.рф"
+                    "||меил.рф",
                 ],
                 expectedSafariRulesJSON: #"""
-                                   [
-                                     {
-                                       "action" : {
-                                         "type" : "block"
-                                       },
-                                       "trigger" : {
-                                         "url-filter" : "xn--e1agjb\\.xn--p1ai"
-                                       }
-                                     },
-                                     {
-                                       "action" : {
-                                         "type" : "block"
-                                       },
-                                       "trigger" : {
-                                         "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?xn--e1agjb\\.xn--p1ai"
-                                       }
-                                     }
-                                   ]
-                                   """#,
+                    [
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "url-filter" : "xn--e1agjb\\.xn--p1ai"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?xn--e1agjb\\.xn--p1ai"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 2,
                 expectedSourceSafariCompatibleRulesCount: 2,
                 expectedSafariRulesCount: 2
@@ -1357,43 +1357,43 @@ final class ContentBlockerConverterTests: XCTestCase {
                 rules: [
                     "||ได้รับการโปรโมท.com^",
                     "ได้รับการโปรโมท.com##banner",
-                    "||example.org^$domain=ได้รับการโปรโมท.com"
+                    "||example.org^$domain=ได้รับการโปรโมท.com",
                 ],
                 expectedSafariRulesJSON: #"""
-                                   [
-                                     {
-                                       "action" : {
-                                         "selector" : "banner",
-                                         "type" : "css-display-none"
-                                       },
-                                       "trigger" : {
-                                         "if-domain" : [
-                                           "*xn--12c1bkkg0bkcb9kna7qcr0f.com"
-                                         ],
-                                         "url-filter" : ".*"
-                                       }
-                                     },
-                                     {
-                                       "action" : {
-                                         "type" : "block"
-                                       },
-                                       "trigger" : {
-                                         "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?xn--12c1bkkg0bkcb9kna7qcr0f\\.com([\\\/:&\\?].*)?$"
-                                       }
-                                     },
-                                     {
-                                       "action" : {
-                                         "type" : "block"
-                                       },
-                                       "trigger" : {
-                                         "if-domain" : [
-                                           "*xn--12c1bkkg0bkcb9kna7qcr0f.com"
-                                         ],
-                                         "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
-                                       }
-                                     }
-                                   ]
-                                   """#,
+                    [
+                      {
+                        "action" : {
+                          "selector" : "banner",
+                          "type" : "css-display-none"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*xn--12c1bkkg0bkcb9kna7qcr0f.com"
+                          ],
+                          "url-filter" : ".*"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?xn--12c1bkkg0bkcb9kna7qcr0f\\.com([\\\/:&\\?].*)?$"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*xn--12c1bkkg0bkcb9kna7qcr0f.com"
+                          ],
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 3,
                 expectedSourceSafariCompatibleRulesCount: 3,
                 expectedSafariRulesCount: 3
@@ -1404,24 +1404,24 @@ final class ContentBlockerConverterTests: XCTestCase {
                     "||example.org$domain=/реклама\\.рф/"
                 ],
                 expectedSafariRulesJSON: #"""
-                                   [
-                                     {
-                                       "action" : {
-                                         "type" : "block"
-                                       },
-                                       "trigger" : {
-                                         "if-domain" : [
-                                           "*xn--\/\\-7kcax4ahj5a.xn--\/-4tbm"
-                                         ],
-                                         "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org"
-                                       }
-                                     }
-                                   ]
-                                   """#,
+                    [
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*xn--\/\\-7kcax4ahj5a.xn--\/-4tbm"
+                          ],
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 1,
                 expectedSourceSafariCompatibleRulesCount: 1,
                 expectedSafariRulesCount: 1
-            )
+            ),
         ]
 
         runTests(testCases)
@@ -1441,7 +1441,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                     // Unbalanced bracket.
                     #"/example{/"#,
                     // Digit range is not supported.
-                    #"/([0-9]{1,3}\.){3}[0-9]{1,3}.\/proxy$/$script,websocket,third-party"#
+                    #"/([0-9]{1,3}\.){3}[0-9]{1,3}.\/proxy$/$script,websocket,third-party"#,
                 ],
                 expectedSafariRulesJSON: ConversionResult.EMPTY_RESULT_JSON,
                 expectedSourceRulesCount: 5,
@@ -1459,7 +1459,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                 expectedSourceSafariCompatibleRulesCount: 0,
                 expectedSafariRulesCount: 0,
                 expectedErrorsCount: 1
-            )
+            ),
         ]
 
         runTests(testCases)
@@ -1474,21 +1474,21 @@ final class ContentBlockerConverterTests: XCTestCase {
                     "###main > table.w3-table-all.notranslate:first-child > tbody > tr:nth-child(17) > td.notranslate:nth-child(2)",
                     "###:root div.ads",
                     "###body div[attr='test']:first-child  div",
-                    "##.todaystripe::after"
+                    "##.todaystripe::after",
                 ],
                 expectedSafariRulesJSON: #"""
-                                         [
-                                           {
-                                             "action" : {
-                                               "selector" : "#main > table.w3-table-all.notranslate:first-child > tbody > tr:nth-child(17) > td.notranslate:nth-child(2), #:root div.ads, #body div[attr='test']:first-child  div, .todaystripe::after",
-                                               "type" : "css-display-none"
-                                             },
-                                             "trigger" : {
-                                               "url-filter" : ".*"
-                                             }
-                                           }
-                                         ]
-                                         """#,
+                    [
+                      {
+                        "action" : {
+                          "selector" : "#main > table.w3-table-all.notranslate:first-child > tbody > tr:nth-child(17) > td.notranslate:nth-child(2), #:root div.ads, #body div[attr='test']:first-child  div, .todaystripe::after",
+                          "type" : "css-display-none"
+                        },
+                        "trigger" : {
+                          "url-filter" : ".*"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 4,
                 expectedSourceSafariCompatibleRulesCount: 4,
                 expectedSafariRulesCount: 1
@@ -1504,28 +1504,28 @@ final class ContentBlockerConverterTests: XCTestCase {
                 // Test that exception rules unblock regular rules.
                 rules: [
                     "||example.org^",
-                    "@@/test"
+                    "@@/test",
                 ],
                 expectedSafariRulesJSON: #"""
-                                   [
-                                     {
-                                       "action" : {
-                                         "type" : "block"
-                                       },
-                                       "trigger" : {
-                                         "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
-                                       }
-                                     },
-                                     {
-                                       "action" : {
-                                         "type" : "ignore-previous-rules"
-                                       },
-                                       "trigger" : {
-                                         "url-filter" : "\\\/test"
-                                       }
-                                     }
-                                   ]
-                                   """#,
+                    [
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "type" : "ignore-previous-rules"
+                        },
+                        "trigger" : {
+                          "url-filter" : "\\\/test"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 2,
                 expectedSourceSafariCompatibleRulesCount: 2,
                 expectedSafariRulesCount: 2
@@ -1534,28 +1534,28 @@ final class ContentBlockerConverterTests: XCTestCase {
                 // Test that $important rules override exception rules.
                 rules: [
                     "||example.org^$important",
-                    "@@/test"
+                    "@@/test",
                 ],
                 expectedSafariRulesJSON: #"""
-                                   [
-                                     {
-                                       "action" : {
-                                         "type" : "ignore-previous-rules"
-                                       },
-                                       "trigger" : {
-                                         "url-filter" : "\\\/test"
-                                       }
-                                     },
-                                     {
-                                       "action" : {
-                                         "type" : "block"
-                                       },
-                                       "trigger" : {
-                                         "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
-                                       }
-                                     }
-                                   ]
-                                   """#,
+                    [
+                      {
+                        "action" : {
+                          "type" : "ignore-previous-rules"
+                        },
+                        "trigger" : {
+                          "url-filter" : "\\\/test"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 2,
                 expectedSourceSafariCompatibleRulesCount: 2,
                 expectedSafariRulesCount: 2
@@ -1564,28 +1564,28 @@ final class ContentBlockerConverterTests: XCTestCase {
                 // Test that $important exception rules unblock $important rules.
                 rules: [
                     "||example.org^$important",
-                    "@@/test$important"
+                    "@@/test$important",
                 ],
                 expectedSafariRulesJSON: #"""
-                                   [
-                                     {
-                                       "action" : {
-                                         "type" : "block"
-                                       },
-                                       "trigger" : {
-                                         "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
-                                       }
-                                     },
-                                     {
-                                       "action" : {
-                                         "type" : "ignore-previous-rules"
-                                       },
-                                       "trigger" : {
-                                         "url-filter" : "\\\/test"
-                                       }
-                                     }
-                                   ]
-                                   """#,
+                    [
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "type" : "ignore-previous-rules"
+                        },
+                        "trigger" : {
+                          "url-filter" : "\\\/test"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 2,
                 expectedSourceSafariCompatibleRulesCount: 2,
                 expectedSafariRulesCount: 2
@@ -1594,32 +1594,32 @@ final class ContentBlockerConverterTests: XCTestCase {
                 // Test that $document exception rules unblock $important rules.
                 rules: [
                     "||example.org^$important",
-                    "@@/test$document"
+                    "@@/test$document",
                 ],
                 expectedSafariRulesJSON: #"""
-                                   [
-                                     {
-                                       "action" : {
-                                         "type" : "block"
-                                       },
-                                       "trigger" : {
-                                         "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
-                                       }
-                                     },
-                                     {
-                                       "action" : {
-                                         "type" : "ignore-previous-rules"
-                                       },
-                                       "trigger" : {
-                                         "url-filter" : "\\\/test"
-                                       }
-                                     }
-                                   ]
-                                   """#,
+                    [
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "type" : "ignore-previous-rules"
+                        },
+                        "trigger" : {
+                          "url-filter" : "\\\/test"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 2,
                 expectedSourceSafariCompatibleRulesCount: 2,
                 expectedSafariRulesCount: 2
-            )
+            ),
         ]
 
         runTests(testCases)
@@ -1632,20 +1632,20 @@ final class ContentBlockerConverterTests: XCTestCase {
                 rules: [
                     "||example.org^$image",
                     "||test.org^",
-                    "||example.org^$badfilter,image"
+                    "||example.org^$badfilter,image",
                 ],
                 expectedSafariRulesJSON: #"""
-                                   [
-                                     {
-                                       "action" : {
-                                         "type" : "block"
-                                       },
-                                       "trigger" : {
-                                         "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.org([\\\/:&\\?].*)?$"
-                                       }
-                                     }
-                                   ]
-                                   """#,
+                    [
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.org([\\\/:&\\?].*)?$"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 3,
                 expectedSourceSafariCompatibleRulesCount: 3,
                 expectedSafariRulesCount: 1
@@ -1659,41 +1659,41 @@ final class ContentBlockerConverterTests: XCTestCase {
                     "*$domain=bad2.com|google.com,third-party,important",
                     "*$domain=bad1.com|bad2.com|lenta.ru,third-party,important",
                     "*$domain=bad2.com|bad1.com,third-party,important",
-                    "*$domain=bad1.com|bad2.com,third-party,important,badfilter"
+                    "*$domain=bad1.com|bad2.com,third-party,important,badfilter",
                 ],
                 expectedSafariRulesJSON: #"""
-                                   [
-                                     {
-                                       "action" : {
-                                         "type" : "block"
-                                       },
-                                       "trigger" : {
-                                         "if-domain" : [
-                                           "*test1.com"
-                                         ],
-                                         "load-type" : [
-                                           "third-party"
-                                         ],
-                                         "url-filter" : ".*"
-                                       }
-                                     },
-                                     {
-                                       "action" : {
-                                         "type" : "block"
-                                       },
-                                       "trigger" : {
-                                         "if-domain" : [
-                                           "*test2.com"
-                                         ],
-                                         "url-filter" : ".*"
-                                       }
-                                     }
-                                   ]
-                                   """#,
+                    [
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*test1.com"
+                          ],
+                          "load-type" : [
+                            "third-party"
+                          ],
+                          "url-filter" : ".*"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*test2.com"
+                          ],
+                          "url-filter" : ".*"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 7,
                 expectedSourceSafariCompatibleRulesCount: 7,
                 expectedSafariRulesCount: 2
-            )
+            ),
         ]
 
         runTests(testCases)
@@ -1705,13 +1705,13 @@ final class ContentBlockerConverterTests: XCTestCase {
                 // Test uBO scriptlet rules conversion
                 rules: [
                     "example.org##+js(aopr,__cad.cpm_popunder)",
-                    "example.org##+js(acis,setTimeout,testad)"
+                    "example.org##+js(acis,setTimeout,testad)",
                 ],
                 advancedBlocking: true,
                 expectedSafariRulesJSON: ConversionResult.EMPTY_RESULT_JSON,
                 expectedAdvancedRulesText: [
                     #"example.org#%#//scriptlet("ubo-aopr", "__cad.cpm_popunder")"#,
-                    #"example.org#%#//scriptlet("ubo-acis", "setTimeout", "testad")"#
+                    #"example.org#%#//scriptlet("ubo-acis", "setTimeout", "testad")"#,
                 ].joined(separator: "\n"),
                 expectedSourceRulesCount: 2,
                 expectedSourceSafariCompatibleRulesCount: 0,
@@ -1729,13 +1729,13 @@ final class ContentBlockerConverterTests: XCTestCase {
                 // Test CSS injection rules.
                 rules: [
                     "#$?#div:has(> .banner) { display: none; debug: global; }",
-                    "google.com#$##js-header, #searchform, .O-j-k, .header:not(.column-section):not(.viewed):not(.ng-star-inserted):not([class*=\"_ngcontent\"]), .js-header.chr-header, .mobile-action-bar, body > .ng-scope, #flt-nav, .gws-flights__scrollbar-padding.gws-flights__selection-bar, .gws-flights__selection-bar-shadow-mask { position: absolute !important; }"
+                    "google.com#$##js-header, #searchform, .O-j-k, .header:not(.column-section):not(.viewed):not(.ng-star-inserted):not([class*=\"_ngcontent\"]), .js-header.chr-header, .mobile-action-bar, body > .ng-scope, #flt-nav, .gws-flights__scrollbar-padding.gws-flights__selection-bar, .gws-flights__selection-bar-shadow-mask { position: absolute !important; }",
                 ],
                 advancedBlocking: true,
                 expectedSafariRulesJSON: ConversionResult.EMPTY_RESULT_JSON,
                 expectedAdvancedRulesText: [
                     #"#$?#div:has(> .banner) { display: none; debug: global; }"#,
-                    "google.com#$##js-header, #searchform, .O-j-k, .header:not(.column-section):not(.viewed):not(.ng-star-inserted):not([class*=\"_ngcontent\"]), .js-header.chr-header, .mobile-action-bar, body > .ng-scope, #flt-nav, .gws-flights__scrollbar-padding.gws-flights__selection-bar, .gws-flights__selection-bar-shadow-mask { position: absolute !important; }"
+                    "google.com#$##js-header, #searchform, .O-j-k, .header:not(.column-section):not(.viewed):not(.ng-star-inserted):not([class*=\"_ngcontent\"]), .js-header.chr-header, .mobile-action-bar, body > .ng-scope, #flt-nav, .gws-flights__scrollbar-padding.gws-flights__selection-bar, .gws-flights__selection-bar-shadow-mask { position: absolute !important; }",
                 ].joined(separator: "\n"),
                 expectedSourceRulesCount: 2,
                 expectedSourceSafariCompatibleRulesCount: 0,
@@ -1755,47 +1755,47 @@ final class ContentBlockerConverterTests: XCTestCase {
                     "+Popunder+$popup",
                     "||calabriareportage.it^+-Banner-",
                     #"@@/:\/\/.*[.]wp[.]pl\/[a-z0-9_]+[.][a-z]+\\/"#,
-                    #"/\\/"#
+                    #"/\\/"#,
                 ],
                 expectedSafariRulesJSON: #"""
-                                   [
-                                     {
-                                       "action" : {
-                                         "type" : "block"
-                                       },
-                                       "trigger" : {
-                                         "resource-type" : [
-                                           "document"
-                                         ],
-                                         "url-filter" : "\\+Popunder\\+"
-                                       }
-                                     },
-                                     {
-                                       "action" : {
-                                         "type" : "block"
-                                       },
-                                       "trigger" : {
-                                         "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?calabriareportage\\.it[\/:&?]?\\+-Banner-"
-                                       }
-                                     },
-                                     {
-                                       "action" : {
-                                         "type" : "block"
-                                       },
-                                       "trigger" : {
-                                         "url-filter" : "\\\\"
-                                       }
-                                     },
-                                     {
-                                       "action" : {
-                                         "type" : "ignore-previous-rules"
-                                       },
-                                       "trigger" : {
-                                         "url-filter" : ":\\\/\\\/.*[.]wp[.]pl\\\/[a-z0-9_]+[.][a-z]+\\\\"
-                                       }
-                                     }
-                                   ]
-                                   """#,
+                    [
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "resource-type" : [
+                            "document"
+                          ],
+                          "url-filter" : "\\+Popunder\\+"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?calabriareportage\\.it[\/:&?]?\\+-Banner-"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "url-filter" : "\\\\"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "type" : "ignore-previous-rules"
+                        },
+                        "trigger" : {
+                          "url-filter" : ":\\\/\\\/.*[.]wp[.]pl\\\/[a-z0-9_]+[.][a-z]+\\\\"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 4,
                 expectedSourceSafariCompatibleRulesCount: 4,
                 expectedSafariRulesCount: 4
@@ -1804,32 +1804,32 @@ final class ContentBlockerConverterTests: XCTestCase {
                 // Test that backslash is properly escaped.
                 rules: [
                     "||gamer.no/?module=Tumedia\\DFProxy\\Modules^",
-                    "/g\\.alicdn\\.com\\/mm\\/yksdk\\/0\\.2\\.\\d+\\/playersdk\\.js/>>>1111.51xiaolu.com/playersdk.js>>>>keyword=playersdk"
+                    "/g\\.alicdn\\.com\\/mm\\/yksdk\\/0\\.2\\.\\d+\\/playersdk\\.js/>>>1111.51xiaolu.com/playersdk.js>>>>keyword=playersdk",
                 ],
                 expectedSafariRulesJSON: #"""
-                                   [
-                                     {
-                                       "action" : {
-                                         "type" : "block"
-                                       },
-                                       "trigger" : {
-                                         "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?gamer\\.no\\\/\\?module=Tumedia\\\\DFProxy\\\\Modules([\\\/:&\\?].*)?$"
-                                       }
-                                     },
-                                     {
-                                       "action" : {
-                                         "type" : "block"
-                                       },
-                                       "trigger" : {
-                                         "url-filter" : "\\\/g\\\\\\.alicdn\\\\\\.com\\\\\\\/mm\\\\\\\/yksdk\\\\\\\/0\\\\\\.2\\\\\\.\\\\d\\+\\\\\\\/playersdk\\\\\\.js\\\/>>>1111\\.51xiaolu\\.com\\\/playersdk\\.js>>>>keyword=playersdk"
-                                       }
-                                     }
-                                   ]
-                                   """#,
+                    [
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?gamer\\.no\\\/\\?module=Tumedia\\\\DFProxy\\\\Modules([\\\/:&\\?].*)?$"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "url-filter" : "\\\/g\\\\\\.alicdn\\\\\\.com\\\\\\\/mm\\\\\\\/yksdk\\\\\\\/0\\\\\\.2\\\\\\.\\\\d\\+\\\\\\\/playersdk\\\\\\.js\\\/>>>1111\\.51xiaolu\\.com\\\/playersdk\\.js>>>>keyword=playersdk"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 2,
                 expectedSourceSafariCompatibleRulesCount: 2,
                 expectedSafariRulesCount: 2
-            )
+            ),
         ]
 
         runTests(testCases)
@@ -1844,33 +1844,33 @@ final class ContentBlockerConverterTests: XCTestCase {
                     "example.org##.banner1",
                     "example.org,test.com##.banner2",
                     "##.banner3",
-                    "@@||example.org^$specifichide"
+                    "@@||example.org^$specifichide",
                 ],
                 expectedSafariRulesJSON: #"""
-                                   [
-                                     {
-                                       "action" : {
-                                         "selector" : ".banner3",
-                                         "type" : "css-display-none"
-                                       },
-                                       "trigger" : {
-                                         "url-filter" : ".*"
-                                       }
-                                     },
-                                     {
-                                       "action" : {
-                                         "selector" : ".banner2",
-                                         "type" : "css-display-none"
-                                       },
-                                       "trigger" : {
-                                         "if-domain" : [
-                                           "*test.com"
-                                         ],
-                                         "url-filter" : ".*"
-                                       }
-                                     }
-                                   ]
-                                   """#,
+                    [
+                      {
+                        "action" : {
+                          "selector" : ".banner3",
+                          "type" : "css-display-none"
+                        },
+                        "trigger" : {
+                          "url-filter" : ".*"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "selector" : ".banner2",
+                          "type" : "css-display-none"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*test.com"
+                          ],
+                          "url-filter" : ".*"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 4,
                 expectedSourceSafariCompatibleRulesCount: 4,
                 expectedSafariRulesCount: 2
@@ -1883,33 +1883,33 @@ final class ContentBlockerConverterTests: XCTestCase {
                     "subdomain.test.com##.banner",
                     "test.com##.headeads",
                     "##.ad-banner",
-                    "@@||subdomain.test.com^$specifichide"
+                    "@@||subdomain.test.com^$specifichide",
                 ],
                 expectedSafariRulesJSON: #"""
-                                   [
-                                     {
-                                       "action" : {
-                                         "selector" : ".ad-banner",
-                                         "type" : "css-display-none"
-                                       },
-                                       "trigger" : {
-                                         "url-filter" : ".*"
-                                       }
-                                     },
-                                     {
-                                       "action" : {
-                                         "selector" : ".headeads",
-                                         "type" : "css-display-none"
-                                       },
-                                       "trigger" : {
-                                         "if-domain" : [
-                                           "*test.com"
-                                         ],
-                                         "url-filter" : ".*"
-                                       }
-                                     }
-                                   ]
-                                   """#,
+                    [
+                      {
+                        "action" : {
+                          "selector" : ".ad-banner",
+                          "type" : "css-display-none"
+                        },
+                        "trigger" : {
+                          "url-filter" : ".*"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "selector" : ".headeads",
+                          "type" : "css-display-none"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*test.com"
+                          ],
+                          "url-filter" : ".*"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 4,
                 expectedSourceSafariCompatibleRulesCount: 4,
                 expectedSafariRulesCount: 2
@@ -1920,24 +1920,24 @@ final class ContentBlockerConverterTests: XCTestCase {
                 rules: [
                     "example1.org,example2.org,example3.org##.banner1",
                     "@@||example1.org^$specifichide",
-                    "@@||example2.org^$specifichide"
+                    "@@||example2.org^$specifichide",
                 ],
                 expectedSafariRulesJSON: #"""
-                                   [
-                                     {
-                                       "action" : {
-                                         "selector" : ".banner1",
-                                         "type" : "css-display-none"
-                                       },
-                                       "trigger" : {
-                                         "if-domain" : [
-                                           "*example3.org"
-                                         ],
-                                         "url-filter" : ".*"
-                                       }
-                                     }
-                                   ]
-                                   """#,
+                    [
+                      {
+                        "action" : {
+                          "selector" : ".banner1",
+                          "type" : "css-display-none"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*example3.org"
+                          ],
+                          "url-filter" : ".*"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 3,
                 expectedSourceSafariCompatibleRulesCount: 3,
                 expectedSafariRulesCount: 1
@@ -1949,31 +1949,31 @@ final class ContentBlockerConverterTests: XCTestCase {
                 rules: [
                     "test.com,example.org#$#body { overflow: visible!important; }",
                     "##.banner",
-                    "@@||example.org^$specifichide"
+                    "@@||example.org^$specifichide",
                 ],
                 advancedBlocking: true,
                 expectedSafariRulesJSON: #"""
-                                   [
-                                     {
-                                       "action" : {
-                                         "selector" : ".banner",
-                                         "type" : "css-display-none"
-                                       },
-                                       "trigger" : {
-                                         "url-filter" : ".*"
-                                       }
-                                     }
-                                   ]
-                                   """#,
+                    [
+                      {
+                        "action" : {
+                          "selector" : ".banner",
+                          "type" : "css-display-none"
+                        },
+                        "trigger" : {
+                          "url-filter" : ".*"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedAdvancedRulesText: [
                     "test.com,example.org#$#body { overflow: visible!important; }",
-                    "@@||example.org^$specifichide"
+                    "@@||example.org^$specifichide",
                 ].joined(separator: "\n"),
                 expectedSourceRulesCount: 3,
                 expectedSourceSafariCompatibleRulesCount: 2,
                 expectedSafariRulesCount: 1,
                 expectedAdvancedRulesCount: 2
-            )
+            ),
         ]
 
         runTests(testCases)
@@ -1985,7 +1985,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                 // Tests that $ping modifier is not supported by older Safari.
                 rules: [
                     "||example.org^$ping",
-                    "||example.org^$~ping,domain=test.com"
+                    "||example.org^$~ping,domain=test.com",
                 ],
                 expectedSafariRulesJSON: ConversionResult.EMPTY_RESULT_JSON,
                 expectedSourceRulesCount: 0,
@@ -1997,50 +1997,50 @@ final class ContentBlockerConverterTests: XCTestCase {
                 // Tests that $ping modifier is supported starting with Safari 15.
                 rules: [
                     "||example.org^$ping",
-                    "||example.org^$~ping,domain=test.com"
+                    "||example.org^$~ping,domain=test.com",
                 ],
                 version: SafariVersion.safari15,
                 expectedSafariRulesJSON: #"""
-                                         [
-                                           {
-                                             "action" : {
-                                               "type" : "block"
-                                             },
-                                             "trigger" : {
-                                               "resource-type" : [
-                                                 "ping"
-                                               ],
-                                               "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
-                                             }
-                                           },
-                                           {
-                                             "action" : {
-                                               "type" : "block"
-                                             },
-                                             "trigger" : {
-                                               "if-domain" : [
-                                                 "*test.com"
-                                               ],
-                                               "resource-type" : [
-                                                 "image",
-                                                 "style-sheet",
-                                                 "script",
-                                                 "media",
-                                                 "fetch",
-                                                 "other",
-                                                 "websocket",
-                                                 "font",
-                                                 "document"
-                                               ],
-                                               "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
-                                             }
-                                           }
-                                         ]
-                                         """#,
+                    [
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "resource-type" : [
+                            "ping"
+                          ],
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*test.com"
+                          ],
+                          "resource-type" : [
+                            "image",
+                            "style-sheet",
+                            "script",
+                            "media",
+                            "fetch",
+                            "other",
+                            "websocket",
+                            "font",
+                            "document"
+                          ],
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 2,
                 expectedSourceSafariCompatibleRulesCount: 2,
                 expectedSafariRulesCount: 2
-            )
+            ),
         ]
 
         runTests(testCases)
@@ -2052,43 +2052,43 @@ final class ContentBlockerConverterTests: XCTestCase {
                 // Tests that $other modifier is converted to resource type "raw" in older Safari.
                 rules: [
                     "||test.com^$other",
-                    "||test.com^$~other,domain=example.org"
+                    "||test.com^$~other,domain=example.org",
                 ],
                 expectedSafariRulesJSON: #"""
-                                         [
-                                           {
-                                             "action" : {
-                                               "type" : "block"
-                                             },
-                                             "trigger" : {
-                                               "resource-type" : [
-                                                 "raw"
-                                               ],
-                                               "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
-                                             }
-                                           },
-                                           {
-                                             "action" : {
-                                               "type" : "block"
-                                             },
-                                             "trigger" : {
-                                               "if-domain" : [
-                                                 "*example.org"
-                                               ],
-                                               "resource-type" : [
-                                                 "image",
-                                                 "style-sheet",
-                                                 "script",
-                                                 "media",
-                                                 "raw",
-                                                 "font",
-                                                 "document"
-                                               ],
-                                               "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
-                                             }
-                                           }
-                                         ]
-                                         """#,
+                    [
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "resource-type" : [
+                            "raw"
+                          ],
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*example.org"
+                          ],
+                          "resource-type" : [
+                            "image",
+                            "style-sheet",
+                            "script",
+                            "media",
+                            "raw",
+                            "font",
+                            "document"
+                          ],
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 2,
                 expectedSourceSafariCompatibleRulesCount: 2,
                 expectedSafariRulesCount: 2
@@ -2097,46 +2097,46 @@ final class ContentBlockerConverterTests: XCTestCase {
                 // Tests that $other modifier is converted to resource type "other" starting with Safari 15.
                 rules: [
                     "||test.com^$other",
-                    "||test.com^$~other,domain=example.org"
+                    "||test.com^$~other,domain=example.org",
                 ],
                 version: SafariVersion.safari15,
                 expectedSafariRulesJSON: #"""
-                                         [
-                                           {
-                                             "action" : {
-                                               "type" : "block"
-                                             },
-                                             "trigger" : {
-                                               "resource-type" : [
-                                                 "other"
-                                               ],
-                                               "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
-                                             }
-                                           },
-                                           {
-                                             "action" : {
-                                               "type" : "block"
-                                             },
-                                             "trigger" : {
-                                               "if-domain" : [
-                                                 "*example.org"
-                                               ],
-                                               "resource-type" : [
-                                                 "image",
-                                                 "style-sheet",
-                                                 "script",
-                                                 "media",
-                                                 "fetch",
-                                                 "websocket",
-                                                 "font",
-                                                 "ping",
-                                                 "document"
-                                               ],
-                                               "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
-                                             }
-                                           }
-                                         ]
-                                         """#,
+                    [
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "resource-type" : [
+                            "other"
+                          ],
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*example.org"
+                          ],
+                          "resource-type" : [
+                            "image",
+                            "style-sheet",
+                            "script",
+                            "media",
+                            "fetch",
+                            "websocket",
+                            "font",
+                            "ping",
+                            "document"
+                          ],
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 2,
                 expectedSourceSafariCompatibleRulesCount: 2,
                 expectedSafariRulesCount: 2
@@ -2145,47 +2145,47 @@ final class ContentBlockerConverterTests: XCTestCase {
                 // Tests that $xmlhttprequest modifier is converted to resource type "raw" in older Safari.
                 rules: [
                     "||test.com^$other",
-                    "||test.com^$~other,domain=example.org"
+                    "||test.com^$~other,domain=example.org",
                 ],
                 expectedSafariRulesJSON: #"""
-                                         [
-                                           {
-                                             "action" : {
-                                               "type" : "block"
-                                             },
-                                             "trigger" : {
-                                               "resource-type" : [
-                                                 "raw"
-                                               ],
-                                               "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
-                                             }
-                                           },
-                                           {
-                                             "action" : {
-                                               "type" : "block"
-                                             },
-                                             "trigger" : {
-                                               "if-domain" : [
-                                                 "*example.org"
-                                               ],
-                                               "resource-type" : [
-                                                 "image",
-                                                 "style-sheet",
-                                                 "script",
-                                                 "media",
-                                                 "raw",
-                                                 "font",
-                                                 "document"
-                                               ],
-                                               "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
-                                             }
-                                           }
-                                         ]
-                                         """#,
+                    [
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "resource-type" : [
+                            "raw"
+                          ],
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*example.org"
+                          ],
+                          "resource-type" : [
+                            "image",
+                            "style-sheet",
+                            "script",
+                            "media",
+                            "raw",
+                            "font",
+                            "document"
+                          ],
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 2,
                 expectedSourceSafariCompatibleRulesCount: 2,
                 expectedSafariRulesCount: 2
-            )
+            ),
         ]
 
         runTests(testCases)
@@ -2197,46 +2197,46 @@ final class ContentBlockerConverterTests: XCTestCase {
                 // Tests that $xmlhttprequest modifier is converted to resource type "fetch" starting with Safari 15.
                 rules: [
                     "||test.com^$xmlhttprequest",
-                    "||test.com^$~xmlhttprequest,domain=example.org"
+                    "||test.com^$~xmlhttprequest,domain=example.org",
                 ],
                 version: SafariVersion.safari15,
                 expectedSafariRulesJSON: #"""
-                                         [
-                                           {
-                                             "action" : {
-                                               "type" : "block"
-                                             },
-                                             "trigger" : {
-                                               "resource-type" : [
-                                                 "fetch"
-                                               ],
-                                               "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
-                                             }
-                                           },
-                                           {
-                                             "action" : {
-                                               "type" : "block"
-                                             },
-                                             "trigger" : {
-                                               "if-domain" : [
-                                                 "*example.org"
-                                               ],
-                                               "resource-type" : [
-                                                 "image",
-                                                 "style-sheet",
-                                                 "script",
-                                                 "media",
-                                                 "other",
-                                                 "websocket",
-                                                 "font",
-                                                 "ping",
-                                                 "document"
-                                               ],
-                                               "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
-                                             }
-                                           }
-                                         ]
-                                         """#,
+                    [
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "resource-type" : [
+                            "fetch"
+                          ],
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*example.org"
+                          ],
+                          "resource-type" : [
+                            "image",
+                            "style-sheet",
+                            "script",
+                            "media",
+                            "other",
+                            "websocket",
+                            "font",
+                            "ping",
+                            "document"
+                          ],
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 2,
                 expectedSourceSafariCompatibleRulesCount: 2,
                 expectedSafariRulesCount: 2
@@ -2245,46 +2245,46 @@ final class ContentBlockerConverterTests: XCTestCase {
                 // Tests that $xhr is also supported.
                 rules: [
                     "||test.com^$xhr",
-                    "||test.com^$~xhr,domain=example.org"
+                    "||test.com^$~xhr,domain=example.org",
                 ],
                 version: SafariVersion.safari15,
                 expectedSafariRulesJSON: #"""
-                                         [
-                                           {
-                                             "action" : {
-                                               "type" : "block"
-                                             },
-                                             "trigger" : {
-                                               "resource-type" : [
-                                                 "fetch"
-                                               ],
-                                               "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
-                                             }
-                                           },
-                                           {
-                                             "action" : {
-                                               "type" : "block"
-                                             },
-                                             "trigger" : {
-                                               "if-domain" : [
-                                                 "*example.org"
-                                               ],
-                                               "resource-type" : [
-                                                 "image",
-                                                 "style-sheet",
-                                                 "script",
-                                                 "media",
-                                                 "other",
-                                                 "websocket",
-                                                 "font",
-                                                 "ping",
-                                                 "document"
-                                               ],
-                                               "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
-                                             }
-                                           }
-                                         ]
-                                         """#,
+                    [
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "resource-type" : [
+                            "fetch"
+                          ],
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*example.org"
+                          ],
+                          "resource-type" : [
+                            "image",
+                            "style-sheet",
+                            "script",
+                            "media",
+                            "other",
+                            "websocket",
+                            "font",
+                            "ping",
+                            "document"
+                          ],
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 2,
                 expectedSourceSafariCompatibleRulesCount: 2,
                 expectedSafariRulesCount: 2
@@ -2293,57 +2293,57 @@ final class ContentBlockerConverterTests: XCTestCase {
                 // Tests $subdocument rules in Safari 15 (with load-context).
                 rules: [
                     "||test.com^$subdocument,domain=example.com",
-                    "||test.com^$~subdocument,domain=example.com"
+                    "||test.com^$~subdocument,domain=example.com",
                 ],
                 version: SafariVersion.safari15,
                 expectedSafariRulesJSON: #"""
-                                         [
-                                           {
-                                             "action" : {
-                                               "type" : "block"
-                                             },
-                                             "trigger" : {
-                                               "if-domain" : [
-                                                 "*example.com"
-                                               ],
-                                               "load-context" : [
-                                                 "child-frame"
-                                               ],
-                                               "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
-                                             }
-                                           },
-                                           {
-                                             "action" : {
-                                               "type" : "block"
-                                             },
-                                             "trigger" : {
-                                               "if-domain" : [
-                                                 "*example.com"
-                                               ],
-                                               "load-context" : [
-                                                 "top-frame"
-                                               ],
-                                               "resource-type" : [
-                                                 "image",
-                                                 "style-sheet",
-                                                 "script",
-                                                 "media",
-                                                 "fetch",
-                                                 "other",
-                                                 "websocket",
-                                                 "font",
-                                                 "ping",
-                                                 "document"
-                                               ],
-                                               "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
-                                             }
-                                           }
-                                         ]
-                                         """#,
+                    [
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*example.com"
+                          ],
+                          "load-context" : [
+                            "child-frame"
+                          ],
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*example.com"
+                          ],
+                          "load-context" : [
+                            "top-frame"
+                          ],
+                          "resource-type" : [
+                            "image",
+                            "style-sheet",
+                            "script",
+                            "media",
+                            "fetch",
+                            "other",
+                            "websocket",
+                            "font",
+                            "ping",
+                            "document"
+                          ],
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 2,
                 expectedSourceSafariCompatibleRulesCount: 2,
                 expectedSafariRulesCount: 2
-            )
+            ),
         ]
 
         runTests(testCases)
@@ -2371,14 +2371,14 @@ final class ContentBlockerConverterTests: XCTestCase {
                     "test.com#%#",
                     "test.com#@%#",
                     "example.org#%#",
-                    "example.org#@%#"
+                    "example.org#@%#",
                 ],
                 advancedBlocking: true,
                 expectedSafariRulesJSON: ConversionResult.EMPTY_RESULT_JSON,
                 expectedSafariRulesCount: 0,
                 expectedAdvancedRulesCount: 0,
                 expectedErrorsCount: 4
-            )
+            ),
         ]
 
         runTests(testCases)
@@ -2392,18 +2392,18 @@ final class ContentBlockerConverterTests: XCTestCase {
                     "[$path=page.html]##.textad"
                 ],
                 expectedSafariRulesJSON: #"""
-                                   [
-                                     {
-                                       "action" : {
-                                         "selector" : ".textad",
-                                         "type" : "css-display-none"
-                                       },
-                                       "trigger" : {
-                                         "url-filter" : ".*page\\.html"
-                                       }
-                                     }
-                                   ]
-                                   """#,
+                    [
+                      {
+                        "action" : {
+                          "selector" : ".textad",
+                          "type" : "css-display-none"
+                        },
+                        "trigger" : {
+                          "url-filter" : ".*page\\.html"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 1,
                 expectedSourceSafariCompatibleRulesCount: 1,
                 expectedSafariRulesCount: 1
@@ -2414,21 +2414,21 @@ final class ContentBlockerConverterTests: XCTestCase {
                     "[$path=/page.html]test.com##.textad"
                 ],
                 expectedSafariRulesJSON: #"""
-                                   [
-                                     {
-                                       "action" : {
-                                         "selector" : ".textad",
-                                         "type" : "css-display-none"
-                                       },
-                                       "trigger" : {
-                                         "if-domain" : [
-                                           "*test.com"
-                                         ],
-                                         "url-filter" : ".*\\\/page\\.html"
-                                       }
-                                     }
-                                   ]
-                                   """#,
+                    [
+                      {
+                        "action" : {
+                          "selector" : ".textad",
+                          "type" : "css-display-none"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*test.com"
+                          ],
+                          "url-filter" : ".*\\\/page\\.html"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 1,
                 expectedSourceSafariCompatibleRulesCount: 1,
                 expectedSafariRulesCount: 1
@@ -2437,37 +2437,37 @@ final class ContentBlockerConverterTests: XCTestCase {
                 // Rules with $path and $domain modifiers.
                 rules: [
                     "[$path=/page.html,domain=example.org|test.com]##.textad",
-                    "[$domain=example.org,path=/page.html]##.textad"
+                    "[$domain=example.org,path=/page.html]##.textad",
                 ],
                 expectedSafariRulesJSON: #"""
-                                   [
-                                     {
-                                       "action" : {
-                                         "selector" : ".textad",
-                                         "type" : "css-display-none"
-                                       },
-                                       "trigger" : {
-                                         "if-domain" : [
-                                           "*example.org",
-                                           "*test.com"
-                                         ],
-                                         "url-filter" : ".*\\\/page\\.html"
-                                       }
-                                     },
-                                     {
-                                       "action" : {
-                                         "selector" : ".textad",
-                                         "type" : "css-display-none"
-                                       },
-                                       "trigger" : {
-                                         "if-domain" : [
-                                           "*example.org"
-                                         ],
-                                         "url-filter" : ".*\\\/page\\.html"
-                                       }
-                                     }
-                                   ]
-                                   """#,
+                    [
+                      {
+                        "action" : {
+                          "selector" : ".textad",
+                          "type" : "css-display-none"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*example.org",
+                            "*test.com"
+                          ],
+                          "url-filter" : ".*\\\/page\\.html"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "selector" : ".textad",
+                          "type" : "css-display-none"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*example.org"
+                          ],
+                          "url-filter" : ".*\\\/page\\.html"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 2,
                 expectedSourceSafariCompatibleRulesCount: 2,
                 expectedSafariRulesCount: 2
@@ -2478,23 +2478,23 @@ final class ContentBlockerConverterTests: XCTestCase {
                     "[$domain=example.org|test.com,path=/page.html]website.com##.textad"
                 ],
                 expectedSafariRulesJSON: #"""
-                                   [
-                                     {
-                                       "action" : {
-                                         "selector" : ".textad",
-                                         "type" : "css-display-none"
-                                       },
-                                       "trigger" : {
-                                         "if-domain" : [
-                                           "*example.org",
-                                           "*test.com",
-                                           "*website.com"
-                                         ],
-                                         "url-filter" : ".*\\\/page\\.html"
-                                       }
-                                     }
-                                   ]
-                                   """#,
+                    [
+                      {
+                        "action" : {
+                          "selector" : ".textad",
+                          "type" : "css-display-none"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*example.org",
+                            "*test.com",
+                            "*website.com"
+                          ],
+                          "url-filter" : ".*\\\/page\\.html"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 1,
                 expectedSourceSafariCompatibleRulesCount: 1,
                 expectedSafariRulesCount: 1
@@ -2505,23 +2505,23 @@ final class ContentBlockerConverterTests: XCTestCase {
                     "[$domain=example.org|test.com,path=/page.html]website.com##.textad"
                 ],
                 expectedSafariRulesJSON: #"""
-                                   [
-                                     {
-                                       "action" : {
-                                         "selector" : ".textad",
-                                         "type" : "css-display-none"
-                                       },
-                                       "trigger" : {
-                                         "if-domain" : [
-                                           "*example.org",
-                                           "*test.com",
-                                           "*website.com"
-                                         ],
-                                         "url-filter" : ".*\\\/page\\.html"
-                                       }
-                                     }
-                                   ]
-                                   """#,
+                    [
+                      {
+                        "action" : {
+                          "selector" : ".textad",
+                          "type" : "css-display-none"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*example.org",
+                            "*test.com",
+                            "*website.com"
+                          ],
+                          "url-filter" : ".*\\\/page\\.html"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 1,
                 expectedSourceSafariCompatibleRulesCount: 1,
                 expectedSafariRulesCount: 1
@@ -2530,30 +2530,30 @@ final class ContentBlockerConverterTests: XCTestCase {
                 // Using regular expressions in $path.
                 rules: [
                     "[$path=/\\/sub\\/.*\\/page\\.html/]##.textad",
-                    "[$path=/^\\/$/]##.textad"
+                    "[$path=/^\\/$/]##.textad",
                 ],
                 expectedSafariRulesJSON: #"""
-                                   [
-                                     {
-                                       "action" : {
-                                         "selector" : ".textad",
-                                         "type" : "css-display-none"
-                                       },
-                                       "trigger" : {
-                                         "url-filter" : ".*\\\/sub\\\/.*\\\/page\\.html"
-                                       }
-                                     },
-                                     {
-                                       "action" : {
-                                         "selector" : ".textad",
-                                         "type" : "css-display-none"
-                                       },
-                                       "trigger" : {
-                                         "url-filter" : "^(https?:\\\/\\\/)([^\\\/]+)\\\/$"
-                                       }
-                                     }
-                                   ]
-                                   """#,
+                    [
+                      {
+                        "action" : {
+                          "selector" : ".textad",
+                          "type" : "css-display-none"
+                        },
+                        "trigger" : {
+                          "url-filter" : ".*\\\/sub\\\/.*\\\/page\\.html"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "selector" : ".textad",
+                          "type" : "css-display-none"
+                        },
+                        "trigger" : {
+                          "url-filter" : "^(https?:\\\/\\\/)([^\\\/]+)\\\/$"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 2,
                 expectedSourceSafariCompatibleRulesCount: 2,
                 expectedSafariRulesCount: 2
@@ -2568,7 +2568,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                 expectedSourceSafariCompatibleRulesCount: 1,
                 expectedSafariRulesCount: 0,
                 expectedErrorsCount: 1
-            )
+            ),
         ]
 
         runTests(testCases)
@@ -2601,21 +2601,21 @@ final class ContentBlockerConverterTests: XCTestCase {
                 version: SafariVersion.safari16_4,
                 advancedBlocking: true,
                 expectedSafariRulesJSON: #"""
-                                         [
-                                           {
-                                             "action" : {
-                                               "selector" : "div:has(.banner)",
-                                               "type" : "css-display-none"
-                                             },
-                                             "trigger" : {
-                                               "if-domain" : [
-                                                 "*test.com"
-                                               ],
-                                               "url-filter" : ".*"
-                                             }
-                                           }
-                                         ]
-                                         """#,
+                    [
+                      {
+                        "action" : {
+                          "selector" : "div:has(.banner)",
+                          "type" : "css-display-none"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*test.com"
+                          ],
+                          "url-filter" : ".*"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedAdvancedRulesText: nil,
                 expectedSourceRulesCount: 1,
                 expectedSourceSafariCompatibleRulesCount: 1,
@@ -2666,21 +2666,21 @@ final class ContentBlockerConverterTests: XCTestCase {
                 version: SafariVersion.safari14,
                 advancedBlocking: true,
                 expectedSafariRulesJSON: #"""
-                                         [
-                                           {
-                                             "action" : {
-                                               "selector" : "div:is(.banner)",
-                                               "type" : "css-display-none"
-                                             },
-                                             "trigger" : {
-                                               "if-domain" : [
-                                                 "*test.com"
-                                               ],
-                                               "url-filter" : ".*"
-                                             }
-                                           }
-                                         ]
-                                         """#,
+                    [
+                      {
+                        "action" : {
+                          "selector" : "div:is(.banner)",
+                          "type" : "css-display-none"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*test.com"
+                          ],
+                          "url-filter" : ".*"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedAdvancedRulesText: nil,
                 expectedSourceRulesCount: 1,
                 expectedSourceSafariCompatibleRulesCount: 1,
@@ -2694,7 +2694,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                     "test.com#?#:xpath(//div[@data-st-area='Advert'])",
                     "example.org##:xpath(//div[@id='stream_pagelet'])",
                     "example.com##:xpath(//div[@id='adv'])",
-                    "example.com#@#:xpath(//div[@id='adv'])"
+                    "example.com#@#:xpath(//div[@id='adv'])",
                 ],
                 version: SafariVersion.safari16_4,
                 advancedBlocking: true,
@@ -2703,14 +2703,14 @@ final class ContentBlockerConverterTests: XCTestCase {
                     "test.com#?#:xpath(//div[@data-st-area='Advert'])",
                     "example.org##:xpath(//div[@id='stream_pagelet'])",
                     "example.com##:xpath(//div[@id='adv'])",
-                    "example.com#@#:xpath(//div[@id='adv'])"
+                    "example.com#@#:xpath(//div[@id='adv'])",
                 ].joined(separator: "\n"),
                 expectedSourceRulesCount: 4,
                 expectedSourceSafariCompatibleRulesCount: 0,
                 expectedSafariRulesCount: 0,
                 expectedAdvancedRulesCount: 4,
                 expectedErrorsCount: 0
-            )
+            ),
         ]
 
         runTests(testCases)
@@ -2748,57 +2748,57 @@ final class ContentBlockerConverterTests: XCTestCase {
                     // JS rule, advanced.
                     "example.org#%#window.__gaq = undefined;",
                     // Scriptlet rule, advanced.
-                    "example.org#%#//scriptlet(\"abort-on-property-read\", \"alert\")"
+                    "example.org#%#//scriptlet(\"abort-on-property-read\", \"alert\")",
                 ],
                 advancedBlocking: true,
                 expectedSafariRulesJSON: #"""
-                                         [
-                                           {
-                                             "action" : {
-                                               "selector" : "div.textad",
-                                               "type" : "css-display-none"
-                                             },
-                                             "trigger" : {
-                                               "if-domain" : [
-                                                 "*example.com"
-                                               ],
-                                               "url-filter" : ".*"
-                                             }
-                                           },
-                                           {
-                                             "action" : {
-                                               "type" : "ignore-previous-rules"
-                                             },
-                                             "trigger" : {
-                                               "if-domain" : [
-                                                 "*example.org"
-                                               ],
-                                               "url-filter" : ".*"
-                                             }
-                                           },
-                                           {
-                                             "action" : {
-                                               "type" : "block"
-                                             },
-                                             "trigger" : {
-                                               "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
-                                             }
-                                           }
-                                         ]
-                                         """#,
+                    [
+                      {
+                        "action" : {
+                          "selector" : "div.textad",
+                          "type" : "css-display-none"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*example.com"
+                          ],
+                          "url-filter" : ".*"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "type" : "ignore-previous-rules"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*example.org"
+                          ],
+                          "url-filter" : ".*"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedAdvancedRulesText: [
                     "@@||example.org^$elemhide",
                     "example.com#?#div.textad",
                     "example.org#$#.div { background:none!important; }",
                     "example.org##div:contains(test)",
                     "example.org#%#window.__gaq = undefined;",
-                    "example.org#%#//scriptlet(\"abort-on-property-read\", \"alert\")"
+                    "example.org#%#//scriptlet(\"abort-on-property-read\", \"alert\")",
                 ].joined(separator: "\n"),
                 expectedSourceRulesCount: 8,
                 expectedSourceSafariCompatibleRulesCount: 3,
                 expectedSafariRulesCount: 3,
                 expectedAdvancedRulesCount: 6
-            )
+            ),
         ]
 
         runTests(testCases)
@@ -2837,111 +2837,111 @@ final class ContentBlockerConverterTests: XCTestCase {
                     "@@||example.org^",
                     "||example.org^$important",
                     "@@||example.org^$important",
-                    "@@||example.org^$document"
+                    "@@||example.org^$document",
                 ],
                 version: SafariVersion.safari16_4,
                 expectedSafariRulesJSON: #"""
-                                         [
-                                           {
-                                             "action" : {
-                                               "selector" : ".banner",
-                                               "type" : "css-display-none"
-                                             },
-                                             "trigger" : {
-                                               "url-filter" : ".*"
-                                             }
-                                           },
-                                           {
-                                             "action" : {
-                                               "selector" : ".banner",
-                                               "type" : "css-display-none"
-                                             },
-                                             "trigger" : {
-                                               "unless-domain" : [
-                                                 "*example.org"
-                                               ],
-                                               "url-filter" : ".*"
-                                             }
-                                           },
-                                           {
-                                             "action" : {
-                                               "type" : "ignore-previous-rules"
-                                             },
-                                             "trigger" : {
-                                               "if-domain" : [
-                                                 "*example.org"
-                                               ],
-                                               "url-filter" : ".*"
-                                             }
-                                           },
-                                           {
-                                             "action" : {
-                                               "selector" : ".banner",
-                                               "type" : "css-display-none"
-                                             },
-                                             "trigger" : {
-                                               "if-domain" : [
-                                                 "*example.org"
-                                               ],
-                                               "url-filter" : ".*"
-                                             }
-                                           },
-                                           {
-                                             "action" : {
-                                               "type" : "ignore-previous-rules"
-                                             },
-                                             "trigger" : {
-                                               "if-domain" : [
-                                                 "*example.org"
-                                               ],
-                                               "url-filter" : ".*"
-                                             }
-                                           },
-                                           {
-                                             "action" : {
-                                               "type" : "block"
-                                             },
-                                             "trigger" : {
-                                               "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
-                                             }
-                                           },
-                                           {
-                                             "action" : {
-                                               "type" : "ignore-previous-rules"
-                                             },
-                                             "trigger" : {
-                                               "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
-                                             }
-                                           },
-                                           {
-                                             "action" : {
-                                               "type" : "block"
-                                             },
-                                             "trigger" : {
-                                               "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
-                                             }
-                                           },
-                                           {
-                                             "action" : {
-                                               "type" : "ignore-previous-rules"
-                                             },
-                                             "trigger" : {
-                                               "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
-                                             }
-                                           },
-                                           {
-                                             "action" : {
-                                               "type" : "ignore-previous-rules"
-                                             },
-                                             "trigger" : {
-                                               "if-domain" : [
-                                                 "*example.org"
-                                               ],
-                                               "url-filter" : ".*"
-                                             }
-                                           }
-                                         ]
-                                         """#,
+                    [
+                      {
+                        "action" : {
+                          "selector" : ".banner",
+                          "type" : "css-display-none"
+                        },
+                        "trigger" : {
+                          "url-filter" : ".*"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "selector" : ".banner",
+                          "type" : "css-display-none"
+                        },
+                        "trigger" : {
+                          "unless-domain" : [
+                            "*example.org"
+                          ],
+                          "url-filter" : ".*"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "type" : "ignore-previous-rules"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*example.org"
+                          ],
+                          "url-filter" : ".*"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "selector" : ".banner",
+                          "type" : "css-display-none"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*example.org"
+                          ],
+                          "url-filter" : ".*"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "type" : "ignore-previous-rules"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*example.org"
+                          ],
+                          "url-filter" : ".*"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "type" : "ignore-previous-rules"
+                        },
+                        "trigger" : {
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "type" : "ignore-previous-rules"
+                        },
+                        "trigger" : {
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "type" : "ignore-previous-rules"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*example.org"
+                          ],
+                          "url-filter" : ".*"
+                        }
+                      }
+                    ]
+                    """#,
                 expectedSourceRulesCount: 10,
                 expectedSourceSafariCompatibleRulesCount: 10,
                 expectedSafariRulesCount: 10
@@ -2955,7 +2955,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         let rules = [
             "||example1.org^",
             "||example2.com^$document",
-            "example3.com##h1"
+            "example3.com##h1",
         ]
 
         // Check if the JSON string is valid
@@ -2981,23 +2981,38 @@ final class ContentBlockerConverterTests: XCTestCase {
 
             let jsonSize = result.safariRulesJSON.utf8.count
             if let limit = limit {
-                XCTAssertLessThanOrEqual(jsonSize, limit, "The converted JSON size should be less than or equal to the limit")
+                XCTAssertLessThanOrEqual(
+                    jsonSize,
+                    limit,
+                    "The converted JSON size should be less than or equal to the limit"
+                )
             }
-            XCTAssertEqual(result.safariRulesCount, expectedCount, "The converted count should match the expected count")
+            XCTAssertEqual(
+                result.safariRulesCount,
+                expectedCount,
+                "The converted count should match the expected count"
+            )
             XCTAssertTrue(isJSONValid(result.safariRulesJSON), "The converted JSON should be valid")
         }
 
-        performTest(withLimit: 110, expectedCount: 0)  // Bigger than empty JSON, smaller for rules to fit
-        performTest(withLimit: 150, expectedCount: 1)  // Enough for one rule
-        performTest(withLimit: 300, expectedCount: 2)  // Enough for two rules
-        performTest(withLimit: 1000, expectedCount: 3) // Enough for all rules
-        performTest(withLimit: nil, expectedCount: 3)  // No limit
+        // Bigger than empty JSON, smaller for rules to fit
+        performTest(withLimit: 110, expectedCount: 0)
+        // Enough for one rule
+        performTest(withLimit: 150, expectedCount: 1)
+        // Enough for two rules
+        performTest(withLimit: 300, expectedCount: 2)
+        // Enough for all rules
+        performTest(withLimit: 1000, expectedCount: 3)
+        // No limit
+        performTest(withLimit: nil, expectedCount: 3)
     }
 
     func testTldWildcardRules() {
         let converter = ContentBlockerConverter()
 
-        var result = converter.convertArray(rules: ["surge.*,testcases.adguard.*###case-5-wildcard-for-tld > .test-banner"])
+        var result = converter.convertArray(rules: [
+            "surge.*,testcases.adguard.*###case-5-wildcard-for-tld > .test-banner"
+        ])
         XCTAssertEqual(result.safariRulesCount, 1)
 
         var decoded = try! parseJsonString(json: result.safariRulesJSON)
@@ -3008,12 +3023,17 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded[0].trigger.ifDomain?[2], "*surge.com")
         XCTAssertEqual(decoded[0].trigger.ifDomain?.count, 200)
 
-        result = converter.convertArray(rules: ["||*/test-files/adguard.png$domain=surge.*|testcases.adguard.*"])
+        result = converter.convertArray(rules: [
+            "||*/test-files/adguard.png$domain=surge.*|testcases.adguard.*"
+        ])
         XCTAssertEqual(result.safariRulesCount, 1)
 
         decoded = try! parseJsonString(json: result.safariRulesJSON)
         XCTAssertEqual(decoded.count, 1)
-        XCTAssertEqual(decoded[0].trigger.urlFilter, "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?.*\\/test-files\\/adguard\\.png")
+        XCTAssertEqual(
+            decoded[0].trigger.urlFilter,
+            "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?.*\\/test-files\\/adguard\\.png"
+        )
         XCTAssertEqual(decoded[0].trigger.ifDomain?[0], "*surge.com.bd")
         XCTAssertEqual(decoded[0].trigger.ifDomain?[1], "*surge.com.np")
         XCTAssertEqual(decoded[0].trigger.ifDomain?[2], "*surge.com")
@@ -3044,10 +3064,14 @@ final class ContentBlockerConverterTests: XCTestCase {
             "allegro.pl##div[data-box-name=\"banner - cmuid\"][data-prototype-id=\"allegro.advertisement.slot.banner\"]",
             "msn.com#%#AG_onLoad(function() { setTimeout(function() { var el = document.querySelectorAll(\".todaystripe .swipenav > li\"); if(el) { for(i=0;i<el.length;i++) { el[i].setAttribute(\"data-aop\", \"slide\" + i + \">single\"); var data = el[i].getAttribute(\"data-id\"); el[i].setAttribute(\"data-m\", ' {\"i\":' + data + ',\"p\":115,\"n\":\"single\",\"y\":8,\"o\":' + i + '} ')}; var count = document.querySelectorAll(\".todaystripe .infopane-placeholder .slidecount span\"); var diff = count.length - el.length; while(diff > 0) { var count_length = count.length; count[count_length-1].remove(); var count = document.querySelectorAll(\".todaystripe .infopane-placeholder .slidecount span\"); var diff = count.length - el.length; } } }, 300); });",
             "abplive.com#?#.articlepage > .center_block:has(> p:contains(- - Advertisement - -))",
-            "facebook2.com##div[role=\"region\"] + div[role=\"main\"] div[role=\"article\"] div[style=\"border-radius: max(0px, min(8px, ((100vw - 4px) - 100%) * 9999)) / 8px;\"] > div[class]:not([class*=\" \"])"
+            "facebook2.com##div[role=\"region\"] + div[role=\"main\"] div[role=\"article\"] div[style=\"border-radius: max(0px, min(8px, ((100vw - 4px) - 100%) * 9999)) / 8px;\"] > div[class]:not([class*=\" \"])",
         ]
         let converter = ContentBlockerConverter()
-        let result = converter.convertArray(rules: rules, safariVersion: .safari15, advancedBlocking: true)
+        let result = converter.convertArray(
+            rules: rules,
+            safariVersion: .safari15,
+            advancedBlocking: true
+        )
         XCTAssertEqual(result.sourceRulesCount, rules.count)
         XCTAssertEqual(result.sourceSafariCompatibleRulesCount, 3)
         XCTAssertEqual(result.safariRulesCount, 3)

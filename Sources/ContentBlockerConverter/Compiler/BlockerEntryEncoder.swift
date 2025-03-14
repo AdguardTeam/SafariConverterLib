@@ -2,24 +2,30 @@ import Foundation
 
 /// Blocker entries JSON encoder
 class BlockerEntryEncoder {
-    /// Encodes an array of blocker entries into a JSON string representation with an optional maximum size limit.
+    /// Encodes an array of blocker entries into a JSON string representation
+    /// with an optional maximum size limit.
     ///
     /// - Parameters:
     ///   - entries: The array of BlockerEntry objects to be encoded.
-    ///   - maxJsonSizeBytes: The optional maximum size in bytes for the resulting JSON string.
-    ///                       If nil, there is no size limit.
+    ///   - maxJsonSizeBytes: The optional maximum size in bytes for the
+    ///                       resulting JSON string. If nil, there is no size
+    ///                       limit.
     ///
     /// - Returns: A tuple containing:
-    ///            1. A JSON-formatted string containing the encoded blocker entries,
-    ///              adhering to the optional maxJsonSizeBytes limit.
-    ///            2. An integer representing the number of entries successfully encoded into the JSON string.
+    ///   - A JSON-formatted string containing the encoded blocker
+    ///     entries, adhering to the optional maxJsonSizeBytes limit.
+    ///   - An integer representing the number of entries successfully
+    ///     encoded into the JSON string.
     ///
-    /// Note: The `maxJsonSizeBytes` is in bytes, calculated based on the UTF-8 representation of the string.
-    ///       If the size limit is reached, no more entries will be encoded and the function will break out of the loop.
+    /// Note: The `maxJsonSizeBytes` is in bytes, calculated based on the UTF-8
+    /// representation of the string. If the size limit is reached, no more
+    /// entries will be encoded and the function will break out of the loop.
     func encode(entries: [BlockerEntry], maxJsonSizeBytes: Int? = nil) -> (String, Int) {
         var result = "["
-        var currentSize = 2 // Account for the opening and closing brackets in the JSON string
-        var encodedCount = 0 // To keep track of successfully encoded entries
+        // Account for the opening and closing brackets in the JSON string
+        var currentSize = 2
+        // To keep track of successfully encoded entries
+        var encodedCount = 0
 
         for index in 0..<entries.count {
             // Encode the individual entry to its JSON representation
@@ -27,11 +33,14 @@ class BlockerEntryEncoder {
             // Calculate the size in bytes of the JSON representation
             let entrySize = entryJSON.utf8.count
             // Calculate the size of the comma separator (if needed)
-            let commaSize = index == 0 ? 0 : 1 // Account for comma separator if not the first entry
+            // Account for comma separator if not the first entry
+            let commaSize = index == 0 ? 0 : 1
 
             // Check if adding the next entry would exceed the maxSize limit
             if let maxSize = maxJsonSizeBytes, currentSize + entrySize + commaSize > maxSize {
-                Logger.log("(BlockerEntryEncoder) - The maxSize limit is reached. Overlimit entries will be ignored.")
+                Logger.log(
+                    "(BlockerEntryEncoder) - The maxSize limit is reached. Overlimit entries will be ignored."
+                )
                 break
             }
 

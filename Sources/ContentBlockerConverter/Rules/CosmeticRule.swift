@@ -27,7 +27,7 @@ public class CosmeticRule: Rule {
         "upward",
         "remove",
         "matches-attr",
-        "matches-property"
+        "matches-property",
     ]
 
     private static let EXT_CSS_ATTR_INDICATOR = "[-ext-"
@@ -65,7 +65,10 @@ public class CosmeticRule: Rule {
     ///   - ruleText: AdGuard rule text.
     ///   - version: Safari version which will use that rule. Depending on the version some features may be available or not.
     /// - Throws: SyntaxError if any issue with the rule is detected.
-    public override init(ruleText: String, for version: SafariVersion = DEFAULT_SAFARI_VERSION) throws {
+    public override init(
+        ruleText: String,
+        for version: SafariVersion = DEFAULT_SAFARI_VERSION
+    ) throws {
         try super.init(ruleText: ruleText)
 
         let markerInfo = CosmeticRuleMarker.findCosmeticRuleMarker(ruleText: ruleText)
@@ -112,7 +115,10 @@ public class CosmeticRule: Rule {
         if markerInfo.index > 0 {
             // This means that the marker is preceded by the list of domains
             // Now it's a good time to parse them.
-            let markerIndex = ruleText.utf8.index(ruleText.utf8.startIndex, offsetBy: markerInfo.index)
+            let markerIndex = ruleText.utf8.index(
+                ruleText.utf8.startIndex,
+                offsetBy: markerInfo.index
+            )
             let domains = String(ruleText[..<markerIndex])
 
             // Support for *## for generic rules
@@ -124,7 +130,9 @@ public class CosmeticRule: Rule {
 
         isWhiteList = CosmeticRule.isWhiteList(marker: marker)
         isExtendedCss = CosmeticRule.isExtCssMarker(marker: marker)
-        if !isExtendedCss && CosmeticRule.hasExtCSSIndicators(content: self.content, version: version) {
+        if !isExtendedCss
+            && CosmeticRule.hasExtCSSIndicators(content: self.content, version: version)
+        {
             // Additional check if rule is extended css rule by pseudo class indicators.
             isExtendedCss = true
         }
@@ -151,7 +159,8 @@ public class CosmeticRule: Rule {
 
             switch char {
             case Chars.SQUARE_BRACKET_OPEN:
-                if content.utf8.dropFirst(i).starts(with: CosmeticRule.EXT_CSS_ATTR_INDICATOR.utf8) {
+                if content.utf8.dropFirst(i).starts(with: CosmeticRule.EXT_CSS_ATTR_INDICATOR.utf8)
+                {
                     return true
                 }
             case Chars.COLON:
@@ -163,16 +172,23 @@ public class CosmeticRule: Rule {
                     let pseudoEndIndex = i - 1
 
                     if pseudoEndIndex > pseudoStartIndex {
-                        let startIndex = content.utf8.index(content.utf8.startIndex, offsetBy: pseudoStartIndex)
-                        let endIndex = content.utf8.index(content.utf8.startIndex, offsetBy: pseudoEndIndex)
+                        let startIndex = content.utf8.index(
+                            content.utf8.startIndex,
+                            offsetBy: pseudoStartIndex
+                        )
+                        let endIndex = content.utf8.index(
+                            content.utf8.startIndex,
+                            offsetBy: pseudoEndIndex
+                        )
 
-                        let pseudo = String(content[startIndex ... endIndex])
+                        let pseudo = String(content[startIndex...endIndex])
 
                         // the rule with `##` marker and `:has()` pseudo-class should not be considered as ExtendedCss,
                         // because `:has()` pseudo-class has native implementation since Safari 16.4
                         // https://www.webkit.org/blog/13966/webkit-features-in-safari-16-4/
                         // https://github.com/AdguardTeam/SafariConverterLib/issues/43
-                        if version.isSafari16_4orGreater() && pseudo == EXT_CSS_PSEUDO_INDICATOR_HAS {
+                        if version.isSafari16_4orGreater() && pseudo == EXT_CSS_PSEUDO_INDICATOR_HAS
+                        {
                             continue
                         }
 
@@ -276,8 +292,7 @@ public class CosmeticRule: Rule {
             throw SyntaxError.invalidModifier(message: "Invalid option format")
         }
 
-        if domains.utf8.count < 3 ||
-            domains.utf8[safeIndex: 1] != Chars.DOLLAR {
+        if domains.utf8.count < 3 || domains.utf8[safeIndex: 1] != Chars.DOLLAR {
             throw SyntaxError.invalidModifier(message: "Invalid cosmetic rule modifier")
         }
 
@@ -308,7 +323,9 @@ public class CosmeticRule: Rule {
 
     func setCosmeticRuleDomains(domains: String) throws {
         if domains.utf8.first == Chars.SQUARE_BRACKET_OPEN {
-            if let remainingDomains = try parseCosmeticOptions(domains: domains), !remainingDomains.isEmpty {
+            if let remainingDomains = try parseCosmeticOptions(domains: domains),
+                !remainingDomains.isEmpty
+            {
                 try addDomains(domainsStr: remainingDomains, separator: Chars.COMMA)
             }
         } else {

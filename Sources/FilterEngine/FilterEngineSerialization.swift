@@ -4,7 +4,7 @@ import Foundation
 
 extension FilterEngine {
     // A "magic" marker we'll write at the start of the file so we can validate it on read.
-    private static let fileMagic: [UInt8] = [0x46, 0x49, 0x4C, 0x54] // e.g. "FILT" in ASCII
+    private static let fileMagic: [UInt8] = [0x46, 0x49, 0x4C, 0x54]  // e.g. "FILT" in ASCII
 
     /// A simple struct for holding tries data.
     struct SerializedData {
@@ -102,7 +102,9 @@ extension FilterEngine {
         cursor += 4
 
         guard data.count >= cursor + Int(shortcutsDataCount) else {
-            throw FilterEngineError.invalidIndexFile("Not enough bytes to read shortcuts trie data.")
+            throw FilterEngineError.invalidIndexFile(
+                "Not enough bytes to read shortcuts trie data."
+            )
         }
         let shortcutsData = data[cursor..<(cursor + Int(shortcutsDataCount))]
         cursor += Int(shortcutsDataCount)

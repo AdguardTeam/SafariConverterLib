@@ -33,10 +33,9 @@ public enum SimpleRegex {
     /// - Returns: regular expression corresponding to that pattern.
     /// - Throws: SyntaxError if the pattern contains non-ASCII characters.
     public static func createRegexText(pattern: String) throws -> String {
-        if pattern.isEmpty ||
-            pattern == maskStartUrl ||
-            pattern == maskPipe ||
-            pattern == maskAnySymbol {
+        if pattern.isEmpty || pattern == maskStartUrl || pattern == maskPipe
+            || pattern == maskAnySymbol
+        {
             return regexAnySymbol
         }
 
@@ -101,7 +100,9 @@ public enum SimpleRegex {
                 resultChars.append(contentsOf: regexAnySymbolChars)
             default:
                 if char > 127 {
-                    throw SyntaxError.invalidPattern(message: "Non ASCII characters are not supported")
+                    throw SyntaxError.invalidPattern(
+                        message: "Non ASCII characters are not supported"
+                    )
                 }
 
                 resultChars.append(char)
@@ -122,7 +123,8 @@ public enum SimpleRegex {
     ///
     /// Example: `/regex/`.
     public static func isRegexPattern(_ pattern: String) -> Bool {
-        pattern.utf8.count > 2 && pattern.utf8.first == Chars.SLASH && pattern.utf8.last == Chars.SLASH
+        pattern.utf8.count > 2 && pattern.utf8.first == Chars.SLASH
+            && pattern.utf8.last == Chars.SLASH
     }
 
     /// Extracts a regex pattern from a regex rule. Returns `nil` if this is not a regex rule.

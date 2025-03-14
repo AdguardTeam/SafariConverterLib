@@ -25,25 +25,32 @@ final class CompilerTests: XCTestCase {
         let entries = [
             BlockerEntry(
                 trigger: BlockerEntry.Trigger(ifDomain: ["popsugar.com"], urlFilter: ".*"),
-                action: BlockerEntry.Action(type: "css-display-none", selector: "#calendar-widget")),
+                action: BlockerEntry.Action(type: "css-display-none", selector: "#calendar-widget")
+            ),
             BlockerEntry(
                 trigger: BlockerEntry.Trigger(ifDomain: ["lenta1.ru"], urlFilter: ".*"),
-                action: BlockerEntry.Action(type: "css-display-none", selector: "#social")),
+                action: BlockerEntry.Action(type: "css-display-none", selector: "#social")
+            ),
             BlockerEntry(
                 trigger: BlockerEntry.Trigger(ifDomain: ["lenta2.ru"], urlFilter: ".*"),
-                action: BlockerEntry.Action(type: "css-display-none", selector: "#social")),
+                action: BlockerEntry.Action(type: "css-display-none", selector: "#social")
+            ),
             BlockerEntry(
                 trigger: BlockerEntry.Trigger(urlFilter: ".*"),
-                action: BlockerEntry.Action(type: "css-display-none", selector: "#social")),
+                action: BlockerEntry.Action(type: "css-display-none", selector: "#social")
+            ),
             BlockerEntry(
                 trigger: BlockerEntry.Trigger(ifDomain: ["yandex.ru"], urlFilter: ".*"),
-                action: BlockerEntry.Action(type: "css-display-none", selector: "#pub")),
+                action: BlockerEntry.Action(type: "css-display-none", selector: "#pub")
+            ),
             BlockerEntry(
                 trigger: BlockerEntry.Trigger(ifDomain: ["yandex2.ru"], urlFilter: ".*"),
-                action: BlockerEntry.Action(type: "css-display-none", selector: "#pub")),
+                action: BlockerEntry.Action(type: "css-display-none", selector: "#pub")
+            ),
             BlockerEntry(
                 trigger: BlockerEntry.Trigger(urlFilter: ".*"),
-                action: BlockerEntry.Action(type: "css-display-none", selector: "#banner"))
+                action: BlockerEntry.Action(type: "css-display-none", selector: "#banner")
+            ),
         ]
 
         let result = Compiler.compactCssRules(cssBlocking: entries)
@@ -57,19 +64,27 @@ final class CompilerTests: XCTestCase {
         let entries = [
             BlockerEntry(
                 trigger: BlockerEntry.Trigger(ifDomain: ["some.com"], urlFilter: ".*"),
-                action: BlockerEntry.Action(type: "css-display-none", selector: "#some-selector")),
+                action: BlockerEntry.Action(type: "css-display-none", selector: "#some-selector")
+            ),
             BlockerEntry(
-                trigger: BlockerEntry.Trigger(ifDomain: ["some.com", "an-other.com"], urlFilter: ".*"),
-                action: BlockerEntry.Action(type: "css-display-none", selector: "#some-selector")),
+                trigger: BlockerEntry.Trigger(
+                    ifDomain: ["some.com", "an-other.com"],
+                    urlFilter: ".*"
+                ),
+                action: BlockerEntry.Action(type: "css-display-none", selector: "#some-selector")
+            ),
             BlockerEntry(
                 trigger: BlockerEntry.Trigger(ifDomain: ["compact.com"], urlFilter: ".*"),
-                action: BlockerEntry.Action(type: "css-display-none", selector: "#selector-one")),
+                action: BlockerEntry.Action(type: "css-display-none", selector: "#selector-one")
+            ),
             BlockerEntry(
                 trigger: BlockerEntry.Trigger(ifDomain: ["compact.com"], urlFilter: ".*"),
-                action: BlockerEntry.Action(type: "css-display-none", selector: "#selector-two")),
+                action: BlockerEntry.Action(type: "css-display-none", selector: "#selector-two")
+            ),
             BlockerEntry(
                 trigger: BlockerEntry.Trigger(ifDomain: ["compact.com"], urlFilter: ".*"),
-                action: BlockerEntry.Action(type: "css-display-none", selector: "#selector-three"))
+                action: BlockerEntry.Action(type: "css-display-none", selector: "#selector-three")
+            ),
         ]
 
         let result = Compiler.compactDomainCssRules(entries: entries)

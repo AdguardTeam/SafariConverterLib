@@ -1,6 +1,6 @@
 import Foundation
-
 import XCTest
+
 @testable import ContentBlockerConverter
 
 final class SafariCbBuilderTests: XCTestCase {
@@ -55,7 +55,7 @@ final class SafariCbBuilderTests: XCTestCase {
     func testOverlimit() {
         let entries = [
             BlockerEntry(trigger: testTrigger, action: testAction),
-            BlockerEntry(trigger: testTrigger, action: testAction)
+            BlockerEntry(trigger: testTrigger, action: testAction),
         ]
 
         let compilationResult = CompilationResult(

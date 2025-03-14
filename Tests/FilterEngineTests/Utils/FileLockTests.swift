@@ -1,5 +1,6 @@
-import XCTest
 import Foundation
+import XCTest
+
 @testable import FilterEngine
 
 class FileLockTests: XCTestCase {
@@ -106,7 +107,10 @@ class FileLockTests: XCTestCase {
         // Second acquisition with deadline should also succeed immediately
         // This is testing the re-entrant behavior with deadlines
         let secondDeadline = Date().addingTimeInterval(1)
-        XCTAssertTrue(lock.lock(before: secondDeadline), "Second lock acquisition should succeed immediately")
+        XCTAssertTrue(
+            lock.lock(before: secondDeadline),
+            "Second lock acquisition should succeed immediately"
+        )
 
         // Test that we can unlock multiple times without issues
         XCTAssertTrue(lock.unlock(), "First unlock should succeed")

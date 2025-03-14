@@ -51,7 +51,10 @@ public class NetworkRule: Rule {
     ///   - ruleText: AdGuard rule text.
     ///   - version: Safari version which will use that rule. Depending on the version some features may be available or not.
     /// - Throws: SyntaxError if any issue with the rule is detected.
-    public override init(ruleText: String, for version: SafariVersion = DEFAULT_SAFARI_VERSION) throws {
+    public override init(
+        ruleText: String,
+        for version: SafariVersion = DEFAULT_SAFARI_VERSION
+    ) throws {
         try super.init(ruleText: ruleText)
 
         let ruleParts = try NetworkRuleParser.parseRuleText(ruleText: ruleText)
@@ -66,7 +69,9 @@ public class NetworkRule: Rule {
         if let regex = SimpleRegex.extractRegex(urlRuleText) {
             urlRegExpSource = regex
         } else {
-            guard let encodedPattern = NetworkRuleParser.encodeDomainIfRequired(pattern: urlRuleText) else {
+            guard
+                let encodedPattern = NetworkRuleParser.encodeDomainIfRequired(pattern: urlRuleText)
+            else {
                 throw SyntaxError.invalidRule(message: "Failed to encode the domain in \(ruleText)")
             }
 
@@ -78,7 +83,8 @@ public class NetworkRule: Rule {
 
         isDocumentWhiteList = isWhiteList && isOptionEnabled(option: .document)
         isUrlBlock = isSingleOption(option: .urlblock) || isSingleOption(option: .genericblock)
-        isCssExceptionRule = isSingleOption(option: .elemhide) || isSingleOption(option: .generichide)
+        isCssExceptionRule =
+            isSingleOption(option: .elemhide) || isSingleOption(option: .generichide)
         isJsInject = isSingleOption(option: .jsinject)
 
         try validateRule(version: version)
@@ -91,7 +97,8 @@ public class NetworkRule: Rule {
 
     /// Checks if rule targets specified content type.
     public func hasContentType(contentType: ContentType) -> Bool {
-        return permittedContentType.contains(contentType) && !restrictedContentType.contains(contentType)
+        return permittedContentType.contains(contentType)
+            && !restrictedContentType.contains(contentType)
     }
 
     /// Returns true if the rule targets only the specified content type and nothing else.
@@ -135,7 +142,10 @@ public class NetworkRule: Rule {
             return false
         }
 
-        if !NetworkRule.stringArraysHaveIntersection(left: permittedDomains, right: specifiedRule.permittedDomains) {
+        if !NetworkRule.stringArraysHaveIntersection(
+            left: permittedDomains,
+            right: specifiedRule.permittedDomains
+        ) {
             return false
         }
 
@@ -171,12 +181,14 @@ public class NetworkRule: Rule {
         if urlRuleText == "||"
             || urlRuleText == "*"
             || urlRuleText.isEmpty
-            || urlRuleText.utf8.count < 3 {
+            || urlRuleText.utf8.count < 3
+        {
             if permittedDomains.count < 1 {
                 // Rule matches too much and does not have any domain restriction
                 // We should not allow this kind of rules
                 throw SyntaxError.invalidPattern(
-                    message: "The rule is too wide, add domain restriction or make the pattern more specific"
+                    message:
+                        "The rule is too wide, add domain restriction or make the pattern more specific"
                 )
             }
         }
@@ -186,18 +198,19 @@ public class NetworkRule: Rule {
         }
 
         if !isWhiteList && !enabledOptions.isDisjoint(with: .whitelistOnly) {
-            throw SyntaxError.invalidModifier(message: "Blocking rule cannot use whitelist-only modifiers")
+            throw SyntaxError.invalidModifier(
+                message: "Blocking rule cannot use whitelist-only modifiers"
+            )
         }
 
-        if !version.isSafari15orGreater() &&
-            !isWhiteList &&
-            !isContentType(contentType: .all) &&
-            hasContentType(contentType: .subdocument) &&
-            !isThirdParty &&
-            permittedDomains.isEmpty {
+        if !version.isSafari15orGreater() && !isWhiteList && !isContentType(contentType: .all)
+            && hasContentType(contentType: .subdocument) && !isThirdParty
+            && permittedDomains.isEmpty
+        {
             // Due to https://github.com/AdguardTeam/AdguardBrowserExtension/issues/145
             throw SyntaxError.invalidRule(
-                message: "$subdocument blocking rules are allowed only along with third-party or if-domain modifiers"
+                message:
+                    "$subdocument blocking rules are allowed only along with third-party or if-domain modifiers"
             )
         }
     }
@@ -212,7 +225,11 @@ public class NetworkRule: Rule {
 
             if let valueIndex = option.utf8.firstIndex(of: Chars.EQUALS_SIGN) {
                 optionName = String(option[..<valueIndex])
-                if let nextIndex = option.utf8.index(valueIndex, offsetBy: 1, limitedBy: option.utf8.endIndex) {
+                if let nextIndex = option.utf8.index(
+                    valueIndex,
+                    offsetBy: 1,
+                    limitedBy: option.utf8.endIndex
+                ) {
                     optionValue = String(option[nextIndex...])
                 }
             }
@@ -231,7 +248,8 @@ public class NetworkRule: Rule {
     }
 
     /// Attempts to parse a single network rule option.
-    private func loadOption(optionName: String, optionValue: String, version: SafariVersion) throws {
+    private func loadOption(optionName: String, optionValue: String, version: SafariVersion) throws
+    {
         if optionName.utf8.first == Chars.UNDERSCORE {
             // A noop modifier does nothing and can be used to increase some rules readability.
             // It consists of the sequence of underscore characters (_) of any length
@@ -381,17 +399,17 @@ public class NetworkRule: Rule {
             self.rawValue = rawValue
         }
 
-        public static let image           = ContentType(rawValue: 1 << 0)
-        public static let stylesheet      = ContentType(rawValue: 1 << 1)
-        public static let script          = ContentType(rawValue: 1 << 2)
-        public static let media           = ContentType(rawValue: 1 << 3)
-        public static let xmlHttpRequest  = ContentType(rawValue: 1 << 4)
-        public static let other           = ContentType(rawValue: 1 << 5)
-        public static let websocket       = ContentType(rawValue: 1 << 6)
-        public static let font            = ContentType(rawValue: 1 << 7)
-        public static let document        = ContentType(rawValue: 1 << 8)
-        public static let subdocument     = ContentType(rawValue: 1 << 9)
-        public static let ping            = ContentType(rawValue: 1 << 10)
+        public static let image = ContentType(rawValue: 1 << 0)
+        public static let stylesheet = ContentType(rawValue: 1 << 1)
+        public static let script = ContentType(rawValue: 1 << 2)
+        public static let media = ContentType(rawValue: 1 << 3)
+        public static let xmlHttpRequest = ContentType(rawValue: 1 << 4)
+        public static let other = ContentType(rawValue: 1 << 5)
+        public static let websocket = ContentType(rawValue: 1 << 6)
+        public static let font = ContentType(rawValue: 1 << 7)
+        public static let document = ContentType(rawValue: 1 << 8)
+        public static let subdocument = ContentType(rawValue: 1 << 9)
+        public static let ping = ContentType(rawValue: 1 << 10)
 
         public static let all: ContentType = [
             .image,
@@ -404,7 +422,7 @@ public class NetworkRule: Rule {
             .font,
             .document,
             .subdocument,
-            .ping
+            .ping,
         ]
     }
 
@@ -416,21 +434,21 @@ public class NetworkRule: Rule {
             self.rawValue = rawValue
         }
 
-        public static let elemhide      = Option(rawValue: 1 << 0)
-        public static let generichide   = Option(rawValue: 1 << 1)
-        public static let genericblock  = Option(rawValue: 1 << 2)
-        public static let specifichide  = Option(rawValue: 1 << 3)
-        public static let jsinject      = Option(rawValue: 1 << 4)
-        public static let urlblock      = Option(rawValue: 1 << 5)
-        public static let content       = Option(rawValue: 1 << 6)
-        public static let document      = Option(rawValue: 1 << 7)
-        public static let popup         = Option(rawValue: 1 << 8)
+        public static let elemhide = Option(rawValue: 1 << 0)
+        public static let generichide = Option(rawValue: 1 << 1)
+        public static let genericblock = Option(rawValue: 1 << 2)
+        public static let specifichide = Option(rawValue: 1 << 3)
+        public static let jsinject = Option(rawValue: 1 << 4)
+        public static let urlblock = Option(rawValue: 1 << 5)
+        public static let content = Option(rawValue: 1 << 6)
+        public static let document = Option(rawValue: 1 << 7)
+        public static let popup = Option(rawValue: 1 << 8)
 
         /// Document-level options cause the rule to be limited to "document" type.
         public static let documentLevel: Option = [
             .document,
             .popup,
-            .whitelistOnly
+            .whitelistOnly,
         ]
 
         /// These options can only be used in whitelist rules.
@@ -441,7 +459,7 @@ public class NetworkRule: Rule {
             .urlblock,
             .genericblock,
             .generichide,
-            .specifichide
+            .specifichide,
         ]
     }
 }

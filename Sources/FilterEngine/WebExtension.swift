@@ -1,5 +1,5 @@
-import Foundation
 import ContentBlockerConverter
+import Foundation
 import PublicSuffixList
 
 /// WebExtension is a class that provides public interface to be used in web (or app) extensions.
@@ -83,8 +83,12 @@ extension WebExtension {
             _ = self.fileLock?.unlock()
         }
 
-        let filterRuleStorageURL = baseURL.appendingPathComponent(Schema.FILTER_RULE_STORAGE_FILE_NAME)
-        let filterEngineIndexURL = baseURL.appendingPathComponent(Schema.FILTER_ENGINE_INDEX_FILE_NAME)
+        let filterRuleStorageURL = baseURL.appendingPathComponent(
+            Schema.FILTER_RULE_STORAGE_FILE_NAME
+        )
+        let filterEngineIndexURL = baseURL.appendingPathComponent(
+            Schema.FILTER_ENGINE_INDEX_FILE_NAME
+        )
 
         // First, prepare the filter rule storage.
         let storage = try FilterRuleStorage(
@@ -137,7 +141,9 @@ extension WebExtension {
                 if engine != nil {
                     self.filterEngine = engine
                     // Read the timestamp again since it was changed when rebuilding.
-                    self.engineTimestamp = sharedUserDefaults.double(forKey: Schema.ENGINE_TIMESTAMP_KEY)
+                    self.engineTimestamp = sharedUserDefaults.double(
+                        forKey: Schema.ENGINE_TIMESTAMP_KEY
+                    )
                 }
             }
         }
@@ -175,12 +181,17 @@ extension WebExtension {
             _ = self.fileLock?.unlock()
         }
 
-        let filterRuleStorageURL = baseURL.appendingPathComponent(Schema.FILTER_RULE_STORAGE_FILE_NAME)
-        let filterEngineIndexURL = baseURL.appendingPathComponent(Schema.FILTER_ENGINE_INDEX_FILE_NAME)
+        let filterRuleStorageURL = baseURL.appendingPathComponent(
+            Schema.FILTER_RULE_STORAGE_FILE_NAME
+        )
+        let filterEngineIndexURL = baseURL.appendingPathComponent(
+            Schema.FILTER_ENGINE_INDEX_FILE_NAME
+        )
 
         // Check if the relevant files exist, otherwise bail out
         guard FileManager.default.fileExists(atPath: filterRuleStorageURL.path),
-              FileManager.default.fileExists(atPath: filterEngineIndexURL.path) else {
+            FileManager.default.fileExists(atPath: filterEngineIndexURL.path)
+        else {
             Logger.log("Not found filter rule storage and engine files")
 
             return nil
@@ -194,7 +205,8 @@ extension WebExtension {
         }
 
         // Deserialize the engine.
-        guard let engine = try? FilterEngine(storage: storage, indexFileURL: filterEngineIndexURL) else {
+        guard let engine = try? FilterEngine(storage: storage, indexFileURL: filterEngineIndexURL)
+        else {
             Logger.log("Failed to deserialize the engine")
 
             return nil
@@ -266,7 +278,7 @@ extension WebExtension {
 
         // If page address is different from the top frame address then we can
         // assume that we're dealing with a subdocument.
-        let subdocument = pageHostname != "" && topHostname != ""
+        let subdocument = !pageHostname.isEmpty && !topHostname.isEmpty
         var thirdParty = false
         if subdocument {
             // It only makes sense to distinguish third-party from first-party requests
@@ -278,7 +290,8 @@ extension WebExtension {
         }
 
         // Find all AdGuard rules that should be applied to this page.
-        let rules = engine.findAll(for: pageUrl, subdocument: subdocument, thirdParty: thirdParty)
+        let request = Request(url: pageUrl, subdocument: subdocument, thirdParty: thirdParty)
+        let rules = engine.findAll(for: request)
 
         let conf = createConfiguration(rules)
 
@@ -297,9 +310,7 @@ extension WebExtension {
                 continue
             }
 
-            if rule.action.contains(.cssDisplayNone) ||
-                rule.action.contains(.cssInject) {
-
+            if rule.action.contains(.cssDisplayNone) || rule.action.contains(.cssInject) {
                 if rule.action.contains(.extendedCSS) {
                     extendedCss.append(cosmeticContent)
                 } else {

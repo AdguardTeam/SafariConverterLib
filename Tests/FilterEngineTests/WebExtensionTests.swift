@@ -1,6 +1,7 @@
-import XCTest
-import Foundation
 import ContentBlockerConverter
+import Foundation
+import XCTest
+
 @testable import FilterEngine
 
 final class WebExtensionTests: XCTestCase {
@@ -10,7 +11,10 @@ final class WebExtensionTests: XCTestCase {
         try super.setUpWithError()
         tempDirectory = FileManager.default.temporaryDirectory
             .appendingPathComponent(UUID().uuidString)
-        try FileManager.default.createDirectory(at: tempDirectory, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(
+            at: tempDirectory,
+            withIntermediateDirectories: true
+        )
     }
 
     override func tearDownWithError() throws {
@@ -30,7 +34,8 @@ final class WebExtensionTests: XCTestCase {
             version: SafariVersion.safari16_4
         )
         let engine = try webExtension.buildFilterEngine(rules: "example.org###banner")
-        let rules = engine.findAll(for: URL(string: "https://example.org/")!)
+        let request = Request(url: URL(string: "https://example.org/")!)
+        let rules = engine.findAll(for: request)
 
         XCTAssertEqual(rules.count, 1, "Expected 1 rule to be selected")
         XCTAssertGreaterThan(
@@ -114,7 +119,7 @@ final class WebExtensionTests: XCTestCase {
             "example.org#$##banner { visibility: hidden }",
             "example.org#?##banner:has(div)",
             "example.org#%#console.log('test')",
-            "example.org#%#//scriptlet('log', 'test')"
+            "example.org#%#//scriptlet('log', 'test')",
         ].joined(separator: "\n")
         _ = try builder.buildFilterEngine(rules: filterList)
 
@@ -136,9 +141,12 @@ final class WebExtensionTests: XCTestCase {
         XCTAssertEqual(conf.css, ["#banner", "#banner { visibility: hidden }"])
         XCTAssertEqual(conf.extendedCss, ["#banner:has(div)"])
         XCTAssertEqual(conf.js, ["console.log('test')"])
-        XCTAssertEqual(conf.scriptlets, [
-            WebExtension.Scriptlet(name: "log", args: ["test"])
-        ])
+        XCTAssertEqual(
+            conf.scriptlets,
+            [
+                WebExtension.Scriptlet(name: "log", args: ["test"])
+            ]
+        )
         XCTAssertGreaterThan(conf.engineTimestamp, 0, "Engine timestamp should be set")
     }
 
@@ -157,12 +165,12 @@ final class WebExtensionTests: XCTestCase {
             "example.org#$##banner { visibility: hidden }",
             "example.org#?##banner:has(div)",
             "example.org#%#console.log('test')",
-            "example.org#%#//scriptlet('log', 'test')"
+            "example.org#%#//scriptlet('log', 'test')",
         ].joined(separator: "\n")
         _ = try builder.buildFilterEngine(rules: filterList)
 
         // Emulate a situation that makes it necessary to rebuild the engine.
-        sharedUserDefaults.set(Schema.VERSION-1, forKey: Schema.ENGINE_SCHEMA_VERSION_KEY)
+        sharedUserDefaults.set(Schema.VERSION - 1, forKey: Schema.ENGINE_SCHEMA_VERSION_KEY)
 
         // Save the engine timestamp so that we could compare it to the one after rebuilding.
         let firstBuildTimestamp = sharedUserDefaults.double(forKey: Schema.ENGINE_TIMESTAMP_KEY)
@@ -170,10 +178,12 @@ final class WebExtensionTests: XCTestCase {
         Thread.sleep(forTimeInterval: 0.01)
 
         // Make sure that the engine files are no more.
-        let filterEngineFileURL = tempDirectory
+        let filterEngineFileURL =
+            tempDirectory
             .appendingPathComponent(Schema.BASE_DIR)
             .appendingPathComponent(Schema.FILTER_ENGINE_INDEX_FILE_NAME)
-        let filterRuleStorageFileURL = tempDirectory
+        let filterRuleStorageFileURL =
+            tempDirectory
             .appendingPathComponent(Schema.BASE_DIR)
             .appendingPathComponent(Schema.FILTER_RULE_STORAGE_FILE_NAME)
         try FileManager.default.removeItem(at: filterEngineFileURL)
@@ -197,10 +207,17 @@ final class WebExtensionTests: XCTestCase {
         XCTAssertEqual(conf.css, ["#banner", "#banner { visibility: hidden }"])
         XCTAssertEqual(conf.extendedCss, ["#banner:has(div)"])
         XCTAssertEqual(conf.js, ["console.log('test')"])
-        XCTAssertEqual(conf.scriptlets, [
-            WebExtension.Scriptlet(name: "log", args: ["test"])
-        ])
-        XCTAssertNotEqual(conf.engineTimestamp, firstBuildTimestamp, "Engine timestamp should be newer")
+        XCTAssertEqual(
+            conf.scriptlets,
+            [
+                WebExtension.Scriptlet(name: "log", args: ["test"])
+            ]
+        )
+        XCTAssertNotEqual(
+            conf.engineTimestamp,
+            firstBuildTimestamp,
+            "Engine timestamp should be newer"
+        )
         XCTAssertGreaterThan(conf.engineTimestamp, 0, "Engine timestamp should be set")
     }
 
@@ -223,7 +240,7 @@ final class WebExtensionTests: XCTestCase {
             // Disable cosmetics on example.com iframes in third-party context
             "@@||example.com^$subdocument,elemhide,third-party",
             // Cosmetic rule for example.com
-            "example.com###banner"
+            "example.com###banner",
         ].joined(separator: "\n")
 
         _ = try builder.buildFilterEngine(rules: filterList)
@@ -243,13 +260,23 @@ final class WebExtensionTests: XCTestCase {
         guard let mainPageConf = mainPageConf else { return }
 
         // Only the regular rule should apply to the main document
-        XCTAssertEqual(mainPageConf.css, ["#banner"], "Only one CSS rule should apply to main document")
+        XCTAssertEqual(
+            mainPageConf.css,
+            ["#banner"],
+            "Only one CSS rule should apply to main document"
+        )
 
         // Test case 2: Subdocument (third-party=false)
         let sameDomainIframeUrl = URL(string: "https://example.org/")!
-        let sameDomainIframeConf = webExtension.lookup(pageUrl: sameDomainIframeUrl, topUrl: mainPageUrl)
+        let sameDomainIframeConf = webExtension.lookup(
+            pageUrl: sameDomainIframeUrl,
+            topUrl: mainPageUrl
+        )
 
-        XCTAssertNotNil(sameDomainIframeConf, "Expected configuration to be selected for same-domain iframe")
+        XCTAssertNotNil(
+            sameDomainIframeConf,
+            "Expected configuration to be selected for same-domain iframe"
+        )
         guard let sameDomainIframeConf = sameDomainIframeConf else { return }
 
         // Cosmetic rules should be disabled by the elemhide rule for iframes
@@ -267,13 +294,23 @@ final class WebExtensionTests: XCTestCase {
         guard let mainFrameExampleComConf = mainFrameExampleComConf else { return }
 
         // Only the regular rule should apply to the frame
-        XCTAssertEqual(mainFrameExampleComConf.css, ["#banner"], "Only one CSS rule should apply to iframe")
+        XCTAssertEqual(
+            mainFrameExampleComConf.css,
+            ["#banner"],
+            "Only one CSS rule should apply to iframe"
+        )
 
         // Test case 4: Third-party subdocument (subdocument=true, third-party=true)
         let thirdPartyIframeUrl = URL(string: "https://example.com/iframe.html")!
-        let thirdPartyIframeConf = webExtension.lookup(pageUrl: thirdPartyIframeUrl, topUrl: mainPageUrl)
+        let thirdPartyIframeConf = webExtension.lookup(
+            pageUrl: thirdPartyIframeUrl,
+            topUrl: mainPageUrl
+        )
 
-        XCTAssertNotNil(thirdPartyIframeConf, "Expected configuration to be selected for third-party iframe")
+        XCTAssertNotNil(
+            thirdPartyIframeConf,
+            "Expected configuration to be selected for third-party iframe"
+        )
 
         guard let thirdPartyIframeConf = thirdPartyIframeConf else { return }
 

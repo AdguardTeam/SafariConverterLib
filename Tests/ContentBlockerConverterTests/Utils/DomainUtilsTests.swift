@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import ContentBlockerConverter
 
 final class DomainUtilsTests: XCTestCase {
@@ -11,7 +12,10 @@ final class DomainUtilsTests: XCTestCase {
         let result = DomainUtils.isDomainOrSubdomain(candidate: candidate, domain: domain)
 
         // Assert
-        XCTAssertTrue(result, "Expected \(candidate) to be recognized as the same domain \(domain).")
+        XCTAssertTrue(
+            result,
+            "Expected \(candidate) to be recognized as the same domain \(domain)."
+        )
     }
 
     func testSubdomainBasic() {
@@ -35,7 +39,10 @@ final class DomainUtilsTests: XCTestCase {
         let result = DomainUtils.isDomainOrSubdomain(candidate: candidate, domain: domain)
 
         // Assert
-        XCTAssertTrue(result, "Expected \(candidate) to be recognized as a deeper subdomain of \(domain).")
+        XCTAssertTrue(
+            result,
+            "Expected \(candidate) to be recognized as a deeper subdomain of \(domain)."
+        )
     }
 
     func testDifferentDomain() {
@@ -47,7 +54,10 @@ final class DomainUtilsTests: XCTestCase {
         let result = DomainUtils.isDomainOrSubdomain(candidate: candidate, domain: domain)
 
         // Assert
-        XCTAssertFalse(result, "Expected \(candidate) NOT to be recognized as \(domain) or its subdomain.")
+        XCTAssertFalse(
+            result,
+            "Expected \(candidate) NOT to be recognized as \(domain) or its subdomain."
+        )
     }
 
     func testSimilarButNotSubdomain() {
@@ -71,7 +81,10 @@ final class DomainUtilsTests: XCTestCase {
         let result = DomainUtils.isDomainOrSubdomain(candidate: candidate, domain: domain)
 
         // Assert
-        XCTAssertFalse(result, "Expected \(candidate) with trailing dot NOT to be recognized as a subdomain of \(domain).")
+        XCTAssertFalse(
+            result,
+            "Expected \(candidate) with trailing dot NOT to be recognized as a subdomain of \(domain)."
+        )
     }
 
     func testMultipleTLDs() {
@@ -95,7 +108,10 @@ final class DomainUtilsTests: XCTestCase {
         let result = DomainUtils.isDomainOrSubdomain(candidate: candidate, domain: domain)
 
         // Assert
-        XCTAssertTrue(result, "Expected \(candidate) to be recognized as the same domain \(domain).")
+        XCTAssertTrue(
+            result,
+            "Expected \(candidate) to be recognized as the same domain \(domain)."
+        )
     }
 
     func testShorterCandidate() {

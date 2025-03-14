@@ -1,5 +1,6 @@
 import Foundation
 import XCTest
+
 @testable import ContentBlockerConverter
 
 final class RuleFactoryTests: XCTestCase {
@@ -60,17 +61,23 @@ final class RuleFactoryTests: XCTestCase {
             TestCase(
                 ruleText: "example.org#$#banner { display: none }",
                 expectedCosmeticRule: true
-            )
+            ),
         ]
 
         for testCase in testCases {
             var rule: Rule?
 
             do {
-                rule = try RuleFactory.createRule(ruleText: testCase.ruleText, for: DEFAULT_SAFARI_VERSION)
+                rule = try RuleFactory.createRule(
+                    ruleText: testCase.ruleText,
+                    for: DEFAULT_SAFARI_VERSION
+                )
             } catch {
                 if !testCase.expectedError {
-                    XCTAssertTrue(false, "Did not expect error \(error.localizedDescription) for \(testCase.ruleText)")
+                    XCTAssertTrue(
+                        false,
+                        "Did not expect error \(error.localizedDescription) for \(testCase.ruleText)"
+                    )
                     continue
                 }
             }
@@ -86,7 +93,10 @@ final class RuleFactoryTests: XCTestCase {
 
             if testCase.expectedCosmeticRule {
                 XCTAssertNotNil(rule, "Expected not nil for \(testCase.ruleText)")
-                XCTAssertTrue(rule is CosmeticRule, "Expected cosmetic rule for \(testCase.ruleText)")
+                XCTAssertTrue(
+                    rule is CosmeticRule,
+                    "Expected cosmetic rule for \(testCase.ruleText)"
+                )
             }
         }
     }
@@ -113,11 +123,11 @@ final class RuleFactoryTests: XCTestCase {
                 name: "simple rules",
                 rules: [
                     "||example.org^",
-                    "##.banner"
+                    "##.banner",
                 ],
                 expectedRules: [
                     ExpectedRule(networkPattern: "||example.org^"),
-                    ExpectedRule(cosmeticContent: ".banner")
+                    ExpectedRule(cosmeticContent: ".banner"),
                 ],
                 expectedErrorsCount: 0
             ),
@@ -125,7 +135,7 @@ final class RuleFactoryTests: XCTestCase {
                 name: "all rules badfiltered",
                 rules: [
                     "||example.org^",
-                    "||example.org^$badfilter"
+                    "||example.org^$badfilter",
                 ],
                 expectedRules: [],
                 expectedErrorsCount: 0
@@ -134,7 +144,7 @@ final class RuleFactoryTests: XCTestCase {
                 name: "negate css",
                 rules: [
                     "##.banner",
-                    "example.org#@#.banner"
+                    "example.org#@#.banner",
                 ],
                 expectedRules: [
                     ExpectedRule(
@@ -148,7 +158,7 @@ final class RuleFactoryTests: XCTestCase {
                 name: "negate completely",
                 rules: [
                     "example.org##.banner",
-                    "example.org#@#.banner"
+                    "example.org#@#.banner",
                 ],
                 expectedRules: [],
                 expectedErrorsCount: 0
@@ -157,7 +167,7 @@ final class RuleFactoryTests: XCTestCase {
                 name: "negate all domains",
                 rules: [
                     "example.org##.banner",
-                    "#@#.banner"
+                    "#@#.banner",
                 ],
                 expectedRules: [],
                 expectedErrorsCount: 0
@@ -166,7 +176,7 @@ final class RuleFactoryTests: XCTestCase {
                 name: "negate subdomain",
                 rules: [
                     "sub.example.org##.banner",
-                    "example.org#@#.banner"
+                    "example.org#@#.banner",
                 ],
                 expectedRules: [],
                 expectedErrorsCount: 0
@@ -175,7 +185,7 @@ final class RuleFactoryTests: XCTestCase {
                 name: "negate and not invalidate",
                 rules: [
                     "example.com##.banner",
-                    "example.org#@#.banner"
+                    "example.org#@#.banner",
                 ],
                 expectedRules: [
                     ExpectedRule(
@@ -184,7 +194,7 @@ final class RuleFactoryTests: XCTestCase {
                     )
                 ],
                 expectedErrorsCount: 0
-            )
+            ),
         ]
 
         for testCase in testCases {
@@ -193,7 +203,8 @@ final class RuleFactoryTests: XCTestCase {
             var rules = RuleFactory.createRules(
                 lines: testCase.rules,
                 for: SafariVersion.safari16_4,
-                errorsCounter: errorsCounter)
+                errorsCounter: errorsCounter
+            )
 
             // Filter out CSS exceptions and $badfilter.
             rules = RuleFactory.filterOutExceptions(from: rules)
@@ -205,17 +216,33 @@ final class RuleFactoryTests: XCTestCase {
                 for (index, expectedRule) in testCase.expectedRules.enumerated() {
                     let rule = rules[index]
 
-                    XCTAssertEqual(expectedRule.permittedDomains, rule.permittedDomains, testCase.name)
-                    XCTAssertEqual(expectedRule.restrictedDomains, rule.restrictedDomains, testCase.name)
+                    XCTAssertEqual(
+                        expectedRule.permittedDomains,
+                        rule.permittedDomains,
+                        testCase.name
+                    )
+                    XCTAssertEqual(
+                        expectedRule.restrictedDomains,
+                        rule.restrictedDomains,
+                        testCase.name
+                    )
 
                     if expectedRule.networkPattern != nil {
                         XCTAssertTrue(rule is NetworkRule, testCase.name)
                         let networkRule = rule as! NetworkRule
-                        XCTAssertEqual(expectedRule.networkPattern!, networkRule.urlRuleText, testCase.name)
+                        XCTAssertEqual(
+                            expectedRule.networkPattern!,
+                            networkRule.urlRuleText,
+                            testCase.name
+                        )
                     } else if expectedRule.cosmeticContent != nil {
                         XCTAssertTrue(rule is CosmeticRule, testCase.name)
                         let cosmeticRule = rule as! CosmeticRule
-                        XCTAssertEqual(expectedRule.cosmeticContent!, cosmeticRule.content, testCase.name)
+                        XCTAssertEqual(
+                            expectedRule.cosmeticContent!,
+                            cosmeticRule.content,
+                            testCase.name
+                        )
                     }
                 }
             }

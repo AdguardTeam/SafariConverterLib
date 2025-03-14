@@ -35,7 +35,8 @@ public enum RuleFactory {
             for convertedLine in convertedLines where convertedLine != nil {
                 do {
                     if let convertedText = convertedLine,
-                        let rule = try RuleFactory.createRule(ruleText: convertedText, for: version) {
+                        let rule = try RuleFactory.createRule(ruleText: convertedText, for: version)
+                    {
                         result.append(rule)
                     }
                 } catch {
@@ -86,8 +87,14 @@ public enum RuleFactory {
             }
         }
 
-        result += RuleFactory.applyBadFilterExceptions(rules: networkRules, badfilterRules: badfilterRules)
-        result += RuleFactory.applyCosmeticExceptions(rules: cosmeticRules, cosmeticExceptions: cosmeticExceptions)
+        result += RuleFactory.applyBadFilterExceptions(
+            rules: networkRules,
+            badfilterRules: badfilterRules
+        )
+        result += RuleFactory.applyCosmeticExceptions(
+            rules: cosmeticRules,
+            cosmeticExceptions: cosmeticExceptions
+        )
 
         return result
     }
@@ -123,7 +130,9 @@ public enum RuleFactory {
     ) -> [Rule] {
         var result: [Rule] = []
         for rule in rules {
-            let negatingRule = badfilterRules[rule.urlRuleText]?.first { $0.negatesBadfilter(specifiedRule: rule) }
+            let negatingRule = badfilterRules[rule.urlRuleText]?.first {
+                $0.negatesBadfilter(specifiedRule: rule)
+            }
             if negatingRule == nil {
                 result.append(rule)
             }
@@ -141,7 +150,8 @@ public enum RuleFactory {
 
         for rule in rules {
             if let exceptionRules = cosmeticExceptions[rule.content] {
-                if let newRule = applyCosmeticExceptions(rule: rule, exceptionRules: exceptionRules) {
+                if let newRule = applyCosmeticExceptions(rule: rule, exceptionRules: exceptionRules)
+                {
                     result.append(newRule)
                 }
             } else {
@@ -191,7 +201,10 @@ public enum RuleFactory {
     ///    - rule: Rule to modify
     ///    - exceptionRules: Cosmetic exception rules to apply
     /// - Returns: modified rule or `nil` if after applying exception the rule is redundant.
-    private static func applyCosmeticExceptions(rule: CosmeticRule, exceptionRules: [CosmeticRule]) -> CosmeticRule? {
+    private static func applyCosmeticExceptions(
+        rule: CosmeticRule,
+        exceptionRules: [CosmeticRule]
+    ) -> CosmeticRule? {
         for exceptionRule in exceptionRules {
             if exceptionRule.permittedDomains.isEmpty {
                 // Completely disables the rule on all domains
@@ -201,7 +214,9 @@ public enum RuleFactory {
 
             for domain in exceptionRule.permittedDomains {
                 if !rule.permittedDomains.isEmpty {
-                    rule.permittedDomains.removeAll { DomainUtils.isDomainOrSubdomain(candidate: $0, domain: domain) }
+                    rule.permittedDomains.removeAll {
+                        DomainUtils.isDomainOrSubdomain(candidate: $0, domain: domain)
+                    }
 
                     // If the rule has no permitted domains now, skip it.
                     if rule.permittedDomains.isEmpty {

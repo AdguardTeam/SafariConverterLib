@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import ContentBlockerConverter
 
 /// Helper methods and structs for testing converter.
@@ -26,10 +27,15 @@ extension ContentBlockerConverterTests {
             advancedBlocking: testCase.advancedBlocking
         )
 
-        let msg = "Unexpected result for converting rules\n \(testCase.rules.joined(separator: "\n"))"
+        let msg =
+            "Unexpected result for converting rules\n \(testCase.rules.joined(separator: "\n"))"
 
         XCTAssertEqual(result.sourceRulesCount, testCase.expectedSourceRulesCount, msg)
-        XCTAssertEqual(result.sourceSafariCompatibleRulesCount, testCase.expectedSourceSafariCompatibleRulesCount, msg)
+        XCTAssertEqual(
+            result.sourceSafariCompatibleRulesCount,
+            testCase.expectedSourceSafariCompatibleRulesCount,
+            msg
+        )
         XCTAssertEqual(result.safariRulesCount, testCase.expectedSafariRulesCount, msg)
         XCTAssertEqual(result.advancedRulesCount, testCase.expectedAdvancedRulesCount, msg)
         XCTAssertEqual(result.errorsCount, testCase.expectedErrorsCount, msg)

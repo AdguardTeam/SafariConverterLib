@@ -22,7 +22,9 @@ public enum CosmeticRuleMarker: String, CaseIterable {
     /**
      * Parses marker from string source
      */
-    public static func findCosmeticRuleMarker(ruleText: String) -> (
+    public static func findCosmeticRuleMarker(
+        ruleText: String
+    ) -> (
         index: Int, marker: CosmeticRuleMarker?
     ) {
         let length = ruleText.utf8.count
@@ -104,7 +106,7 @@ public enum CosmeticRuleMarker: String, CaseIterable {
                 default: break
                 }
 
-            case Chars.DOLLAR: // $
+            case Chars.DOLLAR:  // $
                 let nextChar = ruleText.utf8[safeIndex: i + 1]
                 let twoAhead = (i + 2 < length) ? ruleText.utf8[safeIndex: i + 2] : nil
 

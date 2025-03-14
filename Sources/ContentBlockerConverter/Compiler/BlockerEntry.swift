@@ -27,7 +27,8 @@ public struct BlockerEntry: Codable, Equatable, CustomStringConvertible {
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
 
         if let json = try? encoder.encode(self),
-            let jsonString = String(data: json, encoding: .utf8) {
+            let jsonString = String(data: json, encoding: .utf8)
+        {
             return jsonString
         }
 
@@ -75,13 +76,10 @@ public struct BlockerEntry: Codable, Equatable, CustomStringConvertible {
 
         // Custom Equatable implementation
         public static func == (lhs: Trigger, rhs: Trigger) -> Bool {
-            return lhs.ifDomain == rhs.ifDomain &&
-                lhs.urlFilter == rhs.urlFilter &&
-                lhs.unlessDomain == rhs.unlessDomain &&
-                lhs.loadType == rhs.loadType &&
-                lhs.resourceType == rhs.resourceType &&
-                lhs.caseSensitive == rhs.caseSensitive &&
-                lhs.loadContext == rhs.loadContext
+            return lhs.ifDomain == rhs.ifDomain && lhs.urlFilter == rhs.urlFilter
+                && lhs.unlessDomain == rhs.unlessDomain && lhs.loadType == rhs.loadType
+                && lhs.resourceType == rhs.resourceType && lhs.caseSensitive == rhs.caseSensitive
+                && lhs.loadContext == rhs.loadContext
         }
     }
 

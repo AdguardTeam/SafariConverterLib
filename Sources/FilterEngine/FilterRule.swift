@@ -1,5 +1,5 @@
-import Foundation
 import ContentBlockerConverter
+import Foundation
 
 // MARK: - Filter rule definition
 
@@ -83,12 +83,16 @@ public struct FilterRule: Codable {
     /// `$badfilter` rules aren't supported either, they're supposed to be interpreted by `RuleFactory`.
     public init(from rule: NetworkRule) throws {
         if !rule.isWhiteList {
-            throw RuleError.unsupported(message: "Only whitelist network rules are supported: \(rule.ruleText)")
+            throw RuleError.unsupported(
+                message: "Only whitelist network rules are supported: \(rule.ruleText)"
+            )
         }
 
         if rule.isBadfilter {
             // $badfilter rules are filtered out on earlier stages.
-            throw RuleError.unsupported(message: "$badfilter rules are not supported: \(rule.ruleText)")
+            throw RuleError.unsupported(
+                message: "$badfilter rules are not supported: \(rule.ruleText)"
+            )
         }
 
         action = try FilterRule.getNetworkRuleAction(rule)
@@ -127,7 +131,9 @@ public struct FilterRule: Codable {
     /// will be thrown. Whitelist rules are supposed to be interpreted by `RuleFactory`.
     public init(from rule: CosmeticRule) throws {
         if rule.isWhiteList {
-            throw RuleError.unsupported(message: "Whitelist cosmetic rules are not supported: \(rule.ruleText)")
+            throw RuleError.unsupported(
+                message: "Whitelist cosmetic rules are not supported: \(rule.ruleText)"
+            )
         }
 
         action = try FilterRule.getCosmeticRuleAction(rule)
@@ -211,8 +217,12 @@ public struct Action: OptionSet, Codable {
     /// Extended CSS rules (can be element hiding or CSS inject), i.e. `#?#` or `#$?#`
     public static let extendedCSS = Action(rawValue: 1 << 8)
 
-    public static let network: Action = [disableCSS, disableGenericCSS, disableSpecificCSS, disableScript]
-    public static let cosmetic: Action = [cssDisplayNone, cssInject, scriptlet, scriptInject, extendedCSS]
+    public static let network: Action = [
+        disableCSS, disableGenericCSS, disableSpecificCSS, disableScript,
+    ]
+    public static let cosmetic: Action = [
+        cssDisplayNone, cssInject, scriptlet, scriptInject, extendedCSS,
+    ]
 
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
@@ -310,7 +320,8 @@ extension FilterRule {
                 // We've hit a special character.
                 // If the buffer has at least 3 bytes, convert it and add to results.
                 if buffer.count >= 3,
-                    let shortcut = String(bytes: buffer, encoding: .utf8) {
+                    let shortcut = String(bytes: buffer, encoding: .utf8)
+                {
                     result.append(shortcut)
                 }
                 // Reset the buffer for the next potential shortcut.
@@ -322,7 +333,8 @@ extension FilterRule {
 
         // End of string: check if there's a leftover shortcut in the buffer
         if buffer.count >= 3,
-            let shortcut = String(bytes: buffer, encoding: .utf8) {
+            let shortcut = String(bytes: buffer, encoding: .utf8)
+        {
             result.append(shortcut)
         }
 
@@ -379,9 +391,9 @@ extension FilterRule {
         }
 
         var bracketStack: [UInt8] = []  // keeps track of opening brackets
-        var result: [String] = []       // final shortcuts
-        var buffer: [UInt8] = []        // accumulate outside-bracket chars
-        var isEscaped = false           // are we escaping the *next* character?
+        var result: [String] = []  // final shortcuts
+        var buffer: [UInt8] = []  // accumulate outside-bracket chars
+        var isEscaped = false  // are we escaping the *next* character?
 
         let utf8 = pattern.utf8
         var i = utf8.startIndex
@@ -392,7 +404,8 @@ extension FilterRule {
         @inline(__always)
         func flushBuffer() {
             if buffer.count >= 3,
-                let shortcut = String(bytes: buffer, encoding: .utf8) {
+                let shortcut = String(bytes: buffer, encoding: .utf8)
+            {
                 result.append(shortcut)
             }
 

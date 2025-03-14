@@ -4,7 +4,7 @@ public final class PrefixMatcher {
     private var trie: TrieNode
 
     /// Initializes the prefix matcher from a list of prefixes.
-    init (prefixes: [String]) {
+    init(prefixes: [String]) {
         // Build a trie from a list of strings.
         // Each string is inserted by its UTF-8 code units.
         trie = TrieNode()
@@ -52,7 +52,6 @@ public final class PrefixMatcher {
 
         return (nil, nil)
     }
-
 
     /// Trie is a go-to structure for fast prefix matching.
     ///

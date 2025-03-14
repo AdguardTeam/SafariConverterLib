@@ -78,7 +78,8 @@ class Compiler {
         // Apply specifichide exceptions
         compilationResult.cssBlockingDomainSensitive = Compiler.applySpecifichide(
             blockingItems: &compilationResult.cssBlockingDomainSensitive,
-            specifichideExceptions: specifichideExceptionDomains)
+            specifichideExceptions: specifichideExceptionDomains
+        )
 
         guard shouldContinue else { return CompilationResult() }
 
@@ -118,7 +119,10 @@ class Compiler {
     private static func createWideRule(wideSelectors: [String]) -> BlockerEntry {
         return BlockerEntry(
             trigger: BlockerEntry.Trigger(urlFilter: BlockerEntryFactory.URL_FILTER_COSMETIC_RULES),
-            action: BlockerEntry.Action(type: "css-display-none", selector: wideSelectors.joined(separator: ", "))
+            action: BlockerEntry.Action(
+                type: "css-display-none",
+                selector: wideSelectors.joined(separator: ", ")
+            )
         )
     }
 
@@ -136,7 +140,8 @@ class Compiler {
             } else if let domains = entry.trigger.unlessDomain, !domains.isEmpty {
                 cssBlockingGenericDomainSensitive.append(entry)
             } else if let selector = entry.action.selector,
-                entry.trigger.urlFilter == BlockerEntryFactory.URL_FILTER_COSMETIC_RULES {
+                entry.trigger.urlFilter == BlockerEntryFactory.URL_FILTER_COSMETIC_RULES
+            {
                 wideSelectors.append(selector)
                 if wideSelectors.count >= MAX_SELECTORS_PER_RULE {
                     cssBlockingWide.append(createWideRule(wideSelectors: wideSelectors))
@@ -178,7 +183,8 @@ class Compiler {
 
             if let domains = ifDomain, domains.count == 1,
                 urlFilter == BlockerEntryFactory.URL_FILTER_ANY_URL,
-                unlessDomain?.isEmpty ?? true {
+                unlessDomain?.isEmpty ?? true
+            {
                 let domain = domains[0]
 
                 var current = domainsDictionary[domain] ?? []
@@ -200,7 +206,10 @@ class Compiler {
                 continue
             }
 
-            let compactEntries = Compiler.createDomainWideEntries(domain: domain, domainEntries: domainEntries)
+            let compactEntries = Compiler.createDomainWideEntries(
+                domain: domain,
+                domainEntries: domainEntries
+            )
             result.append(contentsOf: compactEntries)
         }
 
@@ -209,7 +218,10 @@ class Compiler {
 
     /// Takes several rules that are limited to the same domain and compacts them
     /// by uniting these rules into a single entry.
-    private static func createDomainWideEntries(domain: String, domainEntries: [BlockerEntry]) -> [BlockerEntry] {
+    private static func createDomainWideEntries(
+        domain: String,
+        domainEntries: [BlockerEntry]
+    ) -> [BlockerEntry] {
         var result: [BlockerEntry] = []
 
         let trigger = BlockerEntry.Trigger(ifDomain: [domain], urlFilter: ".*")
@@ -225,7 +237,10 @@ class Compiler {
 
             let wideRuleEntry = BlockerEntry(
                 trigger: trigger,
-                action: BlockerEntry.Action(type: "css-display-none", selector: selectors.joined(separator: ", "))
+                action: BlockerEntry.Action(
+                    type: "css-display-none",
+                    selector: selectors.joined(separator: ", ")
+                )
             )
 
             result.append(wideRuleEntry)

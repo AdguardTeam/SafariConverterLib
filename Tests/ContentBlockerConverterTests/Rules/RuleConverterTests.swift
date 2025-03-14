@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import ContentBlockerConverter
 
 final class RuleConverterTests: XCTestCase {
@@ -30,7 +31,8 @@ final class RuleConverterTests: XCTestCase {
 
     func testScriptletUboRule() {
         let rule = "example.org##+js(setTimeout-defuser.js, [native code], 8000)"
-        let exp = "example.org#%#//scriptlet(\"ubo-setTimeout-defuser.js\", \"[native code]\", \"8000\")"
+        let exp =
+            "example.org#%#//scriptlet(\"ubo-setTimeout-defuser.js\", \"[native code]\", \"8000\")"
 
         let res = RuleConverter.convertRule(ruleText: rule)
         XCTAssertEqual(res[0], exp)
@@ -58,7 +60,8 @@ final class RuleConverterTests: XCTestCase {
 
     func testScriptletUboRuleException() {
         let rule = "example.org#@#+js(setTimeout-defuser.js, [native code], 8000)"
-        let exp = "example.org#@%#//scriptlet(\"ubo-setTimeout-defuser.js\", \"[native code]\", \"8000\")"
+        let exp =
+            "example.org#@%#//scriptlet(\"ubo-setTimeout-defuser.js\", \"[native code]\", \"8000\")"
 
         let res = RuleConverter.convertRule(ruleText: rule)
         XCTAssertEqual(res[0], exp)
@@ -66,7 +69,8 @@ final class RuleConverterTests: XCTestCase {
 
     func testScriptletAbpRule() {
         let rule = "example.org#$#hide-if-contains li.serp-item 'li.serp-item div.label'"
-        let exp = #"example.org#%#//scriptlet("abp-hide-if-contains", "li.serp-item", "li.serp-item div.label")"#
+        let exp =
+            #"example.org#%#//scriptlet("abp-hide-if-contains", "li.serp-item", "li.serp-item div.label")"#
 
         let res = RuleConverter.convertRule(ruleText: rule)
         XCTAssertEqual(res[0], exp)
@@ -74,16 +78,20 @@ final class RuleConverterTests: XCTestCase {
 
     func testScriptletAbpExceptionRule() {
         let rule = "example.org#@$#hide-if-contains li.serp-item 'li.serp-item div.label'"
-        let exp = #"example.org#@%#//scriptlet("abp-hide-if-contains", "li.serp-item", "li.serp-item div.label")"#
+        let exp =
+            #"example.org#@%#//scriptlet("abp-hide-if-contains", "li.serp-item", "li.serp-item div.label")"#
 
         let res = RuleConverter.convertRule(ruleText: rule)
         XCTAssertEqual(res[0], exp)
     }
 
     func testScriptletAbpRuleMultiple() {
-        let rule = #"example.org#$#hide-if-has-and-matches-style 'd[id^="_"]' 'div > s' 'display: none'; hide-if-contains /.*/ .p 'a[href^="/ad__c?"]'"#
-        let exp1 = #"example.org#%#//scriptlet("abp-hide-if-has-and-matches-style", "d[id^=\"_\"]", "div > s", "display: none")"#
-        let exp2 = #"example.org#%#//scriptlet("abp-hide-if-contains", "/.*/", ".p", "a[href^=\"/ad__c?\"]")"#
+        let rule =
+            #"example.org#$#hide-if-has-and-matches-style 'd[id^="_"]' 'div > s' 'display: none'; hide-if-contains /.*/ .p 'a[href^="/ad__c?"]'"#
+        let exp1 =
+            #"example.org#%#//scriptlet("abp-hide-if-has-and-matches-style", "d[id^=\"_\"]", "div > s", "display: none")"#
+        let exp2 =
+            #"example.org#%#//scriptlet("abp-hide-if-contains", "/.*/", ".p", "a[href^=\"/ad__c?\"]")"#
 
         let res = RuleConverter.convertRule(ruleText: rule)
 
@@ -108,11 +116,15 @@ final class RuleConverterTests: XCTestCase {
 
     func testUboCssStyleRule() {
         var exp = "example.com#$#h1 { background-color: blue !important }"
-        var res = RuleConverter.convertRule(ruleText: "example.com##h1:style(background-color: blue !important)")
+        var res = RuleConverter.convertRule(
+            ruleText: "example.com##h1:style(background-color: blue !important)"
+        )
         XCTAssertEqual(res, [exp])
 
         exp = "example.com#@$#h1 { background-color: blue !important }"
-        res = RuleConverter.convertRule(ruleText: "example.com#@#h1:style(background-color: blue !important)")
+        res = RuleConverter.convertRule(
+            ruleText: "example.com#@#h1:style(background-color: blue !important)"
+        )
         XCTAssertEqual(res, [exp])
     }
 
@@ -120,29 +132,35 @@ final class RuleConverterTests: XCTestCase {
         var ruleText = "*$image,denyallow=x.com,domain=a.com|~b.com"
         var exp: [String] = [
             "*$image,domain=a.com|~b.com",
-            "@@||x.com$image,domain=a.com|~b.com"
+            "@@||x.com$image,domain=a.com|~b.com",
         ]
         var res = RuleConverter.convertRule(ruleText: ruleText)
         XCTAssertEqual(res, exp)
 
         ruleText = "*$script,domain=a.com|~b.com,denyallow=x.com|y.com"
-        exp = ["*$script,domain=a.com|~b.com",
-               "@@||x.com$script,domain=a.com|~b.com",
-               "@@||y.com$script,domain=a.com|~b.com"]
+        exp = [
+            "*$script,domain=a.com|~b.com",
+            "@@||x.com$script,domain=a.com|~b.com",
+            "@@||y.com$script,domain=a.com|~b.com",
+        ]
         res = RuleConverter.convertRule(ruleText: ruleText)
         XCTAssertEqual(res, exp)
 
         ruleText = "$image,frame,denyallow=x.com|y.com|z.com,domain=a.com"
-        exp = ["$image,frame,domain=a.com",
-               "@@||x.com$image,frame,domain=a.com",
-               "@@||y.com$image,frame,domain=a.com",
-               "@@||z.com$image,frame,domain=a.com"]
+        exp = [
+            "$image,frame,domain=a.com",
+            "@@||x.com$image,frame,domain=a.com",
+            "@@||y.com$image,frame,domain=a.com",
+            "@@||z.com$image,frame,domain=a.com",
+        ]
         res = RuleConverter.convertRule(ruleText: ruleText)
         XCTAssertEqual(res, exp)
 
         ruleText = "*$denyallow=x.com,image,frame,domain=a.com"
-        exp = ["*$image,frame,domain=a.com",
-               "@@||x.com$image,frame,domain=a.com"]
+        exp = [
+            "*$image,frame,domain=a.com",
+            "@@||x.com$image,frame,domain=a.com",
+        ]
         res = RuleConverter.convertRule(ruleText: ruleText)
         XCTAssertEqual(res, exp)
 
@@ -172,7 +190,7 @@ final class RuleConverterTests: XCTestCase {
         var exp: [String] = [
             "/banner.png$image,domain=example.org",
             "@@||test.com/banner.png$image,domain=example.org",
-            "@@||test.com/*/banner.png$image,domain=example.org"
+            "@@||test.com/*/banner.png$image,domain=example.org",
         ]
         var res = RuleConverter.convertRule(ruleText: ruleText)
         XCTAssertEqual(res, exp)
@@ -181,7 +199,7 @@ final class RuleConverterTests: XCTestCase {
         exp = [
             "banner.png$image,domain=example.org",
             "@@||test.com/banner.png$image,domain=example.org",
-            "@@||test.com/*/banner.png$image,domain=example.org"
+            "@@||test.com/*/banner.png$image,domain=example.org",
         ]
         res = RuleConverter.convertRule(ruleText: ruleText)
         XCTAssertEqual(res, exp)
@@ -192,7 +210,7 @@ final class RuleConverterTests: XCTestCase {
             "@@||test1.com/banner.png$image,domain=example.org",
             "@@||test1.com/*/banner.png$image,domain=example.org",
             "@@||test2.com/banner.png$image,domain=example.org",
-            "@@||test2.com/*/banner.png$image,domain=example.org"
+            "@@||test2.com/*/banner.png$image,domain=example.org",
         ]
         res = RuleConverter.convertRule(ruleText: ruleText)
         XCTAssertEqual(res, exp)
@@ -201,7 +219,7 @@ final class RuleConverterTests: XCTestCase {
         exp = [
             "@@/banner.png$image,domain=example.org",
             "||test.com/banner.png$image,domain=example.org,important",
-            "||test.com/*/banner.png$image,domain=example.org,important"
+            "||test.com/*/banner.png$image,domain=example.org,important",
         ]
         res = RuleConverter.convertRule(ruleText: ruleText)
         XCTAssertEqual(res, exp)
@@ -212,25 +230,27 @@ final class RuleConverterTests: XCTestCase {
             "||test1.com/banner.png$image,domain=example.org,important",
             "||test1.com/*/banner.png$image,domain=example.org,important",
             "||test2.com/banner.png$image,domain=example.org,important",
-            "||test2.com/*/banner.png$image,domain=example.org,important"
+            "||test2.com/*/banner.png$image,domain=example.org,important",
         ]
         res = RuleConverter.convertRule(ruleText: ruleText)
         XCTAssertEqual(res, exp)
 
-        ruleText = "/adguard_dns_map.png$image,denyallow=cdn.adguard.com,domain=testcases.adguard.com|surge.sh"
+        ruleText =
+            "/adguard_dns_map.png$image,denyallow=cdn.adguard.com,domain=testcases.adguard.com|surge.sh"
         exp = [
             "/adguard_dns_map.png$image,domain=testcases.adguard.com|surge.sh",
             "@@||cdn.adguard.com/adguard_dns_map.png$image,domain=testcases.adguard.com|surge.sh",
-            "@@||cdn.adguard.com/*/adguard_dns_map.png$image,domain=testcases.adguard.com|surge.sh"
+            "@@||cdn.adguard.com/*/adguard_dns_map.png$image,domain=testcases.adguard.com|surge.sh",
         ]
         res = RuleConverter.convertRule(ruleText: ruleText)
         XCTAssertEqual(res, exp)
 
-        ruleText = "@@/adguard_dns_map.png$image,denyallow=cdn.adguard.com,domain=testcases.adguard.com|surge.sh"
+        ruleText =
+            "@@/adguard_dns_map.png$image,denyallow=cdn.adguard.com,domain=testcases.adguard.com|surge.sh"
         exp = [
             "@@/adguard_dns_map.png$image,domain=testcases.adguard.com|surge.sh",
             "||cdn.adguard.com/adguard_dns_map.png$image,domain=testcases.adguard.com|surge.sh,important",
-            "||cdn.adguard.com/*/adguard_dns_map.png$image,domain=testcases.adguard.com|surge.sh,important"
+            "||cdn.adguard.com/*/adguard_dns_map.png$image,domain=testcases.adguard.com|surge.sh,important",
         ]
         res = RuleConverter.convertRule(ruleText: ruleText)
         XCTAssertEqual(res, exp)
@@ -240,7 +260,7 @@ final class RuleConverterTests: XCTestCase {
         let ruleText = "*$image,denyallow=x.com,domain=a.com|~b.com,badfilter"
         let exp: [String] = [
             "*$image,domain=a.com|~b.com,badfilter",
-            "@@||x.com$image,domain=a.com|~b.com,badfilter"
+            "@@||x.com$image,domain=a.com|~b.com,badfilter",
         ]
         let res = RuleConverter.convertRule(ruleText: ruleText)
         XCTAssertEqual(res, exp)
@@ -272,9 +292,12 @@ final class RuleConverterTests: XCTestCase {
         expect = ["example.org#%#//scriptlet(\"abp-hide-if-contains\", \"\\\"\")"]
         XCTAssertEqual(result, expect)
 
-        rule = "www.linkedin.com#$#simulate-event-poc click 'xpath(//*[text()=\"Promoted\" or text()=\"Sponsored\" or text()=\"Dipromosikan\" or text()=\"Propagováno\" or text()=\"Promoveret\" or text()=\"Anzeige\" or text()=\"Promocionado\" or text()=\"促銷內容\" or text()=\"Post sponsorisé\" or text()=\"프로모션\" or text()=\"Post sponsorizzato\" or text()=\"广告\" or text()=\"プロモーション\" or text()=\"Treść promowana\" or text()=\"Patrocinado\" or text()=\"Promovat\" or text()=\"Продвигается\" or text()=\"Marknadsfört\" or text()=\"Nai-promote\" or text()=\"ได้รับการโปรโมท\" or text()=\"Öne çıkarılan içerik\" or text()=\"الترويج\"]/ancestor::div[@data-id]//video[@autoplay=\"autoplay\"])' 10"
+        rule =
+            "www.linkedin.com#$#simulate-event-poc click 'xpath(//*[text()=\"Promoted\" or text()=\"Sponsored\" or text()=\"Dipromosikan\" or text()=\"Propagováno\" or text()=\"Promoveret\" or text()=\"Anzeige\" or text()=\"Promocionado\" or text()=\"促銷內容\" or text()=\"Post sponsorisé\" or text()=\"프로모션\" or text()=\"Post sponsorizzato\" or text()=\"广告\" or text()=\"プロモーション\" or text()=\"Treść promowana\" or text()=\"Patrocinado\" or text()=\"Promovat\" or text()=\"Продвигается\" or text()=\"Marknadsfört\" or text()=\"Nai-promote\" or text()=\"ได้รับการโปรโมท\" or text()=\"Öne çıkarılan içerik\" or text()=\"الترويج\"]/ancestor::div[@data-id]//video[@autoplay=\"autoplay\"])' 10"
         result = RuleConverter.convertRule(ruleText: rule)
-        expect = ["www.linkedin.com#%#//scriptlet(\"abp-simulate-event-poc\", \"click\", \"xpath(//*[text()=\\\"Promoted\\\" or text()=\\\"Sponsored\\\" or text()=\\\"Dipromosikan\\\" or text()=\\\"Propagováno\\\" or text()=\\\"Promoveret\\\" or text()=\\\"Anzeige\\\" or text()=\\\"Promocionado\\\" or text()=\\\"促銷內容\\\" or text()=\\\"Post sponsorisé\\\" or text()=\\\"프로모션\\\" or text()=\\\"Post sponsorizzato\\\" or text()=\\\"广告\\\" or text()=\\\"プロモーション\\\" or text()=\\\"Treść promowana\\\" or text()=\\\"Patrocinado\\\" or text()=\\\"Promovat\\\" or text()=\\\"Продвигается\\\" or text()=\\\"Marknadsfört\\\" or text()=\\\"Nai-promote\\\" or text()=\\\"ได้รับการโปรโมท\\\" or text()=\\\"Öne çıkarılan içerik\\\" or text()=\\\"الترويج\\\"]/ancestor::div[@data-id]//video[@autoplay=\\\"autoplay\\\"])\", \"10\")"]
+        expect = [
+            "www.linkedin.com#%#//scriptlet(\"abp-simulate-event-poc\", \"click\", \"xpath(//*[text()=\\\"Promoted\\\" or text()=\\\"Sponsored\\\" or text()=\\\"Dipromosikan\\\" or text()=\\\"Propagováno\\\" or text()=\\\"Promoveret\\\" or text()=\\\"Anzeige\\\" or text()=\\\"Promocionado\\\" or text()=\\\"促銷內容\\\" or text()=\\\"Post sponsorisé\\\" or text()=\\\"프로모션\\\" or text()=\\\"Post sponsorizzato\\\" or text()=\\\"广告\\\" or text()=\\\"プロモーション\\\" or text()=\\\"Treść promowana\\\" or text()=\\\"Patrocinado\\\" or text()=\\\"Promovat\\\" or text()=\\\"Продвигается\\\" or text()=\\\"Marknadsfört\\\" or text()=\\\"Nai-promote\\\" or text()=\\\"ได้รับการโปรโมท\\\" or text()=\\\"Öne çıkarılan içerik\\\" or text()=\\\"الترويج\\\"]/ancestor::div[@data-id]//video[@autoplay=\\\"autoplay\\\"])\", \"10\")"
+        ]
         XCTAssertEqual(result, expect)
     }
 

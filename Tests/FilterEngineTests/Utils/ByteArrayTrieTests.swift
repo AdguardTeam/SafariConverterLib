@@ -23,7 +23,7 @@ final class ByteArrayTrieTests: XCTestCase {
     func testSimpleInsertAndFind() {
         // Create an in-memory root node
         let root = TrieNode()
-        root.insert(word: "apple", payload: [100, 101]) // payload is [UInt32]
+        root.insert(word: "apple", payload: [100, 101])  // payload is [UInt32]
 
         // Build the ByteArrayTrie
         let trie = ByteArrayTrie(from: root)
@@ -35,7 +35,10 @@ final class ByteArrayTrieTests: XCTestCase {
 
         // "banana" was not inserted, so expect nil
         let missing = trie.find(word: "banana")
-        XCTAssertNil(missing, "Expected 'banana' to be missing, but got payload \(String(describing: missing))")
+        XCTAssertNil(
+            missing,
+            "Expected 'banana' to be missing, but got payload \(String(describing: missing))"
+        )
     }
 
     /// Test multiple inserts and finds.
@@ -70,8 +73,16 @@ final class ByteArrayTrieTests: XCTestCase {
 
         let trie = ByteArrayTrie(from: root)
 
-        XCTAssertEqual(trie.collectPayload(word: "car"), [100], "Expected to collect [100] from 'car'")
-        XCTAssertEqual(trie.collectPayload(word: "bus"), [200], "Expected to collect [200] from 'bus'")
+        XCTAssertEqual(
+            trie.collectPayload(word: "car"),
+            [100],
+            "Expected to collect [100] from 'car'"
+        )
+        XCTAssertEqual(
+            trie.collectPayload(word: "bus"),
+            [200],
+            "Expected to collect [200] from 'bus'"
+        )
     }
 
     /// If words share prefixes, collectPayload accumulates from each node along the path.
@@ -110,7 +121,11 @@ final class ByteArrayTrieTests: XCTestCase {
         // There's no path for "bpple", so the path diverges at first character 'b' vs 'a'.
         // Typically, the root has no payload, so we'd just get an empty array.
         let collected = trie.collectPayload(word: "bpple")
-        XCTAssertEqual(collected, [], "Expected an empty result since 'bpple' doesn't match 'apple' path")
+        XCTAssertEqual(
+            collected,
+            [],
+            "Expected an empty result since 'bpple' doesn't match 'apple' path"
+        )
     }
 
     // MARK: - Serialization & Deserialization
@@ -129,8 +144,16 @@ final class ByteArrayTrieTests: XCTestCase {
         let newTrie = ByteArrayTrie(from: data)
 
         // Ensure the new trie preserves the old data
-        XCTAssertEqual(newTrie.find(word: "apple"), [100, 101], "Payload mismatch for 'apple' after deserialization")
-        XCTAssertEqual(newTrie.find(word: "banana"), [9999], "Payload mismatch for 'banana' after deserialization")
+        XCTAssertEqual(
+            newTrie.find(word: "apple"),
+            [100, 101],
+            "Payload mismatch for 'apple' after deserialization"
+        )
+        XCTAssertEqual(
+            newTrie.find(word: "banana"),
+            [9999],
+            "Payload mismatch for 'banana' after deserialization"
+        )
 
         // Check a missing word
         XCTAssertNil(newTrie.find(word: "apples"), "'apples' should not be found")
@@ -161,7 +184,11 @@ final class ByteArrayTrieTests: XCTestCase {
         let trie = ByteArrayTrie(from: root)
 
         // If we consider the empty string as a valid word, find("") should return [9999].
-        XCTAssertEqual(trie.find(word: ""), [9999], "The root node should have payload [9999] for the empty string")
+        XCTAssertEqual(
+            trie.find(word: ""),
+            [9999],
+            "The root node should have payload [9999] for the empty string"
+        )
 
         // "abc" is normal
         XCTAssertEqual(trie.find(word: "abc"), [10])
@@ -169,7 +196,7 @@ final class ByteArrayTrieTests: XCTestCase {
 
     /// Test inserting a large word (very long string) to ensure the trie can handle it.
     func testInsertVeryLongWord() {
-        let longWord = String(repeating: "a", count: 5000) // 5k 'a's
+        let longWord = String(repeating: "a", count: 5000)  // 5k 'a's
         let root = TrieNode()
         root.insert(word: longWord, payload: [1])
 

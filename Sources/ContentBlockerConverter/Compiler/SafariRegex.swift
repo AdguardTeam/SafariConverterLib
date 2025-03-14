@@ -80,7 +80,9 @@ public enum SafariRegex {
             switch currentChar {
             case UInt8(ascii: "\\"):
                 guard let next = peekNext() else {
-                    return .failure(SafariRegexError.invalidRegex(message: "Unsupporteed escape sequence"))
+                    return .failure(
+                        SafariRegexError.invalidRegex(message: "Unsupporteed escape sequence")
+                    )
                 }
 
                 // Explicitly matching special characters is allowed.
@@ -94,7 +96,9 @@ public enum SafariRegex {
                     canQuantify = true
                     continue
                 default:
-                    return .failure(SafariRegexError.invalidRegex(message: "Unsupported escape sequence"))
+                    return .failure(
+                        SafariRegexError.invalidRegex(message: "Unsupported escape sequence")
+                    )
                 }
 
             case UInt8(ascii: "("):
@@ -114,7 +118,9 @@ public enum SafariRegex {
                     // If we encounter a closing parenthesis, the top of the stack
                     // must be a matching '('
                     guard let last = stack.popLast(), last == UInt8(ascii: "(") else {
-                        return .failure(SafariRegexError.unbalancedParentheses(message: "Unbalanced brackets"))
+                        return .failure(
+                            SafariRegexError.unbalancedParentheses(message: "Unbalanced brackets")
+                        )
                     }
                 }
                 canQuantify = true
@@ -123,38 +129,56 @@ public enum SafariRegex {
                 // If we encounter a closing bracket, the top of the stack
                 // must be a matching '['
                 guard let last = stack.popLast(), last == UInt8(ascii: "[") else {
-                    return .failure(SafariRegexError.unbalancedParentheses(message: "Unbalanced square brackets"))
+                    return .failure(
+                        SafariRegexError.unbalancedParentheses(
+                            message: "Unbalanced square brackets"
+                        )
+                    )
                 }
                 canQuantify = true
 
             case UInt8(ascii: "^"):
                 if i != utf8.startIndex && !inCharacterClass() {
-                    return .failure(SafariRegexError.invalidRegex(message: "Invalid regex: unescaped ^ in the middle"))
+                    return .failure(
+                        SafariRegexError.invalidRegex(
+                            message: "Invalid regex: unescaped ^ in the middle"
+                        )
+                    )
                 }
                 canQuantify = false
 
             case UInt8(ascii: "$"):
                 let next = peekNext()
                 if next != nil && !inCharacterClass() {
-                    return .failure(SafariRegexError.invalidRegex(message: "Invalid regex: unescaped $ in the middle"))
+                    return .failure(
+                        SafariRegexError.invalidRegex(
+                            message: "Invalid regex: unescaped $ in the middle"
+                        )
+                    )
                 }
                 canQuantify = false
 
             case UInt8(ascii: "|"):
                 if !inCharacterClass() {
                     // If we got here, the character was not escaped.
-                    return .failure(SafariRegexError.pipeCondition(message: "Pipe conditions not supported"))
+                    return .failure(
+                        SafariRegexError.pipeCondition(message: "Pipe conditions not supported")
+                    )
                 }
 
             case UInt8(ascii: "{"), UInt8(ascii: "}"):
                 if !inCharacterClass() {
                     // If we got here, the curly brackets were not escaped.
-                    return .failure(SafariRegexError.digitRange(message: "Digit ranges not supported"))
+                    return .failure(
+                        SafariRegexError.digitRange(message: "Digit ranges not supported")
+                    )
                 }
 
             case UInt8(ascii: "*"), UInt8(ascii: "+"), UInt8(ascii: "?"):
                 if !canQuantify && !inCharacterClass() {
-                    return .failure(SafariRegexError.unquantifiableCharacter(message: "Unquantifiable chacter"))
+                    return .failure(
+                        SafariRegexError.unquantifiableCharacter(message: "Unquantifiable chacter")
+                    )
                 }
                 canQuantify = false
             default:
@@ -166,7 +190,9 @@ public enum SafariRegex {
         }
 
         if !stack.isEmpty {
-            return .failure(SafariRegexError.unbalancedParentheses(message: "Unbalanced parentheses"))
+            return .failure(
+                SafariRegexError.unbalancedParentheses(message: "Unbalanced parentheses")
+            )
         }
 
         return .success(())

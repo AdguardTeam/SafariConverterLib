@@ -1,5 +1,5 @@
-import Foundation
 import ContentBlockerConverter
+import Foundation
 
 /// FilterEngine is a class that's used for quickly looking up `FilterRule` objects
 /// without keeping them in memory. In order to do that this class operates with rule
@@ -91,41 +91,36 @@ extension FilterEngine {
         public var cosmeticRules: [FilterRule] = []
     }
 
-    /// Finds all filter rules that match the given URL.
+    /// Finds all filter rules that match the given request.
     ///
     /// This method looks up rules in three different places:
     /// 1. The domain trie (for rules with permittedDomains)
     /// 2. The shortcuts trie (for rules with shortcuts)
     /// 3. The tail array (for rules with neither)
     ///
-    /// It then filters the results to only include rules that match the URL and other conditions.
-    public func findAll(for url: URL, subdocument: Bool = false, thirdParty: Bool = false) -> [FilterRule] {
-        let domainIndices = lookupDomainTrie(for: url)
-        let shortcutIndices = lookupShortcutsTrie(for: url)
+    /// It then filters the results to only include rules that match the URL
+    /// and other conditions.
+    public func findAll(for request: Request) -> [FilterRule] {
+        let domainIndices = lookupDomainTrie(for: request.url)
+        let shortcutIndices = lookupShortcutsTrie(for: request.url)
 
         var ruleIndices: [UInt32: Bool] = [:]
         var res: MatchResult = .init()
 
         addMatchingRules(
-            for: url,
-            subdocument: subdocument,
-            thirdParty: thirdParty,
+            for: request,
             from: domainIndices,
             except: &ruleIndices,
             to: &res
         )
         addMatchingRules(
-            for: url,
-            subdocument: subdocument,
-            thirdParty: thirdParty,
+            for: request,
             from: shortcutIndices,
             except: &ruleIndices,
             to: &res
         )
         addMatchingRules(
-            for: url,
-            subdocument: subdocument,
-            thirdParty: thirdParty,
+            for: request,
             from: tailIndices,
             except: &ruleIndices,
             to: &res
@@ -140,7 +135,8 @@ extension FilterEngine {
         var filteredCosmeticRules: [FilterRule] = []
 
         if let action = result.networkRule?.action, !result.cosmeticRules.isEmpty {
-            for rule in result.cosmeticRules where isRuleEnabled(cosmeticRule: rule, action: action) {
+            for rule in result.cosmeticRules where isRuleEnabled(cosmeticRule: rule, action: action)
+            {
                 filteredCosmeticRules.append(rule)
             }
         } else if result.networkRule?.action == nil {
@@ -154,8 +150,11 @@ extension FilterEngine {
     ///
     /// For instance, `##.banner` will be disabled by `@@||example.org^$elemhide` on `example.org`.
     private func isRuleEnabled(cosmeticRule: FilterRule, action: Action) -> Bool {
-        let isCSS = cosmeticRule.action.contains(.cssDisplayNone) || cosmeticRule.action.contains(.cssInject)
-        let isScript = cosmeticRule.action.contains(.scriptInject) || cosmeticRule.action.contains(.scriptlet)
+        let isCSS =
+            cosmeticRule.action.contains(.cssDisplayNone)
+            || cosmeticRule.action.contains(.cssInject)
+        let isScript =
+            cosmeticRule.action.contains(.scriptInject) || cosmeticRule.action.contains(.scriptlet)
 
         if isCSS && action.contains(.disableCSS) {
             return false
@@ -175,7 +174,6 @@ extension FilterEngine {
             return false
         }
 
-
         return true
     }
 
@@ -183,9 +181,7 @@ extension FilterEngine {
     /// if it does, adds this rule to the resulting array. It also avoids adding duplicate rules by keeping
     /// track of what's added in `ruleIndices`.
     private func addMatchingRules(
-        for url: URL,
-        subdocument: Bool,
-        thirdParty: Bool,
+        for request: Request,
         from indices: [UInt32],
         except ruleIndices: inout [UInt32: Bool],
         to result: inout MatchResult
@@ -199,9 +195,7 @@ extension FilterEngine {
                 let rule = try getRule(by: index)
                 if !ruleMatches(
                     rule: rule,
-                    url: url,
-                    subdocument: subdocument,
-                    thirdParty: thirdParty
+                    request: request
                 ) {
                     continue
                 }
@@ -211,7 +205,9 @@ extension FilterEngine {
 
                 switch rule.action {
                 case _ where !rule.action.isDisjoint(with: .network):
-                    if result.networkRule == nil || rule.priority >= (result.networkRule?.priority ?? 0) {
+                    if result.networkRule == nil
+                        || rule.priority >= (result.networkRule?.priority ?? 0)
+                    {
                         result.networkRule = rule
                     }
                 case _ where !rule.action.isDisjoint(with: .cosmetic):
@@ -276,9 +272,12 @@ extension FilterEngine {
 
 extension FilterEngine {
     /// Checks if the given rule matches the specified URL.
-    private func ruleMatches(rule: FilterRule, url: URL, subdocument: Bool, thirdParty: Bool) -> Bool {
+    private func ruleMatches(
+        rule: FilterRule,
+        request: Request
+    ) -> Bool {
         // 1. Make sure the URL has a host
-        let host = FilterEngine.host(from: url)
+        let host = FilterEngine.host(from: request.url)
         if host.isEmpty {
             return false
         }
@@ -305,12 +304,12 @@ extension FilterEngine {
         }
 
         // 4. Check thirdParty
-        if let ruleThirdParty = rule.thirdParty, ruleThirdParty != thirdParty {
+        if let ruleThirdParty = rule.thirdParty, ruleThirdParty != request.thirdParty {
             return false
         }
 
         // 5. Check subdocument
-        if let ruleSubdocument = rule.subdocument, ruleSubdocument != subdocument {
+        if let ruleSubdocument = rule.subdocument, ruleSubdocument != request.subdocument {
             return false
         }
 
@@ -321,7 +320,7 @@ extension FilterEngine {
                 // If the regex could not be compiled, consider it as no match
                 return false
             }
-            let urlString = url.absoluteString
+            let urlString = request.url.absoluteString
             let range = NSRange(location: 0, length: urlString.utf16.count)
             // If there is no match, return false
             if regex.firstMatch(in: urlString, options: [], range: range) == nil {
@@ -338,8 +337,8 @@ extension FilterEngine {
             }
 
             // Combine path and query
-            var pathAndQuery = url.path
-            if let query = url.query, !query.isEmpty {
+            var pathAndQuery = request.url.path
+            if let query = request.url.query, !query.isEmpty {
                 pathAndQuery += "?\(query)"
             }
 
@@ -352,7 +351,6 @@ extension FilterEngine {
         // If all checks pass, the rule matches
         return true
     }
-
 
     /// A helper structure for caching compiled NSRegularExpression objects.
     private enum RegexCache {
@@ -426,14 +424,18 @@ extension FilterEngine {
                 // If there are no permitted domains, attempt to extract shortcuts.
                 let shortcuts: [String]
                 if SimpleRegex.isRegexPattern(rule.urlPattern),
-                   let urlRegex = rule.urlRegex {
+                    let urlRegex = rule.urlRegex
+                {
                     shortcuts = FilterRule.extractRegexShortcuts(from: urlRegex)
                 } else {
                     shortcuts = FilterRule.extractShortcuts(from: rule.urlPattern)
                 }
 
                 if !shortcuts.isEmpty {
-                    let shortcut = selectBestShortcut(shortcuts: shortcuts, shortcutsHistogram: shortcutsHistogram)
+                    let shortcut = selectBestShortcut(
+                        shortcuts: shortcuts,
+                        shortcutsHistogram: shortcutsHistogram
+                    )
                     // Increment the usage of the chosen shortcut
                     shortcutsHistogram[shortcut, default: 0] += 1
 
@@ -459,7 +461,10 @@ extension FilterEngine {
     /// In order to do this we build a histogram and select the least used shortcut among
     /// available. If there are several shortcuts that have the same usage count, we'll select
     /// the longest one.
-    private static func selectBestShortcut(shortcuts: [String], shortcutsHistogram: [String: Int]) -> String {
+    private static func selectBestShortcut(
+        shortcuts: [String],
+        shortcutsHistogram: [String: Int]
+    ) -> String {
         var leastUsedShortcut = shortcuts[0]
         var leastUsageCount = shortcutsHistogram[leastUsedShortcut, default: 0]
 
@@ -469,7 +474,9 @@ extension FilterEngine {
             if usageCount < leastUsageCount {
                 leastUsedShortcut = shortcut
                 leastUsageCount = usageCount
-            } else if usageCount == leastUsageCount && leastUsedShortcut.utf8.count < shortcut.utf8.count {
+            } else if usageCount == leastUsageCount
+                && leastUsedShortcut.utf8.count < shortcut.utf8.count
+            {
                 leastUsedShortcut = shortcut
             }
         }

@@ -31,7 +31,10 @@ public enum ScriptletParser {
         let argumentsStr = cosmeticRuleContent[argumentsStrIndex..<argumentsEndIndex]
 
         // Now we just get an array of these arguments
-        var args: [String] = try ScriptletParser.extractArguments(str: argumentsStr, delimiter: Chars.COMMA)
+        var args: [String] = try ScriptletParser.extractArguments(
+            str: argumentsStr,
+            delimiter: Chars.COMMA
+        )
 
         if args.count < 1 {
             throw SyntaxError.invalidRule(message: "Invalid scriptlet params")
@@ -86,9 +89,12 @@ public enum ScriptletParser {
                     // Now we can extract the quoted value (and drop the quotes).
                     argumentEndIndex = index - 1
                     if argumentEndIndex > argumentStartIndex {
-                        let startIdx = str.utf8.index(str.utf8.startIndex, offsetBy: argumentStartIndex)
+                        let startIdx = str.utf8.index(
+                            str.utf8.startIndex,
+                            offsetBy: argumentStartIndex
+                        )
                         let endIdx = str.utf8.index(str.utf8.startIndex, offsetBy: argumentEndIndex)
-                        result.append(String(str[startIdx ... endIdx]))
+                        result.append(String(str[startIdx...endIdx]))
                     } else {
                         result.append("")
                     }

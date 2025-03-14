@@ -38,7 +38,7 @@ class BlockerEntryFactory {
         "cn", "mobi", "life", "com.mx", "dev", "icu", "asia", "com.co", "si", "co.za",
         "shop", "uk", "lt", "lv", "space", "ee", "is", "id", "com.ua", "kz",
         "work", "co.in", "tech", "co.kr", "com.ar", "blog", "pw", "co.il", "ph", "su",
-        "co.nz", "rs", "ai", "website", "bg", "ua", "ma", "world", "pe", "link"
+        "co.nz", "rs", "ai", "website", "bg", "ua", "ma", "world", "pe", "link",
     ]
 
     private let errorsCounter: ErrorsCounter
@@ -68,7 +68,9 @@ class BlockerEntryFactory {
             }
         } catch {
             self.errorsCounter.add()
-            Logger.log("(BlockerEntryFactory) - Unexpected error: \(error) while converting \(rule.ruleText)")
+            Logger.log(
+                "(BlockerEntryFactory) - Unexpected error: \(error) while converting \(rule.ruleText)"
+            )
         }
 
         return nil
@@ -100,11 +102,15 @@ class BlockerEntryFactory {
     /// the result entry could be used in advanced blocking json only.
     private func convertCosmeticRule(rule: CosmeticRule) throws -> BlockerEntry? {
         if rule.isScript || rule.isScriptlet || rule.isInjectCss || rule.isExtendedCss {
-            throw ConversionError.unsupportedRule(message: "Cannot convert advanced rule: \(rule.ruleText)")
+            throw ConversionError.unsupportedRule(
+                message: "Cannot convert advanced rule: \(rule.ruleText)"
+            )
         }
 
         if rule.isWhiteList {
-            throw ConversionError.unsupportedRule(message: "Cannot convert cosmetic exception: \(rule.ruleText)")
+            throw ConversionError.unsupportedRule(
+                message: "Cannot convert cosmetic exception: \(rule.ruleText)"
+            )
         }
 
         let urlFilter = try createUrlFilterStringForCosmetic(rule: rule)
@@ -126,7 +132,8 @@ class BlockerEntryFactory {
 
         // Special treatment for $path
         guard let pathRegex = rule.pathRegExpSource,
-            let path = rule.pathModifier else {
+            let path = rule.pathModifier
+        else {
             return BlockerEntryFactory.URL_FILTER_COSMETIC_RULES
         }
 
@@ -162,7 +169,8 @@ class BlockerEntryFactory {
         let isWebSocket = rule.isWebSocket
 
         // Use a single standard regex for rules that are supposed to match every URL.
-        for anyUrlTmpl in BlockerEntryFactory.ANY_URL_TEMPLATES where rule.urlRuleText == anyUrlTmpl {
+        for anyUrlTmpl in BlockerEntryFactory.ANY_URL_TEMPLATES where rule.urlRuleText == anyUrlTmpl
+        {
             if isWebSocket {
                 return BlockerEntryFactory.URL_FILTER_WS_ANY_URL
             }
@@ -308,7 +316,8 @@ class BlockerEntryFactory {
         // `child-frame` and `top-frame` contexts are supported since Safari 15
         if self.version.isSafari15orGreater() {
             if rule.hasContentType(contentType: .subdocument)
-                && !rule.isContentType(contentType: .all) {
+                && !rule.isContentType(contentType: .all)
+            {
                 context.append("child-frame")
             }
             if rule.hasRestrictedContentType(contentType: .subdocument) {
@@ -408,12 +417,16 @@ class BlockerEntryFactory {
     ///     "if-domain": ["*example.org*"]
     /// }
     /// ```
-    private func updateTriggerForDocumentLevelExceptionRules(rule: NetworkRule, trigger: inout BlockerEntry.Trigger) throws {
+    private func updateTriggerForDocumentLevelExceptionRules(
+        rule: NetworkRule,
+        trigger: inout BlockerEntry.Trigger
+    ) throws {
         if !rule.isWhiteList {
             return
         }
 
-        if rule.isDocumentWhiteList || rule.isUrlBlock || rule.isCssExceptionRule || rule.isJsInject {
+        if rule.isDocumentWhiteList || rule.isUrlBlock || rule.isCssExceptionRule || rule.isJsInject
+        {
             if rule.isDocumentWhiteList {
                 // $document rules unblock everything so remove resourceType limitation.
                 trigger.resourceType = nil

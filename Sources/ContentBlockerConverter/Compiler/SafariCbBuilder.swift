@@ -35,7 +35,10 @@ enum SafariCbBuilder {
             entries.removeLast(entries.count - maxRules)
         }
 
-        let (json, entriesCount) = createJSONString(entries: entries, maxJsonSizeBytes: maxJsonSizeBytes)
+        let (json, entriesCount) = createJSONString(
+            entries: entries,
+            maxJsonSizeBytes: maxJsonSizeBytes
+        )
 
         // Some entries might have been discarded due to the size limit.
         discardedCount += entries.count - entriesCount
@@ -46,7 +49,6 @@ enum SafariCbBuilder {
             discardedRulesCount: discardedCount
         )
     }
-
 
     /// Creates an array of rules for Safari content blocker in the correct order.
     private static func createEntries(from result: CompilationResult) -> [BlockerEntry] {
@@ -68,7 +70,10 @@ enum SafariCbBuilder {
 
     /// Serializes a list of `BlockerEntry` to JSON taking into account the size limit `maxJsonSizeBytes`.
     /// If the size limit is reached, extra rules will be discarded.
-    private static func createJSONString(entries: [BlockerEntry], maxJsonSizeBytes: Int?) -> (String, Int) {
+    private static func createJSONString(
+        entries: [BlockerEntry],
+        maxJsonSizeBytes: Int?
+    ) -> (String, Int) {
         if entries.isEmpty {
             return (ConversionResult.EMPTY_RESULT_JSON, 0)
         }

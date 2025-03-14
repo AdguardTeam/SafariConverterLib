@@ -163,7 +163,9 @@ extension StringProtocol {
 extension Collection where Element == UInt8, Index == String.Index {
     /// Access a UTF-8 code unit by integer index.
     public subscript(safeIndex index: Int) -> UInt8? {
-        guard index >= 0, let utf8Index = self.index(startIndex, offsetBy: index, limitedBy: endIndex) else {
+        guard index >= 0,
+            let utf8Index = self.index(startIndex, offsetBy: index, limitedBy: endIndex)
+        else {
             return nil
         }
         return self[utf8Index]

@@ -14,7 +14,10 @@ final class TrieNodeTests: XCTestCase {
 
         // collectPayload on empty should be empty
         let collected = root.collectPayload(word: "anything")
-        XCTAssertTrue(collected.isEmpty, "Expected an empty array from collecting payloads in empty TrieNode")
+        XCTAssertTrue(
+            collected.isEmpty,
+            "Expected an empty array from collecting payloads in empty TrieNode"
+        )
     }
 
     /// Test simple insert and find
@@ -114,7 +117,11 @@ final class TrieNodeTests: XCTestCase {
         root.insert(word: "hello", payload: [20, 30])  // duplicate insert
 
         // We assume the last insert was added on top of existing.
-        XCTAssertEqual(root.find(word: "hello"), [10, 20, 30], "Expected the final payload to be [10, 20, 30]")
+        XCTAssertEqual(
+            root.find(word: "hello"),
+            [10, 20, 30],
+            "Expected the final payload to be [10, 20, 30]"
+        )
     }
 
     /// Test a very long word (thousands of characters)
@@ -123,7 +130,11 @@ final class TrieNodeTests: XCTestCase {
         let root = TrieNode()
         root.insert(word: longWord, payload: [1])
 
-        XCTAssertEqual(root.find(word: longWord), [1], "Expected to find payload [1] for the long word")
+        XCTAssertEqual(
+            root.find(word: longWord),
+            [1],
+            "Expected to find payload [1] for the long word"
+        )
         // Missing a slightly different word
         XCTAssertNil(root.find(word: longWord + "x"))
     }
@@ -131,7 +142,7 @@ final class TrieNodeTests: XCTestCase {
     /// Test root node payload plus children
     func testRootNodePayload() {
         let root = TrieNode()
-        root.payload = [1234] // manually attaching at root
+        root.payload = [1234]  // manually attaching at root
         root.insert(word: "a", payload: [100])
 
         // find("a") => [100], ignoring the root's payload

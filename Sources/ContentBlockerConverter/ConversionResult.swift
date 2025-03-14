@@ -2,8 +2,9 @@ import Foundation
 
 /// Represents the final conversion result.
 public struct ConversionResult: CustomStringConvertible {
-    // swiftlint:disable:next line_length
-    public static let EMPTY_RESULT_JSON: String = "[{\"trigger\": {\"url-filter\": \".*\",\"if-domain\": [\"domain.com\"]},\"action\":{\"type\": \"ignore-previous-rules\"}}]"
+    public static let EMPTY_RESULT_JSON: String =
+        // swiftlint:disable:next line_length
+        "[{\"trigger\": {\"url-filter\": \".*\",\"if-domain\": [\"domain.com\"]},\"action\":{\"type\": \"ignore-previous-rules\"}}]"
 
     /// Helper function that creates an empty result.
     ///
@@ -55,20 +56,20 @@ public struct ConversionResult: CustomStringConvertible {
     /// String representation of the conversion result
     public var description: String {
         return """
-## Conversion status
+            ## Conversion status
 
-* Source rules count: \(self.sourceRulesCount)
-* Source rules compatible with Safari: \(self.sourceSafariCompatibleRulesCount)
-* Failed to convert: \(self.errorsCount)
-* Discarded due to limits: \(self.discardedSafariRules)
+            * Source rules count: \(self.sourceRulesCount)
+            * Source rules compatible with Safari: \(self.sourceSafariCompatibleRulesCount)
+            * Failed to convert: \(self.errorsCount)
+            * Discarded due to limits: \(self.discardedSafariRules)
 
-## Result
+            ## Result
 
-* Safari JSON rules count: \(self.safariRulesCount)
-* JSON size: \(self.safariRulesJSON.utf8.count)
-* Advanced rules count: \(self.advancedRulesCount)
-* Advanced rules size: \(self.advancedRulesText?.utf8.count ?? 0)
-"""
+            * Safari JSON rules count: \(self.safariRulesCount)
+            * JSON size: \(self.safariRulesJSON.utf8.count)
+            * Advanced rules count: \(self.advancedRulesCount)
+            * Advanced rules size: \(self.advancedRulesText?.utf8.count ?? 0)
+            """
     }
 }
 

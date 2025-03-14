@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import ContentBlockerConverter
 
 /// Performance tests.
@@ -16,7 +17,10 @@ extension ContentBlockerConverterTests {
         // CPU profiler result:
         //
         // 345.95 Mc  69.7%: ContentBlockerConverter.convertArray
-        let conversionResult = ContentBlockerConverter().convertArray(rules: rules, advancedBlocking: true)
+        let conversionResult = ContentBlockerConverter().convertArray(
+            rules: rules,
+            advancedBlocking: true
+        )
 
         XCTAssertEqual(conversionResult.sourceRulesCount, 32644)
         XCTAssertEqual(conversionResult.safariRulesCount, 20018)
@@ -44,7 +48,10 @@ extension ContentBlockerConverterTests {
         let rules = content.components(separatedBy: "\n")
 
         self.measure {
-            let conversionResult = ContentBlockerConverter().convertArray(rules: rules, advancedBlocking: true)
+            let conversionResult = ContentBlockerConverter().convertArray(
+                rules: rules,
+                advancedBlocking: true
+            )
 
             XCTAssertEqual(conversionResult.sourceRulesCount, 32644)
             XCTAssertEqual(conversionResult.safariRulesCount, 20018)
@@ -102,15 +109,21 @@ extension ContentBlockerConverterTests {
             "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/filters.txt",
             "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/filters-2022.txt",
             "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/filters-2021.txt",
-            "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/filters-2020.txt"
+            "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/filters-2020.txt",
         ]
 
         for listUrl in lists {
-            let content = try! String(contentsOf: URL(string: listUrl)!, encoding: String.Encoding.utf8)
+            let content = try! String(
+                contentsOf: URL(string: listUrl)!,
+                encoding: String.Encoding.utf8
+            )
             let rules = content.components(separatedBy: "\n")
 
             let conversionResult = ContentBlockerConverter().convertArray(rules: rules)
-            XCTAssertTrue(conversionResult.safariRulesCount > 0, "Conversion failed for URL: \(listUrl)")
+            XCTAssertTrue(
+                conversionResult.safariRulesCount > 0,
+                "Conversion failed for URL: \(listUrl)"
+            )
         }
     }
 }

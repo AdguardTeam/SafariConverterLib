@@ -1,21 +1,69 @@
-import XCTest
 import ContentBlockerConverter
+import XCTest
+
 @testable import FilterEngine
 
 final class FilterRuleSerializationTests: XCTestCase {
     // Helper method to compare two FilterRule instances
     // because FilterRule is not Equatable by default.
-    private func assertEqualRules(_ lhs: FilterRule, _ rhs: FilterRule, file: StaticString = #filePath, line: UInt = #line) {
-        XCTAssertEqual(lhs.action.rawValue, rhs.action.rawValue, "action mismatch", file: file, line: line)
-        XCTAssertEqual(lhs.urlPattern, rhs.urlPattern, "urlPattern mismatch", file: file, line: line)
+    private func assertEqualRules(
+        _ lhs: FilterRule,
+        _ rhs: FilterRule,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        XCTAssertEqual(
+            lhs.action.rawValue,
+            rhs.action.rawValue,
+            "action mismatch",
+            file: file,
+            line: line
+        )
+        XCTAssertEqual(
+            lhs.urlPattern,
+            rhs.urlPattern,
+            "urlPattern mismatch",
+            file: file,
+            line: line
+        )
         XCTAssertEqual(lhs.urlRegex, rhs.urlRegex, "urlRegex mismatch", file: file, line: line)
-        XCTAssertEqual(lhs.thirdParty, rhs.thirdParty, "thirdParty mismatch", file: file, line: line)
-        XCTAssertEqual(lhs.subdocument, rhs.subdocument, "subdocument mismatch", file: file, line: line)
+        XCTAssertEqual(
+            lhs.thirdParty,
+            rhs.thirdParty,
+            "thirdParty mismatch",
+            file: file,
+            line: line
+        )
+        XCTAssertEqual(
+            lhs.subdocument,
+            rhs.subdocument,
+            "subdocument mismatch",
+            file: file,
+            line: line
+        )
         XCTAssertEqual(lhs.pathRegex, rhs.pathRegex, "pathRegex mismatch", file: file, line: line)
         XCTAssertEqual(lhs.priority, rhs.priority, "priority mismatch", file: file, line: line)
-        XCTAssertEqual(lhs.permittedDomains, rhs.permittedDomains, "permittedDomains mismatch", file: file, line: line)
-        XCTAssertEqual(lhs.restrictedDomains, rhs.restrictedDomains, "restrictedDomains mismatch", file: file, line: line)
-        XCTAssertEqual(lhs.cosmeticContent, rhs.cosmeticContent, "cosmeticContent mismatch", file: file, line: line)
+        XCTAssertEqual(
+            lhs.permittedDomains,
+            rhs.permittedDomains,
+            "permittedDomains mismatch",
+            file: file,
+            line: line
+        )
+        XCTAssertEqual(
+            lhs.restrictedDomains,
+            rhs.restrictedDomains,
+            "restrictedDomains mismatch",
+            file: file,
+            line: line
+        )
+        XCTAssertEqual(
+            lhs.cosmeticContent,
+            rhs.cosmeticContent,
+            "cosmeticContent mismatch",
+            file: file,
+            line: line
+        )
     }
 
     func testSerializeDeserializeBasicRule() throws {

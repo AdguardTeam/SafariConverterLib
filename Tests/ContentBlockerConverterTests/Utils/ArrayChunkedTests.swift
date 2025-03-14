@@ -70,7 +70,7 @@ class ArrayChunkedTests: XCTestCase {
         let result = array.chunked(into: chunkSize)
 
         // Assert
-        XCTAssertEqual(result, []) // Assume negative size results in empty chunks
+        XCTAssertEqual(result, [])  // Assume negative size results in empty chunks
     }
 
     func testChunkedWithZeroChunkSize() {
@@ -82,6 +82,6 @@ class ArrayChunkedTests: XCTestCase {
         let result = array.chunked(into: chunkSize)
 
         // Assert
-        XCTAssertEqual(result, []) // Assume zero size results in empty chunks
+        XCTAssertEqual(result, [])  // Assume zero size results in empty chunks
     }
 }

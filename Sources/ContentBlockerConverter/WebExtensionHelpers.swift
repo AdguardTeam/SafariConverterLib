@@ -29,7 +29,12 @@ public class WebExtensionHelpers: WebExtensionHelpersProtocol {
     /// Parses domains from the provided rule.
     func parseRuleDomains(ruleText: String) -> [String] {
         do {
-            guard let rule = try RuleFactory.createRule(ruleText: ruleText, for: DEFAULT_SAFARI_VERSION) else {
+            guard
+                let rule = try RuleFactory.createRule(
+                    ruleText: ruleText,
+                    for: DEFAULT_SAFARI_VERSION
+                )
+            else {
                 return []
             }
 

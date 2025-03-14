@@ -227,7 +227,11 @@ final class FilterRuleExtractRegexShortcutsTests: XCTestCase {
         // So let's define the expected outcome.
         // => Typically I'd say ["abc"] is correct.
         let result = FilterRule.extractRegexShortcuts(from: pattern)
-        XCTAssertEqual(result, ["abc"], "Trailing backslash with no next char should be ignored, yielding 'abc'.")
+        XCTAssertEqual(
+            result,
+            ["abc"],
+            "Trailing backslash with no next char should be ignored, yielding 'abc'."
+        )
     }
 
     func testExtractRegexShortcutsParenthesesImmediateClose() {
@@ -253,7 +257,11 @@ final class FilterRuleExtractRegexShortcutsTests: XCTestCase {
         // "def" never closed => bracketDepth remains 1 => skip "def"
         // => outside => "abc"
         let result = FilterRule.extractRegexShortcuts(from: pattern)
-        XCTAssertEqual(result, ["abc"], "Unclosed bracket means skipping everything until end, leaving 'abc'.")
+        XCTAssertEqual(
+            result,
+            ["abc"],
+            "Unclosed bracket means skipping everything until end, leaving 'abc'."
+        )
     }
 
     func testExtractRegexShortcutsBracketClosedTooManyTimes() {
@@ -263,7 +271,11 @@ final class FilterRuleExtractRegexShortcutsTests: XCTestCase {
         // => that means 'abc' is still outside => "abc"
         // => 'def' also outside => appended => "abc)def"
         let result = FilterRule.extractRegexShortcuts(from: pattern)
-        XCTAssertEqual(result, ["abc)def"], "Extra closing parenthesis outside bracketDepth should be ignored.")
+        XCTAssertEqual(
+            result,
+            ["abc)def"],
+            "Extra closing parenthesis outside bracketDepth should be ignored."
+        )
     }
 
     func testExtractRegexShortcutsMultipleRandomParenthesesUnmatched() {
@@ -281,7 +293,11 @@ final class FilterRuleExtractRegexShortcutsTests: XCTestCase {
         // end => flush => but bracketDepth=1 => skipping everything => no leftover
         // => final => ["abc", "f)gh"]
         let result = FilterRule.extractRegexShortcuts(from: pattern)
-        XCTAssertEqual(result, ["abc", "f)gh"], "Unmatched parentheses with extra ) outside yields two chunks: 'abc' and 'f'.")
+        XCTAssertEqual(
+            result,
+            ["abc", "f)gh"],
+            "Unmatched parentheses with extra ) outside yields two chunks: 'abc' and 'f'."
+        )
     }
 
     func testExtractRegexShortcutsComplexNoDiscard() {

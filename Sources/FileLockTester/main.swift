@@ -20,8 +20,8 @@
 ///
 /// You can also check the lock behavior when the process is killed and unlock was not called.
 
-import Foundation
 import FilterEngine
+import Foundation
 
 guard CommandLine.arguments.count >= 3 else {
     print("Usage: FileLockTester <lockFilePath> <sleepSeconds> [deadlineSeconds] [maxLockDepth]")

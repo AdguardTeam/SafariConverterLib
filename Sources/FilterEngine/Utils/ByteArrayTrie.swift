@@ -96,11 +96,13 @@ public class ByteArrayTrie {
             var currentNodeOffset = rootOffset
 
             for character in word.utf8 {
-                guard let childNodeOffset = findChildOffset(
-                    buffer: buffer,
-                    parentOffset: currentNodeOffset,
-                    char: character
-                ) else {
+                guard
+                    let childNodeOffset = findChildOffset(
+                        buffer: buffer,
+                        parentOffset: currentNodeOffset,
+                        char: character
+                    )
+                else {
                     // Child not found => word not in trie
                     return nil
                 }
@@ -125,17 +127,21 @@ public class ByteArrayTrie {
             result.append(contentsOf: readPayload(buffer: buffer, nodeOffset: currentNodeOffset))
 
             for character in word.utf8 {
-                guard let childNodeOffset = findChildOffset(
-                    buffer: buffer,
-                    parentOffset: currentNodeOffset,
-                    char: character
-                ) else {
+                guard
+                    let childNodeOffset = findChildOffset(
+                        buffer: buffer,
+                        parentOffset: currentNodeOffset,
+                        char: character
+                    )
+                else {
                     // Path breaks here
                     return result
                 }
                 currentNodeOffset = childNodeOffset
                 // Add child's payload
-                result.append(contentsOf: readPayload(buffer: buffer, nodeOffset: currentNodeOffset))
+                result.append(
+                    contentsOf: readPayload(buffer: buffer, nodeOffset: currentNodeOffset)
+                )
             }
 
             return result
@@ -193,7 +199,11 @@ extension ByteArrayTrie {
     }
 
     /// Perform a binary search over the children’s `(char, offset)` pairs.
-    private func findChildOffset(buffer: UnsafeRawBufferPointer, parentOffset: UInt32, char: UInt8) -> UInt32? {
+    private func findChildOffset(
+        buffer: UnsafeRawBufferPointer,
+        parentOffset: UInt32,
+        char: UInt8
+    ) -> UInt32? {
         var cursor = Int(parentOffset)
 
         let childrenCount = readUInt8(buffer: buffer, at: cursor)

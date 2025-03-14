@@ -163,7 +163,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 expectedEntry: BlockerEntry(
                     trigger: BlockerEntry.Trigger(
                         urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
-                        resourceType: [ "style-sheet", "script", "media", "raw", "font", "document" ]
+                        resourceType: ["style-sheet", "script", "media", "raw", "font", "document"]
                     ),
                     action: BlockerEntry.Action(
                         type: "block"
@@ -177,7 +177,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 expectedEntry: BlockerEntry(
                     trigger: BlockerEntry.Trigger(
                         urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
-                        resourceType: [ "raw" ]
+                        resourceType: ["raw"]
                     ),
                     action: BlockerEntry.Action(
                         type: "block"
@@ -191,7 +191,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 expectedEntry: BlockerEntry(
                     trigger: BlockerEntry.Trigger(
                         urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
-                        resourceType: [ "fetch" ]
+                        resourceType: ["fetch"]
                     ),
                     action: BlockerEntry.Action(
                         type: "block"
@@ -205,7 +205,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 expectedEntry: BlockerEntry(
                     trigger: BlockerEntry.Trigger(
                         urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
-                        resourceType: [ "raw" ]
+                        resourceType: ["raw"]
                     ),
                     action: BlockerEntry.Action(
                         type: "block"
@@ -219,7 +219,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 expectedEntry: BlockerEntry(
                     trigger: BlockerEntry.Trigger(
                         urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
-                        resourceType: [ "other" ]
+                        resourceType: ["other"]
                     ),
                     action: BlockerEntry.Action(
                         type: "block"
@@ -233,7 +233,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 expectedEntry: BlockerEntry(
                     trigger: BlockerEntry.Trigger(
                         urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
-                        resourceType: [ "raw" ]
+                        resourceType: ["raw"]
                     ),
                     action: BlockerEntry.Action(
                         type: "block"
@@ -247,7 +247,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 expectedEntry: BlockerEntry(
                     trigger: BlockerEntry.Trigger(
                         urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
-                        resourceType: [ "websocket" ]
+                        resourceType: ["websocket"]
                     ),
                     action: BlockerEntry.Action(
                         type: "block"
@@ -261,7 +261,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 expectedEntry: BlockerEntry(
                     trigger: BlockerEntry.Trigger(
                         urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
-                        resourceType: [ "ping" ]
+                        resourceType: ["ping"]
                     ),
                     action: BlockerEntry.Action(
                         type: "block"
@@ -274,7 +274,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 expectedEntry: BlockerEntry(
                     trigger: BlockerEntry.Trigger(
                         urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
-                        resourceType: [ "document" ]
+                        resourceType: ["document"]
                     ),
                     action: BlockerEntry.Action(
                         type: "block"
@@ -287,7 +287,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 expectedEntry: BlockerEntry(
                     trigger: BlockerEntry.Trigger(
                         urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
-                        resourceType: [ "document" ]
+                        resourceType: ["document"]
                     ),
                     action: BlockerEntry.Action(
                         type: "block"
@@ -410,13 +410,15 @@ final class BlockerEntryFactoryTests: XCTestCase {
             ),
             TestCase(
                 // Scriptlet with parameters rule.
-                ruleText: "~example.org,~example.com#%#//scriptlet('test scriptlet', 'test scriptlet param')",
+                ruleText:
+                    "~example.org,~example.com#%#//scriptlet('test scriptlet', 'test scriptlet param')",
                 expectedEntry: nil,
                 expectedErrorsCount: 1
             ),
             TestCase(
                 // Whitelist scriptlet with parameters rule.
-                ruleText: "~example.org,~example.com#@%#//scriptlet('test scriptlet', 'test scriptlet param')",
+                ruleText:
+                    "~example.org,~example.com#@%#//scriptlet('test scriptlet', 'test scriptlet param')",
                 expectedEntry: nil,
                 expectedErrorsCount: 1
             ),
@@ -485,16 +487,16 @@ final class BlockerEntryFactoryTests: XCTestCase {
                     trigger: BlockerEntry.Trigger(
                         urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
                         resourceType: [
-                          "image",
-                          "style-sheet",
-                          "script",
-                          "media",
-                          "fetch",
-                          "other",
-                          "websocket",
-                          "font",
-                          "ping",
-                          "document"
+                            "image",
+                            "style-sheet",
+                            "script",
+                            "media",
+                            "fetch",
+                            "other",
+                            "websocket",
+                            "font",
+                            "ping",
+                            "document",
                         ],
                         loadContext: ["top-frame"]
                     ),
@@ -514,23 +516,40 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 ruleText: "example.org,~example.com##.banner",
                 expectedEntry: nil,
                 expectedErrorsCount: 1
-            )
+            ),
         ]
 
         for testCase in testCases {
             let errorsCounter = ErrorsCounter()
-            let converter = BlockerEntryFactory(errorsCounter: errorsCounter, version: testCase.version)
+            let converter = BlockerEntryFactory(
+                errorsCounter: errorsCounter,
+                version: testCase.version
+            )
 
-            let rule = try! RuleFactory.createRule(ruleText: testCase.ruleText, for: testCase.version)
+            let rule = try! RuleFactory.createRule(
+                ruleText: testCase.ruleText,
+                for: testCase.version
+            )
             let result = converter.createBlockerEntry(rule: rule!)
 
-            XCTAssertEqual(result, testCase.expectedEntry, "Rule \(testCase.ruleText) conversion result didn't match")
-            XCTAssertEqual(errorsCounter.getCount(), testCase.expectedErrorsCount, "Rule \(testCase.ruleText) conversion errors count didn't match")
+            XCTAssertEqual(
+                result,
+                testCase.expectedEntry,
+                "Rule \(testCase.ruleText) conversion result didn't match"
+            )
+            XCTAssertEqual(
+                errorsCounter.getCount(),
+                testCase.expectedErrorsCount,
+                "Rule \(testCase.ruleText) conversion errors count didn't match"
+            )
         }
     }
 
     func testTldDomains() throws {
-        let converter = BlockerEntryFactory(errorsCounter: ErrorsCounter(), version: DEFAULT_SAFARI_VERSION)
+        let converter = BlockerEntryFactory(
+            errorsCounter: ErrorsCounter(),
+            version: DEFAULT_SAFARI_VERSION
+        )
         let rule = try CosmeticRule(ruleText: "example.*##.banner")
 
         let result = converter.createBlockerEntry(rule: rule)

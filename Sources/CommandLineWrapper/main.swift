@@ -1,7 +1,7 @@
-import Foundation
 import ArgumentParser
 import ContentBlockerConverter
 import FilterEngine
+import Foundation
 
 func writeToStdError(str: String) {
     let handle = FileHandle.standardError
@@ -54,7 +54,8 @@ struct ConverterTool: ParsableCommand {
 struct Convert: ParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "convert",
-        abstract: "Convert AdGuard rules to Safari content blocking JSON and advanced rules for a web extension."
+        abstract:
+            "Convert AdGuard rules to Safari content blocking JSON and advanced rules for a web extension."
     )
 
     @Option(name: .shortAndLong, help: "Safari version.")
@@ -66,10 +67,16 @@ struct Convert: ParsableCommand {
     @Option(name: .shortAndLong, help: "Maximum json size in bytes. Leave empty for no limit.")
     var maxJsonSizeBytes: Int = 0
 
-    @Option(name: .long, help: "Output path to write Safari content blocking JSON file. Leave empty for stdout.")
+    @Option(
+        name: .long,
+        help: "Output path to write Safari content blocking JSON file. Leave empty for stdout."
+    )
     var safariRulesJSONPath: String?
 
-    @Option(name: .long, help: "Output path to write advanced blocking rules file. Leave empty for stdout.")
+    @Option(
+        name: .long,
+        help: "Output path to write advanced blocking rules file. Leave empty for stdout."
+    )
     var advancedBlockingRulesPath: String?
 
     mutating func run() throws {

@@ -37,12 +37,15 @@ public class Rule {
 
             if char == separator || i == maxIndex {
                 if i - previousSeparator <= 2 {
-                    throw SyntaxError.invalidModifier(message: "Empty or too short domain specified")
+                    throw SyntaxError.invalidModifier(
+                        message: "Empty or too short domain specified"
+                    )
                 }
 
                 var restricted = false
                 if let firstDomainChar = utfString[safeIndex: previousSeparator],
-                    firstDomainChar == Chars.TILDE {
+                    firstDomainChar == Chars.TILDE
+                {
                     restricted = true
                     previousSeparator += 1
                 }

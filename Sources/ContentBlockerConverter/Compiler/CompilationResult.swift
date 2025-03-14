@@ -5,10 +5,10 @@ import Foundation
 struct CompilationResult {
     /// Total number of Safari rules in the result.
     var rulesCount: Int {
-        cssBlockingWide.count + cssBlockingGenericDomainSensitive.count +
-        cssBlockingDomainSensitive.count + cssBlockingGenericHideExceptions.count +
-        cssElemhideExceptions.count + urlBlocking.count + otherExceptions.count +
-        important.count + importantExceptions.count + documentExceptions.count
+        cssBlockingWide.count + cssBlockingGenericDomainSensitive.count
+            + cssBlockingDomainSensitive.count + cssBlockingGenericHideExceptions.count
+            + cssElemhideExceptions.count + urlBlocking.count + otherExceptions.count
+            + important.count + importantExceptions.count + documentExceptions.count
     }
 
     /// Elemhide rules (##) - wide generic rules.

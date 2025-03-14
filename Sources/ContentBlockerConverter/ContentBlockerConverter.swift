@@ -33,7 +33,11 @@ public class ContentBlockerConverter {
             return ConversionResult.createEmptyResult()
         }
 
-        let allRules = RuleFactory.createRules(lines: rules, for: safariVersion, errorsCounter: errorsCounter)
+        let allRules = RuleFactory.createRules(
+            lines: rules,
+            for: safariVersion,
+            errorsCounter: errorsCounter
+        )
 
         var (simpleRules, advancedRules) = ContentBlockerConverter.splitSimpleAdvanced(allRules)
 
@@ -63,8 +67,9 @@ public class ContentBlockerConverter {
 
         // Prepare advanced rules text.
         let advancedRulesCount = advancedBlocking ? advancedRules.count : 0
-        let advancedBlockingText = advancedBlocking && advancedRulesCount > 0 ?
-        advancedRules.map { $0.ruleText }.joined(separator: "\n") : nil
+        let advancedBlockingText =
+            advancedBlocking && advancedRulesCount > 0
+            ? advancedRules.map { $0.ruleText }.joined(separator: "\n") : nil
 
         // Prepare the conversion result.
         let conversionResult = ConversionResult(
@@ -105,7 +110,7 @@ public class ContentBlockerConverter {
         .jsinject,
         .elemhide,
         .generichide,
-        .specifichide
+        .specifichide,
     ]
 
     /// Splits all rules into two arrays:

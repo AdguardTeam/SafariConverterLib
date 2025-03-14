@@ -61,7 +61,9 @@ extension FilterRule {
 
         // 1) Read action.rawValue (4 bytes -> Int32)
         try requireBytes(4)
-        let actionValue = data.subdata(in: index..<(index + 4)).withUnsafeBytes { $0.load(as: Int32.self) }
+        let actionValue = data.subdata(in: index..<(index + 4)).withUnsafeBytes {
+            $0.load(as: Int32.self)
+        }
         index += 4
         let action = Action(rawValue: Int(actionValue))
 
@@ -191,7 +193,7 @@ extension FilterRule {
             throw FilterRuleCodingError.notEnoughBytes
         }
         let high = data[index]
-        let low  = data[index + 1]
+        let low = data[index + 1]
         index += 2
         return (UInt16(high) << 8) | UInt16(low)
     }

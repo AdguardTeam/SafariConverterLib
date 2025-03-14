@@ -1,5 +1,6 @@
-import XCTest
 import ContentBlockerConverter
+import XCTest
+
 @testable import FilterEngine
 
 final class FilterRuleTests: XCTestCase {
@@ -130,12 +131,15 @@ final class FilterRuleTests: XCTestCase {
                 expectedUrlPattern: "*",
                 expectedPriority: 0,
                 expectedCosmeticContent: "div:contains(banner) { display: none; }"
-            )
+            ),
         ]
 
         for testCase in testCases {
             do {
-                let rule = try RuleFactory.createRule(ruleText: testCase.ruleText, for: testCase.safariVersion)
+                let rule = try RuleFactory.createRule(
+                    ruleText: testCase.ruleText,
+                    for: testCase.safariVersion
+                )
                 let filterRule = try FilterRule(from: rule!)
 
                 let msg = "Rule (\(testCase.ruleText)) does not match expected"
@@ -145,11 +149,21 @@ final class FilterRuleTests: XCTestCase {
                 XCTAssertEqual(filterRule.urlRegex, testCase.expectedUrlRegex, msg)
                 XCTAssertEqual(filterRule.priority, testCase.expectedPriority, msg)
                 XCTAssertEqual(filterRule.permittedDomains, testCase.expectedPermittedDomains, msg)
-                XCTAssertEqual(filterRule.restrictedDomains, testCase.expectedRestrictedDomains, msg)
+                XCTAssertEqual(
+                    filterRule.restrictedDomains,
+                    testCase.expectedRestrictedDomains,
+                    msg
+                )
                 XCTAssertEqual(filterRule.cosmeticContent, testCase.expectedCosmeticContent, msg)
-                XCTAssertFalse(testCase.expectedError, "Unexpected success for rule: \(testCase.ruleText)")
+                XCTAssertFalse(
+                    testCase.expectedError,
+                    "Unexpected success for rule: \(testCase.ruleText)"
+                )
             } catch {
-                XCTAssertTrue(testCase.expectedError, "Unexpected error for rule: \(testCase.ruleText)")
+                XCTAssertTrue(
+                    testCase.expectedError,
+                    "Unexpected error for rule: \(testCase.ruleText)"
+                )
             }
         }
     }

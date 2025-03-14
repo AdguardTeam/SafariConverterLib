@@ -18,6 +18,8 @@ disabled_rules:
   - file_length
   - function_body_length
   - type_body_length
+  - trailing_comma
+  - opening_brace # handled by swift format
 
 opt_in_rules:
   - array_init

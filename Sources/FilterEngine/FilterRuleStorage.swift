@@ -1,5 +1,5 @@
-import Foundation
 import ContentBlockerConverter
+import Foundation
 
 /// Main class for storing `FilterRule` objects in a file, allowing partial in-memory usage.
 ///
@@ -48,7 +48,7 @@ public class FilterRuleStorage {
     public init(from lines: [String], for version: SafariVersion, fileURL: URL) throws {
         self.fileURL = fileURL
         try createStorageFile(from: lines, for: version)
-        try readHeader() // sets `rulesCount`
+        try readHeader()  // sets `rulesCount`
     }
 
     // MARK: - Loading existing storage
@@ -83,14 +83,18 @@ public class FilterRuleStorage {
             // 1) Read the 4-byte length
             let lengthData = handle.readData(ofLength: 4)
             if lengthData.count < 4 {
-                throw FilterRuleStorageError.readError(reason: "Cannot read length at offset \(index.offset)")
+                throw FilterRuleStorageError.readError(
+                    reason: "Cannot read length at offset \(index.offset)"
+                )
             }
             let length = lengthData.withUnsafeBytes { $0.load(as: UInt32.self) }
 
             // 2) Read rule data
             let ruleData = handle.readData(ofLength: Int(length))
             if ruleData.count < Int(length) {
-                throw FilterRuleStorageError.readError(reason: "Cannot read rule data at offset \(index.offset)")
+                throw FilterRuleStorageError.readError(
+                    reason: "Cannot read rule data at offset \(index.offset)"
+                )
             }
 
             // 3) Decode into FilterRule
@@ -124,7 +128,7 @@ public class FilterRuleStorage {
         public init(fileURL: URL, totalCount: Int) throws {
             self.fileHandle = try FileHandle(forReadingFrom: fileURL)
             self.totalCount = totalCount
-            self.currentOffset = 8 // skip the 4-byte magic + 4-byte count
+            self.currentOffset = 8  // skip the 4-byte magic + 4-byte count
             fileHandle.seek(toFileOffset: currentOffset)
         }
 
@@ -202,7 +206,7 @@ public class FilterRuleStorage {
         var writtenCount: UInt32 = 0
         for rawRule in rawRules {
             guard let filterRule = try? FilterRule(from: rawRule) else {
-                continue // skip unsupported
+                continue  // skip unsupported
             }
             let encoded = try filterRule.toData()
             var length = UInt32(encoded.count)
@@ -226,7 +230,8 @@ public class FilterRuleStorage {
 
         // 1) Read magic
         let magicData = handle.readData(ofLength: 4)
-        guard let magicStr = String(data: magicData, encoding: .utf8), magicStr == Self.MAGIC_STR else {
+        guard let magicStr = String(data: magicData, encoding: .utf8), magicStr == Self.MAGIC_STR
+        else {
             throw FilterRuleStorageError.fileFormatError(reason: "Wrong magic header")
         }
 

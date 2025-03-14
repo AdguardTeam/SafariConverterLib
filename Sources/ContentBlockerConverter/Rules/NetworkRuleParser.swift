@@ -5,13 +5,16 @@ import Punycode
 /// The further complicated parsing is done by NetworkRule.
 public enum NetworkRuleParser {
     private static let MASK_WHITE_LIST_UTF8 = [Chars.AT_CHAR, Chars.AT_CHAR]
-    // swiftlint:disable:next force_try line_length
-    private static let DOMAIN_VALIDATION_REGEXP = try! NSRegularExpression(pattern: "^[a-zA-Z0-9][a-zA-Z0-9-.]*[a-zA-Z0-9]\\.[a-zA-Z-]{2,}$", options: [.caseInsensitive])
+    // swiftlint:disable:next force_try
+    private static let DOMAIN_VALIDATION_REGEXP = try! NSRegularExpression(
+        pattern: "^[a-zA-Z0-9][a-zA-Z0-9-.]*[a-zA-Z0-9]\\.[a-zA-Z-]{2,}$",
+        options: [.caseInsensitive]
+    )
     private static let startDomainPrefixMatcher = PrefixMatcher(prefixes: [
         "||", "@@||", "|https://", "|http://", "@@|https://", "@@|http://",
         "|ws://", "|wss://", "@@|ws://", "@@|wss://",
         "//", "://", "@@//", "@@://", "https://", "http://",
-        "@@https://", "@@http://"
+        "@@https://", "@@http://",
     ])
 
     /// Split the specified network rule into its basic parts: pattern and options strings.
@@ -118,7 +121,8 @@ public enum NetworkRuleParser {
     /// - Returns:
     ///   - domain: Extracted domain or empty string if domain not found.
     ///   - patternMatchesPath: true if pattern matches more than just the domain.
-    public static func extractDomain(pattern: String) -> (domain: String, patternMatchesPath: Bool) {
+    public static func extractDomain(pattern: String) -> (domain: String, patternMatchesPath: Bool)
+    {
         let utf8 = pattern.utf8
         let res = startDomainPrefixMatcher.matchPrefix(in: pattern)
 
@@ -154,7 +158,9 @@ public enum NetworkRuleParser {
                 break
             }
 
-            if !isLetter && !isDigit && !nonASCII && char != UInt8(ascii: "-") && char != UInt8(ascii: ".") {
+            if !isLetter && !isDigit && !nonASCII && char != UInt8(ascii: "-")
+                && char != UInt8(ascii: ".")
+            {
                 // Invalid characters for a domain name, return immediately.
                 return ("", false)
             }
@@ -173,13 +179,16 @@ public enum NetworkRuleParser {
         }
 
         // Check if there's anything else important left in the pattern without domain.
-        let patternMatchesPath = endIndex < utf8.endIndex && utf8.distance(from: endIndex, to: utf8.endIndex) > 1
+        let patternMatchesPath =
+            endIndex < utf8.endIndex && utf8.distance(from: endIndex, to: utf8.endIndex) > 1
 
         return (domain, patternMatchesPath)
     }
 
     /// Extracts domain from the rule pattern or text using extractPattern function and then validates the domain.
-    static func extractDomainAndValidate(pattern: String) -> (domain: String, patternMatchesPath: Bool) {
+    static func extractDomainAndValidate(
+        pattern: String
+    ) -> (domain: String, patternMatchesPath: Bool) {
         let res = extractDomain(pattern: pattern)
 
         if !res.domain.isEmpty && res.domain.firstMatch(for: DOMAIN_VALIDATION_REGEXP) != nil {

@@ -1,6 +1,7 @@
-import XCTest
-import Foundation
 import ContentBlockerConverter
+import Foundation
+import XCTest
+
 @testable import FilterEngine
 
 final class FilterEngineSerializationTests: XCTestCase {
@@ -12,7 +13,10 @@ final class FilterEngineSerializationTests: XCTestCase {
         try super.setUpWithError()
         tempDirectory = FileManager.default.temporaryDirectory
             .appendingPathComponent(UUID().uuidString)
-        try FileManager.default.createDirectory(at: tempDirectory, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(
+            at: tempDirectory,
+            withIntermediateDirectories: true
+        )
 
         // File where initial FilterRuleStorage is stored:
         tempRulesFileURL = tempDirectory.appendingPathComponent("filterRules.bin")
@@ -35,11 +39,15 @@ final class FilterEngineSerializationTests: XCTestCase {
             // This should create a rule with permittedDomains = ["example.org"]
             "@@||example.org^$document",
             // This is a cosmetic rule with no domain => tail
-            "##.banner"
+            "##.banner",
         ]
 
         // Build a FilterRuleStorage from these lines
-        let storage = try FilterRuleStorage(from: lines, for: .safari16_4, fileURL: tempRulesFileURL)
+        let storage = try FilterRuleStorage(
+            from: lines,
+            for: .safari16_4,
+            fileURL: tempRulesFileURL
+        )
 
         // Create the first engine (in-memory tries), then write out the trie data
         let engine1 = try FilterEngine(storage: storage)
@@ -52,17 +60,25 @@ final class FilterEngineSerializationTests: XCTestCase {
 
         // 1) Query a URL that matches the "@@||example.org" domain-based rule
         let url1 = URL(string: "http://example.org/banner")!
-        let rules1Engine1 = engine1.findAll(for: url1)
-        let rules1Engine2 = engine2.findAll(for: url1)
+        let rules1Engine1 = engine1.findAll(for: Request(url: url1))
+        let rules1Engine2 = engine2.findAll(for: Request(url: url1))
 
         // 2) Query a URL that doesn't match the domain-based rule but might match the cosmetic rule
         let url2 = URL(string: "http://another-site.net/ads")!
-        let rules2Engine1 = engine1.findAll(for: url2)
-        let rules2Engine2 = engine2.findAll(for: url2)
+        let rules2Engine1 = engine1.findAll(for: Request(url: url2))
+        let rules2Engine2 = engine2.findAll(for: Request(url: url2))
 
         // Assert: The sets of rules returned by each engine should match
-        XCTAssertEqual(rules1Engine1.count, rules1Engine2.count, "Mismatch in rules for example.org/banner")
-        XCTAssertEqual(rules2Engine1.count, rules2Engine2.count, "Mismatch in rules for another-site.net/ads")
+        XCTAssertEqual(
+            rules1Engine1.count,
+            rules1Engine2.count,
+            "Mismatch in rules for example.org/banner"
+        )
+        XCTAssertEqual(
+            rules2Engine1.count,
+            rules2Engine2.count,
+            "Mismatch in rules for another-site.net/ads"
+        )
 
         // For extra confidence, we can confirm each corresponding rule is the same:
         for (r1, r2) in zip(rules1Engine1, rules1Engine2) {
@@ -95,8 +111,12 @@ final class FilterEngineSerializationTests: XCTestCase {
         let rules = content.components(separatedBy: "\n")
 
         self.measure {
-             // Build a FilterRuleStorage from the rules
-            let storage = try? FilterRuleStorage(from: rules, for: .safari16_4, fileURL: self.tempRulesFileURL)
+            // Build a FilterRuleStorage from the rules
+            let storage = try? FilterRuleStorage(
+                from: rules,
+                for: .safari16_4,
+                fileURL: self.tempRulesFileURL
+            )
             guard let storage = storage else {
                 XCTFail("Failed to build FilterRuleStorage")
                 return
@@ -139,7 +159,11 @@ final class FilterEngineSerializationTests: XCTestCase {
 
         do {
             // Build a FilterRuleStorage from the rules
-            let storage = try FilterRuleStorage(from: rules, for: .safari16_4, fileURL: self.tempRulesFileURL)
+            let storage = try FilterRuleStorage(
+                from: rules,
+                for: .safari16_4,
+                fileURL: self.tempRulesFileURL
+            )
 
             // Build engine
             let engine = try FilterEngine(storage: storage)

@@ -54,7 +54,11 @@ final class FilterRuleExtractShortcutsTests: XCTestCase {
         // 'def' => length 3, valid
         let expected = ["abc", "def"]
         let result = FilterRule.extractShortcuts(from: pattern)
-        XCTAssertEqual(result, expected, "Multiple consecutive special chars should treat each chunk separately.")
+        XCTAssertEqual(
+            result,
+            expected,
+            "Multiple consecutive special chars should treat each chunk separately."
+        )
     }
 
     /// Tests a pattern that yields multiple shortcuts of different lengths.
@@ -66,7 +70,11 @@ final class FilterRuleExtractShortcutsTests: XCTestCase {
         // 'xyz' => length 3, valid
         let expected = ["abc", "defgh", "xyz"]
         let result = FilterRule.extractShortcuts(from: pattern)
-        XCTAssertEqual(result, expected, "Should correctly parse multiple chunks of various lengths.")
+        XCTAssertEqual(
+            result,
+            expected,
+            "Should correctly parse multiple chunks of various lengths."
+        )
     }
 
     /// Tests patterns with exactly 3-character chunks surrounded by special characters.
@@ -79,7 +87,11 @@ final class FilterRuleExtractShortcutsTests: XCTestCase {
         // 'mn'  => length 2
         let expected = ["abc", "def", "ghi", "jkl"]
         let result = FilterRule.extractShortcuts(from: pattern)
-        XCTAssertEqual(result, expected, "All exactly 3-char segments are valid, ignoring shorter segments.")
+        XCTAssertEqual(
+            result,
+            expected,
+            "All exactly 3-char segments are valid, ignoring shorter segments."
+        )
     }
 
     /// Tests patterns containing Unicode characters beyond ASCII.

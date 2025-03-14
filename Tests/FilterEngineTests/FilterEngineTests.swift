@@ -1,6 +1,7 @@
-import XCTest
-import Foundation
 import ContentBlockerConverter
+import Foundation
+import XCTest
+
 @testable import FilterEngine
 
 final class FilterEngineTests: XCTestCase {
@@ -11,7 +12,10 @@ final class FilterEngineTests: XCTestCase {
         try super.setUpWithError()
         tempDirectory = FileManager.default.temporaryDirectory
             .appendingPathComponent(UUID().uuidString)
-        try FileManager.default.createDirectory(at: tempDirectory, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(
+            at: tempDirectory,
+            withIntermediateDirectories: true
+        )
         tempFileURL = tempDirectory.appendingPathComponent("filterRules.bin")
     }
 
@@ -85,13 +89,13 @@ final class FilterEngineTests: XCTestCase {
                 rules: [
                     "###banner",
                     "#$##banner { display: hidden; }",
-                    "example.org##.banner"
+                    "example.org##.banner",
                 ],
                 urlString: "https://example.org/",
                 expectedCosmeticContent: [
                     ".banner",
                     "#banner",
-                    "#banner { display: hidden; }"
+                    "#banner { display: hidden; }",
                 ]
             ),
             TestCase(
@@ -99,13 +103,13 @@ final class FilterEngineTests: XCTestCase {
                 rules: [
                     "example.org###banner",
                     "example.org#$##banner { display: hidden; }",
-                    "example.org##.banner"
+                    "example.org##.banner",
                 ],
                 urlString: "https://example.org/",
                 expectedCosmeticContent: [
                     "#banner",
                     "#banner { display: hidden; }",
-                    ".banner"
+                    ".banner",
                 ]
             ),
             TestCase(
@@ -113,7 +117,7 @@ final class FilterEngineTests: XCTestCase {
                 rules: [
                     "@@||example.org^$elemhide",
                     "example.org##.banner",
-                    "###banner"
+                    "###banner",
                 ],
                 urlString: "https://example.org/",
                 expectedCosmeticContent: []
@@ -123,7 +127,7 @@ final class FilterEngineTests: XCTestCase {
                 rules: [
                     "@@||example.org^$elemhide,subdocument",
                     "example.org##.banner",
-                    "###banner"
+                    "###banner",
                 ],
                 urlString: "https://example.org/",
                 expectedCosmeticContent: [".banner", "#banner"]
@@ -133,7 +137,7 @@ final class FilterEngineTests: XCTestCase {
                 rules: [
                     "@@||example.org^$elemhide,subdocument",
                     "example.org##.banner",
-                    "###banner"
+                    "###banner",
                 ],
                 urlString: "https://example.org/",
                 subdocument: true,
@@ -144,7 +148,7 @@ final class FilterEngineTests: XCTestCase {
                 rules: [
                     "@@||example.org^$elemhide,subdocument,third-party",
                     "example.org##.banner",
-                    "###banner"
+                    "###banner",
                 ],
                 urlString: "https://example.org/",
                 subdocument: true,
@@ -155,7 +159,7 @@ final class FilterEngineTests: XCTestCase {
                 rules: [
                     "@@||example.org^$elemhide,subdocument,third-party",
                     "example.org##.banner",
-                    "###banner"
+                    "###banner",
                 ],
                 urlString: "https://example.org/",
                 subdocument: true,
@@ -167,7 +171,7 @@ final class FilterEngineTests: XCTestCase {
                 rules: [
                     "@@||example.org/path$elemhide",
                     "example.org##.banner",
-                    "###banner"
+                    "###banner",
                 ],
                 urlString: "https://example.org/path",
                 expectedCosmeticContent: []
@@ -177,7 +181,7 @@ final class FilterEngineTests: XCTestCase {
                 rules: [
                     "@@||example.net^$elemhide",
                     "example.org##.banner",
-                    "###banner"
+                    "###banner",
                 ],
                 urlString: "https://example.org/",
                 expectedCosmeticContent: [".banner", "#banner"]
@@ -187,7 +191,7 @@ final class FilterEngineTests: XCTestCase {
                 rules: [
                     "@@||example.org^$generichide",
                     "example.org##.banner",
-                    "###banner"
+                    "###banner",
                 ],
                 urlString: "https://example.org/",
                 expectedCosmeticContent: [".banner"]
@@ -197,7 +201,7 @@ final class FilterEngineTests: XCTestCase {
                 rules: [
                     "@@||example.org^$specifichide",
                     "example.org##.banner",
-                    "###banner"
+                    "###banner",
                 ],
                 urlString: "https://example.org/",
                 expectedCosmeticContent: ["#banner"]
@@ -207,7 +211,7 @@ final class FilterEngineTests: XCTestCase {
                 rules: [
                     "##.banner",
                     "example.org#@#.banner",
-                    "###banner"
+                    "###banner",
                 ],
                 urlString: "https://example.org/",
                 expectedCosmeticContent: ["#banner"]
@@ -224,12 +228,12 @@ final class FilterEngineTests: XCTestCase {
                 name: "many script rules",
                 rules: [
                     "#%#console.log('1')",
-                    "example.org#%#//scriptlet('set-constant', 'test', '1')"
+                    "example.org#%#//scriptlet('set-constant', 'test', '1')",
                 ],
                 urlString: "https://example.org/",
                 expectedCosmeticContent: [
                     "//scriptlet('set-constant', 'test', '1')",
-                    "console.log('1')"
+                    "console.log('1')",
                 ]
             ),
             TestCase(
@@ -237,7 +241,7 @@ final class FilterEngineTests: XCTestCase {
                 rules: [
                     "@@||example.org^$jsinject",
                     "#%#console.log('1')",
-                    "example.org#%#//scriptlet('set-constant', 'test', '1')"
+                    "example.org#%#//scriptlet('set-constant', 'test', '1')",
                 ],
                 urlString: "https://example.org/",
                 expectedCosmeticContent: []
@@ -251,7 +255,7 @@ final class FilterEngineTests: XCTestCase {
                     "@@||example.org^$elemhide",
                     "@@||example.org^$jsinject",
                     "example.org##.banner",
-                    "example.org#%#//scriptlet('set-constant', 'test', '1')"
+                    "example.org#%#//scriptlet('set-constant', 'test', '1')",
                 ],
                 urlString: "https://example.org/",
                 expectedCosmeticContent: [
@@ -265,7 +269,7 @@ final class FilterEngineTests: XCTestCase {
                     "@@||example.org^$elemhide,important",
                     "@@||example.org^$jsinject",
                     "example.org##.banner",
-                    "example.org#%#//scriptlet('set-constant', 'test', '1')"
+                    "example.org#%#//scriptlet('set-constant', 'test', '1')",
                 ],
                 urlString: "https://example.org/",
                 expectedCosmeticContent: [
@@ -285,25 +289,34 @@ final class FilterEngineTests: XCTestCase {
                 expectedCosmeticContent: [
                     ".banner"
                 ]
-            )
+            ),
         ]
 
         for testCase in testCases {
             // Fill storage with the rules
-            let storage = try FilterRuleStorage(from: testCase.rules, for: .safari16_4, fileURL: tempFileURL)
+            let storage = try FilterRuleStorage(
+                from: testCase.rules,
+                for: .safari16_4,
+                fileURL: tempFileURL
+            )
 
             // Init the engine
             let engine = try FilterEngine(storage: storage)
 
             // Check that rules are found for example.org
             let url = URL(string: testCase.urlString)!
-            let rules = engine.findAll(
-                for: url,
+            let request = Request(
+                url: url,
                 subdocument: testCase.subdocument ?? false,
                 thirdParty: testCase.thirdParty ?? false
             )
+            let rules = engine.findAll(for: request)
 
-            XCTAssertEqual(rules.map(\.cosmeticContent), testCase.expectedCosmeticContent, "Failed \(testCase.name)")
+            XCTAssertEqual(
+                rules.map(\.cosmeticContent),
+                testCase.expectedCosmeticContent,
+                "Failed \(testCase.name)"
+            )
         }
     }
 }

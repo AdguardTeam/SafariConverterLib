@@ -1,6 +1,6 @@
 import Foundation
-
 import XCTest
+
 @testable import ContentBlockerConverter
 
 final class CosmeticRuleMarkerTests: XCTestCase {
@@ -33,35 +33,45 @@ final class CosmeticRuleMarkerTests: XCTestCase {
     }
 
     func testElementHidingExtCSSException() {
-        let result = CosmeticRuleMarker.findCosmeticRuleMarker(ruleText: "example.com#@?#h3:contains(cookies)")
+        let result = CosmeticRuleMarker.findCosmeticRuleMarker(
+            ruleText: "example.com#@?#h3:contains(cookies)"
+        )
 
         XCTAssertEqual(result.index, 11)
         XCTAssertEqual(result.marker, CosmeticRuleMarker.elementHidingExtCSSException)
     }
 
     func testCss() {
-        let result = CosmeticRuleMarker.findCosmeticRuleMarker(ruleText: "example.org#$#.textad { visibility: hidden; }")
+        let result = CosmeticRuleMarker.findCosmeticRuleMarker(
+            ruleText: "example.org#$#.textad { visibility: hidden; }"
+        )
 
         XCTAssertEqual(result.index, 11)
         XCTAssertEqual(result.marker, CosmeticRuleMarker.css)
     }
 
     func testCssException() {
-        let result = CosmeticRuleMarker.findCosmeticRuleMarker(ruleText: "example.com#@$#h3:contains(cookies) { display: none!important; }")
+        let result = CosmeticRuleMarker.findCosmeticRuleMarker(
+            ruleText: "example.com#@$#h3:contains(cookies) { display: none!important; }"
+        )
 
         XCTAssertEqual(result.index, 11)
         XCTAssertEqual(result.marker, CosmeticRuleMarker.cssException)
     }
 
     func testCssExtCSS() {
-        let result = CosmeticRuleMarker.findCosmeticRuleMarker(ruleText: "example.com#$?#h3:contains(cookies) { display: none!important; }")
+        let result = CosmeticRuleMarker.findCosmeticRuleMarker(
+            ruleText: "example.com#$?#h3:contains(cookies) { display: none!important; }"
+        )
 
         XCTAssertEqual(result.index, 11)
         XCTAssertEqual(result.marker, CosmeticRuleMarker.cssExtCSS)
     }
 
     func testCssExtCSSException() {
-        let result = CosmeticRuleMarker.findCosmeticRuleMarker(ruleText: "example.com#@$?#h3:contains(cookies) { display: none!important; }")
+        let result = CosmeticRuleMarker.findCosmeticRuleMarker(
+            ruleText: "example.com#@$?#h3:contains(cookies) { display: none!important; }"
+        )
 
         XCTAssertEqual(result.index, 11)
         XCTAssertEqual(result.marker, CosmeticRuleMarker.cssExtCSSException)
@@ -82,14 +92,18 @@ final class CosmeticRuleMarkerTests: XCTestCase {
     }
 
     func testHtml() {
-        let result = CosmeticRuleMarker.findCosmeticRuleMarker(ruleText: "example.org$$script[data-src=\"banner\"]")
+        let result = CosmeticRuleMarker.findCosmeticRuleMarker(
+            ruleText: "example.org$$script[data-src=\"banner\"]"
+        )
 
         XCTAssertEqual(result.index, 11)
         XCTAssertEqual(result.marker, CosmeticRuleMarker.html)
     }
 
     func testHtmlException() {
-        let result = CosmeticRuleMarker.findCosmeticRuleMarker(ruleText: "example.org$@$script[data-src=\"banner\"]")
+        let result = CosmeticRuleMarker.findCosmeticRuleMarker(
+            ruleText: "example.org$@$script[data-src=\"banner\"]"
+        )
 
         XCTAssertEqual(result.index, 11)
         XCTAssertEqual(result.marker, CosmeticRuleMarker.htmlException)
