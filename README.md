@@ -388,3 +388,4 @@ Linting:
 - `swiftlint`
 - `swift format lint --recursive --strict .`
 - `npx markdownlint .`
+- `pnpm -C Extension install && pnpm -C Extension lint`

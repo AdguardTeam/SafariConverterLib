@@ -26,9 +26,7 @@
     "check-types": "tsc --noEmit",
     "clean": "rimraf dist",
     "clean-types": "rimraf dist/types",
-    "lint": "pnpm lint:ts && pnpm lint:md",
-    "lint:md": "markdownlint .",
-    "lint:ts": "eslint . --cache --ext .ts",
+    "lint": "eslint . --cache --ext .ts",
     "test": "vitest"
   },
   "author": "Adguard Software Ltd.",

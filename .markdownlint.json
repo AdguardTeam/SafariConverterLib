@@ -13,7 +13,10 @@
     },
     "no-inline-html": {
         "allowed_elements": [
-            "a"
+            "a",
+            "details",
+            "summary",
+            "img"
         ]
     },
     "no-trailing-spaces": {
