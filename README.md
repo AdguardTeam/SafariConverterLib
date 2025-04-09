@@ -7,18 +7,18 @@ This is a library that provides a compatibility layer between
 [safarirules]: https://developer.apple.com/documentation/safariservices/creating-a-content-blocker
 
 - [Converter](#converter)
-  - [Using as a library](#using-as-a-library)
-  - [Command-line interface](#command-line-interface)
-  - [Using as a node module](#using-as-a-node-module)
+    - [Using as a library](#using-as-a-library)
+    - [Command-line interface](#command-line-interface)
+    - [Using as a node module](#using-as-a-node-module)
 - [Supported rules and limitations](#supported-rules-and-limitations)
-  - [Basic (network) rules](#basic-network-rules)
-  - [Cosmetic rules](#cosmetic-rules)
-  - [Script/scriptlet rules](#scriptscriptlet-rules)
-  - [HTML filtering rules](#html-filtering-rules)
+    - [Basic (network) rules](#basic-network-rules)
+    - [Cosmetic rules](#cosmetic-rules)
+    - [Script/scriptlet rules](#scriptscriptlet-rules)
+    - [HTML filtering rules](#html-filtering-rules)
 - [For developers](#for-developers)
-  - [How to build, test, debug](#how-to-build-test-debug)
-  - [Releasing new version](#releasing-new-version)
-  - [Third-party dependencies](#third-party-dependencies)
+    - [How to build, test, debug](#how-to-build-test-debug)
+    - [Releasing new version](#releasing-new-version)
+    - [Third-party dependencies](#third-party-dependencies)
 
 ## Converter
 
@@ -183,14 +183,14 @@ certainly supports the most important types of those rules.
 - `$domain` - [domain modifier][domainmodifier] is supported with several
   limitations.
 
-  - It's impossible to mix allowed and disallowed domains (like
+    - It's impossible to mix allowed and disallowed domains (like
     `$domain=example.org|~sub.example.org`). Please upvote the
     [feature request][webkitmixeddomainsissue] to WebKit to lift this
     limitation.
-  - "Any TLD" (i.e. `domain.*`) is not fully supported. In the current
+    - "Any TLD" (i.e. `domain.*`) is not fully supported. In the current
     implementation the converter just replaces `.*` with top 100 popular TLDs.
     This implementation will be improved [in the future][iftopurlissue].
-  - Using regular expressions in `$domain` is not supported, but it also will
+    - Using regular expressions in `$domain` is not supported, but it also will
     be improved [in the future][iftopurlissue].
 
 - `$denyallow` - this modifier is supported via converting `$denyallow` rule to
@@ -199,14 +199,14 @@ certainly supports the most important types of those rules.
   Due to that limitation `$denyallow` is only allowed when the rule also has
   `$domain` modifier.
 
-  - Generic rule `*$denyallow=x.com,image,domain=a.com` will be converted to:
+    - Generic rule `*$denyallow=x.com,image,domain=a.com` will be converted to:
 
     ```adblock
     *$image,domain=a.com
     @@||x.com$image,domain=a.com
     ```
 
-  - Rule `/banner.png$image,denyallow=test1.com|test2.com,domain=example.org`
+    - Rule `/banner.png$image,denyallow=test1.com|test2.com,domain=example.org`
     will be converted to:
 
     ```adblock
@@ -217,7 +217,7 @@ certainly supports the most important types of those rules.
     @@||test2.com/*/banner.png$image,domain=example.org
     ```
 
-  - Rule without `$domain` is **not supported**: `$denyallow=a.com|b.com`.
+    - Rule without `$domain` is **not supported**: `$denyallow=a.com|b.com`.
 
 - `$popup` - popup rules are supported, but they're basically the same as
   `$document`-blocking rules and will not attempt to close the tab.
@@ -243,10 +243,10 @@ certainly supports the most important types of those rules.
 - `$specifichide` is implemented by scanning existing element hiding rules and
   removing the target domain from their `if-domain` array.
 
-  - `$specifichide` rules MUST target a domain, i.e. be like this:
+    - `$specifichide` rules MUST target a domain, i.e. be like this:
     `||example.org^$specifichide`. Rules with more specific patterns will be
     discarded, i.e. `||example.org/path$specifichide` will not be supported.
-  - `$specifichide` rules only cover rules that target the same domain as the
+    - `$specifichide` rules only cover rules that target the same domain as the
     rule itself, subdomains are ignored. I.e. the rule
     `@@||example.org^$specifichide` will disable `example.org##.banner`, but
     will ignore `sub.example.org##.banner`. This limitation may be lifted if
@@ -320,10 +320,10 @@ additional extension.
 - [Non-basic rules modifiers][nonbasicmodifiers] are supported with some
   limitations:
 
-  - `$domain` - the same limitations as everywhere else.
-  - `$path` - supported, but if you use regular expressions, they will be
+    - `$domain` - the same limitations as everywhere else.
+    - `$path` - supported, but if you use regular expressions, they will be
     limited to the subset of regex that is [supported by Safari][safariregex].
-  - `$url` - to be supported in the future: [#68]
+    - `$url` - to be supported in the future: [#68]
 
 [nonbasicmodifiers]: https://adguard.com/kb/general/ad-filtering/create-own-filters/#non-basic-rules-modifiers
 [#68]: https://github.com/AdguardTeam/SafariConverterLib/issues/68

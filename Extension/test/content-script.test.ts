@@ -29,9 +29,10 @@ test('ContentScript adds CSS to the page', () => {
     // Arrange: create a configuration with some CSS
     const config = {
         css: ['.test-element { background-color: blue; }'],
-        extendedCSS: [],
+        extendedCss: [],
         scriptlets: [],
         js: [],
+        engineTimestamp: 0,
     };
 
     // Act: run the content script with the given configuration
@@ -56,9 +57,10 @@ test('ContentScript adds CSS display:none when given only selector', () => {
     // Arrange: create a configuration with some CSS selector
     const config = {
         css: ['.test-element'],
-        extendedCSS: [],
+        extendedCss: [],
         scriptlets: [],
         js: [],
+        engineTimestamp: 0,
     };
 
     // Act: run the content script with the given configuration
@@ -83,9 +85,10 @@ test('ContentScript applies extended CSS', () => {
     // Arrange: create a configuration with some extended CSS.
     const config = {
         css: [],
-        extendedCSS: ['.test-element:contains(Hello) { background-color: blue; }'],
+        extendedCss: ['.test-element:contains(Hello) { background-color: blue; }'],
         scriptlets: [],
         js: [],
+        engineTimestamp: 0,
     };
 
     // Create element with text "Hello"
@@ -108,9 +111,10 @@ test('ContentScript adds JS to the page', () => {
     // Provide a configuration that will trigger the console.log
     const config = {
         css: [],
-        extendedCSS: [],
+        extendedCss: [],
         scriptlets: [],
         js: ['console.log("Hello, world!");'],
+        engineTimestamp: 0,
     };
 
     // Run the content script
@@ -127,9 +131,10 @@ test('ContentScript applies scriptlets', () => {
     // Arrange: create a configuration with some scriptlets
     const config = {
         css: [],
-        extendedCSS: [],
+        extendedCss: [],
         scriptlets: [{ name: 'log', args: ['I am a scriptlet'] }],
         js: [],
+        engineTimestamp: 0,
     };
 
     // Run the content script

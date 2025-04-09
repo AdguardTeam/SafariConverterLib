@@ -67,7 +67,7 @@ public class CosmeticRule: Rule {
     /// - Throws: SyntaxError if any issue with the rule is detected.
     public override init(
         ruleText: String,
-        for version: SafariVersion = DEFAULT_SAFARI_VERSION
+        for version: SafariVersion = SafariVersion.autodetect()
     ) throws {
         try super.init(ruleText: ruleText)
 

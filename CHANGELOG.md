@@ -14,16 +14,18 @@ For a content blocker it is critically important to be inject scripts and styles
 as soon as possible; in the ideal scenario it should be injected before page own
 scripts are executed.
 
-* TODO: Remove json format for advanced blocking
-* TODO: Update `safari-blocker` and make samples for both WebExtension and AppExtension.
-* TODO: Add more text to justification
-* TODO: Explain what was removed (ContentBlockerEngine)
-* TODO: Explain what was added (FilterEngine) and how to use it
-* TODO: Update and test the console tool
-* TODO: Update and test the node module
-* TODO: Remove `optimize` flag
-* TODO: Explain Extension
-* TODO: CommandLineWrapper interface changes
+- TODO(ameshkov): !!! Fill out
+
+- TODO: Remove json format for advanced blocking
+- TODO: Update `safari-blocker` and make samples for both WebExtension and AppExtension.
+- TODO: Add more text to justification
+- TODO: Explain what was removed (ContentBlockerEngine)
+- TODO: Explain what was added (FilterEngine) and how to use it
+- TODO: Update and test the console tool
+- TODO: Update and test the node module
+- TODO: Remove `optimize` flag
+- TODO: Explain Extension
+- TODO: CommandLineWrapper interface changes
 
 ## 2.1.1
 
@@ -94,14 +96,14 @@ Here's how it was achieved:
 
 - Refactoring
 
-  - Removed `SafariService`; `SafariVersion` is now passed down to the
+    - Removed `SafariService`; `SafariVersion` is now passed down to the
     underlying code instead of relying on a singleton.
 
-  - Removed `allTests`; it's not required anymore in modern Swift.
+    - Removed `allTests`; it's not required anymore in modern Swift.
 
-  - Moved the logic from `ConversionResult` to `Distributor`.
+    - Moved the logic from `ConversionResult` to `Distributor`.
 
-  - Improved unit tests, adding quite a lot of cases that were not covered by
+    - Improved unit tests, adding quite a lot of cases that were not covered by
     tests before.
 
 [iftopurlissue]: https://github.com/AdguardTeam/SafariConverterLib/issues/20

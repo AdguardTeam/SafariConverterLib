@@ -23,7 +23,7 @@ enum SafariCbBuilder {
     /// - Returns: build result
     static func buildCbJson(
         from compilationResult: CompilationResult,
-        maxRules: Int = DEFAULT_SAFARI_VERSION.rulesLimit,
+        maxRules: Int,
         maxJsonSizeBytes: Int? = nil
     ) -> Result {
         var entries = createEntries(from: compilationResult)

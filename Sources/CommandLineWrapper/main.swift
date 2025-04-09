@@ -59,7 +59,7 @@ struct Convert: ParsableCommand {
     )
 
     @Option(name: .shortAndLong, help: "Safari version.")
-    var safariVersion: Double = DEFAULT_SAFARI_VERSION.doubleValue
+    var safariVersion: Double = SafariVersion.autodetect().doubleValue
 
     @Option(name: .shortAndLong, help: "Advanced blocking flag.")
     var advancedBlocking = false

@@ -1,7 +1,8 @@
 /// Default Safari version for which the rules will be converted if another version is not explicitly specified.
 public let DEFAULT_SAFARI_VERSION = SafariVersion.safari13
 
-/// Represents Safari browser version for which the library will prepare a content blocker.
+/// Represents Safari browser version for which the library will prepare
+/// a content blocker.
 public enum SafariVersion: CustomStringConvertible, CustomDebugStringConvertible, Equatable {
     public var description: String {
         return "\(self.doubleValue)"
@@ -76,5 +77,41 @@ public enum SafariVersion: CustomStringConvertible, CustomDebugStringConvertible
     /// https://www.webkit.org/blog/13966/webkit-features-in-safari-16-4/
     public func isSafari16_4orGreater() -> Bool {
         return self.doubleValue >= SafariVersion.safari16_4.doubleValue
+    }
+
+    /// Detects the Safari version based on the current OS version.
+    /// - Returns: The detected SafariVersion based on the OS.
+    public static func autodetect() -> SafariVersion {
+        #if os(macOS)
+        if #available(macOS 13.3, *) {
+            return .safari16_4
+        } else if #available(macOS 13.0, *) {
+            return .safari16
+        } else if #available(macOS 12.0, *) {
+            return .safari15
+        } else if #available(macOS 11.0, *) {
+            return .safari14
+        } else if #available(macOS 10.15, *) {
+            return .safari13
+        } else {
+            return DEFAULT_SAFARI_VERSION
+        }
+        #elseif os(iOS)
+        if #available(iOS 16.4, *) {
+            return .safari16_4
+        } else if #available(iOS 16.0, *) {
+            return .safari16
+        } else if #available(iOS 15.0, *) {
+            return .safari15
+        } else if #available(iOS 14.0, *) {
+            return .safari14
+        } else if #available(iOS 13.0, *) {
+            return .safari13
+        } else {
+            return DEFAULT_SAFARI_VERSION
+        }
+        #else
+        return DEFAULT_SAFARI_VERSION
+        #endif
     }
 }

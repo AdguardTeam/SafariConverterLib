@@ -6,8 +6,8 @@ responsible for interpreting AdGuard rules and applying them to web pages.
 The output of the [SafariConverterLib] is a set of rules that can be used in
 the browser extension in two different ways:
 
-1. As a set of rules for Safari content blocker. In this case Safari takes care
-   of applying the rules to the web page.
+1. As a set of rules for Safari content blocker. In this case Safari
+   takes care of applying the rules to the web page.
 2. As a set of "advanced" rules that can be used either in a
    [Safari Web Extension][SafariWebExtension] or a [Safari App Extension][SafariAppExtension].
    In either case, the rules are interpreted by the Javascript that runs in the
@@ -35,6 +35,9 @@ has the following fields:
 - `scriptlets` - a set of scriptlets parameters that will be used to run
   "scriptlets" on the page. Scriptlets implementations are provided by the
   [Scriptlets] library.
+- `engineTimestamp` - the timestamp of the engine that was used to generate
+  the configuration. This can be used to determine if the configuration is
+  outdated and needs to be updated.
 
 [Scriptlets]: https://github.com/AdguardTeam/Scriptlets
 [Configuration]: src/configuration.ts

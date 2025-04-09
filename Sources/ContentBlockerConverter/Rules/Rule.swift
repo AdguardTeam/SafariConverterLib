@@ -11,7 +11,7 @@ public class Rule {
     public var permittedDomains: [String] = []
     public var restrictedDomains: [String] = []
 
-    init(ruleText: String, for version: SafariVersion = DEFAULT_SAFARI_VERSION) throws {
+    init(ruleText: String, for version: SafariVersion = SafariVersion.autodetect()) throws {
         self.ruleText = ruleText
     }
 

@@ -27,7 +27,10 @@ final class SafariCbBuilderTests: XCTestCase {
     }
 
     func testEmpty() {
-        let result = SafariCbBuilder.buildCbJson(from: CompilationResult())
+        let result = SafariCbBuilder.buildCbJson(
+            from: CompilationResult(),
+            maxRules: DEFAULT_SAFARI_VERSION.rulesLimit
+        )
 
         XCTAssertNotNil(result)
         XCTAssertEqual(result.rulesCount, 0)
@@ -44,7 +47,10 @@ final class SafariCbBuilderTests: XCTestCase {
             cssBlockingWide: entries
         )
 
-        let result = SafariCbBuilder.buildCbJson(from: compilationResult)
+        let result = SafariCbBuilder.buildCbJson(
+            from: compilationResult,
+            maxRules: DEFAULT_SAFARI_VERSION.rulesLimit
+        )
 
         XCTAssertEqual(result.rulesCount, 1)
         XCTAssertEqual(result.discardedRulesCount, 0)

@@ -65,6 +65,74 @@ public class WebExtension {
     }
 }
 
+// MARK: - WebExtension singleton
+
+extension WebExtension {
+
+    /// Dictionary to store WebExtension instances by group ID
+    private static var instances: [String: WebExtension] = [:]
+
+    /// Shared lock to protect access to the instances dictionary
+    private static let instancesLock = NSLock()
+
+    /// Error types that can be thrown by WebExtension
+    public enum WebExtensionError: Error {
+        /// Failed to create UserDefaults for the specified group ID
+        case userDefaultsCreationFailed(groupID: String)
+        /// Failed to get container URL for the specified group ID
+        case containerURLNotFound(groupID: String)
+    }
+
+    /// Returns a shared instance of WebExtension for the specified app group.
+    /// If an instance for the specified group ID already exists, returns it.
+    /// Otherwise, creates a new instance.
+    ///
+    /// - Parameters:
+    ///   - groupID: App group identifier
+    ///   - version: Safari version for which the rules are compiled
+    /// - Returns: A shared instance of WebExtension
+    /// - Throws: WebExtensionError if it fails to initialize WebExtension
+    public static func shared(
+        groupID: String,
+        version: SafariVersion = SafariVersion.autodetect()
+    ) throws -> WebExtension {
+        instancesLock.lock()
+        defer {
+            instancesLock.unlock()
+        }
+
+        if let instance = instances[groupID] {
+            return instance
+        }
+
+        // Create UserDefaults for the app group
+        guard let sharedUserDefaults = UserDefaults(suiteName: groupID) else {
+            throw WebExtensionError.userDefaultsCreationFailed(groupID: groupID)
+        }
+
+        // Get the shared container URL
+        guard
+            let containerURL = FileManager.default.containerURL(
+                forSecurityApplicationGroupIdentifier: groupID
+            )
+        else {
+            throw WebExtensionError.containerURLNotFound(groupID: groupID)
+        }
+
+        // Initialize WebExtension instance
+        let instance = try WebExtension(
+            containerURL: containerURL,
+            sharedUserDefaults: sharedUserDefaults,
+            version: version
+        )
+
+        // Store the instance
+        instances[groupID] = instance
+
+        return instance
+    }
+}
+
 // MARK: - Building FilterEngine from rules
 
 extension WebExtension {
@@ -114,6 +182,7 @@ extension WebExtension {
         let currentTimestamp = Date().timeIntervalSince1970
         sharedUserDefaults.set(currentTimestamp, forKey: Schema.ENGINE_TIMESTAMP_KEY)
         sharedUserDefaults.set(Schema.VERSION, forKey: Schema.ENGINE_SCHEMA_VERSION_KEY)
+        sharedUserDefaults.synchronize()
 
         return engine
     }

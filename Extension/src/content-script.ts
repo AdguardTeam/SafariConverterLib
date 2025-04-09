@@ -6,6 +6,8 @@ import { ExtendedCss } from '@adguard/extended-css';
 import { type Source as ScriptletSource, scriptlets as ScriptletsAPI } from '@adguard/scriptlets';
 
 import { type Configuration, type Scriptlet } from './configuration';
+import { log, initLogger } from './logger';
+import { version as extensionVersion } from '../package.json';
 
 /**
  * Executes code in the context of the page via new script tag and text content.
@@ -63,7 +65,7 @@ const executeScripts = (scripts: string[] = []) => {
     const code = scripts.join('\r\n');
     if (!executeScriptsViaTextContent(code)) {
         if (!executeScriptsViaBlob(code)) {
-            // TODO: log error
+            log('Failed to execute scripts');
         }
     }
 };
@@ -163,18 +165,22 @@ const applyCss = (css: string[]) => {
         return;
     }
 
-    const styleElement = document.createElement('style');
-    styleElement.setAttribute('type', 'text/css');
-    (document.head || document.documentElement).appendChild(styleElement);
+    try {
+        const styleElement = document.createElement('style');
+        styleElement.setAttribute('type', 'text/css');
+        (document.head || document.documentElement).appendChild(styleElement);
 
-    if (styleElement.sheet) {
-        const cssRules = toCSSRules(css);
-        for (const style of cssRules) {
-            styleElement.sheet.insertRule(style);
+        if (styleElement.sheet) {
+            const cssRules = toCSSRules(css);
+            for (const style of cssRules) {
+                styleElement.sheet.insertRule(style);
+            }
         }
-    }
 
-    protectStyleElementContent(styleElement);
+        protectStyleElementContent(styleElement);
+    } catch (e) {
+        log('Failed to apply CSS', e);
+    }
 };
 
 /**
@@ -187,34 +193,36 @@ const applyExtendedCss = (extendedCss: string[]) => {
         return;
     }
 
-    const cssRules = toCSSRules(extendedCss);
-    const extCss = new ExtendedCss({ cssRules });
-    extCss.apply();
+    try {
+        const cssRules = toCSSRules(extendedCss);
+        const extCss = new ExtendedCss({ cssRules });
+
+        extCss.apply();
+    } catch (e) {
+        log('Failed to apply extended CSS', e);
+    }
 };
 
 /**
  * Converts scriptlet to the code that can be executed.
  *
  * @param {Scriptlet} scriptlet Scriptlet data (name and arguments)
+ * @param {boolean} verbose Whether to log verbose output
  * @returns {string} Scriptlet code
  */
-const getScriptletCode = (scriptlet: Scriptlet): string => {
+const getScriptletCode = (scriptlet: Scriptlet, verbose: boolean): string => {
     try {
         const scriptletSource: ScriptletSource = {
             engine: 'safari-extension',
             name: scriptlet.name,
             args: scriptlet.args,
-
-            // TODO: Set proper version.
-            version: '1.0.0',
-
-            // TODO: remove
-            verbose: false,
+            version: extensionVersion,
+            verbose,
         };
 
         return ScriptletsAPI.invoke(scriptletSource);
     } catch (e) {
-        // TODO: log error
+        log(`Failed to get scriptlet code ${scriptlet.name}`, e);
     }
 
     return '';
@@ -223,14 +231,16 @@ const getScriptletCode = (scriptlet: Scriptlet): string => {
 /**
  * Applies scriptlets.
  *
- * @param {Scriptlet[]} scriptlets Array with scriptlets data..
+ * @param {Scriptlet[]} scriptlets Array with scriptlets data.
+ * @param {boolean} verbose Whether to log verbose output.
  */
-const applyScriptlets = (scriptlets: Scriptlet[]) => {
+const applyScriptlets = (scriptlets: Scriptlet[], verbose: boolean) => {
     if (!scriptlets || !scriptlets.length) {
         return;
     }
 
-    const scripts = scriptlets.map(getScriptletCode);
+    const getCode = (scriptlet: Scriptlet) => getScriptletCode(scriptlet, verbose);
+    const scripts = scriptlets.map(getCode);
 
     executeScripts(scripts);
 };
@@ -245,11 +255,27 @@ class ContentScript {
         this.configuration = configuration;
     }
 
-    public run() {
+    /**
+     * Runs the content script on the page.
+     *
+     * @param verbose Whether to log verbose output.
+     * @param prefix Prefix for log messages.
+     */
+    public run(verbose: boolean = false, prefix: string = '[AdGuard Extension]') {
+        if (verbose) {
+            initLogger('log', prefix);
+        } else {
+            initLogger('discard', '');
+        }
+
+        log('Starting content script execution...');
+
         applyCss(this.configuration.css);
         applyExtendedCss(this.configuration.extendedCss);
-        applyScriptlets(this.configuration.scriptlets);
+        applyScriptlets(this.configuration.scriptlets, verbose);
         applyScripts(this.configuration.js);
+
+        log('Finished content script execution');
     }
 }
 

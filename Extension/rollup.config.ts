@@ -70,7 +70,6 @@ const commonPlugins = [
 // Plugins for Node.js builds.
 const nodePlugins = [
     ...commonPlugins,
-    // TODO: Add other plugins if needed.
     getBabelOutputPlugin({
         presets: [
             [

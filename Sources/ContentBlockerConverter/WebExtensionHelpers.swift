@@ -32,7 +32,7 @@ public class WebExtensionHelpers: WebExtensionHelpersProtocol {
             guard
                 let rule = try RuleFactory.createRule(
                     ruleText: ruleText,
-                    for: DEFAULT_SAFARI_VERSION
+                    for: SafariVersion.autodetect()
                 )
             else {
                 return []
