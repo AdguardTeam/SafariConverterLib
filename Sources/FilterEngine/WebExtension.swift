@@ -68,7 +68,6 @@ public class WebExtension {
 // MARK: - WebExtension singleton
 
 extension WebExtension {
-
     /// Dictionary to store WebExtension instances by group ID
     private static var instances: [String: WebExtension] = [:]
 

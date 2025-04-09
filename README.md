@@ -382,3 +382,9 @@ build and publish new release with an asset binary.
 
 TODO(ameshkov): !!! Update docs, add lint/format commands
 TODO(ameshkov): !!! Explain how to update dependencies
+
+Linting:
+
+- `swiftlint`
+- `swift format lint --recursive --strict .`
+- `npx markdownlint .`
