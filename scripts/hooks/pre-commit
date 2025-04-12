@@ -85,3 +85,7 @@ fi
 if [ "$(git diff --cached --name-only -- '*FileLock*' || :)" != '' ]; then
     make filelock-test
 fi
+
+if [ "$(git diff --cached --name-only -- '*CommandLineWrapper*' || :)" != '' ]; then
+    make command-line-wrapper-test
+fi
