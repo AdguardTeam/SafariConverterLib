@@ -11,8 +11,10 @@ init:
 
 # Building
 
+build: swift-build js-build
+
 swift-build:
-	swift build
+	swift build -c release
 
 js-build:
 	$(PNPM) install && $(PNPM) build
@@ -40,10 +42,14 @@ js-lint:
 
 # Testing
 
-test: swift-test js-test
+test: swift-test js-test filelock-test
 
 swift-test:
 	swift test --quiet
 
 js-test:
 	$(PNPM) install && CI=1 $(PNPM) test
+
+filelock-test:
+	swift build -c release --product FileLockTester
+	./scripts/tests/file_lock_test.sh .build/release/FileLockTester

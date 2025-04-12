@@ -74,8 +74,14 @@ fi
 
 if [ "$(git diff --cached --name-only -- '*.js' '*.ts' || :)" != '' ]; then
     make js-lint
+    make js-test
 fi
 
 if [ "$(git diff --cached --name-only -- '*.swift' || :)" != '' ]; then
     make swift-lint
+    make swift-test
+fi
+
+if [ "$(git diff --cached --name-only -- '*FileLock*' || :)" != '' ]; then
+    make filelock-test
 fi

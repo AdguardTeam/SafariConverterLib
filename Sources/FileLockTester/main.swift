@@ -1,6 +1,8 @@
-/// FileLockTester is a helper executable required for testing inter-process synchronization of the FileLock class.
+/// FileLockTester is a helper executable required for testing inter-process
+/// synchronization of the FileLock class.
 ///
-/// To do that you can run this command from two different terminals and check the timings:
+/// To do that you can run this command from two different terminals and check
+/// the timings:
 ///
 /// ```
 /// swift run FileLockTester /tmp/reentrant-test.lock 5
@@ -12,13 +14,15 @@
 /// swift run FileLockTester /tmp/reentrant-test.lock 5 10
 /// ```
 ///
-/// You can also test re-entrant behavior by specifying the number of times to lock recursively:
+/// You can also test re-entrant behavior by specifying the number of times
+/// to lock recursively:
 ///
 /// ```
 /// swift run FileLockTester /tmp/reentrant-test.lock 5 10 3
 /// ```
 ///
-/// You can also check the lock behavior when the process is killed and unlock was not called.
+/// You can also check the lock behavior when the process is killed and unlock
+/// was not called.
 
 import FilterEngine
 import Foundation

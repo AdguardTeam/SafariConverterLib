@@ -29,13 +29,19 @@ This is a library that provides a compatibility layer between
       [swift-format][swift-format], and [periphery][periphery]).
     - `make js-lint` - lints JS extensions code.
 
-- `make js-build` - builds the extension library code.
+- `make test` - runs all tests.
 
-- `make swift-build` - uses `swift build` to build the library and the
-  command-line tools.
+    You can also run individual test suites:
 
-- `make swiftlint-analyze` - runs SwiftLint analyze. Note that this is a
-  heavy operation that includes building the apps.
+    - `make swift-test` - runs Swift tests.
+    - `make js-test` - runs JS tests.
+
+- `make build` - builds JS and Swift code.
+
+    You can also run individual build commands:
+
+    - `make swift-build` - builds the Swift package.
+    - `make js-build` - builds the extension library code.
 
 [swift-format]: https://github.com/swiftlang/swift-format
 [swiftlint]: https://github.com/realm/SwiftLint
