@@ -1,20 +1,24 @@
 import ContentBlockerConverter
 import Foundation
 
-/// Main class for storing `FilterRule` objects in a file, allowing partial in-memory usage.
+/// Main class for storing `FilterRule` objects in a file, allowing partial
+/// in-memory usage.
 ///
-/// This storage writes all rules sequentially (each rule is preceded by a 4-byte length).
-/// It can be initialized from an array of text lines (e.g., raw rules) by parsing them all
-/// with `RuleFactory` at once, then writing each resulting `FilterRule` to file. You can also
-/// open an existing storage file.
+/// This storage writes all rules sequentially (each rule is preceded by a
+/// 4-byte length). It can be initialized from an array of text lines (e.g.,
+/// raw rules) by parsing them all with `RuleFactory` at once, then writing each
+/// resulting `FilterRule` to file. You can also open an existing storage file.
 ///
 /// The storage provides:
 ///
 /// 1. A custom Index type (representing a file offset).
-/// 2. Subscript access by a `FilterRuleStorage.Index` to retrieve a single rule in O(1) file I/O.
-/// 3. An iterator (`FilterRuleStorage.Iterator`) to read all rules sequentially, yielding (`Index`, `FilterRule`) pairs.
+/// 2. Subscript access by a `FilterRuleStorage.Index` to retrieve a single
+///    rule in O(1) file I/O.
+/// 3. An iterator (`FilterRuleStorage.Iterator`) to read all rules
+///    sequentially, yielding (`Index`, `FilterRule`) pairs.
 public class FilterRuleStorage {
-    /// Magic string that's written to the file header. This is how we can detect that the file is serialized `FilterRuleStorage`.
+    /// Magic string that's written to the file header. This is how we can
+    /// detect that the file is serialized `FilterRuleStorage`.
     /// "FRS0" stands for "Filter Rule Storage version 0".
     ///
     /// If magic string is changed, `Schema.VERSION` **MUST** be incremented.

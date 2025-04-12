@@ -3,14 +3,6 @@ import ContentBlockerConverter
 import FilterEngine
 import Foundation
 
-func writeToStdError(str: String) {
-    let handle = FileHandle.standardError
-
-    if let data = str.data(using: String.Encoding.utf8, allowLossyConversion: false) {
-        handle.write(data)
-    }
-}
-
 func writeToStdOut(str: String) {
     let handle = FileHandle.standardOutput
 

@@ -2,16 +2,21 @@ import Foundation
 
 /// Enum responsible for converting third-party rules to AdGuard syntax.
 ///
-/// Note, that the rules converter purposefully ignores some rules that AdGuard supports (and converts) on other platforms.
-/// The problem is that Safari content blocking API is not enough to support those rules.
+/// Note, that the rules converter purposefully ignores some rules that AdGuard
+/// supports (and converts) on other platforms. The problem is that Safari
+/// content blocking API is not enough to support those rules.
 ///
-/// Here's the list of what's ignored (but may be required if Safari adds support for that):
+/// Here's the list of what's ignored (but may be required if Safari adds
+/// support for that):
+///
 ///  - Adblock Plus `$rewrite=abp-resource modifier`
 ///  - uBO HTML filtering, i.e. `##^scrpit:has-text`
 ///  - Options that are converted to `$redirect` rules: `mp4`, `empty`
 ///  - Options that are converted to `$csp` rules: `inline-font`, `inline-script`
 ///
-/// Some options that on other platforms we handle by the rule converter are supported by NetworkRule:
+/// Some options that on other platforms we handle by the rule converter are
+/// supported by NetworkRule:
+///
 /// - `$all`
 /// - `$1p`
 /// - `$3p`

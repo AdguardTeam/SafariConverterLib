@@ -389,3 +389,10 @@ Linting:
 - `swift format lint --recursive --strict .`
 - `npx markdownlint .`
 - `pnpm -C Extension install && pnpm -C Extension lint`
+
+Tests:
+
+- Swift tests
+- FileLockTester
+- CommandLineWrapper (how to?)
+- Extension tests

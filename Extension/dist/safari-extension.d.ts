@@ -1,5 +1,5 @@
 /*
- * SafariExtension v3.0.0 (build date: Mon, 03 Feb 2025 12:04:55 GMT)
+ * SafariExtension v3.0.0 (build date: Sat, 12 Apr 2025 15:00:47 GMT)
  * (c) 2025 Adguard Software Ltd.
  * Released under the GPL-3.0 license
  * https://github.com/AdguardTeam/SafariConverterLib/tree/master/Extension
@@ -9,6 +9,8 @@
  */
 /**
  * Represents configuration for the content script.
+ *
+ * This object is mapped to `WebExtension.Configuration` in Swift code.
  */
 interface Configuration {
     /**
@@ -41,6 +43,8 @@ interface Configuration {
 }
 /**
  * Represents scriptlet data that will be used to run "scriptlets" on the page.
+ *
+ * This object is mapped to `WebExtension.Scriptlet` in Swift code.
  */
 interface Scriptlet {
     /**
@@ -63,7 +67,13 @@ interface Scriptlet {
 declare class ContentScript {
     private readonly configuration;
     constructor(configuration: Configuration);
-    run(): void;
+    /**
+     * Runs the content script on the page.
+     *
+     * @param verbose Whether to log verbose output.
+     * @param prefix Prefix for log messages.
+     */
+    run(verbose?: boolean, prefix?: string): void;
 }
 
 export { type Configuration, ContentScript, type Scriptlet };

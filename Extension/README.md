@@ -42,12 +42,62 @@ has the following fields:
 [Scriptlets]: https://github.com/AdguardTeam/Scriptlets
 [Configuration]: src/configuration.ts
 
+## Usage
+
+Add dependency:
+
+```json
+"dependencies": {
+  "package-name": "github:user/repo#tag"
+}
+```
+
+Request the rules from a background page (use WebExtension as an example):
+
+Content script:
+
+```ts
+const response = await browser.runtime.sendMessage(message);
+```
+
+Background page:
+
+```ts
+browser.runtime.onMessage.addListener(async (request: unknown) => {
+    // Cast the incoming request as a Message.
+    const message = request as Message;
+
+    // Extract the URL from the message payload.
+    const { url } = message.payload as { url: string };
+
+    // Send the request to the native messaging host and wait for the response.
+    const response = await browser.runtime.sendNativeMessage('application.id', request);
+    const message = response as ResponseMessage;
+
+    // Extract the URL from the request payload.
+    const { url } = request.payload as { url: string };
+    // Extract the configuration from the response payload.
+    const configuration = message.payload as Configuration;
+
+    // If the engine timestamp has been updated, clear the cache and update
+    // the timestamp.
+    if (configuration.engineTimestamp !== engineTimestamp) {
+        cache.clear();
+        engineTimestamp = configuration.engineTimestamp;
+    }
+
+    // Save the new message in the cache for the given URL.
+    cache.set(url, message);
+})
+```
+
 TODO(ameshkov): !!! Add usage examples here.
 
 ## How to build the library
 
 ```sh
 pnpm install
+pnpm build
 ```
 
 TODO(ameshkov): !!! Explain every command here.

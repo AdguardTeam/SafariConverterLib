@@ -4,9 +4,6 @@ import XCTest
 @testable import ContentBlockerConverter
 
 final class NetworkRuleTests: XCTestCase {
-    let START_URL_UNESCAPED = "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?"
-    let URL_FILTER_REGEXP_END_SEPARATOR = "([\\/:&\\?].*)?$"
-
     func testNetworkRule() throws {
         struct TestCase {
             let ruleText: String

@@ -32,7 +32,11 @@ public class FilterEngine {
     /// need a rule, it can be quickly deserialized to `FilterRule`. This deserialized rule
     /// is then stored in the in-memory cache `rulesCache`.
     private let storage: FilterRuleStorage
+
+    /// Cache for deserialized filter rules. This cache is used to avoid deserializing
+    /// the same rule multiple times.
     private var rulesCache: [UInt32: FilterRule] = [:]
+    private let rulesCacheLock = NSLock()
 
     /// Trie for domain lookups.
     ///
@@ -259,12 +263,30 @@ extension FilterEngine {
 
     /// Gets rule from the rules storage by its index.
     ///
+    /// This function first checks the in-memory cache and only if the rule is not found there,
+    /// it reads it from the storage. The deserialized rule is then cached for future use.
+    ///
     /// This function can throw a `FilterRuleStorageError` if it fails to read
     /// the rule from the storage.
     private func getRule(by index: UInt32) throws -> FilterRule {
-        let ruleIndex = FilterRuleStorage.Index(offset: index)
+        // First, try to get the rule from the cache under lock
+        rulesCacheLock.lock()
+        if let cachedRule = rulesCache[index] {
+            rulesCacheLock.unlock()
+            return cachedRule
+        }
+        rulesCacheLock.unlock()
 
-        return try storage[ruleIndex]
+        // If not found in cache, read from storage
+        let ruleIndex = FilterRuleStorage.Index(offset: index)
+        let rule = try storage[ruleIndex]
+
+        // Cache the rule for future use under lock
+        rulesCacheLock.lock()
+        rulesCache[index] = rule
+        rulesCacheLock.unlock()
+
+        return rule
     }
 }
 

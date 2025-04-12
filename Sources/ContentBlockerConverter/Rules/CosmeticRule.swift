@@ -1,19 +1,15 @@
 import Foundation
 
-/**
- * Cosmetic rule class
- */
+/// Cosmetic rule class.
 public class CosmeticRule: Rule {
     private static let EXT_CSS_PSEUDO_INDICATOR_HAS = "has"
     private static let EXT_CSS_PSEUDO_INDICATOR_IS = "is"
 
-    /// Adblock Plus uses special prefix for their pseudo-classes.
-    private static let EXT_CSS_ABP_PREFIX = "-abp-"
-
-    /**
-     * Pseudo class indicators. They are used to detect if rule is extended or not even if rule does not
-     * have extended css marker
-     */
+    /// Pseudo class indicators. They are used to detect if rule is extended or
+    /// not even if rule does not have extended css marker.
+    ///
+    /// For instance, a rule like `##banner:contains(text)` will be considered
+    /// extended CSS rule and it should be interpreted by the extension.
     private static let EXT_CSS_PSEUDO_INDICATORS = [
         CosmeticRule.EXT_CSS_PSEUDO_INDICATOR_HAS,
         CosmeticRule.EXT_CSS_PSEUDO_INDICATOR_IS,
@@ -30,10 +26,16 @@ public class CosmeticRule: Rule {
         "matches-property",
     ]
 
+    /// Extended CSS attribute indicator. This is a backwards-compatible way
+    /// of specifying extended CSS rules, i.e. instead of `##banner:has(#id)`
+    /// we can specify `##banner[-ext-has="#id"]`.
     private static let EXT_CSS_ATTR_INDICATOR = "[-ext-"
 
-    private static let PATH_MODIFIER = "path="
-    private static let DOMAIN_MODIFIER = "domain="
+    /// Adblock Plus uses special prefix for their pseudo-classes.
+    ///
+    /// For instance, instead of `##div:contains(smth)` they will have
+    /// something like `##div:-abp-contains(smth)`.
+    private static let EXT_CSS_ABP_PREFIX = "-abp-"
 
     /// Content depends on the rule type.
     ///
@@ -63,7 +65,8 @@ public class CosmeticRule: Rule {
     ///
     /// - Parameters:
     ///   - ruleText: AdGuard rule text.
-    ///   - version: Safari version which will use that rule. Depending on the version some features may be available or not.
+    ///   - version: Safari version which will use that rule. Depending on the
+    ///              version some features may be available or not.
     /// - Throws: SyntaxError if any issue with the rule is detected.
     public override init(
         ruleText: String,

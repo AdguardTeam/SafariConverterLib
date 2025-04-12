@@ -19,7 +19,9 @@ public enum SafariRegex {
     /// Here is what was figured out while experimenting:
     /// - Brackets for groups MUST be balanced, otherwise it will not tolerate that.
     /// - Brackets for character ranges SHOULD be balanced (does not break anything if unbalanced).
-    /// - Explicitly matching special characters is allowed: '\.', '\*', '\+', '\/', '\[', '\(', '\]', '\)', '\|', '\?', '{', '}'. Any other is not allowed.
+    /// - Explicitly matching special characters is allowed:
+    ///   - Allowed: '\.', '\*', '\+', '\/', '\[', '\(', '\]', '\)', '\|', '\?', '{', '}'.
+    ///   - Any other is not allowed.
     /// - MUST keep track of quantifiable characters (i.e. those to which you can apply '\*' '?' '+') .
     /// - Special characters are not quantifiable unless escaped.
     /// - Nested groups are allowed (but can not mixed).
@@ -97,7 +99,9 @@ public enum SafariRegex {
                     continue
                 default:
                     return .failure(
-                        SafariRegexError.invalidRegex(message: "Unsupported escape sequence")
+                        SafariRegexError.unsupportedMetaCharacter(
+                            message: "Unsupported escape sequence"
+                        )
                     )
                 }
 

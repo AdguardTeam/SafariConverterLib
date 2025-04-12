@@ -11,9 +11,6 @@ import Foundation
 /// This implementation is re-entrant, meaning the same thread can acquire the lock multiple times
 /// without causing a deadlock.
 public class FileLock {
-    /// Path to the lock file on disk
-    private let filePath: String
-
     /// File descriptor for the lock file
     private var fileDescriptor: Int32 = -1
 
@@ -30,7 +27,6 @@ public class FileLock {
     /// - Parameter filePath: Path where the lock file should be created or accessed
     /// - Returns: A FileLock instance, or nil if the lock file couldn't be opened or created
     public init?(filePath: String) {
-        self.filePath = filePath
         // Open (or create) the lock file with read/write permissions.
         // O_CREAT - Create the file if it doesn't exist
         // O_RDWR - Open for reading and writing

@@ -20,12 +20,6 @@ class BlockerEntryFactory {
     /// Prefix for the regular expression that we prepend to the regexp from the $path modifier.
     static let URL_FILTER_PREFIX_CSS_RULES_PATH_START_STRING = "^(https?:\\/\\/)([^\\/]+)"
 
-    /**
-     * In some cases URL_FILTER_ANY_URL doesn't work for domain-specific url exceptions
-     * https://github.com/AdguardTeam/AdGuardForSafari/issues/285
-     */
-    private static let URL_FILTER_URL_RULES_EXCEPTIONS = ".*"
-
     /// Top 100 most popular TLDs according to data here:
     /// https://github.com/AdguardTeam/FiltersRegistry/blob/master/scripts/wildcard-domain-processor/wildcard_domains.json
     private static let POPULAR_TLDS = [
@@ -47,7 +41,8 @@ class BlockerEntryFactory {
     /// Creates a new instance of BlockerEntryFactory.
     ///
     /// - Parameters:
-    ///   - errorsCounter: object where we count the total number of conversion errors though the whole conversion process.
+    ///   - errorsCounter: object where we count the total number of conversion
+    ///                    errors though the whole conversion process.
     ///   - version: version of Safari for which the rules are being built.
     init(errorsCounter: ErrorsCounter, version: SafariVersion) {
         self.errorsCounter = errorsCounter
@@ -397,12 +392,15 @@ class BlockerEntryFactory {
         }
     }
 
-    /// Applies additional post-processing to document-level whitelist rules ($document, $elemhide, $jsinject, $urlblock).
+    /// Applies additional post-processing to document-level whitelist rules
+    /// ($document, $elemhide, $jsinject, $urlblock).
     ///
-    /// The idea is that when such a rule targets a single domain, i.e. looks like "@@||example.org^$elemhide",
-    /// it would be much better from the performance point of view to use "if-domain" instead of "url-filter".
+    /// The idea is that when such a rule targets a single domain, i.e. looks
+    /// like "@@||example.org^$elemhide", it would be much better from the
+    /// performance point of view to use "if-domain" instead of "url-filter".
     ///
     /// So instead of:
+    ///
     /// ```
     /// {
     ///     "url-filter": "regex"

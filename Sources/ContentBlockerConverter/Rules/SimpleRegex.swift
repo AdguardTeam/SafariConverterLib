@@ -6,11 +6,6 @@ import Foundation
 /// of full-scale regular expressions. These patterns can be converted to regular expressions
 /// that are supported by Safari content blocking rules.
 public enum SimpleRegex {
-    private static let maskStartUrl = "||"
-    private static let maskPipe = "|"
-    private static let maskSeparator = "^"
-    private static let maskAnySymbol = "*"
-
     private static let regexAnySymbol = ".*"
     private static let regexAnySymbolChars: [UInt8] = Array(".*".utf8)
     private static let regexStartString: [UInt8] = Array("^".utf8)
@@ -33,9 +28,7 @@ public enum SimpleRegex {
     /// - Returns: regular expression corresponding to that pattern.
     /// - Throws: SyntaxError if the pattern contains non-ASCII characters.
     public static func createRegexText(pattern: String) throws -> String {
-        if pattern.isEmpty || pattern == maskStartUrl || pattern == maskPipe
-            || pattern == maskAnySymbol
-        {
+        if pattern.isEmpty || pattern == "||" || pattern == "|" || pattern == "*" {
             return regexAnySymbol
         }
 

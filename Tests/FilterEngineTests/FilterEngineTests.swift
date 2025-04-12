@@ -319,4 +319,76 @@ final class FilterEngineTests: XCTestCase {
             )
         }
     }
+
+    /// Benchmark test for the findAll method
+    ///
+    /// Baseline results (April 2025):
+    /// - Machine: MacBook Pro M1 Max, 32GB RAM
+    /// - OS: macOS 15.1
+    /// - Swift: 6.0
+    /// - Average execution time: ~0.325 sec
+    ///
+    /// To get your machine info: `system_profiler SPHardwareDataType`
+    /// To get your macOS version: `sw_vers`
+    /// To get your Swift version: `swift --version`
+    func testPerformanceFindAll() throws {
+        // Load advanced rules from the resource file
+        let thisSourceFile = URL(fileURLWithPath: #file)
+        let thisDirectory = thisSourceFile.deletingLastPathComponent()
+        let resourceURL = thisDirectory.appendingPathComponent("Resources/advanced-rules.txt")
+        let rulesContent = try String(contentsOf: resourceURL)
+        let rules = rulesContent.components(separatedBy: .newlines).filter { !$0.isEmpty }
+
+        // Create a storage with the rules
+        let storage = try FilterRuleStorage(
+            from: rules,
+            for: .safari16_4,
+            fileURL: tempFileURL
+        )
+
+        // Initialize the engine
+        let engine = try FilterEngine(storage: storage)
+
+        // Generate a list of random URLs for testing
+        let domains = [
+            "example.org", "example.com", "youtube.com", "google.com",
+            "facebook.com", "twitter.com", "reddit.com", "amazon.com",
+            "wikipedia.org", "github.com", "netflix.com", "apple.com",
+            "microsoft.com", "linkedin.com", "instagram.com", "foxtel.com.au",
+            "imdb.com", "adguard.com", "mail.yandex.ru", "7plus.com.au",
+        ]
+
+        let paths = [
+            "/", "/index.html", "/about", "/contact", "/products",
+            "/services", "/blog", "/news", "/gallery", "/faq",
+            "/terms", "/privacy", "/login", "/register", "/profile",
+            "/settings", "/search", "/video", "/audio", "/download",
+        ]
+
+        var testURLs: [URL] = []
+        for domain in domains {
+            for path in paths {
+                if let url = URL(string: "https://\(domain)\(path)") {
+                    testURLs.append(url)
+                }
+            }
+        }
+
+        // Measure performance
+        measure {
+            for url in testURLs {
+                // Test with different combinations of subdocument and thirdParty parameters
+                let requests = [
+                    Request(url: url, subdocument: false, thirdParty: false),
+                    Request(url: url, subdocument: true, thirdParty: false),
+                    Request(url: url, subdocument: false, thirdParty: true),
+                    Request(url: url, subdocument: true, thirdParty: true),
+                ]
+
+                for request in requests {
+                    let _ = engine.findAll(for: request)
+                }
+            }
+        }
+    }
 }

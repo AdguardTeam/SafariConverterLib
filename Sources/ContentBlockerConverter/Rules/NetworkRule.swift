@@ -2,9 +2,9 @@ import Foundation
 
 /// Represents a network rule.
 ///
-/// Note, that this implementations supports limited set of modifiers, it does not support
-/// the ones that are not supported by Safari content blocking and cannot be implemented
-/// using WebExtensions API.
+/// Note, that this implementations supports limited set of modifiers, it does
+/// not support the ones that are not supported by Safari content blocking and
+/// cannot be implemented using WebExtensions API.
 ///
 /// Not supported:
 /// - $replace
@@ -26,7 +26,8 @@ public class NetworkRule: Rule {
     public var isThirdParty = false
     public var isMatchCase = false
 
-    // TODO: [ameshkov]: Modifying url-filter for WebSocket was required until Safari 15, it can be removed now.
+    // TODO: [ameshkov]: Modifying url-filter for WebSocket was required until
+    // Safari 15, it can be removed now.
     public var isWebSocket = false
     public var isBadfilter = false
 
@@ -49,7 +50,8 @@ public class NetworkRule: Rule {
     ///
     /// - Parameters:
     ///   - ruleText: AdGuard rule text.
-    ///   - version: Safari version which will use that rule. Depending on the version some features may be available or not.
+    ///   - version: Safari version which will use that rule. Depending on the
+    ///              version some features may be available or not.
     /// - Throws: SyntaxError if any issue with the rule is detected.
     public override init(
         ruleText: String,

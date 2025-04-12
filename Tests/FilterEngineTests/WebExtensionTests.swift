@@ -358,11 +358,11 @@ final class WebExtensionTests: XCTestCase {
 
     /// Benchmark test for the lookup method
     ///
-    /// Baseline results (March 2025):
+    /// Baseline results (April 2025):
     /// - Machine: MacBook Pro M1 Max, 32GB RAM
     /// - OS: macOS 15.1
     /// - Swift: 6.0
-    /// - Average execution time: ~0.017 seconds
+    /// - Average execution time: ~0.008 seconds
     ///
     /// To get your machine info: `system_profiler SPHardwareDataType`
     /// To get your macOS version: `sw_vers`

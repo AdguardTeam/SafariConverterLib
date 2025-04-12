@@ -2,32 +2,39 @@ import ContentBlockerConverter
 import Foundation
 import PublicSuffixList
 
-/// WebExtension is a class that provides public interface to be used in web (or app) extensions.
+/// WebExtension is a class that provides public interface to be used in web
+/// (or app) extensions.
 ///
 /// It is responsible for the following pieces of work:
 ///
 /// 1. Initializing `FilterEngine` and serializing it to a binary form.
-/// 2. Keeping track of the storage schema version. Whenever the schema version is changed, the engine needs to be rebuilt.
+/// 2. Keeping track of the storage schema version. Whenever the schema version
+///    is changed, the engine needs to be rebuilt.
 /// 3. Rules lookup using the engine.
 ///
-/// This class is supposed to be used in both the native extension and in the host app.
-/// Generally, the host app builds the engine and serializes it to a binary form and later this binary form is used
-/// by the native extension to lookup the rules.
+/// This class is supposed to be used in both the native extension and in the
+/// host app.
+/// Generally, the host app builds the engine and serializes it to a binary form
+/// and later this binary form is used by the native extension to lookup the
+/// rules.
 ///
-/// This functionality requires having a shared file storage and shared UserDefaults since some information
-/// must be shared between the host app and the native extension process.
+/// This functionality requires having a shared file storage and shared
+/// UserDefaults since some information must be shared between the host app and
+/// the native extension process.
 public class WebExtension {
     /// Place where extension related files are to be stored.
     private let baseURL: URL
 
-    /// `UserDefaults` shared between the extension process and the host app process.
+    /// `UserDefaults` shared between the extension process and the host app
+    /// process.
     private let sharedUserDefaults: UserDefaults
 
     /// Safari version for which the engine should be built.
     private let version: SafariVersion
 
-    /// `FileLock` object to synchronize operations between the extension process and the host app process.
-    /// It protects access to file resources (`baseURL` etc).
+    /// `FileLock` object to synchronize operations between the extension
+    /// process and the host app process. It protects access to file resources
+    /// (`baseURL` etc).
     private let fileLock: FileLock?
 
     /// Cached instance of `FilterEngine`.
@@ -39,14 +46,17 @@ public class WebExtension {
     /// Initializes a new instance of `WebExtension`.
     ///
     /// - Parameters:
-    ///   - containerURL: path to the container directory that's shared between the host app
-    ///                   and the web extension. This directory will be used to store filter rules,
-    ///                   and the serialized `FilterEngine`.
-    ///   - sharedUserDefaults: instance of `UserDefaults` shared between the host app
-    ///                         and the web extension process. This instance will be used to
-    ///                         store the engine timestamp and schema version.
+    ///   - containerURL: path to the container directory that's shared between
+    ///                   the host app and the web extension. This directory
+    ///                   will be used to store filter rules, and the serialized
+    ///                   `FilterEngine`.
+    ///   - sharedUserDefaults: instance of `UserDefaults` shared between the
+    ///                         host app and the web extension process. This
+    ///                         instance will be used to store the engine
+    ///                         timestamp and schema version.
     ///   - version: Safari version for which the rules are compiled.
-    /// - Throws: throws error if it fails to create a directory for shared files
+    /// - Throws: throws error if it fails to create a directory for shared
+    ///           files
     public init(
         containerURL: URL,
         sharedUserDefaults: UserDefaults,
