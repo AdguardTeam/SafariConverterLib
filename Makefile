@@ -42,7 +42,7 @@ js-lint:
 
 # Testing
 
-test: swift-test js-test filelock-test
+test: swift-test js-test filelock-test command-line-wrapper-test
 
 swift-test:
 	swift test --quiet
@@ -53,3 +53,7 @@ js-test:
 filelock-test:
 	swift build -c release --product FileLockTester
 	./scripts/tests/file_lock_test.sh .build/release/FileLockTester
+
+command-line-wrapper-test:
+	swift build -c release --product ConverterTool
+	./scripts/tests/command_line_wrapper_test.sh .build/release/ConverterTool

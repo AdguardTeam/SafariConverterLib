@@ -35,6 +35,8 @@ This is a library that provides a compatibility layer between
 
     - `make swift-test` - runs Swift tests.
     - `make js-test` - runs JS tests.
+    - `make filelock-test` - runs file lock test suite.
+    - `make command-line-wrapper-test` - runs command-line wrapper test suite.
 
 - `make build` - builds JS and Swift code.
 

@@ -26,6 +26,39 @@ func encodeJson(_ result: ConversionResult) throws -> String {
     return jsonString.replacingOccurrences(of: "\\/", with: "/")
 }
 
+/// Reads rules from either a file path or stdin
+/// - Parameter inputPath: Optional path to a file containing rules
+/// - Returns: Array of rule strings
+func readRules(from inputPath: String? = nil) throws -> [String] {
+    var rules: [String] = []
+
+    if let inputPath = inputPath {
+        // Read from file
+        do {
+            let content = try String(contentsOfFile: inputPath, encoding: .utf8)
+            rules = content.components(separatedBy: .newlines).filter { !$0.isEmpty }
+            Logger.log("Read \(rules.count) rules from file: \(inputPath)")
+        } catch {
+            throw NSError(
+                domain: "FileReadError",
+                code: 1,
+                userInfo: [
+                    NSLocalizedDescriptionKey: "Failed to read from file: "
+                        + "\(error.localizedDescription)"
+                ]
+            )
+        }
+    } else {
+        // Read from stdin
+        while let line = readLine(strippingNewline: true), !line.isEmpty {
+            rules.append(line)
+        }
+        Logger.log("Read \(rules.count) rules from stdin")
+    }
+
+    return rules
+}
+
 /// Root command with two subcommands: convert and buildengine.
 struct ConverterTool: ParsableCommand {
     static let configuration = CommandConfiguration(
@@ -43,6 +76,12 @@ struct ConverterTool: ParsableCommand {
 /// ```
 /// cat rules.txt | ./ConverterTool convert --safari-version 14 --advanced-blocking true
 /// ```
+///
+/// Or with input file:
+///
+/// ```
+/// ./ConverterTool convert --input-path rules.txt --safari-version 14 --advanced-blocking true
+/// ```
 struct Convert: ParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "convert",
@@ -58,6 +97,12 @@ struct Convert: ParsableCommand {
 
     @Option(name: .shortAndLong, help: "Maximum json size in bytes. Leave empty for no limit.")
     var maxJsonSizeBytes: Int = 0
+
+    @Option(
+        name: .long,
+        help: "Path to the input file with rules. Leave empty to read from stdin."
+    )
+    var inputPath: String?
 
     @Option(
         name: .long,
@@ -83,11 +128,13 @@ struct Convert: ParsableCommand {
             Logger.log("(Convert) - Max json limit: No limit set")
         }
 
-        var rules: [String] = []
-        while let line = readLine(strippingNewline: true), !line.isEmpty {
-            rules.append(line)
+        if let inputPath = inputPath {
+            Logger.log("(Convert) - Input file: \(inputPath)")
+        } else {
+            Logger.log("(Convert) - Reading from stdin")
         }
 
+        let rules = try readRules(from: inputPath)
         Logger.log("(Convert) - Rules to convert: \(rules.count)")
 
         let result: ConversionResult = ContentBlockerConverter()
@@ -124,6 +171,12 @@ struct Convert: ParsableCommand {
 /// ```
 /// cat advanced-rules.txt | ./ConverterTool buildengine --safari-version 14 --output-dir <path-to-dir>
 /// ```
+///
+/// Or with input file:
+///
+/// ```
+/// ./ConverterTool buildengine --input-path advanced-rules.txt --safari-version 14 --output-dir <path-to-dir>
+/// ```
 struct BuildEngine: ParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "buildengine",
@@ -133,6 +186,12 @@ struct BuildEngine: ParsableCommand {
     @Option(name: .shortAndLong, help: "Safari version.")
     var safariVersion: Double = 13
 
+    @Option(
+        name: .long,
+        help: "Path to the input file with rules. Leave empty to read from stdin."
+    )
+    var inputPath: String?
+
     @Option(name: .shortAndLong, help: "Output directory for the FilterEngine binary.")
     var outputDir: String
 
@@ -141,11 +200,13 @@ struct BuildEngine: ParsableCommand {
         Logger.log("(BuildEngine) - Safari version: \(safariVersionResolved)")
         Logger.log("(BuildEngine) - Output directory: \(outputDir)")
 
-        var rules: [String] = []
-        while let line = readLine(strippingNewline: true), !line.isEmpty {
-            rules.append(line)
+        if let inputPath = inputPath {
+            Logger.log("(BuildEngine) - Input file: \(inputPath)")
+        } else {
+            Logger.log("(BuildEngine) - Reading from stdin")
         }
 
+        let rules = try readRules(from: inputPath)
         Logger.log("(BuildEngine) - Advanced rules count: \(rules.count)")
 
         // Build the FilterEngine binary using the provided rules and safari version.
