@@ -8,13 +8,16 @@ public class ContentBlockerConverter {
     ///
     /// - Parameters:
     ///   - rules: array of filtering rules.
-    ///   - safariVersion: version of Safari for which the conversion should be done.
-    ///   - optimize: if set to true, removes generic element hiding rules form the result.
+    ///   - safariVersion: version of Safari for which the conversion should be
+    ///     done.
     ///   - advancedBlocking: if true, convert advanced blocking rules too.
-    ///   - maxJsonSizeBytes: maximum size for the rules JSON. Due to iOS bug we have to limit that size.
+    ///   - maxJsonSizeBytes: maximum size for the rules JSON. Due to iOS bug we
+    ///     have to limit that size. Read more about the bug in
+    ///     [issue #56](https://github.com/AdguardTeam/SafariConverterLib/issues/56).
     ///   - progress: provides a way to cancel conversion earlier.
     /// - Returns:
-    ///   - Conversion result that contains the Safari rules JSON and additional information about conversion.
+    ///   - Conversion result that contains the Safari rules JSON and additional
+    ///     information about conversion.
     public func convertArray(
         rules: [String],
         safariVersion: SafariVersion = .safari13,

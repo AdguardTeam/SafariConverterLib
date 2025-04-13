@@ -1,7 +1,18 @@
 {
-  "name": "safari-extension",
-  "version": "3.0.0",
-  "description": "Extension API for SafariConverterLib",
+  "name": "@adguard/safari-extension",
+  "version": "3.0.0-alpha.1",
+  "description": "Safari Web Extension API for SafariConverterLib",
+  "author": "Adguard Software Ltd.",
+  "license": "GPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AdguardTeam/SafariConverterLib.git",
+    "directory": "Extension"
+  },
+  "bugs": {
+    "url": "https://github.com/AdguardTeam/SafariConverterLib/issues"
+  },
+  "homepage": "https://github.com/AdguardTeam/SafariConverterLib/tree/master/Extension",
   "type": "module",
   "main": "dist/safari-extension.cjs",
   "module": "dist/safari-extension.esm.js",
@@ -29,21 +40,10 @@
     "lint": "eslint . --cache --ext .ts",
     "test": "vitest"
   },
-  "author": "Adguard Software Ltd.",
-  "license": "GPL-3.0",
   "dependencies": {
     "@adguard/extended-css": "^2.1.1",
     "@adguard/scriptlets": "^2.1.4"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/AdguardTeam/SafariConverterLib.git",
-    "directory": "Extension"
-  },
-  "bugs": {
-    "url": "https://github.com/AdguardTeam/SafariConverterLib/issues"
-  },
-  "homepage": "https://github.com/AdguardTeam/SafariConverterLib/tree/master/Extension",
   "devDependencies": {
     "@babel/core": "^7.22.8",
     "@babel/preset-env": "^7.22.7",

@@ -9,7 +9,6 @@ This is a library that provides a compatibility layer between
 - [Converter](#converter)
     - [Using as a library](#using-as-a-library)
     - [Command-line interface](#command-line-interface)
-    - [Using as a node module](#using-as-a-node-module)
 - [Supported rules and limitations](#supported-rules-and-limitations)
     - [Basic (network) rules](#basic-network-rules)
     - [Cosmetic rules](#cosmetic-rules)
@@ -49,69 +48,31 @@ Here's a simple example of how it works.
   }
   ```
 
-Note, that not every rule can be supported natively so there's also a concept of
-"advanced rules", the rules that have to be interpreted by a separate extension,
-either a [WebExtension][safariwebextension], or a [Safari App Extension][safariappextension].
+Note that not every rule can be supported natively, so there's also a concept of
+"advanced rules," the rules that have to be interpreted by a separate extension,
+either a [WebExtension][safariwebextension] or a
+[Safari App Extension][safariappextension].
 
 [safariwebextension]: https://developer.apple.com/documentation/safariservices/safari-web-extensions
 [safariappextension]: https://developer.apple.com/documentation/safariservices/safari-app-extensions
 
 ### Using as a library
 
+You can check out the [demo project][safariblocker] to see how to use the
+library. It showcases all the features of the library.
+
+The first step is to use an instance of [ContentBlockerConverter] to convert
+AdGuard rules into the rules that Safari understands.
+
 ```swift
     let result: ConversionResult = ContentBlockerConverter().convertArray(
         rules: lines,
-        safariVersion: SafariVersion(18.1),
-        optimize: false,
+        safariVersion: SafariVersion.autodetect(),
         advancedBlocking: true,
-        advancedBlockingFormat: .txt,
         maxJsonSizeBytes: nil,
         progress: nil
     )
 ```
-
-#### `convertArray()` parameters
-
-- `rules`: `[String]` - array of [AdGuard rules][adguardrules] to convert.
-- `safariVersion`: `SafariVersion` - for which the conversion should be done.
-  The minimum supported version if `13`. Depending on the version the result
-  may be different, newer Safari versions add more capabilities.
-
-  Depending on `SafariVersion` the converter also will limit the number of
-  entries in JSON. Safari 15 supports up to 150k rules, older Safari versions
-  support up to 50k rules.
-- `optimize`: `Bool` - **Deprecated**. Removes generic cosmetic rules from the
-  output.
-- `advancedBlocking`: `Bool` - if `true`, convert rules that need to be
-  interpreted by an additional extension (either a [WebExtension][safariwebextension], or a [Safari App Extension][safariappextension]).
-- `advancedBlockingFormat`: `AdvancedBlockingFormat` - format for advanced
-  rules output. Can be `.json` or `.txt` format. `.txt` is basically unchanged
-  AdGuard format that is supposed to be interpreted by [tsurlfilter]-based web
-  extension. `.json` is a "Safari content blocker"-like JSON syntax that is
-  better suited for native Safari App Extension.
-- `maxJsonSizeBytes`: `Int?` - provides a way to limit the size of the output
-  JSON. This was required due to a [nasty iOS bug][#56] in iOS 17.
-- `progress`: `Progress?` instance that can be used to report the amount of work
-  that has been done, or cancel the process in the middle.
-
-#### `convertArray()` return value
-
-Returns an instance of `ConversionResult` with the following fields.
-
-- `totalConvertedCount`: `Int` - total entries count in the compilation result
-  (before removing overlimit).
-- `convertedCount`: `Int` - Entries count in the result after reducing to the
-  limit defined by `SafariVersion`.
-- `errorsCount`: `Int` - Count of conversion errors (i.e. count of rules that we
-  could not convert).
-- `overLimit`: `Bool` - If `true`, the limit was exceeded.
-- `converted`: `String` - Resulting JSON with Safari content blocker rules.
-- `advancedBlockingConvertedCount`: `Int` - Count of advanced blocking rules.
-- `advancedBlocking`: `String?` - JSON with advanced content blocking rules. It
-  is only set when `advancedBlockingFormat` is set to `.json`.
-- `advancedBlockingText`: `String?` - plain text list of advanced content
-  blocking rules. It is only set when `advancedBlockingFormat` is set to `.txt`.
-- `message`: `String` - message with the overall conversion status.
 
 > [!TIP]
 > In order to keep parsing fast, we heavily rely on `UTF8View`. Users need to
@@ -121,46 +82,40 @@ Returns an instance of `ConversionResult` with the following fields.
 > content into rules to pass them to the converter. If the `String` is already
 > contiguous, this call does not cost anything.
 
-[tsurlfilter]: https://github.com/AdguardTeam/tsurlfilter
-[#56]: https://github.com/AdguardTeam/SafariConverterLib/issues/56
+Once the conversion is finished, you'll have a [ConversionResult] object that
+contains two important fields:
+
+- `safariRulesJSON` - JSON with Safari content blocking rules. This JSON should
+  be interpreted by [a content blocker][safarirules].
+- `advancedRulesText` - AdGuard rules that need to be interpreted by
+  web extension (or app extension). Please refer to the
+  [extension's README][extension-readme] for details.
+
+[ConversionResult]: Sources/ContentBlockerConverter/ConversionResult.swift
+[ContentBlockerConverter]: Sources/ContentBlockerConverter/ContentBlockerConverter.swift
 [makecontiguousutf8]: https://developer.apple.com/documentation/swift/string/makecontiguousutf8()
+[safariblocker]: https://github.com/ameshkov/safari-blocker
+[extension-readme]: Extension/README.md
 
 ### Command-line interface
 
 Converter can be built as a command-line tool with the following interface:
 
-```sh
-ConverterTool [--safari-version <safari-version>] [--optimize <optimize>] [--advanced-blocking <advanced-blocking>] [--advanced-blocking-format <advanced-blocking-format>] [<rules>]
+```text
+OVERVIEW: Tool for converting rules to JSON or building the FilterEngine binary.
+
+USAGE: ConverterTool <subcommand>
+
+OPTIONS:
+  -h, --help              Show help information.
+
+SUBCOMMANDS:
+  convert (default)       Convert AdGuard rules to Safari content blocking JSON
+                          and advanced rules for a web extension.
+  buildengine             Build the FilterEngine binary.
+
+  See 'ConverterTool help <subcommand>' for detailed help.
 ```
-
-Here's an example of how it can be used:
-
-```sh
-cat rules.txt | ./ConverterTool --safari-version 13 --optimize false --advanced-blocking true --advanced-blocking-format txt
-```
-
-### Using as a node module
-
-Run `yarn install` to prepare the node module. This command will automatically
-trigger compilation of the `ConverterTool` command-line tool as node module
-relies on it.
-
-Node module provides the following methods.
-
-#### `jsonFromRules(rules, advancedBlocking, safariVersion, converterToolPath)`
-
-Converts an array of [AdGuard rules][adguardrules] to JSON with Safari rules.
-
-- `rules` - array of rules to convert.
-- `advancedBlocking` - if `true`, advanced content blocking rules will also be
-  provided in the result.
-- `safariVersion` - target Safari version.
-- `converterToolPath` - (optional) path to the `ConverterTool` binary. If not
-  set, it will use the version packed with the node module.
-
-### `getConverterVersion`
-
-Returns the Safari Converter version.
 
 ## Supported rules and limitations
 
@@ -231,8 +186,8 @@ certainly supports the most important types of those rules.
 
   This limitation may be lifted if [#70] is implemented.
 
-- `$urlblock`, `$genericblock` is basically the same as `$document`, i.e. it
-  disable all kinds of filtering on websites.
+- `$urlblock`, `$genericblock` is basically the same as `$document`, i.e., it
+  disables all kinds of filtering on websites.
 
   These limitations may be lifted when [#69] and [#71] are implemented.
 
@@ -259,6 +214,10 @@ certainly supports the most important types of those rules.
 - `$websocket` (fully supported starting with Safari 15).
 
 - `$ping` (fully supported starting with Safari 14).
+
+- `$jsinject` - rules with this modifier are converted to advanced blocking rules.
+  Currently, `$jsinject` modifier can be used only as a single modifier in a rule. This
+  limitation may be lifted in the future: [#73].
 
 [regexrules]: https://adguard.com/kb/general/ad-filtering/create-own-filters/#regexp-support
 [safariregex]: https://developer.apple.com/documentation/safariservices/creating-a-content-blocker#Capture-URLs-by-pattern
@@ -314,7 +273,7 @@ additional extension.
 
 #### Limitations of cosmetic rules
 
-- Specifying domains is subject of the same limitations as the `$domain`
+- Specifying domains is subject to the same limitations as the `$domain`
   modifier of basic rules.
 
 - [Non-basic rules modifiers][nonbasicmodifiers] are supported with some
@@ -357,42 +316,22 @@ Please note, that the library is published under GPLv3.
 
 ### How to build, test, debug
 
-- If you're using Safari Converter as a library then you can simply use it as an
-SPM module.
-- Building the command-line argument: `swift build`.
-- Running unit-tests: `swift test`.
-
-In addition to that, we advise using this [demo project][safariblocker] to debug
-the library itself, and even individual Safari content blocking rules.
-
-[safariblocker]: https://github.com/ameshkov/safari-blocker
+Please refer to [DEVELOPMENT.md](DEVELOPMENT.md) for details.
 
 ### Releasing new version
 
-Push a new tag in `v*.*.*` format, then provided github action is intended to
-build and publish new release with an asset binary.
+Push a new tag in `v*.*.*` format, and then everything will be done
+automatically:
+
+- Publish a new Github version
+- Publish a new npm package version
 
 ### Third-party dependencies
 
 - [Punycode][punycode]
 - [ArgumentParser][argumentparser]
+- [swift-psl][swift-psl]
 
 [punycode]: https://github.com/gumob/PunycodeSwift
 [argumentparser]: https://github.com/apple/swift-argument-parser
-
-TODO(ameshkov): !!! Update docs, add lint/format commands
-TODO(ameshkov): !!! Explain how to update dependencies
-
-Linting:
-
-- `swiftlint`
-- `swift format lint --recursive --strict .`
-- `npx markdownlint .`
-- `pnpm -C Extension install && pnpm -C Extension lint`
-
-Tests:
-
-- Swift tests
-- FileLockTester
-- CommandLineWrapper (how to?)
-- Extension tests
+[swift-psl]: https://github.com/ameshkov/swift-psl
