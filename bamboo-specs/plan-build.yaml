@@ -5,8 +5,6 @@ plan:
   key: CONVERTERBUILD
   # This is just an empty plan that will be changed in the branch.
   name: Converter - build
-variables:
-  osImage: registry.int.agrd.dev/macos/sequoia-build-agent-xcode16.3:latest
 stages:
   - Lint:
       manual: false
@@ -44,7 +42,7 @@ Lint:
             npm --version
             pnpm --version
   requirements:
-    - image: ${bamboo.osImage}
+    - image: registry.int.agrd.dev/macos/sequoia-build-agent-xcode16.3:latest
     - ephemeral
 
 Test:
@@ -61,7 +59,7 @@ Test:
 
             swift --version
   requirements:
-    - image: ${bamboo.osImage}
+    - image: registry.int.agrd.dev/macos/sequoia-build-agent-xcode16.3:latest
     - ephemeral
 
 Build:
@@ -78,7 +76,7 @@ Build:
 
             swift --version
   requirements:
-    - image: ${bamboo.osImage}
+    - image: registry.int.agrd.dev/macos/sequoia-build-agent-xcode16.3:latest
     - ephemeral
 
 branches:
