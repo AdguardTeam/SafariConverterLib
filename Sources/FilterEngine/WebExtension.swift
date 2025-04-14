@@ -14,6 +14,7 @@ import PublicSuffixList
 ///
 /// This class is supposed to be used in both the native extension and in the
 /// host app.
+///
 /// Generally, the host app builds the engine and serializes it to a binary form
 /// and later this binary form is used by the native extension to lookup the
 /// rules.
@@ -21,6 +22,15 @@ import PublicSuffixList
 /// This functionality requires having a shared file storage and shared
 /// UserDefaults since some information must be shared between the host app and
 /// the native extension process.
+///
+/// WebExtension stores its information in a shared directory `Schema.BASE_DIR`,
+/// and there are three important files that are kept there:
+///
+/// - `Schema.RULES_FILE_NAME` - plain text advanced rules. This file will be
+///   used if the serialized engine file is missing and the engine needs to be
+///   rebuilt.
+/// - `Schema.FILTER_RULE_STORAGE_FILE_NAME` - serialized `FilterRuleStorage`.
+/// - `Schema.FILTER_ENGINE_INDEX_FILE_NAME` - serialized `FilterEngine` index.
 public class WebExtension {
     /// Place where extension related files are to be stored.
     private let baseURL: URL

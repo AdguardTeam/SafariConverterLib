@@ -25,7 +25,7 @@ public enum Schema {
     /// **IMPORTANT**
     /// Changing this will lead to invalidating the engine cached in the extension directory and makes
     /// it required to write additional migration code in the extension.
-    public static let BASE_DIR = ".webkit"
+    public static let BASE_DIR = ".webext"
 
     /// UserDefaults key for storing the current schema version.
     ///
