@@ -1,0 +1,102 @@
+---
+version: 2
+plan:
+  project-key: IOS
+  key: CONVERTERBUILD
+  # This is just an empty plan that will be changed in the branch.
+  name: Converter - build
+stages:
+  - Lint:
+      manual: false
+      final: false
+      jobs:
+        - Lint
+  - Test:
+      manual: false
+      final: false
+      jobs:
+        - Test
+  - Build:
+      manual: false
+      final: false
+      jobs:
+        - Build
+
+Lint:
+  key: LINT
+  tasks:
+    - checkout:
+        force-clean-build: "true"
+    - script:
+        interpreter: SHELL
+        scripts:
+          - |-
+            set -e
+            set -x
+
+            swift --version
+            swiftlint --version
+            xcbeautify --version
+            periphery version
+            node --version
+            npm --version
+            pnpm --version
+  requirements:
+    - image: registry.int.agrd.dev/macos/sequoia-build-agent-xcode16.3:latest
+    - ephemeral
+
+Test:
+  key: TEST
+  tasks:
+    - checkout:
+        force-clean-build: "true"
+    - script:
+        interpreter: SHELL
+        scripts:
+          - |-
+            set -e
+            set -x
+
+            swift --version
+  requirements:
+    - image: registry.int.agrd.dev/macos/sequoia-build-agent-xcode16.3:latest
+    - ephemeral
+
+Build:
+  key: BUILD
+  tasks:
+    - checkout:
+        force-clean-build: "true"
+    - script:
+        interpreter: SHELL
+        scripts:
+          - |-
+            set -e
+            set -x
+
+            swift --version
+  requirements:
+    - image: registry.int.agrd.dev/macos/sequoia-build-agent-xcode16.3:latest
+    - ephemeral
+
+branches:
+  create: manually
+  delete:
+    after-deleted-days: 7
+    after-inactive-days: 14
+  integration:
+    push-on-success: false
+    merge-from: Converter - increment version
+  link-to-jira: true
+
+notifications: []
+# notifications:
+#   - events:
+#       - plan-failed
+#     recipients:
+#       - webhook:
+#           name: Build webhook
+#           url: http://prod.jirahub.service.eu.consul/v1/webhook/bamboo
+labels: []
+other:
+  concurrent-build-plugin: system-default
