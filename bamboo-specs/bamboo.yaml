@@ -1,7 +1,4 @@
 ---
-!include 'plan-increment.yaml'
-
----
 !include 'plan-build.yaml'
 
 ---
