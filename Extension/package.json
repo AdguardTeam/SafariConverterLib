@@ -34,6 +34,7 @@
   "scripts": {
     "build": "pnpm clean && pnpm build-types && pnpm rollup --config rollup.config.ts --configPlugin @rollup/plugin-json --configPlugin @rollup/plugin-typescript && pnpm clean-types",
     "build-types": "tsc --declaration --emitDeclarationOnly --outdir dist/types",
+    "package": "pnpm build && pnpm pack --out adguard-safari-extension.tgz",
     "check-types": "tsc --noEmit",
     "clean": "rimraf dist",
     "clean-types": "rimraf dist/types",
