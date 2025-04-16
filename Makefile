@@ -6,17 +6,40 @@
 
 PNPM = pnpm -C ./Extension
 
-init:
+# Init the repo
+
+init: tools
 	git config core.hooksPath ./scripts/hooks
 
-# Building
+# Makes sure that the necessary tools are installed
+tools:
+	swift --version
+	swiftlint --version
+	xcbeautify --version
+	periphery version
+	node --version
+	npm --version
+	pnpm --version
+	npx markdownlint --version
+
+# Building debug builds
 
 build: swift-build js-build
 
 swift-build:
-	swift build -c release
+	swift build
 
 js-build:
+	$(PNPM) install && $(PNPM) build
+
+# Building release builds
+
+release: swift-release js-release
+
+swift-release:
+	swift build -c release
+
+js-release:
 	$(PNPM) install && $(PNPM) build
 
 # Linter commands

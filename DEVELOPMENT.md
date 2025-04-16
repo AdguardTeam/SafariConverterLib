@@ -20,6 +20,28 @@ This is a library that provides a compatibility layer between
 
 ## Build Instructions
 
+### Prerequisites
+
+- Swift 6 or newer.
+- Install [Node.js][nodejs]: recommend to use [nvm][nvm] for that.
+- Install [pnpm][pnpm]: `brew install pnpm`.
+- Install [SwiftLint][swiftlint]: `brew install swiftlint`.
+- Install [xcbeautify][xcbeautify]: `brew install xcbeautify`.
+- Install [periphery][periphery]: `brew install periphery`.
+- Install [markdownlint-cli][markdownlint]: `npm install -g markdownlint-cli`.
+
+[nodejs]: https://nodejs.org/
+[nvm]: https://github.com/nvm-sh/nvm
+[pnpm]: https://pnpm.io/
+[swiftlint]: https://github.com/realm/SwiftLint
+[xcbeautify]: https://github.com/cpisciotta/xcbeautify
+[periphery]: https://github.com/peripheryapp/periphery
+[markdownlint]: https://www.npmjs.com/package/markdownlint-cli
+
+### Building
+
+Run `make init` to setup pre-commit hooks.
+
 - `make lint` - runs all linters.
 
     You can also run individual linters:
@@ -38,16 +60,16 @@ This is a library that provides a compatibility layer between
     - `make filelock-test` - runs file lock test suite.
     - `make command-line-wrapper-test` - runs command-line wrapper test suite.
 
-- `make build` - builds JS and Swift code.
+- `make build` - builds JS and Swift code (debug).
 
     You can also run individual build commands:
 
     - `make swift-build` - builds the Swift package.
     - `make js-build` - builds the extension library code.
 
+- `make release` - builds JS and Swift (release).
+
 [swift-format]: https://github.com/swiftlang/swift-format
-[swiftlint]: https://github.com/realm/SwiftLint
-[periphery]: https://github.com/peripheryapp/periphery
 
 ## Code Organization
 

@@ -320,11 +320,20 @@ Please refer to [DEVELOPMENT.md](DEVELOPMENT.md) for details.
 
 ### Releasing new version
 
-Push a new tag in `v*.*.*` format, and then everything will be done
-automatically:
+1. Choose the new version using [Semantic Versioning][semver].
+2. Update version in [Extension/package.json][packagejson].
+3. Update the [CHANGELOG.md](CHANGELOG.md).
+4. Run `Converter - build for release` plan in Bamboo and override
+   `release.version` variable.
+5. This plan will add a new tag in `v*.*.*` format.
+6. Run the linked `Converter - deploy` plan:
+    - This plan will publish to NPM the new version of the library
+      [@adguard/safari-extension][adguard-safari-extension]
+    - It will also publish a new Github release to this repo.
 
-- Publish a new Github version
-- Publish a new npm package version
+[semver]: https://semver.org/
+[packagejson]: ./Extension/package.json
+[adguard-safari-extension]: https://www.npmjs.com/package/@adguard/safari-extension
 
 ### Third-party dependencies
 

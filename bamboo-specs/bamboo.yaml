@@ -4,4 +4,10 @@
 ---
 !include 'plan-build.yaml'
 
+---
+!include 'plan-build-for-release.yaml'
+
+---
+!include 'deployment-release-plan.yaml'
+
 ...
