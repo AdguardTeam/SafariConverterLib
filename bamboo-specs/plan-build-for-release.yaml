@@ -3,7 +3,6 @@ version: 2
 plan:
   project-key: IOS
   key: CONVERTERRELEASE
-  # This is just an empty plan that will be changed later in a branch.
   name: Converter - build for release
 
 variables:
@@ -17,11 +16,7 @@ stages:
       final: false
       jobs:
         - Build
-  - Release:
-      manual: false
-      final: false
-      jobs:
-        - Release
+
 Build:
   key: BUILD
   tasks:
