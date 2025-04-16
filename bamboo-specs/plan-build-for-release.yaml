@@ -7,9 +7,9 @@ plan:
   name: Converter - build for release
 
 variables:
-  # By default the version is not set and the build will fail unless
+  # By default the version is "none" and the build will fail unless
   # it was overridden with the correct version.
-  release.version: ""
+  release.version: "none"
 
 stages:
   - Build:
@@ -33,6 +33,11 @@ Build:
           - |-
             set -e
             set -x
+
+            if [ -z "${bamboo.release.version}" ] || [ "${bamboo.release.version}" == "none" ]; then
+              echo "Error: bamboo.release.version must be overridden."
+              exit 1
+            fi
 
             # Build the release artifacts.
             make release
