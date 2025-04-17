@@ -11,7 +11,7 @@ PNPM = pnpm -C ./Extension
 init: tools
 	git config core.hooksPath ./scripts/hooks
 
-# Generate Version.swift file
+# Generate ContentBlockerConverterVersion.swift file
 codegen:
 	./scripts/make/codegen.sh $(VERSION)
 
