@@ -7,10 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
-## v3.0.0-alpha.1
-
-TODO: !! TEMPORARY, REMOVE ME AFTER TESTING THE BUILD PLAN
-
 ### Added `ContentBlockerConverterVersion` [#78]
 
 The library now exposes the version of its components and of the library itself.
