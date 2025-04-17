@@ -86,53 +86,6 @@ const nodePlugins = [
     }),
 ];
 
-// Plugins for browser builds.
-const browserPlugins = [
-    ...commonPlugins,
-    // Provide better browser compatibility with Babel.
-    getBabelOutputPlugin({
-        presets: [
-            [
-                '@babel/preset-env',
-                {
-                    targets: {
-                        // https://github.com/browserslist/browserslist#best-practices
-                        browsers: [
-                            'last 1 version',
-                            '> 1%',
-                            'not dead',
-
-                            // Specific versions
-                            'chrome >= 88',
-                            'firefox >= 84',
-                            'edge >= 88',
-                            'opera >= 80',
-                            'safari >= 14',
-                        ],
-                    },
-                },
-            ],
-        ],
-        allowAllFormats: true,
-        compact: false,
-    }),
-];
-
-// CommonJS build configuration.
-const cjs = {
-    input: path.join(ROOT_DIR, 'src', 'index.ts'),
-    output: [
-        {
-            file: path.join(distDirLocation, `${BASE_FILE_NAME}.cjs`),
-            format: 'cjs',
-            exports: 'auto',
-            sourcemap: false,
-            banner: BANNER,
-        },
-    ],
-    plugins: nodePlugins,
-};
-
 // ECMAScript build configuration
 const esm = {
     input: path.join(ROOT_DIR, 'src', 'index.ts'),
@@ -145,37 +98,6 @@ const esm = {
         },
     ],
     plugins: nodePlugins,
-};
-
-// Browser-friendly UMD build configuration
-const umd = {
-    input: path.join(ROOT_DIR, 'src', 'index.ts'),
-    output: [
-        {
-            file: path.join(distDirLocation, `${BASE_FILE_NAME}.umd.min.js`),
-            name: BASE_NAME,
-            format: 'umd',
-            sourcemap: false,
-            banner: BANNER,
-        },
-    ],
-    plugins: browserPlugins,
-};
-
-// Browser-friendly IIFE build configuration.
-const iife = {
-    input: path.join(ROOT_DIR, 'src', 'index.ts'),
-    output: [
-        {
-            file: path.join(distDirLocation, `${BASE_FILE_NAME}.iife.min.js`),
-            format: 'iife',
-            exports: 'auto',
-            sourcemap: false,
-            banner: BANNER,
-            name: BASE_NAME,
-        },
-    ],
-    plugins: browserPlugins,
 };
 
 // Merge .d.ts files (requires `tsc` to be run first, because it merges .d.ts
@@ -195,4 +117,4 @@ const dts = {
 };
 
 // Export build configs for Rollup
-export default [cjs, esm, umd, iife, dts];
+export default [esm, dts];

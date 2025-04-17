@@ -98,7 +98,7 @@ branches:
   link-to-jira: true
 
 notifications: []
-
+triggers: []
 labels: []
 other:
   concurrent-build-plugin: system-default
