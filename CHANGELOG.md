@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Added `ContentBlockerConverterVersion` [#78]
+
+The library now exposes the version of its components and of the library itself.
+This information can be useful to the apps that are using that library. For
+example, to print it to the about page.
+
+[#78]: https://github.com/AdguardTeam/SafariConverterLib/issues/78
+
 ### Added [FilterEngine]
 
 One of the main challenges when developing Safari extension is its async nature.
@@ -88,7 +96,7 @@ Several deprecated arguments were removed from the `convertArray` function:
 AdGuard for Safari will soon switch from Electron so the node wrapper is not
 required anymore.
 
-## 2.1.1
+## v2.1.1
 
 ### Performance
 

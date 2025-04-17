@@ -4,8 +4,7 @@
 ---
 !include 'plan-build-for-release.yaml'
 
-# Will be included later after the release plan is implemented
-# ---
-# !include 'deployment-release-plan.yaml'
+---
+!include 'deployment-release-plan.yaml'
 
 ...

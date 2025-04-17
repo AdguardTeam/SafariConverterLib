@@ -16,6 +16,11 @@ stages:
       final: false
       jobs:
         - Build
+  - Tag:
+      manual: false
+      final: false
+      jobs:
+        - Tag
 
 Build:
   key: BUILD
@@ -34,6 +39,12 @@ Build:
               exit 1
             fi
 
+            # Check if the version is present in CHANGELOG.md
+            if ! grep -q "^## v${bamboo.release.version}$" CHANGELOG.md; then
+              echo "Error: Version ${bamboo.release.version} not found in CHANGELOG.md. Please add \"## v${bamboo.release.version}\" section."
+              exit 1
+            fi
+
             # Build the release artifacts.
             make release
 
@@ -46,25 +57,35 @@ Build:
         scope: RESULT
         namespace: inject
         description: Inject Bamboo variables
-    - any-task:
-        plugin-key: com.atlassian.bamboo.plugins.vcs:task.vcs.tagging
-        configuration:
-          selectedRepository: defaultRepository
-          tagName: v${bamboo.release.version}
   artifacts:
     - name: ConverterTool
-      location: ./build/release
+      location: .build/release
       pattern: ConverterTool
       shared: true
       required: true
     - name: adguard-safari-extension.tgz
-      location: ./Extension
+      location: Extension
       pattern: adguard-safari-extension.tgz
       shared: true
       required: true
   requirements:
     - image: registry.int.agrd.dev/macos/sequoia-build-agent-xcode16.3:latest
     - ephemeral
+
+Tag:
+  key: TAG
+  docker:
+    image: adguard/node-ssh:22.14--0
+  tasks:
+    - checkout:
+        force-clean-build: "true"
+    - any-task:
+        plugin-key: com.atlassian.bamboo.plugins.vcs:task.vcs.tagging
+        configuration:
+          selectedRepository: defaultRepository
+          tagName: v${bamboo.inject.version}
+  requirements:
+    - adg-docker: "true"
 
 branches:
   create: manually
@@ -77,7 +98,7 @@ branches:
   link-to-jira: true
 
 notifications: []
-
+triggers: []
 labels: []
 other:
   concurrent-build-plugin: system-default

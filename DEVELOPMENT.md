@@ -29,6 +29,7 @@ This is a library that provides a compatibility layer between
 - Install [xcbeautify][xcbeautify]: `brew install xcbeautify`.
 - Install [periphery][periphery]: `brew install periphery`.
 - Install [markdownlint-cli][markdownlint]: `npm install -g markdownlint-cli`.
+- Install [jq][jq]: `brew install jq`.
 
 [nodejs]: https://nodejs.org/
 [nvm]: https://github.com/nvm-sh/nvm
@@ -37,6 +38,7 @@ This is a library that provides a compatibility layer between
 [xcbeautify]: https://github.com/cpisciotta/xcbeautify
 [periphery]: https://github.com/peripheryapp/periphery
 [markdownlint]: https://www.npmjs.com/package/markdownlint-cli
+[jq]: https://jqlang.org/
 
 ### Building
 

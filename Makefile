@@ -11,6 +11,10 @@ PNPM = pnpm -C ./Extension
 init: tools
 	git config core.hooksPath ./scripts/hooks
 
+# Generate ContentBlockerConverterVersion.swift file
+codegen:
+	./scripts/make/codegen.sh $(VERSION)
+
 # Makes sure that the necessary tools are installed
 tools:
 	swift --version
@@ -40,7 +44,7 @@ swift-release:
 	swift build -c release
 
 js-release:
-	$(PNPM) install && $(PNPM) build
+	$(PNPM) install && $(PNPM) package
 
 # Linter commands
 
