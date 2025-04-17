@@ -17,8 +17,7 @@ stages:
       jobs:
         - Build
   - Tag:
-      # Temporarily tag stage is manually triggered.
-      manual: true
+      manual: false
       final: false
       jobs:
         - Tag
