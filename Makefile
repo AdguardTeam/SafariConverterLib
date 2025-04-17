@@ -44,7 +44,7 @@ swift-release:
 	swift build -c release
 
 js-release:
-	$(PNPM) install && $(PNPM) build
+	$(PNPM) install && $(PNPM) package
 
 # Linter commands
 

@@ -323,11 +323,13 @@ Please refer to [DEVELOPMENT.md](DEVELOPMENT.md) for details.
 1. Choose the new version using [Semantic Versioning][semver].
 2. Run `VERSION=${version} make codegen` to update the version of the extension,
    and to generate `ContentBlockerConverterVersion`.
-3. Update the [CHANGELOG.md](CHANGELOG.md).
-4. Run `Converter - build for release` plan in Bamboo and override
+3. Update the [CHANGELOG.md](CHANGELOG.md) and add new version
+   information.
+4. Make `Bump to ${version}` commit.
+5. Run `Converter - build for release` plan in Bamboo and override
    `release.version` variable.
-5. This plan will add a new tag in `v*.*.*` format.
-6. Run the linked `Converter - deploy` plan:
+6. This plan will add a new tag in `v*.*.*` format.
+7. Run the linked `Converter - deploy` plan:
     - This plan will publish to NPM the new version of the library
       [@adguard/safari-extension][adguard-safari-extension]
     - It will also publish a new Github release to this repo.
