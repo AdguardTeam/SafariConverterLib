@@ -41,8 +41,8 @@ Build:
             fi
 
             # Check if the version is present in CHANGELOG.md
-            if ! grep -q "^## ${bamboo.release.version}$" CHANGELOG.md; then
-              echo "Error: Version ${bamboo.release.version} not found in CHANGELOG.md. Please update the changelog."
+            if ! grep -q "^## v${bamboo.release.version}$" CHANGELOG.md; then
+              echo "Error: Version ${bamboo.release.version} not found in CHANGELOG.md. Please add \"## v${bamboo.release.version}\" section."
               exit 1
             fi
 

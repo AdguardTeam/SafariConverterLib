@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
-## 3.0.0-alpha.1
+## v3.0.0-alpha.1
 
 TODO: !! TEMPORARY, REMOVE ME AFTER TESTING THE BUILD PLAN
 
@@ -100,7 +100,7 @@ Several deprecated arguments were removed from the `convertArray` function:
 AdGuard for Safari will soon switch from Electron so the node wrapper is not
 required anymore.
 
-## 2.1.1
+## v2.1.1
 
 ### Performance
 
