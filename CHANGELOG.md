@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+Nothing here so far.
+
+## [v3.0.0]
+
 ### Added `ContentBlockerConverterVersion` [#78]
 
 The library now exposes the version of its components and of the library itself.
@@ -96,7 +100,9 @@ Several deprecated arguments were removed from the `convertArray` function:
 AdGuard for Safari will soon switch from Electron so the node wrapper is not
 required anymore.
 
-## v2.1.1
+[v3.0.0]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v3.0.0
+
+## [v2.1.1]
 
 ### Performance
 
@@ -186,7 +192,9 @@ Here's how it was achieved:
   expressions (which made it much faster), but at the same time it is more
   thorough and careful. Check out `SafariRegex` to see how it's done.
 
-## v2.0.48
+[v2.1.1]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v2.1.1
+
+## [v2.0.48]
 
 ### Added
 
@@ -194,7 +202,9 @@ Here's how it was achieved:
 
 [#56]: https://github.com/AdguardTeam/SafariConverterLib/issues/56
 
-## v2.0.43
+[v2.0.48]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v2.0.48
+
+## [v2.0.43]
 
 ### Fixed
 
@@ -202,7 +212,9 @@ Here's how it was achieved:
 
 [#55]: https://github.com/AdguardTeam/SafariConverterLib/issues/55
 
-## v2.0.40
+[v2.0.43]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v2.0.43
+
+## [v2.0.40]
 
 ### Changed
 
@@ -219,20 +231,26 @@ Here's how it was achieved:
 [#51]: https://github.com/AdguardTeam/SafariConverterLib/issues/51
 [#53]: https://github.com/AdguardTeam/SafariConverterLib/issues/53
 
-## v2.0.39
+[v2.0.40]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v2.0.40
+
+## [v2.0.39]
 
 ### Fixed
 
 - Handling provided Safari version for minor version as well, not just the major
   one.
 
-## v2.0.38
+[v2.0.39]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v2.0.39
+
+## [v2.0.38]
 
 ### Fixed
 
 - Handling provided Safari version.
 
-## v2.0.34
+[v2.0.38]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v2.0.38
+
+## [v2.0.34]
 
 ### Fixed
 
@@ -241,3 +259,5 @@ Here's how it was achieved:
   Corresponding [bug][webkit248868].
 
 [webkit248868]: https://bugs.webkit.org/show_bug.cgi?id=248868
+
+[v2.0.34]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v2.0.34

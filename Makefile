@@ -13,6 +13,7 @@ init: tools
 
 # Generate ContentBlockerConverterVersion.swift file
 codegen:
+	./scripts/make/verifychangelog.sh $(VERSION)
 	./scripts/make/codegen.sh $(VERSION)
 
 # Makes sure that the necessary tools are installed

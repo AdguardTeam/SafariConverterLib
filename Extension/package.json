@@ -1,6 +1,6 @@
 {
   "name": "@adguard/safari-extension",
-  "version": "3.0.0-alpha.1",
+  "version": "3.0.0",
   "description": "Safari Web Extension API for SafariConverterLib",
   "author": "Adguard Software Ltd.",
   "license": "GPL-3.0",

@@ -91,6 +91,19 @@ contains two important fields:
   web extension (or app extension). Please refer to the
   [extension's README][extension-readme] for details.
 
+> [!IMPORTANT]
+> Please read the [extension's README][extension-readme] for the explanation
+> on how to use the advanced rules.
+
+In addition to that you can use `ContentBlockerConverterVersion` class to get
+the version of the library and its components in your app.
+
+```swift
+let version = ContentBlockerConverterVersion.library
+let scriptletsVersion = ContentBlockerConverterVersion.scriptlets
+let extendedCSSVersion = ContentBlockerConverterVersion.extendedCSS
+```
+
 [ConversionResult]: Sources/ContentBlockerConverter/ConversionResult.swift
 [ContentBlockerConverter]: Sources/ContentBlockerConverter/ContentBlockerConverter.swift
 [makecontiguousutf8]: https://developer.apple.com/documentation/swift/string/makecontiguousutf8()
@@ -321,11 +334,11 @@ Please refer to [DEVELOPMENT.md](DEVELOPMENT.md) for details.
 ### Releasing new version
 
 1. Choose the new version using [Semantic Versioning][semver].
-2. Run `VERSION=${version} make codegen` to update the version of the extension,
-   and to generate `ContentBlockerConverterVersion`.
-3. Update the [CHANGELOG.md](CHANGELOG.md) and add new version
+2. Update the [CHANGELOG.md](CHANGELOG.md) and add new version
    information.
-4. Make `Bump to ${version}` commit.
+3. Run `VERSION=${version} make codegen` to update the version of the extension,
+   and to generate `ContentBlockerConverterVersion`.
+4. Make `Bump version to ${version}` commit.
 5. Run `Converter - build for release` plan in Bamboo and override
    `release.version` variable.
 6. This plan will add a new tag in `v*.*.*` format.
