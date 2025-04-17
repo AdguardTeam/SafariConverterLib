@@ -76,7 +76,7 @@ const nodePlugins = [
                 '@babel/preset-env',
                 {
                     targets: {
-                        node: '12.0',
+                        node: '18.0',
                     },
                 },
             ],

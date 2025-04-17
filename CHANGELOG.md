@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## 3.0.0-alpha.1
+
+TODO: !! TEMPORARY, REMOVE ME AFTER TESTING THE BUILD PLAN
+
+### Added `ContentBlockerConverterVersion` [#78]
+
+The library now exposes the version of its components and of the library itself.
+This information can be useful to the apps that are using that library. For
+example, to print it to the about page.
+
+[#78]: https://github.com/AdguardTeam/SafariConverterLib/issues/78
+
 ### Added [FilterEngine]
 
 One of the main challenges when developing Safari extension is its async nature.

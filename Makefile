@@ -11,6 +11,10 @@ PNPM = pnpm -C ./Extension
 init: tools
 	git config core.hooksPath ./scripts/hooks
 
+# Generate Version.swift file
+codegen:
+	./scripts/make/codegen.sh $(VERSION)
+
 # Makes sure that the necessary tools are installed
 tools:
 	swift --version

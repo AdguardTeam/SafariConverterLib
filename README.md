@@ -321,7 +321,8 @@ Please refer to [DEVELOPMENT.md](DEVELOPMENT.md) for details.
 ### Releasing new version
 
 1. Choose the new version using [Semantic Versioning][semver].
-2. Update version in [Extension/package.json][packagejson].
+2. Run `VERSION=${version} make codegen` to update the version of the extension,
+   and to generate `ContentBlockerConverterVersion`.
 3. Update the [CHANGELOG.md](CHANGELOG.md).
 4. Run `Converter - build for release` plan in Bamboo and override
    `release.version` variable.
@@ -332,7 +333,6 @@ Please refer to [DEVELOPMENT.md](DEVELOPMENT.md) for details.
     - It will also publish a new Github release to this repo.
 
 [semver]: https://semver.org/
-[packagejson]: ./Extension/package.json
 [adguard-safari-extension]: https://www.npmjs.com/package/@adguard/safari-extension
 
 ### Third-party dependencies
