@@ -60,12 +60,12 @@ Build:
         description: Inject Bamboo variables
   artifacts:
     - name: ConverterTool
-      location: ./build/release
+      location: .build/release
       pattern: ConverterTool
       shared: true
       required: true
     - name: adguard-safari-extension.tgz
-      location: ./Extension
+      location: Extension
       pattern: adguard-safari-extension.tgz
       shared: true
       required: true
