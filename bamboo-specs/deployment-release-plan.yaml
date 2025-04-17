@@ -1,0 +1,72 @@
+---
+version: 2
+deployment:
+  name: Converter - deploy
+  source-plan: IOS-CONVERTERRELEASE
+release-naming: ${bamboo.inject.version}
+environments:
+  - npmjs
+  - GitHub
+
+npmjs:
+  docker:
+    image: adguard/node-ssh:22.14--0
+  triggers: []
+  tasks:
+    - artifact-download:
+        artifacts:
+          - name: adguard-safari-extension.tgz
+    - script:
+        interpreter: SHELL
+        scripts:
+          - |-
+            set -e
+            set -x
+
+            # Fix mixed logs
+            exec 2>&1
+
+            ls -alt
+
+            export NPM_TOKEN=${bamboo.npmSecretToken}
+            echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
+            npm publish adguard-safari-extension.tgz --access public
+  requirements:
+    - adg-docker: "true"
+  notifications: []
+
+GitHub:
+  docker:
+    image: adguard/node-ssh:22.14--0
+  triggers: []
+  tasks:
+    - clean
+    - checkout:
+        repository: bamboo-deploy-publisher
+        path: bamboo-deploy-publisher
+        force-clean-build: true
+    - artifact-download:
+        artifacts:
+          - name: ConverterTool
+    - script:
+        interpreter: SHELL
+        scripts:
+          - |-
+            #!/bin/bash
+            set -x
+            set -e
+
+            # Fix mixed logs
+            exec 2>&1
+
+            ls -la
+
+            # Publish to Github Releases
+            GITHUB_TOKEN="${bamboo.githubPublicRepoPassword}" \
+              VERSION="${bamboo.inject.version}" \
+              ./bamboo-deploy-publisher/deploy.sh safari-converter-lib-github
+  final-tasks: []
+  variables: {}
+  requirements:
+    - adg-docker: "true"
+  notifications: []

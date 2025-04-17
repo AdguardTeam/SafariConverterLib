@@ -1,8 +1,7 @@
 import Foundation
 
 /// Takes care of validation of regular expressions that can used by Safari.
-class SafariRegex {
-
+public enum SafariRegex {
     /// Safari does not support some regular expressions so we do some additional validations.
     ///
     /// Supported expressions:
@@ -20,7 +19,9 @@ class SafariRegex {
     /// Here is what was figured out while experimenting:
     /// - Brackets for groups MUST be balanced, otherwise it will not tolerate that.
     /// - Brackets for character ranges SHOULD be balanced (does not break anything if unbalanced).
-    /// - Explicitly matching special characters is allowed: '\.', '\*', '\+', '\/', '\[', '\(', '\]', '\)', '\|', '\?', '{', '}'. Any other is not allowed.
+    /// - Explicitly matching special characters is allowed:
+    ///   - Allowed: '\.', '\*', '\+', '\/', '\[', '\(', '\]', '\)', '\|', '\?', '{', '}'.
+    ///   - Any other is not allowed.
     /// - MUST keep track of quantifiable characters (i.e. those to which you can apply '\*' '?' '+') .
     /// - Special characters are not quantifiable unless escaped.
     /// - Nested groups are allowed (but can not mixed).
@@ -42,21 +43,29 @@ class SafariRegex {
         // to the character that was previously read.
         var canQuantify = false
 
-        @inline(__always) func isASCII(_ c: UInt8) -> Bool {
-            return c < 128
+        /// Checks if a character is ASCII.
+        @inline(__always)
+        func isASCII(_ character: UInt8) -> Bool {
+            return character < 128
         }
 
-        @inline(__always) func inCharacterClass() -> Bool {
+        /// Checks if we are currently inside a character class.
+        @inline(__always)
+        func inCharacterClass() -> Bool {
             stack.last == UInt8(ascii: "[")
         }
 
-        @inline(__always) func peekNext() -> UInt8? {
+        /// Peeks at the next character in the pattern.
+        @inline(__always)
+        func peekNext() -> UInt8? {
             let next = utf8.index(after: i)
             guard next < end else { return nil }
             return utf8[next]
         }
 
-        @inline(__always) func peekPrevious() -> UInt8? {
+        /// Peeks at the previous character in the pattern.
+        @inline(__always)
+        func peekPrevious() -> UInt8? {
             guard i > utf8.startIndex else { return nil }
             let previous = utf8.index(before: i)
             return utf8[previous]
@@ -64,16 +73,18 @@ class SafariRegex {
 
         // Loop through every character in the pattern.
         while i < end {
-            let c = utf8[i]
+            let currentChar = utf8[i]
 
-            if !isASCII(c) {
+            if !isASCII(currentChar) {
                 return .failure(SafariRegexError.nonASCII(message: "Found non-ASCII character"))
             }
 
-            switch c {
+            switch currentChar {
             case UInt8(ascii: "\\"):
                 guard let next = peekNext() else {
-                    return .failure(SafariRegexError.invalidRegex(message: "Unsupporteed escape sequence"))
+                    return .failure(
+                        SafariRegexError.invalidRegex(message: "Unsupporteed escape sequence")
+                    )
                 }
 
                 // Explicitly matching special characters is allowed.
@@ -87,19 +98,23 @@ class SafariRegex {
                     canQuantify = true
                     continue
                 default:
-                    return .failure(SafariRegexError.invalidRegex(message: "Unsupported escape sequence"))
+                    return .failure(
+                        SafariRegexError.unsupportedMetaCharacter(
+                            message: "Unsupported escape sequence"
+                        )
+                    )
                 }
 
             case UInt8(ascii: "("):
                 if !inCharacterClass() {
                     // Push opening brackets onto the stack
-                    stack.append(c)
+                    stack.append(currentChar)
                     canQuantify = false
                 }
 
             case UInt8(ascii: "["):
                 // Push opening brackets onto the stack
-                stack.append(c)
+                stack.append(currentChar)
                 canQuantify = false
 
             case UInt8(ascii: ")"):
@@ -107,7 +122,9 @@ class SafariRegex {
                     // If we encounter a closing parenthesis, the top of the stack
                     // must be a matching '('
                     guard let last = stack.popLast(), last == UInt8(ascii: "(") else {
-                        return .failure(SafariRegexError.unbalancedParentheses(message: "Unbalanced brackets"))
+                        return .failure(
+                            SafariRegexError.unbalancedParentheses(message: "Unbalanced brackets")
+                        )
                     }
                 }
                 canQuantify = true
@@ -116,38 +133,56 @@ class SafariRegex {
                 // If we encounter a closing bracket, the top of the stack
                 // must be a matching '['
                 guard let last = stack.popLast(), last == UInt8(ascii: "[") else {
-                    return .failure(SafariRegexError.unbalancedParentheses(message: "Unbalanced square brackets"))
+                    return .failure(
+                        SafariRegexError.unbalancedParentheses(
+                            message: "Unbalanced square brackets"
+                        )
+                    )
                 }
                 canQuantify = true
 
             case UInt8(ascii: "^"):
                 if i != utf8.startIndex && !inCharacterClass() {
-                    return .failure(SafariRegexError.invalidRegex(message: "Invalid regex: unescaped ^ in the middle"))
+                    return .failure(
+                        SafariRegexError.invalidRegex(
+                            message: "Invalid regex: unescaped ^ in the middle"
+                        )
+                    )
                 }
                 canQuantify = false
 
             case UInt8(ascii: "$"):
                 let next = peekNext()
                 if next != nil && !inCharacterClass() {
-                    return .failure(SafariRegexError.invalidRegex(message: "Invalid regex: unescaped $ in the middle"))
+                    return .failure(
+                        SafariRegexError.invalidRegex(
+                            message: "Invalid regex: unescaped $ in the middle"
+                        )
+                    )
                 }
                 canQuantify = false
 
             case UInt8(ascii: "|"):
                 if !inCharacterClass() {
                     // If we got here, the character was not escaped.
-                    return .failure(SafariRegexError.pipeCondition(message: "Pipe conditions not supported"))
+                    return .failure(
+                        SafariRegexError.pipeCondition(message: "Pipe conditions not supported")
+                    )
                 }
 
             case UInt8(ascii: "{"), UInt8(ascii: "}"):
                 if !inCharacterClass() {
                     // If we got here, the curly brackets were not escaped.
-                    return .failure(SafariRegexError.digitRange(message: "Digit ranges not supported"))
+                    return .failure(
+                        SafariRegexError.digitRange(message: "Digit ranges not supported")
+                    )
                 }
 
             case UInt8(ascii: "*"), UInt8(ascii: "+"), UInt8(ascii: "?"):
                 if !canQuantify && !inCharacterClass() {
-                    return .failure(SafariRegexError.unquantifiableCharacter(message: "Unquantifiable chacter"))
+                    return .failure(
+                        SafariRegexError.unquantifiableCharacter(message: "Unquantifiable chacter")
+                    )
                 }
                 canQuantify = false
             default:
@@ -159,12 +194,13 @@ class SafariRegex {
         }
 
         if !stack.isEmpty {
-            return .failure(SafariRegexError.unbalancedParentheses(message: "Unbalanced parentheses"))
+            return .failure(
+                SafariRegexError.unbalancedParentheses(message: "Unbalanced parentheses")
+            )
         }
 
         return .success(())
     }
-
 }
 
 /// Represents different reasons why the regular expression may be considered invalid by Safari.

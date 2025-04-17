@@ -1,28 +1,30 @@
 import Foundation
 
 /// Cosmetic rules marker enumeration
-enum CosmeticRuleMarker: String, CaseIterable {
-    case ElementHiding = "##"
-    case ElementHidingException = "#@#"
-    case ElementHidingExtCSS = "#?#"
-    case ElementHidingExtCSSException = "#@?#"
+public enum CosmeticRuleMarker: String, CaseIterable {
+    case elementHiding = "##"
+    case elementHidingException = "#@#"
+    case elementHidingExtCSS = "#?#"
+    case elementHidingExtCSSException = "#@?#"
 
-    case Css = "#$#"
-    case CssException = "#@$#"
+    case css = "#$#"
+    case cssException = "#@$#"
 
-    case CssExtCSS = "#$?#"
-    case CssExtCSSException = "#@$?#"
+    case cssExtCSS = "#$?#"
+    case cssExtCSSException = "#@$?#"
 
-    case Js = "#%#"
-    case JsException = "#@%#"
+    case javascript = "#%#"
+    case javascriptException = "#@%#"
 
-    case Html = "$$"
-    case HtmlException = "$@$"
+    case html = "$$"
+    case htmlException = "$@$"
 
     /**
      * Parses marker from string source
      */
-    public static func findCosmeticRuleMarker(ruleText: String) -> (
+    public static func findCosmeticRuleMarker(
+        ruleText: String
+    ) -> (
         index: Int, marker: CosmeticRuleMarker?
     ) {
         let length = ruleText.utf8.count
@@ -34,7 +36,10 @@ enum CosmeticRuleMarker: String, CaseIterable {
 
         // This is most likely a network rule as it starts with | or @,
         // something like ||example.org^ or @@||example.org^, so exit immediately.
-        let firstChar = ruleText.utf8.first!
+        guard let firstChar = ruleText.utf8.first else {
+            return (-1, nil)
+        }
+
         if firstChar == Chars.PIPE || firstChar == Chars.AT_CHAR {
             return (-1, nil)
         }
@@ -55,23 +60,23 @@ enum CosmeticRuleMarker: String, CaseIterable {
                     case Chars.DOLLAR:  // #@$
                         if threeAhead == Chars.HASH {
                             // #@$#
-                            return (i, CssException)
+                            return (i, .cssException)
                         } else if threeAhead == Chars.QUESTION && fourAhead == Chars.HASH {
                             // #@$?#
-                            return (i, CssExtCSSException)
+                            return (i, .cssExtCSSException)
                         }
                     case Chars.QUESTION:  // #@?
                         if threeAhead == Chars.HASH {
                             // #@?#
-                            return (i, ElementHidingExtCSSException)
+                            return (i, .elementHidingExtCSSException)
                         }
                     case Chars.PERCENT:  // #@%
                         if threeAhead == Chars.HASH {
                             // #@%#
-                            return (i, JsException)
+                            return (i, .javascriptException)
                         }
                     case Chars.HASH:  // #@#
-                        return (i, ElementHidingException)
+                        return (i, .elementHidingException)
                     default: break
                     }
                 case Chars.DOLLAR:  // #$
@@ -79,37 +84,37 @@ enum CosmeticRuleMarker: String, CaseIterable {
                     case Chars.QUESTION:  // #$?
                         if threeAhead == Chars.HASH {
                             // #$?#
-                            return (i, CssExtCSS)
+                            return (i, .cssExtCSS)
                         }
                     case Chars.HASH:
                         // #$#
-                        return (i, Css)
+                        return (i, .css)
                     default: break
                     }
                 case Chars.QUESTION:  // #?
                     if twoAhead == Chars.HASH {
                         // #?#
-                        return (i, ElementHidingExtCSS)
+                        return (i, .elementHidingExtCSS)
                     }
                 case Chars.PERCENT:  // #%
                     if twoAhead == Chars.HASH {
                         // #%#
-                        return (i, Js)
+                        return (i, .javascript)
                     }
                 case Chars.HASH:  // ##
-                    return (i, ElementHiding)
+                    return (i, .elementHiding)
                 default: break
                 }
 
-            case Chars.DOLLAR: // $
+            case Chars.DOLLAR:  // $
                 let nextChar = ruleText.utf8[safeIndex: i + 1]
                 let twoAhead = (i + 2 < length) ? ruleText.utf8[safeIndex: i + 2] : nil
 
                 if nextChar == Chars.AT_CHAR && twoAhead == Chars.DOLLAR {
                     // $@$
-                    return (i, HtmlException)
-                } else if (nextChar == Chars.DOLLAR) {
-                    return (i, Html)
+                    return (i, .htmlException)
+                } else if nextChar == Chars.DOLLAR {
+                    return (i, .html)
                 }
             default: break
             }

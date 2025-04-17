@@ -1,11 +1,13 @@
 .DS_Store
-bin
-.swiftpm
+
+# Swift
+/.swiftpm
 /.build
 /Packages
 /*.xcodeproj
 xcuserdata/
 /.idea
-/node_modules
-/bin/ConverterTool
-.vscode
+
+# Ignore smart IDEs
+.windsurfrules
+.cursorrules

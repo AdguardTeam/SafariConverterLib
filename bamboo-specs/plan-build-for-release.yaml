@@ -1,0 +1,83 @@
+---
+version: 2
+plan:
+  project-key: IOS
+  key: CONVERTERRELEASE
+  name: Converter - build for release
+
+variables:
+  # By default the version is "none" and the build will fail unless
+  # it was overridden with the correct version.
+  release.version: "none"
+
+stages:
+  - Build:
+      manual: false
+      final: false
+      jobs:
+        - Build
+
+Build:
+  key: BUILD
+  tasks:
+    - checkout:
+        force-clean-build: "true"
+    - script:
+        interpreter: SHELL
+        scripts:
+          - |-
+            set -e
+            set -x
+
+            if [ -z "${bamboo.release.version}" ] || [ "${bamboo.release.version}" == "none" ]; then
+              echo "Error: bamboo.release.version must be overridden."
+              exit 1
+            fi
+
+            # Build the release artifacts.
+            make release
+
+            # Put version to version.txt so that it could be injected further
+            # to deployment plan.
+            echo "version=${bamboo.release.version}" > version.txt
+    - inject-variables:
+        # Inject version so that it was available to the deployment plan.
+        file: version.txt
+        scope: RESULT
+        namespace: inject
+        description: Inject Bamboo variables
+    - any-task:
+        plugin-key: com.atlassian.bamboo.plugins.vcs:task.vcs.tagging
+        configuration:
+          selectedRepository: defaultRepository
+          tagName: v${bamboo.release.version}
+  artifacts:
+    - name: ConverterTool
+      location: ./build/release
+      pattern: ConverterTool
+      shared: true
+      required: true
+    - name: adguard-safari-extension.tgz
+      location: ./Extension
+      pattern: adguard-safari-extension.tgz
+      shared: true
+      required: true
+  requirements:
+    - image: registry.int.agrd.dev/macos/sequoia-build-agent-xcode16.3:latest
+    - ephemeral
+
+branches:
+  create: manually
+  delete:
+    after-deleted-days: 1
+    after-inactive-days: 14
+  integration:
+    push-on-success: false
+    merge-from: Converter - build for release
+  link-to-jira: true
+
+notifications: []
+
+labels: []
+other:
+  concurrent-build-plugin: system-default

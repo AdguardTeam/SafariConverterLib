@@ -1,46 +1,68 @@
-// swift-tools-version:5.1
-// The swift-tools-version declares the minimum version of Swift required to build this package.
+// swift-tools-version:5.6
+// The swift-tools-version declares the minimum version of Swift required to
+// build this package.
 
 import PackageDescription
 
 let package = Package(
     name: "ContentBlockerConverter",
     products: [
-        // Products define the executables and libraries produced by a package, and make them visible to other packages.
         .library(
             name: "ContentBlockerConverter",
-            type: .static,
-            targets: ["ContentBlockerConverter", "ContentBlockerEngine"]),
+            targets: ["ContentBlockerConverter", "FilterEngine"]
+        ),
         .executable(
             name: "ConverterTool",
-            targets: ["CommandLineWrapper"])
+            targets: ["CommandLineWrapper"]
+        ),
+        .executable(
+            name: "FileLockTester",
+            targets: ["FileLockTester"]
+        ),
     ],
     dependencies: [
-        // Dependencies declare other packages that this package depends on.
-        // .package(url: /* package url */, from: "1.0.0"),
-        .package(url: "https://github.com/gumob/PunycodeSwift.git", .exact("3.0.0")),
-        .package(url: "https://github.com/apple/swift-argument-parser", .exact("1.5.0")),
+        .package(url: "https://github.com/gumob/PunycodeSwift.git", exact: "3.0.0"),
+        .package(url: "https://github.com/apple/swift-argument-parser", exact: "1.5.0"),
+        .package(url: "https://github.com/ameshkov/swift-psl", "1.1.0"..<"2.0.0"),
     ],
     targets: [
-        // Targets are the basic building blocks of a package. A target can define a module or a test suite.
-        // Targets can depend on other targets in this package, and on products in packages which this package depends on.
-        .target(
+        .executableTarget(
             name: "CommandLineWrapper",
-            dependencies: ["ContentBlockerConverter", "Shared", "ArgumentParser"]),
+            dependencies: [
+                "FilterEngine",
+                .product(name: "ArgumentParser", package: "swift-argument-parser"),
+            ]
+        ),
         .target(
             name: "ContentBlockerConverter",
-            dependencies: ["Punycode", "Shared"]),
+            dependencies: [
+                .product(name: "Punycode", package: "PunycodeSwift")
+            ]
+        ),
         .target(
-            name: "ContentBlockerEngine",
-            dependencies: ["ContentBlockerConverter", "Shared"]),
-        .target(
-            name: "Shared"),
+            name: "FilterEngine",
+            dependencies: [
+                "ContentBlockerConverter",
+                .product(name: "PublicSuffixList", package: "swift-psl"),
+            ]
+        ),
+        .executableTarget(
+            name: "FileLockTester",
+            dependencies: ["FilterEngine"]
+        ),
         .testTarget(
             name: "ContentBlockerConverterTests",
-            dependencies: ["ContentBlockerConverter"]),
+            dependencies: ["ContentBlockerConverter"],
+            resources: [.copy("Resources/test-rules.txt")]
+        ),
         .testTarget(
-            name: "ContentBlockerEngineTests",
-            dependencies: ["ContentBlockerEngine"]
-        )
+            name: "FilterEngineTests",
+            dependencies: ["FilterEngine"],
+            resources: [
+                .copy("Resources/advanced-rules.txt"),
+                .copy("Resources/reference-rules.bin"),
+                .copy("Resources/reference-engine.bin"),
+            ]
+        ),
     ]
 )

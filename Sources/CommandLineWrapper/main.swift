@@ -1,107 +1,20 @@
-import Foundation
-import ContentBlockerConverter
-import Shared
 import ArgumentParser
+import Foundation
 
-func writeToStdError(str: String) {
-    let handle = FileHandle.standardError
-
-    if let data = str.data(using: String.Encoding.utf8, allowLossyConversion: false) {
-        handle.write(data)
-    }
-}
-
-func writeToStdOut(str: String) {
-    let handle = FileHandle.standardOutput
-
-    if let data = str.data(using: String.Encoding.utf8, allowLossyConversion: false) {
-        handle.write(data)
-    }
-}
-
-func encodeJson(_ result: ConversionResult) throws -> String {
-    let encoder = JSONEncoder()
-    encoder.outputFormatting = .prettyPrinted
-
-    let json = try encoder.encode(result)
-    return String(data: json, encoding: .utf8)!.replacingOccurrences(of: "\\/", with: "/")
-}
-
-/**
- * Converter tool
- * Usage:
- *  "cat rules.txt | ./ConverterTool --safari-version 14 --optimize true --advanced-blocking true --advanced-blocking-format txt"
- */
+/// Root command with two subcommands:
+///
+/// - `convert`
+/// - `buildengine
 struct ConverterTool: ParsableCommand {
-    static let configuration = CommandConfiguration(commandName: "ConverterTool")
-
-    @Option(name: .shortAndLong, help: "Safari version.")
-    var safariVersion: Double = 13
-
-    @Option(name: .shortAndLong, help: "Optimize.")
-    var optimize = false
-
-    @Option(name: .shortAndLong, help: "Advanced blocking.")
-    var advancedBlocking = false
-
-    @Option(name: .shortAndLong, help: "Maximum json size in bytes. Leave empty for no limit.")
-    var maxJsonSizeBytes: Int = 0
-
-    @Option(name: [.customShort("f"), .long], help: "Advanced blocking output format.")
-    var advancedBlockingFormat = "json"
-
-    @Argument(help: "Reads rules from standard input.")
-    var rules: String?
-
-    mutating func run() throws {
-        let safariVersionResolved = SafariVersion(safariVersion);
-
-        guard let advancedBlockingFormat = AdvancedBlockingFormat(rawValue: advancedBlockingFormat) else {
-            throw AdvancedBlockingFormatError.unsupportedFormat()
-        }
-
-        let maxJsonSizeBytesOption: Int? = (maxJsonSizeBytes <= 0) ? nil : maxJsonSizeBytes
-
-        Logger.log("(ConverterTool) - Safari version: \(safariVersionResolved)")
-        Logger.log("(ConverterTool) - Optimize: \(optimize)")
-        Logger.log("(ConverterTool) - Advanced blocking: \(advancedBlocking)")
-        Logger.log("(ConverterTool) - Advanced blocking format: \(advancedBlockingFormat)")
-
-        if let size = maxJsonSizeBytesOption {
-            Logger.log("(ConverterTool) - Max json limit: \(size)")
-        } else {
-            Logger.log("(ConverterTool) - Max json limit: No limit set")
-        }
-
-        var rules: [String] = []
-        var line: String?
-        while true {
-            line = readLine(strippingNewline: true)
-            guard let unwrappedLine = line, !unwrappedLine.isEmpty else {
-                break
-            }
-
-            rules.append(unwrappedLine)
-        }
-
-        Logger.log("(ConverterTool) - Rules to convert: \(rules.count)")
-
-        let result: ConversionResult = ContentBlockerConverter()
-            .convertArray(
-                rules: rules,
-                safariVersion: safariVersionResolved,
-                optimize: optimize,
-                advancedBlocking: advancedBlocking,
-                advancedBlockingFormat: advancedBlockingFormat,
-                maxJsonSizeBytes: maxJsonSizeBytesOption
-            )
-
-        Logger.log("(ConverterTool) - Conversion done.")
-
-        let encoded = try encodeJson(result)
-
-        writeToStdOut(str: "\(encoded)")
-    }
+    static let configuration = CommandConfiguration(
+        commandName: "ConverterTool",
+        abstract: "Tool for converting rules to JSON or building the FilterEngine binary.",
+        subcommands: [
+            ConvertCommand.self,
+            BuildEngineCommand.self,
+        ],
+        defaultSubcommand: ConvertCommand.self
+    )
 }
 
 ConverterTool.main()

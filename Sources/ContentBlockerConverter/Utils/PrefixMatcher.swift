@@ -1,11 +1,10 @@
 /// Prefix matcher provides a simple and fast option to check whether the test
 /// string starts with one of the provided prefixes.
-final class PrefixMatcher {
-
+public final class PrefixMatcher {
     private var trie: TrieNode
 
     /// Initializes the prefix matcher from a list of prefixes.
-    init (prefixes: [String]) {
+    init(prefixes: [String]) {
         // Build a trie from a list of strings.
         // Each string is inserted by its UTF-8 code units.
         trie = TrieNode()
@@ -16,6 +15,7 @@ final class PrefixMatcher {
                 if current.children[byte] == nil {
                     current.children[byte] = TrieNode()
                 }
+                // swiftlint:disable:next force_unwrapping
                 current = current.children[byte]!
             }
             current.isEnd = true
@@ -30,7 +30,7 @@ final class PrefixMatcher {
     /// - Returns:
     ///   - idx: the index of the last matched character if matched, or nil if no match.
     ///   - prefix: the prefix string.
-    func matchPrefix(in string: String) -> (idx: String.Index?, prefix: String?) {
+    public func matchPrefix(in string: String) -> (idx: String.Index?, prefix: String?) {
         var current = trie
         let utf8 = string.utf8
         var currentIndex = utf8.startIndex
@@ -52,7 +52,6 @@ final class PrefixMatcher {
 
         return (nil, nil)
     }
-
 
     /// Trie is a go-to structure for fast prefix matching.
     ///

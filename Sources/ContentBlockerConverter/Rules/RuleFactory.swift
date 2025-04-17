@@ -1,29 +1,22 @@
 import Foundation
-import Shared
 
 /// RuleFactory is responsible for parsing AdGuard rules.
-class RuleFactory {
-    private static let converter = RuleConverter()
-    private var errorsCounter: ErrorsCounter
-
-    init(errorsCounter: ErrorsCounter) {
-        self.errorsCounter = errorsCounter
-    }
-
+public enum RuleFactory {
     /// Creates AdGuard rules from the specified lines.
-    func createRules(lines: [String], for version: SafariVersion, progress: Progress? = nil) -> [Rule] {
-        var shouldContinue: Bool {
-            !(progress?.isCancelled ?? false)
-        }
-
-        var result = [Rule]()
-
-        var networkRules = [NetworkRule]()
-        var badfilterRules: [String: [NetworkRule]] = [:]
+    ///
+    /// `$badfilter` rules are interpreted when creating rules, the rules that are negated
+    /// will be filtered out.
+    ///
+    /// It also applies cosmetic exceptions, i.e. rules like `#@#.banner` by modifying the
+    /// corresponding rules permitted/restricted domains.
+    public static func createRules(
+        lines: [String],
+        for version: SafariVersion,
+        errorsCounter: ErrorsCounter? = nil
+    ) -> [Rule] {
+        var result: [Rule] = []
 
         for line in lines {
-            guard shouldContinue else { return [] }
-
             var ruleLine = line
             if !ruleLine.isContiguousUTF8 {
                 // This is of UTMOST importance for the conversion performance.
@@ -38,37 +31,108 @@ class RuleFactory {
                 continue
             }
 
-            let convertedLines = RuleFactory.converter.convertRule(ruleText: ruleLine)
-            for convertedLine in convertedLines {
-                guard shouldContinue else { return [] }
-
-                if convertedLine != nil {
-                    guard let rule = safeCreateRule(ruleText: convertedLine!, version: version) else { continue }
-                    if let networkRule = rule as? NetworkRule {
-                        if networkRule.badfilter {
-                            badfilterRules[networkRule.urlRuleText, default: []].append(networkRule)
-                        } else {
-                            networkRules.append(networkRule)
-                        }
-                    } else {
+            let convertedLines = RuleConverter.convertRule(ruleText: ruleLine)
+            for convertedLine in convertedLines where convertedLine != nil {
+                do {
+                    if let convertedText = convertedLine,
+                        let rule = try RuleFactory.createRule(ruleText: convertedText, for: version)
+                    {
                         result.append(rule)
                     }
+                } catch {
+                    errorsCounter?.add()
                 }
             }
         }
 
-        guard shouldContinue else { return [] }
+        return result
+    }
 
-        result += RuleFactory.applyBadFilterExceptions(rules: networkRules, badfilterRules: badfilterRules)
+    /// This function filters out rules that are disabled `$badfilter` and modifies domain restrictions
+    /// using cosmetic exceptions.
+    ///
+    /// ## Examples
+    ///
+    /// ### $badfilter
+    ///
+    /// Rule `||example.org^` will be filtered out by `||example.org^$third-party,badfilter`.
+    ///
+    /// ### Cosmetic exceptions
+    ///
+    /// Rule `##.banner` will be changed by `example.org#@#.banner` and the final form will
+    /// be `~example.org##.banner`.
+    /// ```
+    public static func filterOutExceptions(from rules: [Rule]) -> [Rule] {
+        var networkRules: [NetworkRule] = []
+        var cosmeticRules: [CosmeticRule] = []
+
+        var badfilterRules: [String: [NetworkRule]] = [:]
+        var cosmeticExceptions: [String: [CosmeticRule]] = [:]
+
+        var result: [Rule] = []
+
+        for rule in rules {
+            if let networkRule = rule as? NetworkRule {
+                if networkRule.isBadfilter {
+                    badfilterRules[networkRule.urlRuleText, default: []].append(networkRule)
+                } else {
+                    networkRules.append(networkRule)
+                }
+            } else if let cosmeticRule = rule as? CosmeticRule {
+                if cosmeticRule.isWhiteList {
+                    cosmeticExceptions[cosmeticRule.content, default: []].append(cosmeticRule)
+                } else {
+                    cosmeticRules.append(cosmeticRule)
+                }
+            }
+        }
+
+        result += RuleFactory.applyBadFilterExceptions(
+            rules: networkRules,
+            badfilterRules: badfilterRules
+        )
+        result += RuleFactory.applyCosmeticExceptions(
+            rules: cosmeticRules,
+            cosmeticExceptions: cosmeticExceptions
+        )
 
         return result
     }
 
-    /// Filters out rules that are negated by $badfilter rules.
-    static func applyBadFilterExceptions(rules: [NetworkRule], badfilterRules: [String: [NetworkRule]]) -> [Rule] {
-        var result = [Rule]()
+    /// Creates an AdGuard rule from the rule text.
+    public static func createRule(ruleText: String, for version: SafariVersion) throws -> Rule? {
+        do {
+            if ruleText.isEmpty || RuleFactory.isComment(ruleText: ruleText) {
+                return nil
+            }
+
+            if ruleText.utf8.count < 3 {
+                throw SyntaxError.invalidRule(message: "The rule is too short")
+            }
+
+            if RuleFactory.isCosmetic(ruleText: ruleText) {
+                return try CosmeticRule(ruleText: ruleText, for: version)
+            }
+
+            return try NetworkRule(ruleText: ruleText, for: version)
+        } catch {
+            Logger.log(
+                "(RuleFactory) - Unexpected error: \(error) while creating rule from: \(String(describing: ruleText))"
+            )
+            throw error
+        }
+    }
+
+    /// Filters out rules that are negated by `$badfilter` rules.
+    private static func applyBadFilterExceptions(
+        rules: [NetworkRule],
+        badfilterRules: [String: [NetworkRule]]
+    ) -> [Rule] {
+        var result: [Rule] = []
         for rule in rules {
-            let negatingRule = badfilterRules[rule.urlRuleText]?.first(where: { $0.negatesBadfilter(specifiedRule: rule) })
+            let negatingRule = badfilterRules[rule.urlRuleText]?.first {
+                $0.negatesBadfilter(specifiedRule: rule)
+            }
             if negatingRule == nil {
                 result.append(rule)
             }
@@ -77,40 +141,98 @@ class RuleFactory {
         return result
     }
 
-    /// Helper for safely create a rule or increment an errors counter.
-    private func safeCreateRule(ruleText: String, version: SafariVersion) -> Rule? {
-        do {
-            return try RuleFactory.createRule(ruleText: ruleText, for: version)
-        } catch {
-            self.errorsCounter.add()
-            return nil
+    /// Applies cosmetic exception rules by modifying the cosmetic rule's permitted and restricted domains.
+    private static func applyCosmeticExceptions(
+        rules: [CosmeticRule],
+        cosmeticExceptions: [String: [CosmeticRule]]
+    ) -> [Rule] {
+        var result: [Rule] = []
+
+        for rule in rules {
+            if let exceptionRules = cosmeticExceptions[rule.content] {
+                if let newRule = applyCosmeticExceptions(rule: rule, exceptionRules: exceptionRules)
+                {
+                    result.append(newRule)
+                }
+            } else {
+                result.append(rule)
+            }
         }
+
+        return result
     }
 
-    /// Creates an AdGuard rule from the rule text.
-    static func createRule(ruleText: String, for version: SafariVersion) throws -> Rule? {
-        do {
-            if ruleText.isEmpty || isComment(ruleText: ruleText) {
+    /// Applies cosmetic exception rules to a cosmetic rule by modifying its permitted/restricted domains.
+    ///
+    /// ## Examples
+    ///
+    /// For example, if we have two rules like this:
+    ///
+    /// ```
+    /// example.org#@#.banner
+    /// ##.banner
+    /// ```
+    ///
+    /// They will be transformed to a single rule equivalent to `~example.org##.banner`.
+    ///
+    /// ## Edge cases
+    ///
+    /// There're some edge cases where the rule is completely redundant.
+    ///
+    /// ## Edge case #1: negate all domains
+    ///
+    /// This rule disables ##.banner on all domains
+    ///
+    /// ```
+    /// #@#.banner
+    /// ```
+    ///
+    /// ## Edge case #2: all domains in the rule are negated
+    ///
+    /// In this case the final rule has no permitted domains, i.e. it's redundant and can be skipped.
+    ///
+    /// ```
+    /// example.org,example.com##.banner
+    /// example.org#@#.banner
+    /// example.com#@#.banner
+    /// ```
+    ///
+    /// - Parameters:
+    ///    - rule: Rule to modify
+    ///    - exceptionRules: Cosmetic exception rules to apply
+    /// - Returns: modified rule or `nil` if after applying exception the rule is redundant.
+    private static func applyCosmeticExceptions(
+        rule: CosmeticRule,
+        exceptionRules: [CosmeticRule]
+    ) -> CosmeticRule? {
+        for exceptionRule in exceptionRules {
+            if exceptionRule.permittedDomains.isEmpty {
+                // Completely disables the rule on all domains
+                // I.e. `#@#.banner`
                 return nil
             }
 
-            if (ruleText.utf8.count < 3) {
-                throw SyntaxError.invalidRule(message: "The rule is too short")
-            }
+            for domain in exceptionRule.permittedDomains {
+                if !rule.permittedDomains.isEmpty {
+                    rule.permittedDomains.removeAll {
+                        DomainUtils.isDomainOrSubdomain(candidate: $0, domain: domain)
+                    }
 
-            if (RuleFactory.isCosmetic(ruleText: ruleText)) {
-                return try CosmeticRule(ruleText: ruleText, for: version)
+                    // If the rule has no permitted domains now, skip it.
+                    if rule.permittedDomains.isEmpty {
+                        return nil
+                    }
+                } else if !rule.restrictedDomains.contains(domain) {
+                    rule.restrictedDomains.append(domain)
+                }
             }
-
-            return try NetworkRule(ruleText: ruleText, for: version)
-        } catch {
-            Logger.log("(RuleFactory) - Unexpected error: \(error) while creating rule from: \(String(describing: ruleText))")
-            throw error
         }
+
+        return rule
     }
 
     /// Checks if the rule is a cosmetic (CSS/JS) or not.
-    static func isCosmetic(ruleText: String) -> Bool {
+    private static func isCosmetic(ruleText: String) -> Bool {
         let markerInfo = CosmeticRuleMarker.findCosmeticRuleMarker(ruleText: ruleText)
         return markerInfo.index != -1
     }
@@ -120,9 +242,9 @@ class RuleFactory {
     /// There are two types of comments:
     /// A line starts with '!'
     /// A line starts with '# '
-    static func isComment(ruleText: String) -> Bool {
+    private static func isComment(ruleText: String) -> Bool {
         switch ruleText.utf8.first {
-            case Chars.EXCLAMATION:
+        case Chars.EXCLAMATION:
             return true
         case Chars.HASH:
             if ruleText.utf8.count == 1 {

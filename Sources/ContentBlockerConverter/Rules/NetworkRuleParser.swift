@@ -3,18 +3,22 @@ import Punycode
 
 /// Simple parser that is only capable of splitting network rule into basic parts.
 /// The further complicated parsing is done by NetworkRule.
-class NetworkRuleParser {
+public enum NetworkRuleParser {
     private static let MASK_WHITE_LIST_UTF8 = [Chars.AT_CHAR, Chars.AT_CHAR]
-    private static let DOMAIN_VALIDATION_REGEXP = try! NSRegularExpression(pattern: "^[a-zA-Z0-9][a-zA-Z0-9-.]*[a-zA-Z0-9]\\.[a-zA-Z-]{2,}$", options: [.caseInsensitive])
+    // swiftlint:disable:next force_try
+    private static let DOMAIN_VALIDATION_REGEXP = try! NSRegularExpression(
+        pattern: "^[a-zA-Z0-9][a-zA-Z0-9-.]*[a-zA-Z0-9]\\.[a-zA-Z-]{2,}$",
+        options: [.caseInsensitive]
+    )
     private static let startDomainPrefixMatcher = PrefixMatcher(prefixes: [
         "||", "@@||", "|https://", "|http://", "@@|https://", "@@|http://",
         "|ws://", "|wss://", "@@|ws://", "@@|wss://",
         "//", "://", "@@//", "@@://", "https://", "http://",
-        "@@https://", "@@http://"
+        "@@https://", "@@http://",
     ])
 
     /// Split the specified network rule into its basic parts: pattern and options strings.
-    static func parseRuleText(ruleText: String) throws -> BasicRuleParts {
+    public static func parseRuleText(ruleText: String) throws -> BasicRuleParts {
         var ruleParts = BasicRuleParts()
 
         let utf8 = ruleText.utf8
@@ -31,13 +35,15 @@ class NetworkRuleParser {
             ruleParts.whitelist = true
         }
 
-        @inline(__always) func peekNext() -> UInt8? {
+        @inline(__always)
+        func peekNext() -> UInt8? {
             let next = utf8.index(after: i)
             guard next < utf8.endIndex else { return nil }
             return utf8[next]
         }
 
-        @inline(__always) func peekPrevious() -> UInt8? {
+        @inline(__always)
+        func peekPrevious() -> UInt8? {
             guard i > start else { return nil }
             let previous = utf8.index(before: i)
             return utf8[previous]
@@ -63,8 +69,8 @@ class NetworkRuleParser {
         }
 
         var optionsIndex = utf8.endIndex
-        if delimiterIndex != nil {
-            optionsIndex = utf8.index(after: delimiterIndex!)
+        if let delimiter = delimiterIndex {
+            optionsIndex = utf8.index(after: delimiter)
         }
 
         if optionsIndex == utf8.endIndex {
@@ -75,25 +81,31 @@ class NetworkRuleParser {
                 ruleParts.pattern = String(ruleText[start...])
             }
         } else {
-            ruleParts.pattern = String(ruleText[start..<delimiterIndex!])
-            ruleParts.options = String(ruleText[optionsIndex...])
+            if let delimiter = delimiterIndex {
+                ruleParts.pattern = String(ruleText[start..<delimiter])
+                ruleParts.options = String(ruleText[optionsIndex...])
+            }
         }
 
         return ruleParts
     }
 
     /// Searches for domain name in rule text and transforms it to punycode if required.
-    static func encodeDomainIfRequired(pattern: String?) -> String? {
-        if pattern == nil {
+    public static func encodeDomainIfRequired(pattern: String?) -> String? {
+        guard let pattern = pattern else {
+            return nil
+        }
+
+        let res = extractDomain(pattern: pattern)
+        if res.domain.isEmpty || res.domain.isASCII() {
             return pattern
         }
 
-        let res = extractDomain(pattern: pattern!)
-        if res.domain == "" || res.domain.isASCII() {
+        guard let idnaEncoded = res.domain.idnaEncoded else {
             return pattern
         }
 
-        return pattern!.replacingOccurrences(of: res.domain, with: res.domain.idnaEncoded!)
+        return pattern.replacingOccurrences(of: res.domain, with: idnaEncoded)
     }
 
     /// Extracts domain name from a basic rule pattern.
@@ -109,13 +121,14 @@ class NetworkRuleParser {
     /// - Returns:
     ///   - domain: Extracted domain or empty string if domain not found.
     ///   - patternMatchesPath: true if pattern matches more than just the domain.
-    static func extractDomain(pattern: String) -> (domain: String, patternMatchesPath: Bool) {
+    public static func extractDomain(pattern: String) -> (domain: String, patternMatchesPath: Bool)
+    {
         let utf8 = pattern.utf8
         let res = startDomainPrefixMatcher.matchPrefix(in: pattern)
 
         var startIndex = utf8.startIndex
-        if res.idx != nil {
-            startIndex = utf8.index(after: res.idx!)
+        if let idx = res.idx {
+            startIndex = utf8.index(after: idx)
         }
 
         var endIndex = utf8.endIndex
@@ -145,7 +158,9 @@ class NetworkRuleParser {
                 break
             }
 
-            if !isLetter && !isDigit && !nonASCII && char != UInt8(ascii: "-") && char != UInt8(ascii: ".") {
+            if !isLetter && !isDigit && !nonASCII && char != UInt8(ascii: "-")
+                && char != UInt8(ascii: ".")
+            {
                 // Invalid characters for a domain name, return immediately.
                 return ("", false)
             }
@@ -164,13 +179,16 @@ class NetworkRuleParser {
         }
 
         // Check if there's anything else important left in the pattern without domain.
-        let patternMatchesPath = endIndex < utf8.endIndex && utf8.distance(from: endIndex, to: utf8.endIndex) > 1
+        let patternMatchesPath =
+            endIndex < utf8.endIndex && utf8.distance(from: endIndex, to: utf8.endIndex) > 1
 
         return (domain, patternMatchesPath)
     }
 
     /// Extracts domain from the rule pattern or text using extractPattern function and then validates the domain.
-    static func extractDomainAndValidate(pattern: String)  -> (domain: String, patternMatchesPath: Bool) {
+    static func extractDomainAndValidate(
+        pattern: String
+    ) -> (domain: String, patternMatchesPath: Bool) {
         let res = extractDomain(pattern: pattern)
 
         if !res.domain.isEmpty && res.domain.firstMatch(for: DOMAIN_VALIDATION_REGEXP) != nil {
@@ -190,9 +208,9 @@ class NetworkRuleParser {
     /// - pattern: ||example.org^
     /// - options: third-party
     /// - whitelist: true
-    struct BasicRuleParts {
-        var pattern: String = ""
-        var options: String?
-        var whitelist = false
+    public struct BasicRuleParts {
+        public var pattern: String = ""
+        public var options: String?
+        public var whitelist = false
     }
 }

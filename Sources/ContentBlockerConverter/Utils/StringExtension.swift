@@ -2,9 +2,8 @@ import Foundation
 
 /// Useful string extensions.
 extension String {
-
     /// Escapes special characters so that the string could be used in a JSON.
-    func escapeForJSON() -> String {
+    public func escapeForJSON() -> String {
         var result = ""
 
         let utf8 = self.utf8
@@ -33,7 +32,9 @@ extension String {
             if lastNotEscapedIndex != startNonEscapedIndex {
                 result.append(String(self[startNonEscapedIndex..<lastNotEscapedIndex]))
             }
-            result.append(escapedSequence!)
+            if let escapedSequence = escapedSequence {
+                result.append(escapedSequence)
+            }
 
             lastNotEscapedIndex = utf8.index(after: lastNotEscapedIndex)
             startNonEscapedIndex = lastNotEscapedIndex
@@ -51,20 +52,25 @@ extension String {
         return result
     }
 
-    /// Replaces all occuriences of the target string with the specified string.
-    func replace(target: String, withString: String) -> String {
-        return self.replacingOccurrences(of: target, with: withString, options: NSString.CompareOptions.literal, range: nil)
+    /// Replaces all occurrences of the target string with the specified string.
+    public func replace(target: String, withString: String) -> String {
+        return self.replacingOccurrences(
+            of: target,
+            with: withString,
+            options: NSString.CompareOptions.literal,
+            range: nil
+        )
     }
 
     /// Splits the string into parts by the specified delimiter.
     ///
     /// Takes into account if delimiter is escaped by the specified escape character.
     /// Ignores empty components.
-    func split(delimiter: UInt8, escapeChar: UInt8) -> [String] {
+    public func split(delimiter: UInt8, escapeChar: UInt8) -> [String] {
         let utf8 = self.utf8
 
-        if utf8.count == 0 {
-            return []
+        if utf8.isEmpty {
+            return [String]()
         }
 
         // In case of AdGuard rules most of the rules have just one modifier
@@ -74,10 +80,10 @@ extension String {
             return [self]
         }
 
-        var result = [String]()
+        var result: [String] = []
         var currentIndex = utf8.startIndex
         var escaped = false
-        var buffer = [UInt8]()
+        var buffer: [UInt8] = []
 
         while currentIndex < utf8.endIndex {
             let char = utf8[currentIndex]
@@ -90,7 +96,9 @@ extension String {
                     escaped = false
                 } else {
                     if !buffer.isEmpty {
-                        result.append(String(decoding: buffer, as: UTF8.self))
+                        if let string = String(bytes: buffer, encoding: .utf8) {
+                            result.append(string)
+                        }
                         buffer.removeAll()
                     }
                 }
@@ -115,15 +123,17 @@ extension String {
 
         // Add the last part if there are remaining characters in the buffer
         if !buffer.isEmpty {
-            result.append(String(decoding: buffer, as: UTF8.self))
+            if let string = String(bytes: buffer, encoding: .utf8) {
+                result.append(string)
+            }
         }
 
         return result
     }
 
     /// Returns range of the first regex match in the string.
-    func firstMatch(for regex: NSRegularExpression) -> Range<String.Index>? {
-        let range = NSMakeRange(0, self.utf16.count)
+    public func firstMatch(for regex: NSRegularExpression) -> Range<String.Index>? {
+        let range = NSRange(location: 0, length: self.utf16.count)
         if let match = regex.firstMatch(in: self, options: [], range: range) {
             return Range(match.range, in: self)
         }
@@ -132,8 +142,8 @@ extension String {
     }
 
     /// Returns all regex matches found in the string.
-    func matches(regex: NSRegularExpression) -> [String] {
-        let range = NSMakeRange(0, self.utf16.count)
+    public func matches(regex: NSRegularExpression) -> [String] {
+        let range = NSRange(location: 0, length: self.utf16.count)
         let matches = regex.matches(in: self, options: [], range: range)
         return matches.compactMap { match in
             guard let substringRange = Range(match.range, in: self) else {
@@ -145,15 +155,17 @@ extension String {
 }
 
 extension StringProtocol {
-    func isASCII() -> Bool {
+    public func isASCII() -> Bool {
         return utf8.allSatisfy { $0 < 128 }
     }
 }
 
 extension Collection where Element == UInt8, Index == String.Index {
     /// Access a UTF-8 code unit by integer index.
-    subscript(safeIndex index: Int) -> UInt8? {
-        guard index >= 0, let utf8Index = self.index(startIndex, offsetBy: index, limitedBy: endIndex) else {
+    public subscript(safeIndex index: Int) -> UInt8? {
+        guard index >= 0,
+            let utf8Index = self.index(startIndex, offsetBy: index, limitedBy: endIndex)
+        else {
             return nil
         }
         return self[utf8Index]
@@ -163,7 +175,7 @@ extension Collection where Element == UInt8, Index == String.Index {
 /// Extending Collection with UInt8 elements as they're used when working with UTF8 String representations.
 extension Collection where Element == UInt8 {
     /// Checks if the collection contains the specified one.
-    func includes<C: Collection>(_ other: C) -> Bool where C.Element == UInt8 {
+    public func includes<C: Collection>(_ other: C) -> Bool where C.Element == UInt8 {
         guard !other.isEmpty else {
             // Empty subsequence is trivially included
             return true

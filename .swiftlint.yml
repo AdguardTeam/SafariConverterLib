@@ -2,15 +2,27 @@ excluded:
   - ${PWD}/Carthage
   - ${PWD}/Pods
   - ${PWD}/DerivedData
+  - ${PWD}/.build
+  - ${PWD}/.swiftpm
+  - ${PWD}/bamboo-specs
+
+  # Excluding tests as the linter fails on long rule texts. Splitting test rules
+  # into smaller chunks would be actually counter-productive and harder to
+  # maintain.
+  - ${PWD}/Tests
 
 disabled_rules:
   - discarded_notification_center_observer
   - notification_center_detachment
   - orphaned_doc_comment
   - todo
-  - unused_capture_list
-  - identifier_name
   - cyclomatic_complexity
+  - inclusive_language
+  - file_length
+  - function_body_length
+  - type_body_length
+  - trailing_comma
+  - opening_brace # handled by swift-format
 
 opt_in_rules:
   - array_init
@@ -48,11 +60,15 @@ opt_in_rules:
   - toggle_bool
   - trailing_closure
   - unneeded_parentheses_in_closure_argument
-  - unused_import
   - vertical_whitespace_closing_braces
   - vertical_whitespace_opening_braces
   - yoda_condition
 
+analyzer_rules:
+  - unused_import
+  - unused_declaration
+  - capture_variable
+  - typesafe_array_init
 
 custom_rules:
   array_constructor:
@@ -62,18 +78,12 @@ custom_rules:
     message: "Use explicit type annotation when initializing empty arrays and dictionaries"
     severity: warning
 
-
 attributes:
   always_on_same_line:
     - "@IBSegueAction"
     - "@IBAction"
     - "@NSManaged"
     - "@objc"
-
-force_cast: warning
-force_try: warning
-function_body_length:
-  warning: 60
 
 legacy_hashing: error
 
@@ -84,6 +94,9 @@ identifier_name:
     - x
     - y
     - z
+    - js
+  max_length: 60
+  allowed_symbols: ["_"]
 
 indentation_width:
   indentation_width: 4
@@ -91,8 +104,7 @@ indentation_width:
 
 line_length:
   ignores_urls: true
-  ignores_function_declarations: true
-  ignores_comments: true
+  ignores_multiline_strings: true
 
 multiline_arguments:
   first_argument_location: next_line
@@ -103,7 +115,7 @@ private_over_fileprivate:
 
 trailing_whitespace:
   ignores_empty_lines: false
-  ignores_comments: true
+  ignores_comments: false
 
 vertical_whitespace:
-  max_empty_lines: 2
+  max_empty_lines: 0

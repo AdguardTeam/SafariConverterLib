@@ -1,0 +1,8 @@
+# JS
+.vscode
+/node_modules
+.eslintcache
+
+# Build artifacts
+/dist
+/adguard-safari-extension.tgz

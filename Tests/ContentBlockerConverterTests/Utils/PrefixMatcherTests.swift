@@ -1,8 +1,8 @@
 import XCTest
+
 @testable import ContentBlockerConverter
 
 final class PrefixMatcherTests: XCTestCase {
-
     func testNoPrefixes() {
         let matcher = PrefixMatcher(prefixes: [])
         let input = "hello"
@@ -17,7 +17,11 @@ final class PrefixMatcherTests: XCTestCase {
         let result = matcher.matchPrefix(in: input)
         // "hello" is 5 bytes (characters), index of last character in zero-based is 4
         let expectedIndex = input.utf8.index(input.utf8.startIndex, offsetBy: 4)
-        XCTAssertEqual(result.idx, expectedIndex, "Index should point to the last character of the matched prefix.")
+        XCTAssertEqual(
+            result.idx,
+            expectedIndex,
+            "Index should point to the last character of the matched prefix."
+        )
         XCTAssertEqual(result.prefix, "hello", "Matched prefix should be 'hello'.")
     }
 
@@ -40,7 +44,11 @@ final class PrefixMatcherTests: XCTestCase {
 
         let expectedIndex = input.utf8.index(input.utf8.startIndex, offsetBy: 0)
         XCTAssertEqual(result.idx, expectedIndex, "Should match 'h' at index 0.")
-        XCTAssertEqual(result.prefix, "h", "Should return the shortest matching prefix found at the earliest opportunity.")
+        XCTAssertEqual(
+            result.prefix,
+            "h",
+            "Should return the shortest matching prefix found at the earliest opportunity."
+        )
     }
 
     func testMultiplePrefixesLongerMatch() {
@@ -65,7 +73,11 @@ final class PrefixMatcherTests: XCTestCase {
         // This means it won't even get to 'hello'.
         let expectedIndex = input.utf8.index(input.utf8.startIndex, offsetBy: 1)
         XCTAssertEqual(result.idx, expectedIndex, "Should match 'he' at index 1.")
-        XCTAssertEqual(result.prefix, "he", "Longest match not guaranteed. Should return first complete prefix encountered.")
+        XCTAssertEqual(
+            result.prefix,
+            "he",
+            "Longest match not guaranteed. Should return first complete prefix encountered."
+        )
     }
 
     func testNoMatchWhenPrefixNotAtStart() {
@@ -151,7 +163,7 @@ final class PrefixMatcherTests: XCTestCase {
         let matcher = PrefixMatcher(prefixes: ["h"])
         let input = "hello"
         let result = matcher.matchPrefix(in: input)
-        let expectedIndex = input.utf8.startIndex // just the first character
+        let expectedIndex = input.utf8.startIndex  // just the first character
         XCTAssertEqual(result.idx, expectedIndex)
         XCTAssertEqual(result.prefix, "h")
     }

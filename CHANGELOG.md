@@ -5,6 +5,89 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Added [FilterEngine]
+
+One of the main challenges when developing Safari extension is its async nature.
+For a content blocker it is critically important to be inject scripts and styles
+as soon as possible; in the ideal scenario it should be injected before page own
+scripts are executed.
+
+There are several challenges here:
+
+1. Messaging between the parts of the extension is not free. It takes several
+   milliseconds to send a message and wait for a response. We need to avoid
+   adding any overhead on top of it.
+
+2. The native host initialization time is very important. The problem is that
+   in the case of both Safari Web Extension and Safari App Extension the native
+   extension host process is ephemeral and does not persist for a long time,
+   even a very short period of inactivity is enough to cause the process to be
+   terminated. Initialization time of an empty extension may take ~100ms which
+   is by itself is a very high cost, but we should avoid making it higher.
+
+Therefore, in order to solve these challenges we need to provide
+an implementation of a filtering engine that is focused on two points:
+
+- Fast initialization
+- Fast rules lookup
+
+In order to achieve that we developed `FilterEngine`. This `FilterEngine` is
+based on a binary trie implementation which allows zero-time deserialization
+and fast rules lookup at the same time.
+
+[FilterEngine]: ./Sources/FilterEngine/FilterEngine.swift
+
+### Added [@adguard/safari-extension][extensionreadme] and [WebExtension]
+
+[FilterEngine] is a rather low-level component and integrating it would take
+a lot of work. To avoid that we implemented two new high-level components:
+
+- [WebExtension] takes care of the engine serialization and deserialization.
+- [@adguard/safari-extension][extensionreadme] is a javascript module that
+  should be used by the browser extension.
+
+> [!IMPORTANT]
+> If you're migrating from a different scheme, you need to make sure that the
+> new [WebExtension] can seamlessly replace the old one without requesting the
+> user to open the app (i.e. migration is done in the extension). The easiest
+> way to achieve that would be to create `./webext` directory in the shared
+> container and placing the plain text advanced rules there to
+> `./webext/rules.txt`. [WebExtension] will be able to detect that the
+> serialized engine is missing and will rebuild it.
+
+[extensionreadme]: ./Extension/README.md
+[WebExtension]: ./Sources/FilterEngine/WebExtension.swift
+
+### Added `SafariVersion.autodetect()`
+
+Every app that uses SafariConverterLib had to come up with the Safari version
+auto-detection code. Adding this function will save some time.
+
+### Changed `ContentBlockerConverter`
+
+Several deprecated arguments were removed from the `convertArray` function:
+
+- Removed `optimize` flag as it does provide any real value to the users.
+- Removed `advancedBlockingFormat`. The old engine that was using `json`
+  format is removed so now only plain text advanced rules format is required.
+
+### Changed `CommandLineWrapper`
+
+- In accordance to the changes of `ContentBlockerConverter.convertArray()` we
+  changed the arguments that the command line wrapper accepts.
+- Added `--input-path` option for specifying the file with source AdGuard rules.
+
+  Now there are two options of passing the rules to the tool: stdin (default)
+  or via an `--input-path` file.
+- Added `buildengine` command that builds the `FilterEngine` serialized binary.
+
+### Removed node module
+
+AdGuard for Safari will soon switch from Electron so the node wrapper is not
+required anymore.
+
 ## 2.1.1
 
 ### Performance
@@ -74,14 +157,14 @@ Here's how it was achieved:
 
 - Refactoring
 
-  - Removed `SafariService`; `SafariVersion` is now passed down to the
+    - Removed `SafariService`; `SafariVersion` is now passed down to the
     underlying code instead of relying on a singleton.
 
-  - Removed `allTests`; it's not required anymore in modern Swift.
+    - Removed `allTests`; it's not required anymore in modern Swift.
 
-  - Moved the logic from `ConversionResult` to `Distributor`.
+    - Moved the logic from `ConversionResult` to `Distributor`.
 
-  - Improved unit tests, adding quite a lot of cases that were not covered by
+    - Improved unit tests, adding quite a lot of cases that were not covered by
     tests before.
 
 [iftopurlissue]: https://github.com/AdguardTeam/SafariConverterLib/issues/20

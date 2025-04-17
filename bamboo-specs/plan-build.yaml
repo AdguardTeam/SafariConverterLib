@@ -3,7 +3,6 @@ version: 2
 plan:
   project-key: IOS
   key: CONVERTERBUILD
-  # This is just an empty plan that will be changed in the branch.
   name: Converter - build
 stages:
   - Lint:
@@ -21,7 +20,6 @@ stages:
       final: false
       jobs:
         - Build
-
 Lint:
   key: LINT
   tasks:
@@ -34,13 +32,14 @@ Lint:
             set -e
             set -x
 
-            swift --version
-            swiftlint --version
-            xcbeautify --version
-            periphery version
-            node --version
-            npm --version
-            pnpm --version
+            # Install markdownlint-cli.
+            npm install -g markdownlint-cli
+
+            # Check the tools.
+            make tools
+
+            # Run linters.
+            make lint
   requirements:
     - image: registry.int.agrd.dev/macos/sequoia-build-agent-xcode16.3:latest
     - ephemeral
@@ -57,7 +56,8 @@ Test:
             set -e
             set -x
 
-            swift --version
+            # Run all tests.
+            make test
   requirements:
     - image: registry.int.agrd.dev/macos/sequoia-build-agent-xcode16.3:latest
     - ephemeral
@@ -74,29 +74,23 @@ Build:
             set -e
             set -x
 
-            swift --version
+            # Run build.
+            make build
   requirements:
     - image: registry.int.agrd.dev/macos/sequoia-build-agent-xcode16.3:latest
     - ephemeral
 
 branches:
-  create: manually
+  create: for-pull-request
   delete:
-    after-deleted-days: 7
-    after-inactive-days: 14
+    after-deleted-days: 1
+    after-inactive-days: 30
   integration:
     push-on-success: false
-    merge-from: Converter - increment version
+    merge-from: Converter - build
   link-to-jira: true
 
 notifications: []
-# notifications:
-#   - events:
-#       - plan-failed
-#     recipients:
-#       - webhook:
-#           name: Build webhook
-#           url: http://prod.jirahub.service.eu.consul/v1/webhook/bamboo
 labels: []
 other:
   concurrent-build-plugin: system-default

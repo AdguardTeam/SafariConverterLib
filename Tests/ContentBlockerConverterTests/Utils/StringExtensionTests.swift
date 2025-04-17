@@ -1,10 +1,9 @@
 import Foundation
-
 import XCTest
+
 @testable import ContentBlockerConverter
 
 final class StringExtensionTests: XCTestCase {
-
     func testEscapeForJSON() {
         XCTAssertEqual("test".escapeForJSON(), "test")
         XCTAssertEqual(#"test \ test"#.escapeForJSON(), #"test \\ test"#)
@@ -32,7 +31,7 @@ final class StringExtensionTests: XCTestCase {
             ("apple", ["apple"]),
             (",", []),
             ("apple\\,banana\\,grape", ["apple,banana,grape"]),
-            ("apple,banana\\,grape\\\\,pear,peach", ["apple", "banana,grape\\", "pear", "peach"])
+            ("apple,banana\\,grape\\\\,pear,peach", ["apple", "banana,grape\\", "pear", "peach"]),
         ]
 
         for (input, expected) in testCases {
