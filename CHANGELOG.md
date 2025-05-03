@@ -237,8 +237,8 @@ Here's how it was achieved:
 
 ### Added
 
-- Support of the native `:has()` pseudo-class for Safari 16.4 and later [#43].
-  Anyway its ExtendedCss implementation usage can be forced by the `#?#` rule marker.
+- Support for the native `:has()` pseudo-class in Safari 16.4 and later [#43].
+  However, its ExtendedCss implementation can still be enforced using the `#?#` rule marker.
 
 ### Fixed
 
