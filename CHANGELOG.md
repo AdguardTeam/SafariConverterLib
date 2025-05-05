@@ -235,12 +235,18 @@ Here's how it was achieved:
 
 ## [v2.0.39]
 
+### Added
+
+- Support for the native `:has()` pseudo-class in Safari 16.4 and later [#43].
+  However, its ExtendedCss implementation can still be enforced using the `#?#` rule marker.
+
 ### Fixed
 
 - Handling provided Safari version for minor version as well, not just the major
   one.
 
 [v2.0.39]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v2.0.39
+[#43]: https://github.com/AdguardTeam/SafariConverterLib/issues/43
 
 ## [v2.0.38]
 
