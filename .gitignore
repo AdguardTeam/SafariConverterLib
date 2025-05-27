@@ -11,3 +11,6 @@ xcuserdata/
 # Ignore smart IDEs
 .windsurfrules
 .cursorrules
+
+# do not expose npmjs token
+.npmrc
