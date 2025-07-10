@@ -337,7 +337,8 @@ Please refer to [DEVELOPMENT.md](DEVELOPMENT.md) for details.
 2. Update the [CHANGELOG.md](CHANGELOG.md) and add new version
    information.
 3. Run `VERSION=${version} make codegen` to update the version of the extension,
-   and to generate `ContentBlockerConverterVersion`.
+   and to generate `ContentBlockerConverterVersion`. For example,
+   `VERSION=3.0.1 make codegen`.
 4. Make `Bump version to ${version}` commit.
 5. Run `Converter - build for release` plan in Bamboo and override
    `release.version` variable.

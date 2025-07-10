@@ -7,11 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+Nothing here so far.
+
+## [v3.0.1]
+
 ### Fixed
 
 - `$jsinject` rules should not be included into regular content blockers: [#90]
 
 [#90]: https://github.com/AdguardTeam/SafariConverterLib/issues/90
+
+[v3.0.1]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v3.0.1
 
 ## [v3.0.0]
 
