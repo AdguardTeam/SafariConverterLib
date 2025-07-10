@@ -107,13 +107,17 @@ public class ContentBlockerConverter {
     }
 
     /// This is a list of modifiers that can affect how cosmetic and scriptlet rules are applied to the page.
-    /// Rules with these modifiers should be placed to the list of advanced rules.
-    private static let advancedOptions: NetworkRule.Option = [
+    /// Rules with these modifiers should be placed to both advanced and simple rules lists.
+    private static let universalSimpleAdvancedOptions: NetworkRule.Option = [
         .document,
-        .jsinject,
         .elemhide,
         .generichide,
         .specifichide,
+    ]
+
+    /// This is a list of modifiers rules with which must only be placed to "advanced" rules list.
+    private static let advancedOptions: NetworkRule.Option = [
+        .jsinject
     ]
 
     /// Splits all rules into two arrays:
@@ -126,12 +130,21 @@ public class ContentBlockerConverter {
 
         for rule in rules {
             if let rule = rule as? NetworkRule {
-                simple.append(rule)
-
-                if rule.isWhiteList && !rule.enabledOptions.isDisjoint(with: advancedOptions) {
-                    // Network rules that can affect how advanced cosmetic rules are used
-                    // are added to both simple and advanced.
-                    advanced.append(rule)
+                if rule.isWhiteList {
+                    if !rule.enabledOptions.isDisjoint(with: universalSimpleAdvancedOptions) {
+                        // Network rules that can affect how advanced cosmetic rules are used
+                        // are added to both simple and advanced.
+                        advanced.append(rule)
+                        simple.append(rule)
+                    } else if !rule.enabledOptions.isDisjoint(with: advancedOptions) {
+                        // Network rules that only make sense as advanced rules.
+                        advanced.append(rule)
+                    } else {
+                        // Network rules that only make sense as simple rules.
+                        simple.append(rule)
+                    }
+                } else {
+                    simple.append(rule)
                 }
             } else if let rule = rule as? CosmeticRule {
                 // Cosmetic rules are either go to Safari or they need to be applied
