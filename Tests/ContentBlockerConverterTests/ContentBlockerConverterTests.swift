@@ -2731,6 +2731,42 @@ final class ContentBlockerConverterTests: XCTestCase {
                 expectedAdvancedRulesCount: 0
             ),
             TestCase(
+                // Mixed set of safari and advanced rules, check $jsinject.
+                rules: [
+                    "testcases.agrd.dev,pages.dev###subscribe-to-test-jsinject-rules-filter",
+                    "testcases.agrd.dev,pages.dev#%#document.__jsinjectTest = true;",
+                    "@@testcases.agrd.dev^$jsinject",
+                    "@@pages.dev^$jsinject",
+                ],
+                advancedBlocking: true,
+                expectedSafariRulesJSON: #"""
+                        [
+                          {
+                            "action" : {
+                              "selector" : "#subscribe-to-test-jsinject-rules-filter",
+                              "type" : "css-display-none"
+                            },
+                            "trigger" : {
+                              "if-domain" : [
+                                "*testcases.agrd.dev",
+                                "*pages.dev"
+                              ],
+                              "url-filter" : ".*"
+                            }
+                          }
+                        ]
+                    """#,
+                expectedAdvancedRulesText: [
+                    "testcases.agrd.dev,pages.dev#%#document.__jsinjectTest = true;",
+                    "@@testcases.agrd.dev^$jsinject",
+                    "@@pages.dev^$jsinject",
+                ].joined(separator: "\n"),
+                expectedSourceRulesCount: 4,
+                expectedSourceSafariCompatibleRulesCount: 1,
+                expectedSafariRulesCount: 1,
+                expectedAdvancedRulesCount: 3
+            ),
+            TestCase(
                 // Test that rules are correctly distributed between simple and advanced.
                 rules: [
                     // Simple rule, not included.
