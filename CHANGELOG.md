@@ -18,6 +18,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [#84]: https://github.com/AdguardTeam/SafariConverterLib/issues/84
 [#91]: https://github.com/AdguardTeam/SafariConverterLib/issues/91
 
+### Fixed
+
+- Fixed bugs with parsing scriptlet arguments: 1-character arguments, escaped quotes: [#93]
+
+[#93]: https://github.com/AdguardTeam/SafariConverterLib/issues/93
+
 ## [v3.0.1]
 
 ### Fixed

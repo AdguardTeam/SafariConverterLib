@@ -365,7 +365,9 @@ extension WebExtension {
     /// The scriptlets are evaluated using the scriptlets JS library:
     /// https://github.com/AdguardTeam/Scriptlets
     ///
-    /// This object is passed as a part of `Configuration` to the extension's content script.
+    /// This object is passed as a part of `Configuration` to the extension's
+    /// content script.
+    ///
     /// See the `Extension` code to learn how it's used.
     public struct Scriptlet: Equatable {
         /// Scriptlet name.
