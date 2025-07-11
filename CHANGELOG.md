@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+Nothing here so far.
+
+## [v3.1.0]
+
 ### Changed
 
 - `WebExtension` does not require shared `UserDefaults` anymore: [#91]
@@ -25,6 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed bugs with parsing scriptlet arguments: 1-character arguments, escaped quotes: [#93]
 
 [#93]: https://github.com/AdguardTeam/SafariConverterLib/issues/93
+
+[v3.1.0]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v3.1.0
 
 ## [v3.0.1]
 
