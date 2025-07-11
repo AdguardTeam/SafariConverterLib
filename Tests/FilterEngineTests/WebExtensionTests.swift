@@ -26,11 +26,8 @@ final class WebExtensionTests: XCTestCase {
 
     /// Test that the filter engine is correctly built.
     func testBuildFilterEngine() throws {
-        let sharedUserDefaults = InMemoryDefaults(suiteName: #file)!
-
         let webExtension = try WebExtension(
             containerURL: tempDirectory,
-            sharedUserDefaults: sharedUserDefaults,
             version: SafariVersion.safari16_4
         )
         let engine = try webExtension.buildFilterEngine(rules: "example.org###banner")
@@ -38,25 +35,25 @@ final class WebExtensionTests: XCTestCase {
         let rules = engine.findAll(for: request)
 
         XCTAssertEqual(rules.count, 1, "Expected 1 rule to be selected")
-        XCTAssertGreaterThan(
-            sharedUserDefaults.double(forKey: Schema.ENGINE_TIMESTAMP_KEY),
-            0,
-            "Engine timestamp must be saved to user defaults"
-        )
+
+        // Check meta file contents
+        let metaURL =
+            tempDirectory
+            .appendingPathComponent(Schema.BASE_DIR, isDirectory: true)
+            .appendingPathComponent(Schema.ENGINE_META_FILE_NAME)
+        let meta = try EngineMeta.read(from: metaURL, lock: nil)
+        XCTAssertGreaterThan(meta.timestamp, 0, "Engine timestamp must be saved to meta file")
         XCTAssertEqual(
-            sharedUserDefaults.integer(forKey: Schema.ENGINE_SCHEMA_VERSION_KEY),
-            Schema.VERSION,
-            "Schema version must be saved to user defaults"
+            meta.schemaVersion,
+            Int32(Schema.VERSION),
+            "Schema version must be saved to meta file"
         )
     }
 
     /// Test that nothiing is found when the engine was not built.
     func testLookupNoEngine() throws {
-        let sharedUserDefaults = InMemoryDefaults(suiteName: #file)!
-
         let webExtension = try WebExtension(
             containerURL: tempDirectory,
-            sharedUserDefaults: sharedUserDefaults,
             version: SafariVersion.safari16_4
         )
 
@@ -70,11 +67,8 @@ final class WebExtensionTests: XCTestCase {
 
     /// Test that empty config found when engine is built from an empty string.
     func testLookupEmptyEngine() throws {
-        let sharedUserDefaults = InMemoryDefaults(suiteName: #file)!
-
         let builder = try WebExtension(
             containerURL: tempDirectory,
-            sharedUserDefaults: sharedUserDefaults,
             version: SafariVersion.safari16_4
         )
 
@@ -85,7 +79,6 @@ final class WebExtensionTests: XCTestCase {
         // to deserialize engine.
         let webExtension = try WebExtension(
             containerURL: tempDirectory,
-            sharedUserDefaults: sharedUserDefaults,
             version: SafariVersion.safari16_4
         )
 
@@ -105,11 +98,8 @@ final class WebExtensionTests: XCTestCase {
 
     /// Test that lookup works as expected and returns a valid configuration.
     func testLookup() throws {
-        let sharedUserDefaults = InMemoryDefaults(suiteName: #file)!
-
         let builder = try WebExtension(
             containerURL: tempDirectory,
-            sharedUserDefaults: sharedUserDefaults,
             version: SafariVersion.safari16_4
         )
 
@@ -127,7 +117,6 @@ final class WebExtensionTests: XCTestCase {
         // to deserialize engine.
         let webExtension = try WebExtension(
             containerURL: tempDirectory,
-            sharedUserDefaults: sharedUserDefaults,
             version: SafariVersion.safari16_4
         )
 
@@ -151,11 +140,8 @@ final class WebExtensionTests: XCTestCase {
     }
 
     func testLookupWithRebuild() throws {
-        let sharedUserDefaults = InMemoryDefaults(suiteName: #file)!
-
         let builder = try WebExtension(
             containerURL: tempDirectory,
-            sharedUserDefaults: sharedUserDefaults,
             version: SafariVersion.safari16_4
         )
 
@@ -170,10 +156,17 @@ final class WebExtensionTests: XCTestCase {
         _ = try builder.buildFilterEngine(rules: filterList)
 
         // Emulate a situation that makes it necessary to rebuild the engine.
-        sharedUserDefaults.set(Schema.VERSION - 1, forKey: Schema.ENGINE_SCHEMA_VERSION_KEY)
+        // Overwrite the meta file with an old schema version.
+        let metaURL =
+            tempDirectory
+            .appendingPathComponent(Schema.BASE_DIR)
+            .appendingPathComponent(Schema.ENGINE_META_FILE_NAME)
+        var oldMeta = try EngineMeta.read(from: metaURL, lock: nil)
+        oldMeta = EngineMeta(timestamp: oldMeta.timestamp, schemaVersion: Int32(Schema.VERSION - 1))
+        try EngineMeta.write(meta: oldMeta, to: metaURL, lock: nil)
 
         // Save the engine timestamp so that we could compare it to the one after rebuilding.
-        let firstBuildTimestamp = sharedUserDefaults.double(forKey: Schema.ENGINE_TIMESTAMP_KEY)
+        let firstBuildTimestamp = oldMeta.timestamp
         // Sleep for a short period to make sure that the new timestamp will be newer.
         Thread.sleep(forTimeInterval: 0.01)
 
@@ -193,7 +186,6 @@ final class WebExtensionTests: XCTestCase {
         // to deserialize engine.
         let webExtension = try WebExtension(
             containerURL: tempDirectory,
-            sharedUserDefaults: sharedUserDefaults,
             version: SafariVersion.safari16_4
         )
 
@@ -221,13 +213,72 @@ final class WebExtensionTests: XCTestCase {
         XCTAssertGreaterThan(conf.engineTimestamp, 0, "Engine timestamp should be set")
     }
 
-    /// Test that lookup properly handles subdocument and third-party detection.
-    func testLookupWithSubdocumentAndThirdParty() throws {
-        let sharedUserDefaults = InMemoryDefaults(suiteName: #file)!
-
+    func testMigrationMarkerPreventsRebuildAndLookup() throws {
+        // Arrange: Build and serialize engine
         let builder = try WebExtension(
             containerURL: tempDirectory,
-            sharedUserDefaults: sharedUserDefaults,
+            version: SafariVersion.safari16_4
+        )
+        let filterList = [
+            "example.org###banner",
+            "example.org#$##banner { visibility: hidden }",
+            "example.org#?##banner:has(div)",
+            "example.org#%#console.log('test')",
+            "example.org#%#//scriptlet('log', 'test')",
+        ].joined(separator: "\n")
+        _ = try builder.buildFilterEngine(rules: filterList)
+
+        // Emulate a situation that makes it necessary to rebuild the engine.
+        let metaURL =
+            tempDirectory
+            .appendingPathComponent(Schema.BASE_DIR)
+            .appendingPathComponent(Schema.ENGINE_META_FILE_NAME)
+        var oldMeta = try EngineMeta.read(from: metaURL, lock: nil)
+        oldMeta = EngineMeta(timestamp: oldMeta.timestamp, schemaVersion: Int32(Schema.VERSION - 1))
+        try EngineMeta.write(meta: oldMeta, to: metaURL, lock: nil)
+
+        // Remove engine/index files to force rebuild
+        let filterEngineFileURL =
+            tempDirectory
+            .appendingPathComponent(Schema.BASE_DIR)
+            .appendingPathComponent(Schema.FILTER_ENGINE_INDEX_FILE_NAME)
+        let filterRuleStorageFileURL =
+            tempDirectory
+            .appendingPathComponent(Schema.BASE_DIR)
+            .appendingPathComponent(Schema.FILTER_RULE_STORAGE_FILE_NAME)
+        try FileManager.default.removeItem(at: filterEngineFileURL)
+        try FileManager.default.removeItem(at: filterRuleStorageFileURL)
+
+        // Create migration marker file
+        let markerURL =
+            tempDirectory
+            .appendingPathComponent(Schema.BASE_DIR)
+            .appendingPathComponent(Schema.MIGRATION_MARKER_FILE_NAME)
+        FileManager.default.createFile(atPath: markerURL.path, contents: nil, attributes: nil)
+
+        // Act: Try to lookup, which would normally trigger a rebuild
+        let webExtension = try WebExtension(
+            containerURL: tempDirectory,
+            version: SafariVersion.safari16_4
+        )
+        let pageUrl = URL(string: "https://example.org/")!
+        let conf = webExtension.lookup(pageUrl: pageUrl, topUrl: nil)
+
+        // Assert: Should not rebuild, lookup returns nil, marker file still exists
+        XCTAssertNil(
+            conf,
+            "Lookup should return nil if migration marker exists and engine files are missing"
+        )
+        XCTAssertTrue(
+            FileManager.default.fileExists(atPath: markerURL.path),
+            "Migration marker should still exist after prevented rebuild"
+        )
+    }
+
+    /// Test that lookup properly handles subdocument and third-party detection.
+    func testLookupWithSubdocumentAndThirdParty() throws {
+        let builder = try WebExtension(
+            containerURL: tempDirectory,
             version: SafariVersion.safari16_4
         )
 
@@ -248,7 +299,6 @@ final class WebExtensionTests: XCTestCase {
         // Create a new WebExtension instance for lookups
         let webExtension = try WebExtension(
             containerURL: tempDirectory,
-            sharedUserDefaults: sharedUserDefaults,
             version: SafariVersion.safari16_4
         )
 
@@ -331,8 +381,6 @@ final class WebExtensionTests: XCTestCase {
     /// To get your macOS version: `sw_vers`
     /// To get your Swift version: `swift --version`
     func testBuildFilterEngineBenchmark() throws {
-        let sharedUserDefaults = InMemoryDefaults(suiteName: #file)!
-
         // Create a large filter list with many rules
         var filterRules: [String] = []
         for i in 1...1000 {
@@ -348,7 +396,6 @@ final class WebExtensionTests: XCTestCase {
         measure {
             let webExtension = try! WebExtension(
                 containerURL: tempDirectory,
-                sharedUserDefaults: sharedUserDefaults,
                 version: SafariVersion.safari16_4
             )
 
@@ -368,8 +415,6 @@ final class WebExtensionTests: XCTestCase {
     /// To get your macOS version: `sw_vers`
     /// To get your Swift version: `swift --version`
     func testLookupBenchmark() throws {
-        let sharedUserDefaults = InMemoryDefaults(suiteName: #file)!
-
         // Create a filter list with many rules
         var filterRules: [String] = []
         for i in 1...1000 {
@@ -384,7 +429,6 @@ final class WebExtensionTests: XCTestCase {
         // Build the filter engine first
         let builder = try WebExtension(
             containerURL: tempDirectory,
-            sharedUserDefaults: sharedUserDefaults,
             version: SafariVersion.safari16_4
         )
         _ = try builder.buildFilterEngine(rules: filterList)
@@ -392,7 +436,6 @@ final class WebExtensionTests: XCTestCase {
         // Create a new WebExtension instance for lookup
         let webExtension = try WebExtension(
             containerURL: tempDirectory,
-            sharedUserDefaults: sharedUserDefaults,
             version: SafariVersion.safari16_4
         )
 
@@ -406,26 +449,23 @@ final class WebExtensionTests: XCTestCase {
             }
         }
     }
-}
 
-/// Helper class that overrides `UserDefaults` avoids storing data in a file.
-class InMemoryDefaults: UserDefaults {
-    private var doubleValues: [String: Double] = [:]
-    private var intValues: [String: Int] = [:]
+    func testSharedSingletonReturnsSameInstance() throws {
+        let groupID = UUID().uuidString
+        let version = SafariVersion.safari16_4
 
-    override func double(forKey defaultName: String) -> Double {
-        return doubleValues[defaultName] ?? 0
-    }
+        let instance1 = try WebExtension.shared(groupID: groupID, version: version)
+        let instance2 = try WebExtension.shared(groupID: groupID, version: version)
+        XCTAssertTrue(
+            instance1 === instance2,
+            "shared() should return the same instance for the same groupID and version"
+        )
 
-    override func integer(forKey defaultName: String) -> Int {
-        return intValues[defaultName] ?? 0
-    }
-
-    override func set(_ value: Double, forKey defaultName: String) {
-        doubleValues[defaultName] = value
-    }
-
-    override func set(_ value: Int, forKey defaultName: String) {
-        intValues[defaultName] = value
+        let anotherGroupID = UUID().uuidString
+        let instance3 = try WebExtension.shared(groupID: anotherGroupID, version: version)
+        XCTAssertFalse(
+            instance1 === instance3,
+            "shared() should return different instances for different groupIDs"
+        )
     }
 }
