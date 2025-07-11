@@ -196,17 +196,24 @@ extension WebExtension {
                 for: version,
                 fileURL: filterRuleStorageURL
             )
+            Logger.log("Initialized filter rule storage for \(filterRuleStorageURL.path).")
 
             // Build filter engine from rules in the storage.
             let engine = try FilterEngine(storage: storage)
 
+            Logger.log("Initialized FilterEngine")
+
             // Serialize the engine to a file.
             try engine.write(to: filterEngineIndexURL)
+
+            Logger.log("Serialized FilterEngine to \(filterEngineIndexURL.path)")
 
             // Save the original not-compiled rules. It may be required in the future
             // if we need to rebuild the engine when the schema version was changed.
             let rulesFileURL = baseURL.appendingPathComponent(Schema.RULES_FILE_NAME)
             try rules.write(to: rulesFileURL, atomically: true, encoding: .utf8)
+
+            Logger.log("Saved plain text rules to \(rulesFileURL.path)")
 
             // Save the timestamp and schema version to the meta file for fast access.
             // This allows quick determination if the engine needs to be rebuilt later.
@@ -215,11 +222,15 @@ extension WebExtension {
             let metaURL = baseURL.appendingPathComponent(Schema.ENGINE_META_FILE_NAME)
             try EngineMeta.write(meta: meta, to: metaURL, lock: fileLock)
 
+            Logger.log("Saved metadata to \(metaURL.path)")
+
             // Clean up migration marker file if it exists
             let migrationMarkerURL = baseURL.appendingPathComponent(
                 Schema.MIGRATION_MARKER_FILE_NAME
             )
             if FileManager.default.fileExists(atPath: migrationMarkerURL.path) {
+                Logger.log("Removing migration marker at \(migrationMarkerURL.path)")
+
                 try? FileManager.default.removeItem(at: migrationMarkerURL)
             }
 
@@ -235,10 +246,13 @@ extension WebExtension {
 extension WebExtension {
     /// Gets or creates an instance of `FilterEngine`.
     private func getFilterEngine() -> FilterEngine? {
+        Logger.log("Getting filter engine")
+
         // Read engine meta info from the binary meta file for fast access.
         let metaURL = baseURL.appendingPathComponent(Schema.ENGINE_META_FILE_NAME)
         guard let meta = try? EngineMeta.read(from: metaURL, lock: fileLock) else {
-            // Engine was never initialized.
+            Logger.log("FilterEngine meta file not found, engine was never initialized")
+
             return nil
         }
         let engineTimestamp = meta.timestamp
@@ -246,12 +260,17 @@ extension WebExtension {
 
         if engineTimestamp > self.engineTimestamp {
             if schemaVersion == Schema.VERSION {
+                Logger.log("Reading FilterEngine from binary format")
+
                 self.filterEngine = readFilterEngine()
                 self.engineTimestamp = engineTimestamp
             } else {
+                Logger.log("FilterEngine migration is required")
+
                 let engine = rebuildFilterEngine()
                 if engine != nil {
                     self.filterEngine = engine
+
                     // Read the timestamp again since it was changed when rebuilding.
                     if let updatedMeta = try? EngineMeta.read(from: metaURL, lock: fileLock) {
                         self.engineTimestamp = updatedMeta.timestamp
@@ -289,7 +308,10 @@ extension WebExtension {
             contents: nil,
             attributes: nil
         )
+
         defer {
+            Logger.log("Removing migration marker file")
+
             // Make sure the marker is cleaned up if the migration was not
             // interrupted.
             try? FileManager.default.removeItem(at: migrationMarkerURL)
@@ -297,14 +319,16 @@ extension WebExtension {
 
         let filterRulesURL = baseURL.appendingPathComponent(Schema.RULES_FILE_NAME)
         if !FileManager.default.fileExists(atPath: filterRulesURL.path) {
-            // Clean up marker if rules file is missing
-            try? FileManager.default.removeItem(at: migrationMarkerURL)
+            Logger.log("Plain text rules file not found, skipping rebuild")
 
             return nil
         }
 
         do {
+            Logger.log("Reading plain text rules from \(filterRulesURL)")
             let rules = try String(contentsOf: filterRulesURL, encoding: .utf8)
+
+            Logger.log("Building filter engine from rules")
             let engine = try buildFilterEngine(rules: rules)
 
             return engine
