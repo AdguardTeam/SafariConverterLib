@@ -14,9 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Web extension schema migration now takes into account that the extension
   process can be interrupted and in this case it won't make another attempt
   to migrate.
+- Updated scriptlets dependency to `2.2.8`: [#92]
 
 [#84]: https://github.com/AdguardTeam/SafariConverterLib/issues/84
 [#91]: https://github.com/AdguardTeam/SafariConverterLib/issues/91
+[#92]: https://github.com/AdguardTeam/SafariConverterLib/issues/92
 
 ### Fixed
 
