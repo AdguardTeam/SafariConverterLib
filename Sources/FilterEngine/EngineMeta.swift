@@ -20,6 +20,13 @@ public struct EngineMeta {
     /// The fixed size of the binary representation (in bytes).
     private static let byteSize = 8 + 4
 
+    /// Creates a new instance of EngineMeta.
+    /// Exposing it as it may be necessary for migrations.
+    public init(timestamp: Double, schemaVersion: Int32) {
+        self.timestamp = timestamp
+        self.schemaVersion = schemaVersion
+    }
+
     /// Serializes the EngineMeta to a 12-byte Data object.
     public func toData() -> Data {
         var data = Data(capacity: Self.byteSize)
