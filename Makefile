@@ -63,7 +63,7 @@ swiftformat-lint:
 	swift format lint --recursive --strict .
 
 periphery-lint:
-	periphery scan --retain-public --quiet --strict
+	periphery scan --retain-public --quiet --strict --clean-build
 
 js-lint:
 	$(PNPM) install && $(PNPM) lint

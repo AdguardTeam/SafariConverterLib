@@ -19,25 +19,28 @@ import PublicSuffixList
 /// and later this binary form is used by the native extension to lookup the
 /// rules.
 ///
-/// This functionality requires having a shared file storage and shared
-/// UserDefaults since some information must be shared between the host app and
-/// the native extension process.
+/// This functionality requires having a shared file storage since some
+/// information must be shared between the host app and the native extension
+/// process.
 ///
 /// WebExtension stores its information in a shared directory `Schema.BASE_DIR`,
 /// and there are three important files that are kept there:
 ///
+/// - `Schema.ENGINE_META_FILE_NAME` - engine meta info (timestamp, schema
+///   version)
 /// - `Schema.RULES_FILE_NAME` - plain text advanced rules. This file will be
 ///   used if the serialized engine file is missing and the engine needs to be
 ///   rebuilt.
 /// - `Schema.FILTER_RULE_STORAGE_FILE_NAME` - serialized `FilterRuleStorage`.
 /// - `Schema.FILTER_ENGINE_INDEX_FILE_NAME` - serialized `FilterEngine` index.
+/// - `Schema.MIGRATION_MARKER_FILE_NAME` - marker file used to signal that
+///   migration (engine rebuild) is in progress.
+/// - `Schema.LOCK_FILE_NAME` - lock file used for synchronizing access to
+///   shared resources between different processes. See `EngineMeta` for more
+///   details.
 public class WebExtension {
     /// Place where extension related files are to be stored.
     private let baseURL: URL
-
-    /// `UserDefaults` shared between the extension process and the host app
-    /// process.
-    private let sharedUserDefaults: UserDefaults
 
     /// Safari version for which the engine should be built.
     private let version: SafariVersion
@@ -56,51 +59,63 @@ public class WebExtension {
     /// Initializes a new instance of `WebExtension`.
     ///
     /// - Parameters:
-    ///   - containerURL: path to the container directory that's shared between
+    ///   - containerURL: Path to the container directory that's shared between
     ///                   the host app and the web extension. This directory
-    ///                   will be used to store filter rules, and the serialized
-    ///                   `FilterEngine`.
-    ///   - sharedUserDefaults: instance of `UserDefaults` shared between the
-    ///                         host app and the web extension process. This
-    ///                         instance will be used to store the engine
-    ///                         timestamp and schema version.
+    ///                   will be used to store filter rules, engine meta info,
+    ///                   and the serialized `FilterEngine`.
     ///   - version: Safari version for which the rules are compiled.
-    /// - Throws: throws error if it fails to create a directory for shared
-    ///           files
+    /// - Throws: throws WebExtensionError if it fails to create a directory for
+    ///           shared files
     public init(
         containerURL: URL,
-        sharedUserDefaults: UserDefaults,
-        version: SafariVersion
+        version: SafariVersion = SafariVersion.autodetect()
     ) throws {
         self.baseURL = containerURL.appendingPathComponent(Schema.BASE_DIR, isDirectory: true)
-        self.sharedUserDefaults = sharedUserDefaults
         self.version = version
 
         let lockFilePath = baseURL.appendingPathComponent(Schema.LOCK_FILE_NAME).path
         self.fileLock = FileLock(filePath: lockFilePath)
 
         if !FileManager.default.fileExists(atPath: baseURL.path) {
-            try FileManager.default.createDirectory(at: baseURL, withIntermediateDirectories: true)
+            do {
+                try FileManager.default.createDirectory(
+                    at: baseURL,
+                    withIntermediateDirectories: true
+                )
+            } catch {
+                throw WebExtensionError.containerURLCreationFailed(
+                    url: baseURL,
+                    underlyingError: error
+                )
+            }
         }
+    }
+
+    /// Error types that can be thrown by WebExtension
+    public enum WebExtensionError: Error {
+        /// Failed to get container URL for the specified group ID
+        case containerURLNotFound(groupID: String)
+
+        /// Failed to create container directory at the specified URL
+        case containerURLCreationFailed(url: URL, underlyingError: Error)
+
+        /// Failed to build filter engine
+        case buildEngineFailed(underlyingError: Error)
     }
 }
 
 // MARK: - WebExtension singleton
 
 extension WebExtension {
-    /// Dictionary to store WebExtension instances by group ID
-    private static var instances: [String: WebExtension] = [:]
+    /// Dictionary to store WebExtension instances by (groupID, version)
+    private static var instances: [InstanceKey: WebExtension] = [:]
+    private struct InstanceKey: Hashable {
+        let groupID: String
+        let version: Double
+    }
 
     /// Shared lock to protect access to the instances dictionary
     private static let instancesLock = NSLock()
-
-    /// Error types that can be thrown by WebExtension
-    public enum WebExtensionError: Error {
-        /// Failed to create UserDefaults for the specified group ID
-        case userDefaultsCreationFailed(groupID: String)
-        /// Failed to get container URL for the specified group ID
-        case containerURLNotFound(groupID: String)
-    }
 
     /// Returns a shared instance of WebExtension for the specified app group.
     /// If an instance for the specified group ID already exists, returns it.
@@ -120,16 +135,12 @@ extension WebExtension {
             instancesLock.unlock()
         }
 
-        if let instance = instances[groupID] {
+        let key = InstanceKey(groupID: groupID, version: version.doubleValue)
+        if let instance = Self.instances[key] {
             return instance
         }
 
-        // Create UserDefaults for the app group
-        guard let sharedUserDefaults = UserDefaults(suiteName: groupID) else {
-            throw WebExtensionError.userDefaultsCreationFailed(groupID: groupID)
-        }
-
-        // Get the shared container URL
+        // Get the shared container URL for the app group
         guard
             let containerURL = FileManager.default.containerURL(
                 forSecurityApplicationGroupIdentifier: groupID
@@ -141,12 +152,11 @@ extension WebExtension {
         // Initialize WebExtension instance
         let instance = try WebExtension(
             containerURL: containerURL,
-            sharedUserDefaults: sharedUserDefaults,
             version: version
         )
 
         // Store the instance
-        instances[groupID] = instance
+        instances[key] = instance
 
         return instance
     }
@@ -164,6 +174,8 @@ extension WebExtension {
     ///
     /// - Parameters:
     ///   - rules: rules to build the engine from.
+    /// - Returns: A `FilterEngine` instance.
+    /// - Throws: `WebExtensionError` if it fails to build the engine.
     public func buildFilterEngine(rules: String) throws -> FilterEngine {
         self.fileLock?.lock()
         defer {
@@ -177,33 +189,55 @@ extension WebExtension {
             Schema.FILTER_ENGINE_INDEX_FILE_NAME
         )
 
-        // First, prepare the filter rule storage.
-        let storage = try FilterRuleStorage(
-            from: rules.components(separatedBy: "\n"),
-            for: version,
-            fileURL: filterRuleStorageURL
-        )
+        do {
+            // First, prepare the filter rule storage.
+            let storage = try FilterRuleStorage(
+                from: rules.components(separatedBy: "\n"),
+                for: version,
+                fileURL: filterRuleStorageURL
+            )
+            Logger.log("Initialized filter rule storage for \(filterRuleStorageURL.path).")
 
-        // Build filter engine from rules in the storage.
-        let engine = try FilterEngine(storage: storage)
+            // Build filter engine from rules in the storage.
+            let engine = try FilterEngine(storage: storage)
 
-        // Serialize the engine to a file.
-        try engine.write(to: filterEngineIndexURL)
+            Logger.log("Initialized FilterEngine")
 
-        // Save the original not-compiled rules. It may be required in the future
-        // if we need to rebuild the engine when the schema version was changed.
-        let rulesFileURL = baseURL.appendingPathComponent(Schema.RULES_FILE_NAME)
-        try rules.write(to: rulesFileURL, atomically: true, encoding: .utf8)
+            // Serialize the engine to a file.
+            try engine.write(to: filterEngineIndexURL)
 
-        // Save the timestamp when the engine was built and the schema version.
-        // This way, we can quickly determine if the engine needs to be rebuilt
-        // later.
-        let currentTimestamp = Date().timeIntervalSince1970
-        sharedUserDefaults.set(currentTimestamp, forKey: Schema.ENGINE_TIMESTAMP_KEY)
-        sharedUserDefaults.set(Schema.VERSION, forKey: Schema.ENGINE_SCHEMA_VERSION_KEY)
-        sharedUserDefaults.synchronize()
+            Logger.log("Serialized FilterEngine to \(filterEngineIndexURL.path)")
 
-        return engine
+            // Save the original not-compiled rules. It may be required in the future
+            // if we need to rebuild the engine when the schema version was changed.
+            let rulesFileURL = baseURL.appendingPathComponent(Schema.RULES_FILE_NAME)
+            try rules.write(to: rulesFileURL, atomically: true, encoding: .utf8)
+
+            Logger.log("Saved plain text rules to \(rulesFileURL.path)")
+
+            // Save the timestamp and schema version to the meta file for fast access.
+            // This allows quick determination if the engine needs to be rebuilt later.
+            let currentTimestamp = Date().timeIntervalSince1970
+            let meta = EngineMeta(timestamp: currentTimestamp, schemaVersion: Int32(Schema.VERSION))
+            let metaURL = baseURL.appendingPathComponent(Schema.ENGINE_META_FILE_NAME)
+            try EngineMeta.write(meta: meta, to: metaURL, lock: fileLock)
+
+            Logger.log("Saved metadata to \(metaURL.path)")
+
+            // Clean up migration marker file if it exists
+            let migrationMarkerURL = baseURL.appendingPathComponent(
+                Schema.MIGRATION_MARKER_FILE_NAME
+            )
+            if FileManager.default.fileExists(atPath: migrationMarkerURL.path) {
+                Logger.log("Removing migration marker at \(migrationMarkerURL.path)")
+
+                try? FileManager.default.removeItem(at: migrationMarkerURL)
+            }
+
+            return engine
+        } catch {
+            throw WebExtensionError.buildEngineFailed(underlyingError: error)
+        }
     }
 }
 
@@ -212,26 +246,35 @@ extension WebExtension {
 extension WebExtension {
     /// Gets or creates an instance of `FilterEngine`.
     private func getFilterEngine() -> FilterEngine? {
-        let engineTimestamp = sharedUserDefaults.double(forKey: Schema.ENGINE_TIMESTAMP_KEY)
-        if engineTimestamp == 0 {
-            // Engine was never initialized.
+        Logger.log("Getting filter engine")
+
+        // Read engine meta info from the binary meta file for fast access.
+        let metaURL = baseURL.appendingPathComponent(Schema.ENGINE_META_FILE_NAME)
+        guard let meta = try? EngineMeta.read(from: metaURL, lock: fileLock) else {
+            Logger.log("FilterEngine meta file not found, engine was never initialized")
+
             return nil
         }
+        let engineTimestamp = meta.timestamp
+        let schemaVersion = Int(meta.schemaVersion)
 
         if engineTimestamp > self.engineTimestamp {
-            let schemaVersion = sharedUserDefaults.integer(forKey: Schema.ENGINE_SCHEMA_VERSION_KEY)
-
             if schemaVersion == Schema.VERSION {
+                Logger.log("Reading FilterEngine from binary format")
+
                 self.filterEngine = readFilterEngine()
                 self.engineTimestamp = engineTimestamp
             } else {
+                Logger.log("FilterEngine migration is required")
+
                 let engine = rebuildFilterEngine()
                 if engine != nil {
                     self.filterEngine = engine
+
                     // Read the timestamp again since it was changed when rebuilding.
-                    self.engineTimestamp = sharedUserDefaults.double(
-                        forKey: Schema.ENGINE_TIMESTAMP_KEY
-                    )
+                    if let updatedMeta = try? EngineMeta.read(from: metaURL, lock: fileLock) {
+                        self.engineTimestamp = updatedMeta.timestamp
+                    }
                 }
             }
         }
@@ -239,22 +282,56 @@ extension WebExtension {
         return self.filterEngine
     }
 
-    /// Re-builds the `FilterEngine` from the source rules
+    /// Re-builds the `FilterEngine` from the source rules. This may be
+    /// necessary when the schema version has changed, but we have not yet
+    /// rebuilt the engine.
     private func rebuildFilterEngine() -> FilterEngine? {
         self.fileLock?.lock()
         defer {
             _ = self.fileLock?.unlock()
         }
 
+        let migrationMarkerURL = baseURL.appendingPathComponent(Schema.MIGRATION_MARKER_FILE_NAME)
+        // Step 1: Check if migration marker file exists
+        if FileManager.default.fileExists(atPath: migrationMarkerURL.path) {
+            Logger.log(
+                "Migration marker file exists. Previous migration may have been "
+                    + "interrupted. Skipping rebuild this time."
+            )
+
+            return nil
+        }
+
+        // Step 2: Create migration marker file
+        FileManager.default.createFile(
+            atPath: migrationMarkerURL.path,
+            contents: nil,
+            attributes: nil
+        )
+
+        defer {
+            Logger.log("Removing migration marker file")
+
+            // Make sure the marker is cleaned up if the migration was not
+            // interrupted.
+            try? FileManager.default.removeItem(at: migrationMarkerURL)
+        }
+
         let filterRulesURL = baseURL.appendingPathComponent(Schema.RULES_FILE_NAME)
         if !FileManager.default.fileExists(atPath: filterRulesURL.path) {
+            Logger.log("Plain text rules file not found, skipping rebuild")
+
             return nil
         }
 
         do {
+            Logger.log("Reading plain text rules from \(filterRulesURL)")
             let rules = try String(contentsOf: filterRulesURL, encoding: .utf8)
 
-            return try buildFilterEngine(rules: rules)
+            Logger.log("Building filter engine from rules")
+            let engine = try buildFilterEngine(rules: rules)
+
+            return engine
         } catch {
             Logger.log("Failed to rebuild the engine: \(error)")
         }
@@ -312,7 +389,9 @@ extension WebExtension {
     /// The scriptlets are evaluated using the scriptlets JS library:
     /// https://github.com/AdguardTeam/Scriptlets
     ///
-    /// This object is passed as a part of `Configuration` to the extension's content script.
+    /// This object is passed as a part of `Configuration` to the extension's
+    /// content script.
+    ///
     /// See the `Extension` code to learn how it's used.
     public struct Scriptlet: Equatable {
         /// Scriptlet name.

@@ -1,10 +1,3 @@
-//
-//  Utils.swift
-//  ContentBlockerConverter
-//
-//  Created by Andrey Meshkov on 12/04/2025.
-//
-
 import ContentBlockerConverter
 import Foundation
 

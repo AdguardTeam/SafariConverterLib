@@ -1,10 +1,3 @@
-//
-//  ConvertCommand.swift
-//  ContentBlockerConverter
-//
-//  Created by Andrey Meshkov on 12/04/2025.
-//
-
 import ArgumentParser
 import ContentBlockerConverter
 import Foundation

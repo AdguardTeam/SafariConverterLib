@@ -13,8 +13,9 @@ public enum ScriptletParser {
     /// Parses and validates a scriptlet rule.
     ///
     /// - Parameters:
-    ///   - cosmeticRuleContent: Cosmetic rule content, i.e. if rule text is `example.org#%#//scriptlet('name', 'arg)`,
-    ///           it will be `//scriptlet('name', 'arg)`.
+    ///   - cosmeticRuleContent: Cosmetic rule content, i.e. if rule text is
+    ///     `example.org#%#//scriptlet('name', 'arg)`, it will be
+    ///     `//scriptlet('name', 'arg)`.
     /// - Returns: scriptlet name and its arguments.
     /// - Throws:`SyntaxError.invalidRule` if failed to parse.
     public static func parse(cosmeticRuleContent: String) throws -> (name: String, args: [String]) {
@@ -36,7 +37,7 @@ public enum ScriptletParser {
             delimiter: Chars.COMMA
         )
 
-        if args.count < 1 {
+        if args.count < 1 || args[0].isEmpty {
             throw SyntaxError.invalidRule(message: "Invalid scriptlet params")
         }
 
@@ -54,59 +55,65 @@ public enum ScriptletParser {
     /// - Returns: an array of arguments.
     /// - Throws: SyntaxError.invalidRule
     private static func extractArguments(str: Substring, delimiter: UInt8) throws -> [String] {
-        if str.isEmpty {
-            return [String]()
-        }
-
-        let maxIndex = str.utf8.count - 1
-        var pendingQuote = false
-        var pendingQuoteChar: UInt8 = 0
-
         var result: [String] = []
-        var argumentStartIndex: Int = 0
-        var argumentEndIndex: Int
+        var current: [UInt8] = []
+        var iterator = str.utf8.makeIterator()
 
-        for index in 0...maxIndex {
-            // swiftlint:disable:next force_unwrapping
-            let char = str.utf8[safeIndex: index]!
+        var inQuotes = false
+        var quoteChar: UInt8 = 0
 
-            switch char {
-            case Chars.QUOTE_SINGLE, Chars.QUOTE_DOUBLE:
-                if !pendingQuote {
-                    pendingQuote = true
-                    pendingQuoteChar = char
+        while let byte = iterator.next() {
+            switch byte {
+            case delimiter where !inQuotes:
+                continue
 
-                    argumentStartIndex = index + 1
-                } else if char == pendingQuoteChar {
-                    // Ignore escaped quotes.
-                    if index > 0 && str.utf8[safeIndex: index - 1] == Chars.BACKSLASH {
-                        continue
+            case UInt8(ascii: "\""), UInt8(ascii: "'"):
+                if !inQuotes {
+                    inQuotes = true
+                    quoteChar = byte
+                } else if quoteChar == byte {
+                    inQuotes = false
+                    if let str = String(bytes: current, encoding: .utf8) {
+                        result.append(str)
                     }
-
-                    // Not inside an argument anymore.
-                    pendingQuote = false
-
-                    // Now we can extract the quoted value (and drop the quotes).
-                    argumentEndIndex = index - 1
-                    if argumentEndIndex > argumentStartIndex {
-                        let startIdx = str.utf8.index(
-                            str.utf8.startIndex,
-                            offsetBy: argumentStartIndex
-                        )
-                        let endIdx = str.utf8.index(str.utf8.startIndex, offsetBy: argumentEndIndex)
-                        result.append(String(str[startIdx...endIdx]))
-                    } else {
-                        result.append("")
-                    }
+                    current.removeAll()
+                } else {
+                    current.append(byte)
                 }
-            case delimiter, Chars.WHITESPACE:
-                // Ignore delimiter and whitespace characters, they're allowed.
-                break
+
+            case UInt8(ascii: "\\") where inQuotes:
+                guard let next = iterator.next() else {
+                    throw SyntaxError.invalidRule(
+                        message: "Invalid escape sequence in matching arguments"
+                    )
+                }
+
+                if next == quoteChar || next == UInt8(ascii: "\\") {
+                    current.append(next)
+                } else {
+                    // Keep the backslash and the following char literally
+                    current.append(UInt8(ascii: "\\"))
+                    current.append(next)
+                }
+
+            case UInt8(ascii: " ") where !inQuotes:
+                continue
+
             default:
-                if !pendingQuote {
-                    throw SyntaxError.invalidRule(message: "Invalid scriptlet arguments string")
+                if inQuotes {
+                    current.append(byte)
+                } else {
+                    throw SyntaxError.invalidRule(message: "Invalid arguments string")
                 }
             }
+        }
+
+        if inQuotes {
+            throw SyntaxError.invalidRule(message: "Unmatched quotes in scriptlet arguments")
+        }
+
+        if !current.isEmpty {
+            throw SyntaxError.invalidRule(message: "Invalid arguments string")
         }
 
         return result
