@@ -132,6 +132,27 @@ main().catch((error) => {
 });
 ```
 
+Make sure, that the content script is configured to run on all pages including
+iframes. Below is an example of how the content script should be registered in
+`manifest.json`.
+
+```json
+    "content_scripts": [
+        {
+            "js": [
+                "content.js"
+            ],
+            "matches": [
+                "<all_urls>"
+            ],
+            "run_at": "document_start",
+            "all_frames": true,
+            "match_about_blank": true,
+            "match_origin_as_fallback": true
+        }
+    ]
+```
+
 On the background page you should listen for incoming messages and pass them
 to the native host. In addition to that we strongly recommend having a local
 cache on the background page to speed up lookups.
@@ -147,8 +168,14 @@ browser.runtime.onMessage.addListener(async (request: unknown, sender: unknown) 
     if (message.type === 'lookup') {
         // Extract the URL from the sender data.
         const senderData = sender as { url: string, frameId: number, tab: { url: string } };
-        const { url } = senderData;
         const topUrl = senderData.frameId === 0 ? null : senderData.tab.url;
+        let { url } = senderData;
+
+        if (!url.startsWith('http') && topUrl) {
+            // Handle the case of non-HTTP iframes, i.e. frames created by JS.
+            // For instance, frames can be created as 'about:blank' or 'data:text/html'
+            url = topUrl;
+        }
 
         const lookupMessage = {
             type: 'lookup',
@@ -172,7 +199,7 @@ browser.runtime.onMessage.addListener(async (request: unknown, sender: unknown) 
 ### Extension native host
 
 Finally, in the native host code, you should handle the message and use
-WebExtension to look up the configuration.
+`WebExtension` to look up the configuration.
 
 **IMPORTANT:** You need to replace `your.group.id` with your own group ID.
 
@@ -210,10 +237,7 @@ public class SafariWebExtensionHandler: NSObject, NSExtensionRequestHandling {
                     return
                 }
 
-                var topUrl: URL?
-                if let topUrlString = topUrlString {
-                    topUrl = URL(string: topUrlString)
-                }
+                let topUrl = URL(string: topUrlString ?? "")
 
                 let webExtension = try WebExtension.shared(
                     groupID: "your.group.id"
@@ -254,6 +278,7 @@ public class SafariWebExtensionHandler: NSObject, NSExtensionRequestHandling {
         }
 
         payload["scriptlets"] = scriptlets
+        payload["engineTimestamp"] = configuration.engineTimestamp
 
         return payload
     }
