@@ -19,26 +19,29 @@ extension ContentBlockerConverterTests {
         // March 2025:
         // 345.95 Mc  69.7%: ContentBlockerConverter.convertArray
         //
-        // July 10 2025:
+        // July 10, 2025:
         // 353.84 Mc  69.5%: ContentBlockerConverter.convertArray
+        //
+        // July 17, 2025:
+        // 346.76 Mc  69.5%: ContentBlockerConverter.convertArray
         let conversionResult = ContentBlockerConverter().convertArray(
             rules: rules,
             advancedBlocking: true
         )
 
-        XCTAssertEqual(conversionResult.sourceRulesCount, 32644)
-        XCTAssertEqual(conversionResult.safariRulesCount, 20005)
-        XCTAssertEqual(conversionResult.sourceSafariCompatibleRulesCount, 28604)
+        XCTAssertEqual(conversionResult.sourceRulesCount, 32645)
+        XCTAssertEqual(conversionResult.safariRulesCount, 20006)
+        XCTAssertEqual(conversionResult.sourceSafariCompatibleRulesCount, 28605)
         XCTAssertEqual(conversionResult.advancedRulesCount, 7299)
-        XCTAssertEqual(conversionResult.errorsCount, 103)
+        XCTAssertEqual(conversionResult.errorsCount, 102)
         XCTAssertEqual(conversionResult.discardedSafariRules, 0)
     }
 
-    /// Baseline results (July 10, 2025):
+    /// Baseline results (July 17, 2025):
     /// - Machine: MacBook Pro M1 Max, 32GB RAM
     /// - OS: macOS 15.1
     /// - Swift: 6.0
-    /// - Average execution time: ~1.369 seconds
+    /// - Average execution time: ~1.212 sec
     ///
     /// To get your machine info: `system_profiler SPHardwareDataType`
     /// To get your macOS version: `sw_vers`
@@ -57,11 +60,11 @@ extension ContentBlockerConverterTests {
                 advancedBlocking: true
             )
 
-            XCTAssertEqual(conversionResult.sourceRulesCount, 32644)
-            XCTAssertEqual(conversionResult.safariRulesCount, 20005)
-            XCTAssertEqual(conversionResult.sourceSafariCompatibleRulesCount, 28604)
+            XCTAssertEqual(conversionResult.sourceRulesCount, 32645)
+            XCTAssertEqual(conversionResult.safariRulesCount, 20006)
+            XCTAssertEqual(conversionResult.sourceSafariCompatibleRulesCount, 28605)
             XCTAssertEqual(conversionResult.advancedRulesCount, 7299)
-            XCTAssertEqual(conversionResult.errorsCount, 103)
+            XCTAssertEqual(conversionResult.errorsCount, 102)
             XCTAssertEqual(conversionResult.discardedSafariRules, 0)
         }
     }

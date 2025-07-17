@@ -76,7 +76,7 @@ public enum ScriptletParser {
                     if let str = String(bytes: current, encoding: .utf8) {
                         result.append(str)
                     }
-                    current.removeAll()
+                    current = []
                 } else {
                     current.append(byte)
                 }

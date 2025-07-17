@@ -227,6 +227,15 @@ final class NetworkRuleTests: XCTestCase {
                 expectedRestrictedDomains: ["sub.example.org"]
             ),
             TestCase(
+                // Test $domain for TLD.
+                ruleText: "||example.org^$domain=jp|~co",
+                expectedUrlRuleText: "||example.org^",
+                expectedUrlRegExpSource:
+                    "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedPermittedDomains: ["jp"],
+                expectedRestrictedDomains: ["co"]
+            ),
+            TestCase(
                 // Test $from alias.
                 ruleText: "||example.org^$from=example.org",
                 expectedUrlRuleText: "||example.org^",
