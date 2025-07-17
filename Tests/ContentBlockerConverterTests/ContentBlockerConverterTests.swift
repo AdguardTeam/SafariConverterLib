@@ -1216,7 +1216,45 @@ final class ContentBlockerConverterTests: XCTestCase {
                 expectedSourceRulesCount: 4,
                 expectedSourceSafariCompatibleRulesCount: 4,
                 expectedSafariRulesCount: 4
-            )
+            ),
+            TestCase(
+                // $elemhide rule that targets TLD.
+                rules: [
+                    "jp##.specific",
+                    "~co##.generic",
+                ],
+                expectedSafariRulesJSON: #"""
+                    [
+                      {
+                        "action" : {
+                          "selector" : ".generic",
+                          "type" : "css-display-none"
+                        },
+                        "trigger" : {
+                          "unless-domain" : [
+                            "*co"
+                          ],
+                          "url-filter" : ".*"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "selector" : ".specific",
+                          "type" : "css-display-none"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*jp"
+                          ],
+                          "url-filter" : ".*"
+                        }
+                      }
+                    ]
+                    """#,
+                expectedSourceRulesCount: 2,
+                expectedSourceSafariCompatibleRulesCount: 2,
+                expectedSafariRulesCount: 2
+            ),
         ]
 
         runTests(testCases)

@@ -40,6 +40,20 @@ final class CosmeticRuleTests: XCTestCase {
                 expectedPermittedDomains: ["xn--80a1acny.xn--p1ai"]
             ),
             TestCase(
+                // TLD domain.
+                ruleText: "jp##.banner",
+                expectedContent: ".banner",
+                expectedIsElemhide: true,
+                expectedPermittedDomains: ["jp"]
+            ),
+            TestCase(
+                // Several domains.
+                ruleText: "jp,com##.banner",
+                expectedContent: ".banner",
+                expectedIsElemhide: true,
+                expectedPermittedDomains: ["jp", "com"]
+            ),
+            TestCase(
                 // Whitelist cosmetic rule.
                 ruleText: "example.org#@#.banner",
                 expectedContent: ".banner",
@@ -260,6 +274,14 @@ final class CosmeticRuleTests: XCTestCase {
             XCTAssertEqual(result.permittedDomains, testCase.expectedPermittedDomains, msg)
             XCTAssertEqual(result.restrictedDomains, testCase.expectedRestrictedDomains, msg)
         }
+    }
+
+    func testInvalidCSSRules() {
+        XCTAssertThrowsError(try CosmeticRule(ruleText: "a##.banner"))
+        XCTAssertThrowsError(try CosmeticRule(ruleText: "jp,##.banner"))
+        XCTAssertThrowsError(try CosmeticRule(ruleText: "jp,b##.banner"))
+        XCTAssertThrowsError(try CosmeticRule(ruleText: "jp,~b##.banner"))
+        XCTAssertThrowsError(try CosmeticRule(ruleText: "com,/example/##.banner"))
     }
 
     func testForbiddenCSSRules() {

@@ -15,71 +15,93 @@ public class Rule {
         self.ruleText = ruleText
     }
 
-    /// Parses the list of domains separated by the separator character and populates
-    /// permittedDomains and restrictedDomains collections.
-    ///
-    /// Note, that it does not clear its state and can be called multiple times.
+    /// Parses domainsStr and populates `permittedDomains` and `restrictedDomains` arrays with
+    /// the lists of domains parsed out.
     ///
     /// - Parameters:
-    ///   - domainsStr: a string with domains to be parsed.
-    ///   - separator: a separator for the list of domains.
-    /// - Throws: SyntaxError if encountered an invalid domain.
+    ///   - domainsStr: String with the list of domains separated by `separator`. If the domain name
+    ///           starts with `~` it will be added to `restrictedDomains`,
+    ///           otherwise to `permittedDomains`.
+    ///   - separator: Separator character for the domains list.
+    ///
+    /// - Throws: `SyntaxError` if the list is invalid.
     func addDomains(domainsStr: String, separator: UInt8) throws {
-        let utfString = domainsStr.utf8
-
-        let maxIndex = utfString.count - 1
-        var previousSeparator = 0
+        let utf8 = domainsStr.utf8
+        var currentIndex = utf8.startIndex
+        var domainStartIndex = currentIndex
         var nonASCIIFound = false
+        var restricted = false
 
-        for i in 0...maxIndex {
-            // swiftlint:disable:next force_unwrapping
-            let char = utfString[safeIndex: i]!
+        /// Creates domain string from `current` buffer and adds it to the corresponding list.
+        ///
+        /// - Throws: `SyntaxError` if domain is invalid.
+        @inline(__always)
+        func addDomain() throws {
+            if domainStartIndex == currentIndex {
+                throw SyntaxError.invalidModifier(
+                    message: "Empty domain"
+                )
+            }
 
-            if char == separator || i == maxIndex {
-                if i - previousSeparator <= 2 {
-                    throw SyntaxError.invalidModifier(
-                        message: "Empty or too short domain specified"
-                    )
-                }
+            var domain = String(domainsStr[domainStartIndex..<currentIndex])
 
-                var restricted = false
-                if let firstDomainChar = utfString[safeIndex: previousSeparator],
-                    firstDomainChar == Chars.TILDE
-                {
-                    restricted = true
-                    previousSeparator += 1
-                }
+            if domain.utf8.count < 2 {
+                throw SyntaxError.invalidModifier(
+                    message: "Domain is too short: \(domain)"
+                )
+            }
 
-                let separatorIndex = i == maxIndex ? maxIndex + 1 : i
-                let utfStartIdx = utfString.index(utfString.startIndex, offsetBy: previousSeparator)
-                let utfEndIdx = utfString.index(utfString.startIndex, offsetBy: separatorIndex)
+            if nonASCIIFound, let encodedDomain = domain.idnaEncoded {
+                domain = encodedDomain
+            }
 
-                var domain = String(domainsStr[utfStartIdx..<utfEndIdx])
-                if nonASCIIFound, let encodedDomain = domain.idnaEncoded {
-                    domain = encodedDomain
-                }
+            if domain.utf8.first == Chars.SLASH && domain.utf8.last == Chars.SLASH {
+                // https://github.com/AdguardTeam/SafariConverterLib/issues/53
+                throw SyntaxError.invalidModifier(
+                    message: "Using regular expression for domain modifier is not supported"
+                )
+            }
 
-                if domain.utf8.first == Chars.SLASH && domain.utf8.last == Chars.SLASH {
-                    // https://github.com/AdguardTeam/SafariConverterLib/issues/53
-                    throw SyntaxError.invalidModifier(
-                        message: "Using regular expression for domain modifier is not supported"
-                    )
-                }
-
-                if restricted {
-                    restrictedDomains.append(domain)
-                } else {
-                    permittedDomains.append(domain)
-                }
-
-                previousSeparator = i + 1
-                nonASCIIFound = false
+            if restricted {
+                restrictedDomains.append(domain)
             } else {
+                permittedDomains.append(domain)
+            }
+        }
+
+        while currentIndex < utf8.endIndex {
+            let char = utf8[currentIndex]
+
+            switch char {
+            case separator:
+                try addDomain()
+
+                // Reset
+                domainStartIndex = utf8.index(after: currentIndex)
+                nonASCIIFound = false
+                restricted = false
+            case UInt8(ascii: "~"):
+                // Validate that the previous character was separator
+                if domainStartIndex != currentIndex {
+                    throw SyntaxError.invalidModifier(
+                        message: "Unexpected tilda character"
+                    )
+                }
+                restricted = true
+
+                // Shift domain start index +1 char.
+                domainStartIndex = utf8.index(after: currentIndex)
+            default:
                 if char > 127 {
                     // Record that a non-ASCII character was found in the domain name.
                     nonASCIIFound = true
                 }
             }
+
+            currentIndex = utf8.index(after: currentIndex)
         }
+
+        // Add the last domain
+        try addDomain()
     }
 }
