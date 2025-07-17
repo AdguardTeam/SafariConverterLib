@@ -193,6 +193,49 @@ final class ContentBlockerConverterTests: XCTestCase {
         runTests(testCases)
     }
 
+    func testConvertArrayDomainTargetRules() {
+        let testCases: [TestCase] = [
+            TestCase(
+                rules: [
+                    "@@http://adwords.google.$document,domain=google.com",
+                    "google.com##body",
+                ],
+                expectedSafariRulesJSON: #"""
+                    [
+                      {
+                        "action" : {
+                          "selector" : "body",
+                          "type" : "css-display-none"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*google.com"
+                          ],
+                          "url-filter" : ".*"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "type" : "ignore-previous-rules"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*google.com"
+                          ],
+                          "url-filter" : "http:\\\/\\\/adwords\\.google\\."
+                        }
+                      }
+                    ]
+                    """#,
+                expectedSourceRulesCount: 2,
+                expectedSourceSafariCompatibleRulesCount: 2,
+                expectedSafariRulesCount: 2
+            )
+        ]
+
+        runTests(testCases)
+    }
+
     func testConvertArrayDocumentRules() {
         let testCases: [TestCase] = [
             TestCase(

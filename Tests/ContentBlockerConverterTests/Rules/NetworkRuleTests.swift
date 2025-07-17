@@ -47,6 +47,14 @@ final class NetworkRuleTests: XCTestCase {
                 expectedWhiteList: true
             ),
             TestCase(
+                // Whitelist rule with $domain.
+                ruleText: "@@http://adwords.google.$domain=google.com",
+                expectedUrlRuleText: "http://adwords.google.",
+                expectedUrlRegExpSource: "http:\\/\\/adwords\\.google\\.",
+                expectedWhiteList: true,
+                expectedPermittedDomains: ["google.com"]
+            ),
+            TestCase(
                 // $match-case rule.
                 ruleText: "||example.org^$match-case",
                 expectedUrlRuleText: "||example.org^",
@@ -448,6 +456,7 @@ final class NetworkRuleTests: XCTestCase {
                 ("@@", "", false),
                 ("@@^", "", false),
                 ("@@/", "", false),
+                ("adwords.google.", "", false),
                 ("example", "example", false),
                 ("test.com/path^", "test.com", true),
                 ("example.com", "example.com", false),

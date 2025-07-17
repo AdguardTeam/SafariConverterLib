@@ -132,9 +132,16 @@ public enum NetworkRuleParser {
         }
 
         var endIndex = utf8.endIndex
+
+        var char: UInt8 = 0
         var i = startIndex
         while i < endIndex {
-            let char = utf8[i]
+            char = utf8[i]
+
+            if char == Chars.CARET || char == Chars.SLASH || char == Chars.DOLLAR {
+                endIndex = i
+                break
+            }
 
             let isLetter = char >= UInt8(ascii: "a") && char <= UInt8(ascii: "z")
             let isDigit = char >= UInt8(ascii: "0") && char <= UInt8(ascii: "9")
@@ -153,11 +160,6 @@ public enum NetworkRuleParser {
                 }
             }
 
-            if char == Chars.CARET || char == Chars.SLASH || char == Chars.DOLLAR {
-                endIndex = i
-                break
-            }
-
             if !isLetter && !isDigit && !nonASCII && char != UInt8(ascii: "-")
                 && char != UInt8(ascii: ".")
             {
@@ -169,6 +171,11 @@ public enum NetworkRuleParser {
         }
 
         if startIndex == endIndex {
+            return ("", false)
+        }
+
+        // If ends not with letter this is not a domain name
+        if char == UInt8(ascii: ".") {
             return ("", false)
         }
 
