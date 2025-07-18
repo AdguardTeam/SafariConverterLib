@@ -26,7 +26,7 @@ public enum SimpleRegex {
     /// - Parameters:
     ///   - pattern: network rule pattern to convert.
     /// - Returns: regular expression corresponding to that pattern.
-    /// - Throws: SyntaxError if the pattern contains non-ASCII characters.
+    /// - Throws: `SyntaxError` if the pattern contains non-ASCII characters.
     public static func createRegexText(pattern: String) throws -> String {
         if pattern.isEmpty || pattern == "||" || pattern == "|" || pattern == "*" {
             return regexAnySymbol

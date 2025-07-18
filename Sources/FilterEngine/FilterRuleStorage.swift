@@ -204,7 +204,7 @@ public class FilterRuleStorage {
 
         // 3) Parse lines all at once and filter out exceptions
         var rawRules = RuleFactory.createRules(lines: lines, for: version)
-        rawRules = RuleFactory.filterOutExceptions(from: rawRules)
+        rawRules = RuleFactory.filterOutExceptions(from: rawRules, version: version)
 
         // 4) Convert each raw rule to a FilterRule and write it
         var writtenCount: UInt32 = 0

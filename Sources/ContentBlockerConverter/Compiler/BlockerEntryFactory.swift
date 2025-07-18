@@ -49,17 +49,28 @@ class BlockerEntryFactory {
         self.version = version
     }
 
-    /// Converts an AdGuard rule into a Safari content blocking rule.
+    /// Converts an AdGuard rule into one or several Safari content blocking rules.
     ///
     /// - Parameters:
-    ///   - rule: AdGuard rule (either `NetworkRule` or `CosmeticRule`).
-    /// - Returns: `BlockerEntry` or `nil` if the rule cannot be converted.
-    func createBlockerEntry(rule: Rule) -> BlockerEntry? {
+    ///   - rule: Source AdGuard rule (either `NetworkRule` or `CosmeticRule`).
+    /// - Returns: Array of Safari content blocker rules or `nil` if it fails to convert the source rule.
+    func createBlockerEntries(rule: Rule) -> [BlockerEntry]? {
         do {
             if let rule = rule as? NetworkRule {
-                return try convertNetworkRule(rule: rule)
-            } else if let rule = rule as? CosmeticRule {
-                return try convertCosmeticRule(rule: rule)
+                let entry = try convertNetworkRule(rule: rule)
+
+                return [entry]
+            }
+
+            if let rule = rule as? CosmeticRule {
+                if !rule.permittedDomains.isEmpty && !rule.restrictedDomains.isEmpty {
+                    // The rule has mixed permitted/restricted domains,
+                    // it requires special handling.
+                    return try convertCosmeticRuleMixedDomains(rule: rule)
+                }
+
+                let entry = try convertCosmeticRule(rule: rule)
+                return [entry]
             }
         } catch {
             self.errorsCounter.add()
@@ -72,7 +83,12 @@ class BlockerEntryFactory {
     }
 
     /// Converts a network rule into a Safari content blocking rule.
-    private func convertNetworkRule(rule: NetworkRule) throws -> BlockerEntry? {
+    ///
+    /// - Parameters:
+    ///   - rule: Network rule to convert.
+    /// - Returns: Safari content blocker entry.
+    /// - Throws: `ConversionError` if the rule cannot be converted.
+    private func convertNetworkRule(rule: NetworkRule) throws -> BlockerEntry {
         let urlFilter = try createUrlFilterString(rule: rule)
 
         var trigger = BlockerEntry.Trigger(urlFilter: urlFilter)
@@ -91,11 +107,12 @@ class BlockerEntryFactory {
         return result
     }
 
-    /// Creates a blocker entry object from the source cosmetic rule.
+    /// Validates if the cosmetic rule can be converted into a content blocker rule.
     ///
-    /// In the case the rule selector contains extended css or rule is an inject-style rule,
-    /// the result entry could be used in advanced blocking json only.
-    private func convertCosmeticRule(rule: CosmeticRule) throws -> BlockerEntry? {
+    /// - Parameters:
+    ///   - rule: Cosmetic rule to check.
+    /// - Throws: `ConversionError` if the cosmetic rule cannot be converted.
+    private func validateCosmeticRule(rule: CosmeticRule) throws {
         if rule.isScript || rule.isScriptlet || rule.isInjectCss || rule.isExtendedCss {
             throw ConversionError.unsupportedRule(
                 message: "Cannot convert advanced rule: \(rule.ruleText)"
@@ -107,6 +124,20 @@ class BlockerEntryFactory {
                 message: "Cannot convert cosmetic exception: \(rule.ruleText)"
             )
         }
+    }
+
+    /// Creates a `css-display-none` blocker entry object from the source cosmetic rule.
+    ///
+    /// Note, that this function does not support the following cosmetic rules:
+    /// - Extended CSS rules and CSS injection rules (must be handled by advanced blocking, i.e. web extension)
+    /// - Rules with mixed permitted/restricted domains.
+    ///
+    /// - Parameters:
+    ///   - rule: Cosmetic rule to convert.
+    /// - Returns: Content blocker entry.
+    /// - Throws: `ConversionError` if the rule cannot be converted.
+    private func convertCosmeticRule(rule: CosmeticRule) throws -> BlockerEntry {
+        try validateCosmeticRule(rule: rule)
 
         let urlFilter = try createUrlFilterStringForCosmetic(rule: rule)
         var trigger = BlockerEntry.Trigger(urlFilter: urlFilter)
@@ -119,7 +150,77 @@ class BlockerEntryFactory {
         return result
     }
 
-    /// Builds the "url-filter" property of a Safari content blocking rule from a cosmetic rule.
+    /// Creates several `css-display-none` entries for a cosmetic rule that has
+    /// mixed permitted/restricted domains, i.e. `example.org,~sub.example.org##.banner`.
+    ///
+    /// ### Example
+    ///
+    /// The rule below has mixed permitted/restricted domains:
+    /// `example.org,example.com,~sub.example.org,~sub.example.com##.banner`
+    ///
+    /// It will be converted to two different `css-display-rules`:
+    ///
+    /// ```
+    /// "trigger": {
+    ///   "url-filter": "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\/:&\?].*)?",
+    ///   "unless-domain": [ "*sub.example.org*", "*sub.example.com*" ]
+    /// }
+    /// ...
+    /// "trigger": {
+    ///   "url-filter": "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.com([\/:&\?].*)?",
+    ///   "unless-domain": [ "*sub.example.org*", "*sub.example.com*" ]
+    /// }
+    /// ```
+    ///
+    /// ### Limitations
+    ///
+    /// - This conversion cannot be supported for cosmetic rules with `$path` or `$url` modifiers.
+    /// - Limited to Safari 16.4 or newer.
+    ///
+    /// - Parameters:
+    ///   - rule: Cosmetic rule to convert
+    /// - Returns: Array of content blocker rules
+    /// - Throws: `ConversionError` if it fails to convert for some reason.
+    private func convertCosmeticRuleMixedDomains(rule: CosmeticRule) throws -> [BlockerEntry] {
+        // Just in case, we limit this functionality to Safari 16.4 or newer.
+        if !self.version.isSafari16_4orGreater() {
+            throw ConversionError.invalidDomains(
+                message: "Mixed permitted/restricted domains aren't supported"
+            )
+        }
+
+        if rule.pathModifier != nil {
+            throw ConversionError.invalidDomains(
+                message: "Mixing permitted/restricted domains with $path is not supported"
+            )
+        }
+
+        try validateCosmeticRule(rule: rule)
+
+        var entries: [BlockerEntry] = []
+
+        for domain in rule.permittedDomains {
+            let urlFilter = try SimpleRegex.createRegexText(pattern: "||\(domain)^")
+
+            var trigger = BlockerEntry.Trigger(urlFilter: urlFilter)
+            var restricted = resolveDomains(domains: rule.restrictedDomains)
+            trigger.unlessDomain = restricted
+
+            let action = BlockerEntry.Action(type: "css-display-none", selector: rule.content)
+            let result = BlockerEntry(trigger: trigger, action: action)
+
+            entries.append(result)
+        }
+
+        return entries
+    }
+
+    /// Builds the `url-filter` property of a Safari content blocking rule from a cosmetic rule.
+    ///
+    /// - Parameters:
+    ///   - rule: Cosmetic rule for which we're creating `url-filter`.
+    /// - Returns: Regular expression for `url-filter`.
+    /// - Throws: Throws `ConversionError` for unsupported regular expressions.
     private func createUrlFilterStringForCosmetic(rule: CosmeticRule) throws -> String {
         if rule.pathRegExpSource == nil || rule.pathModifier == nil {
             return BlockerEntryFactory.URL_FILTER_COSMETIC_RULES
@@ -157,9 +258,12 @@ class BlockerEntryFactory {
         return BlockerEntryFactory.URL_FILTER_COSMETIC_RULES + pathRegex
     }
 
-    /// Builds the "url-filter" property of a Safari content blocking rule.
+    /// Builds the `url-filter` property of a Safari content blocking rule.
     ///
-    /// "url-filter" supports a limited set of regular expressions syntax.
+    /// - Parameters:
+    ///   - rule: Network rule for which we're creating `url-filter`.
+    /// - Returns: Regular expression for `url-filter`.
+    /// - Throws: Throws `ConversionError` for unsupported regular expressions.
     private func createUrlFilterString(rule: NetworkRule) throws -> String {
         let isWebSocket = rule.isWebSocket
 
@@ -393,11 +497,11 @@ class BlockerEntryFactory {
     }
 
     /// Applies additional post-processing to document-level whitelist rules
-    /// ($document, $elemhide, $jsinject, $urlblock).
+    /// (`$document`, `$elemhide`, `$jsinject`, `$urlblock`).
     ///
     /// The idea is that when such a rule targets a single domain, i.e. looks
-    /// like "@@||example.org^$elemhide", it would be much better from the
-    /// performance point of view to use "if-domain" instead of "url-filter".
+    /// like `@@||example.org^$elemhide`, it would be much better from the
+    /// performance point of view to use `if-domain` instead of `url-filter`.
     ///
     /// So instead of:
     ///
@@ -451,14 +555,14 @@ class BlockerEntryFactory {
         }
     }
 
-    /// Resolve domains prepares a list of domains to be used in the "if-domain" and "unless-domain"
+    /// Resolve domains prepares a list of domains to be used in the `if-domain` and `unless-domain`
     /// Safari rule properties.
     ///
     /// This includes several things.
     ///
     /// - First of all, we apply special handling for `domain.*` values. Since we cannot fully support it yet,
     ///     we replace `.*` with a list of the most popular TLD domains.
-    /// - In the case of AdGuard, $domain modifier includes all subdomains. For Safari these rules should be
+    /// - In the case of AdGuard, `$domain` modifier includes all subdomains. For Safari these rules should be
     ///     transformed to `*domain.com` to signal that subdomains are included.
     private func resolveDomains(domains: [String]) -> [String] {
         var result: [String] = []

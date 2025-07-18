@@ -58,7 +58,10 @@ public class CosmeticRule: Rule {
     /// If true, this is a scriptlet rule.
     public var isScriptlet = false
 
+    /// Value of the `$path` modifier.
     public var pathModifier: String?
+
+    /// `$path` value converted to regular expression.
     public var pathRegExpSource: String?
 
     /// Initializes a cosmetic rule by parsing its properties from the rule text.
@@ -133,6 +136,7 @@ public class CosmeticRule: Rule {
 
         isWhiteList = CosmeticRule.isWhiteList(marker: marker)
         isExtendedCss = CosmeticRule.isExtCssMarker(marker: marker)
+
         if !isExtendedCss
             && CosmeticRule.hasExtCSSIndicators(content: self.content, version: version)
         {
@@ -142,6 +146,12 @@ public class CosmeticRule: Rule {
 
         if isInjectCss && content.range(of: "url(") != nil {
             throw SyntaxError.invalidRule(message: "Forbidden style in a CSS rule")
+        }
+
+        if isWhiteList && pathModifier != nil {
+            throw SyntaxError.invalidRule(
+                message: "CSS exception rules with $path modifier are not supported"
+            )
         }
     }
 

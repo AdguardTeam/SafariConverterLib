@@ -18,11 +18,14 @@ final class BlockerEntryEncoderTests: XCTestCase {
         )
         let rule = try NetworkRule(ruleText: "||example.com/path$domain=test.com")
 
-        let entry = converter.createBlockerEntry(rule: rule)
-        let (result, _) = encoder.encode(entries: [entry!])
-        XCTAssertEqual(
-            result,
-            "[{\"trigger\":{\"url-filter\":\"^[htpsw]+:\\\\/\\\\/([a-z0-9-]+\\\\.)?example\\\\.com\\\\/path\",\"if-domain\":[\"*test.com\"]},\"action\":{\"type\":\"block\"}}]"
-        )
+        let entries = converter.createBlockerEntries(rule: rule)
+
+        if let entries = entries {
+            let (result, _) = encoder.encode(entries: entries)
+            XCTAssertEqual(
+                result,
+                "[{\"trigger\":{\"url-filter\":\"^[htpsw]+:\\\\/\\\\/([a-z0-9-]+\\\\.)?example\\\\.com\\\\/path\",\"if-domain\":[\"*test.com\"]},\"action\":{\"type\":\"block\"}}]"
+            )
+        }
     }
 }

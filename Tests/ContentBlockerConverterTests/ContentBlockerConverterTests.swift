@@ -2465,6 +2465,111 @@ final class ContentBlockerConverterTests: XCTestCase {
         runTests(testCases)
     }
 
+    func testConvertArrayCosmeticRulesWithMixedDomains() {
+        let testCases: [TestCase] = [
+            // Not supported in old Safari versions.
+            TestCase(
+                rules: [
+                    "example.org,example.com,~sub.example.org##.banner"
+                ],
+                expectedSafariRulesJSON: ConversionResult.EMPTY_RESULT_JSON,
+                expectedSourceRulesCount: 1,
+                expectedSourceSafariCompatibleRulesCount: 1,
+                expectedErrorsCount: 1,
+            ),
+            // Completely negated CSS rule.
+            TestCase(
+                rules: [
+                    "example.org##.banner",
+                    "example.org#@#.banner",
+                ],
+                expectedSafariRulesJSON: ConversionResult.EMPTY_RESULT_JSON,
+                expectedSourceRulesCount: 2,
+                expectedSourceSafariCompatibleRulesCount: 2,
+                expectedErrorsCount: 0,
+            ),
+            // A rule with mixed permitted / restricted domains is supported in newer Safari.
+            TestCase(
+                rules: [
+                    "example.org,example.com,~sub.example.org##.banner"
+                ],
+                version: SafariVersion.safari16_4,
+                expectedSafariRulesJSON: #"""
+                    [
+                      {
+                        "action" : {
+                          "selector" : ".banner",
+                          "type" : "css-display-none"
+                        },
+                        "trigger" : {
+                          "unless-domain" : [
+                            "*sub.example.org"
+                          ],
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "selector" : ".banner",
+                          "type" : "css-display-none"
+                        },
+                        "trigger" : {
+                          "unless-domain" : [
+                            "*sub.example.org"
+                          ],
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.com([\\\/:&\\?].*)?$"
+                        }
+                      }
+                    ]
+                    """#,
+                expectedSourceRulesCount: 1,
+                expectedSourceSafariCompatibleRulesCount: 1,
+                expectedSafariRulesCount: 2
+            ),
+            // CSS exception is supported for mixed domains.
+            TestCase(
+                rules: [
+                    "example.org,example.com##.banner",
+                    "sub.example.org#@#.banner",
+                ],
+                version: SafariVersion.safari16_4,
+                expectedSafariRulesJSON: #"""
+                    [
+                      {
+                        "action" : {
+                          "selector" : ".banner",
+                          "type" : "css-display-none"
+                        },
+                        "trigger" : {
+                          "unless-domain" : [
+                            "*sub.example.org"
+                          ],
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "selector" : ".banner",
+                          "type" : "css-display-none"
+                        },
+                        "trigger" : {
+                          "unless-domain" : [
+                            "*sub.example.org"
+                          ],
+                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.com([\\\/:&\\?].*)?$"
+                        }
+                      }
+                    ]
+                    """#,
+                expectedSourceRulesCount: 2,
+                expectedSourceSafariCompatibleRulesCount: 2,
+                expectedSafariRulesCount: 2
+            ),
+        ]
+
+        runTests(testCases)
+    }
+
     func testConvertArrayCosmeticRulesWithPathModifier() {
         let testCases: [TestCase] = [
             TestCase(

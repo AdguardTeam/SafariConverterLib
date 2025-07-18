@@ -11,9 +11,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed the issue with rules for TLD: [#99]
 - Incorrectly extracting target domain name from document-level exceptions: [#74]
+- Added support for mixing permitted/restricted domains in cosmetic rules: [#66]
+
+  Here are some examples of the rules that can now be used in AdGuard:
+
+  ```adblock
+  ! Before the change these rules were discarded
+  example.org,~sub.example.org##.banner
+
+  ! Before the change the exception rule was ignored
+  example.org##.banner
+  sub.example.org#@#.banner
+  ```
 
 [#99]: https://github.com/AdguardTeam/SafariConverterLib/issues/99
 [#74]: https://github.com/AdguardTeam/SafariConverterLib/issues/74
+[#66]: https://github.com/AdguardTeam/SafariConverterLib/issues/66
 
 [unreleased]: https://github.com/AdguardTeam/SafariConverterLib/compare/v3.1.0...HEAD
 

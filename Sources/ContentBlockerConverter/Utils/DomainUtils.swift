@@ -6,6 +6,14 @@ public enum DomainUtils {
     /// UTF-8 representation, ensuring minimal overhead by avoiding unnecessary allocations
     /// or bridging.
     ///
+    /// ### Examples
+    ///
+    /// ```
+    /// DomainUtils.isDomainOrSubdomain(candidate: "google.com", domain: "google.com") == true
+    /// DomainUtils.isDomainOrSubdomain(candidate: "mail.google.com", domain: "google.com") == true
+    /// DomainUtils.isDomainOrSubdomain(candidate: "google.com", domain: "mail.google.com") == false
+    /// ```
+    ///
     /// - Parameters:
     ///   - candidate: The domain string being tested.
     ///   - domain: The reference domain.

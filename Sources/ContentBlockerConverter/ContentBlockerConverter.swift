@@ -48,7 +48,7 @@ public class ContentBlockerConverter {
         let safariCompatibleRulesCount = simpleRules.count
 
         // Filter out exceptions from simple rules first.
-        simpleRules = RuleFactory.filterOutExceptions(from: simpleRules)
+        simpleRules = RuleFactory.filterOutExceptions(from: simpleRules, version: safariVersion)
 
         guard shouldContinue else {
             Logger.log("(ContentBlockerConverter) - Cancelled before compiling into Safari JSON")

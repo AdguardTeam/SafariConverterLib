@@ -116,6 +116,7 @@ final class RuleFactoryTests: XCTestCase {
             let rules: [String]
             let expectedRules: [ExpectedRule]
             let expectedErrorsCount: Int
+            var version: SafariVersion = DEFAULT_SAFARI_VERSION
         }
 
         let testCases: [TestCase] = [
@@ -173,13 +174,43 @@ final class RuleFactoryTests: XCTestCase {
                 expectedErrorsCount: 0
             ),
             TestCase(
-                name: "negate subdomain",
+                name: "negate domain",
                 rules: [
                     "sub.example.org##.banner",
                     "example.org#@#.banner",
                 ],
                 expectedRules: [],
                 expectedErrorsCount: 0
+            ),
+            TestCase(
+                name: "negate subdomain (not supported in old Safari)",
+                rules: [
+                    "example.org##.banner",
+                    "sub.example.org#@#.banner",
+                ],
+                expectedRules: [
+                    ExpectedRule(
+                        cosmeticContent: ".banner",
+                        permittedDomains: ["example.org"]
+                    )
+                ],
+                expectedErrorsCount: 0
+            ),
+            TestCase(
+                name: "negate subdomain",
+                rules: [
+                    "example.org##.banner",
+                    "sub.example.org#@#.banner",
+                ],
+                expectedRules: [
+                    ExpectedRule(
+                        cosmeticContent: ".banner",
+                        permittedDomains: ["example.org"],
+                        restrictedDomains: ["sub.example.org"]
+                    )
+                ],
+                expectedErrorsCount: 0,
+                version: SafariVersion.safari16_4
             ),
             TestCase(
                 name: "negate and not invalidate",
@@ -202,12 +233,13 @@ final class RuleFactoryTests: XCTestCase {
 
             var rules = RuleFactory.createRules(
                 lines: testCase.rules,
-                for: SafariVersion.safari16_4,
+                for: testCase.version,
                 errorsCounter: errorsCounter
             )
 
+            // TODO: Add tests for different Safari versions
             // Filter out CSS exceptions and $badfilter.
-            rules = RuleFactory.filterOutExceptions(from: rules)
+            rules = RuleFactory.filterOutExceptions(from: rules, version: testCase.version)
 
             XCTAssertEqual(testCase.expectedErrorsCount, errorsCounter.getCount())
             XCTAssertEqual(testCase.expectedRules.count, rules.count, testCase.name)
