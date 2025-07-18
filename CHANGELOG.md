@@ -10,8 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fixed the issue with rules for TLD: [#99]
+- Incorrectly extracting target domain name from document-level exceptions: [#74]
 
 [#99]: https://github.com/AdguardTeam/SafariConverterLib/issues/99
+[#74]: https://github.com/AdguardTeam/SafariConverterLib/issues/74
 
 [unreleased]: https://github.com/AdguardTeam/SafariConverterLib/compare/v3.1.0...HEAD
 
