@@ -163,12 +163,12 @@ class BlockerEntryFactory {
     /// ```
     /// "trigger": {
     ///   "url-filter": "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\/:&\?].*)?",
-    ///   "unless-domain": [ "*sub.example.org*", "*sub.example.com*" ]
+    ///   "unless-domain": [ "*sub.example.org*" ]
     /// }
     /// ...
     /// "trigger": {
     ///   "url-filter": "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.com([\/:&\?].*)?",
-    ///   "unless-domain": [ "*sub.example.org*", "*sub.example.com*" ]
+    ///   "unless-domain": [ "*sub.example.com*" ]
     /// }
     /// ```
     ///
@@ -180,7 +180,7 @@ class BlockerEntryFactory {
     /// - Parameters:
     ///   - rule: Cosmetic rule to convert
     /// - Returns: Array of content blocker rules
-    /// - Throws: `ConversionError` if it fails to convert for some reason.
+    /// - Throws: `ConversionError` or `SyntaxError` if it fails to convert for some reason.
     private func convertCosmeticRuleMixedDomains(rule: CosmeticRule) throws -> [BlockerEntry] {
         // Just in case, we limit this functionality to Safari 16.4 or newer.
         if !self.version.isSafari16_4orGreater() {
@@ -203,7 +203,7 @@ class BlockerEntryFactory {
             let urlFilter = try SimpleRegex.createRegexText(pattern: "||\(domain)^")
 
             var trigger = BlockerEntry.Trigger(urlFilter: urlFilter)
-            var restricted = resolveDomains(domains: rule.restrictedDomains)
+            let restricted = resolveDomains(domains: rule.restrictedDomains)
             trigger.unlessDomain = restricted
 
             let action = BlockerEntry.Action(type: "css-display-none", selector: rule.content)
