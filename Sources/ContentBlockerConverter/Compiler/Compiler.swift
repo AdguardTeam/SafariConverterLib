@@ -25,16 +25,18 @@ class Compiler {
             !(progress?.isCancelled ?? false)
         }
 
+        // `css-display-none` rules will be post-processed after the first stage of conversion.
         var cssBlocking: [BlockerEntry] = []
 
-        // A list of domains disabled by $specifichide rules.
+        // A list of domains disabled by `$specifichide` rules.
         var specifichideExceptionDomains: [String] = []
 
+        // Prepare the object that will be this function result.
         var compilationResult = CompilationResult()
 
-        for rule in rules {
-            guard shouldContinue else { return CompilationResult() }
+        // Stage 1. Convert rules to content blocker entries.
 
+        for rule in rules {
             if let networkRule = rule as? NetworkRule {
                 if networkRule.isOptionEnabled(option: .specifichide) {
                     let res = NetworkRuleParser.extractDomain(pattern: networkRule.urlRuleText)
@@ -48,45 +50,50 @@ class Compiler {
                 }
             }
 
-            guard let item = blockerEntryFactory.createBlockerEntry(rule: rule) else { continue }
+            guard let items = blockerEntryFactory.createBlockerEntries(rule: rule) else {
+                continue
+            }
 
-            if item.action.type == "block" {
-                compilationResult.addBlockTypedEntry(entry: item, source: rule)
-            } else if item.action.type == "css-display-none" {
-                cssBlocking.append(item)
-            } else if item.action.type == "ignore-previous-rules" {
-                compilationResult.addIgnorePreviousTypedEntry(entry: item, rule: rule)
+            for item in items {
+                switch item.action.type {
+                case "block":
+                    compilationResult.addBlockTypedEntry(entry: item, source: rule)
+                case "css-display-none":
+                    cssBlocking.append(item)
+                case "ignore-previous-rules":
+                    compilationResult.addIgnorePreviousTypedEntry(entry: item, rule: rule)
+                default:
+                    Logger.log(
+                        "(ContentBlockerConverter) - Unexpected action type \(item.action.type)"
+                    )
+                }
             }
         }
 
         guard shouldContinue else { return CompilationResult() }
 
-        // Compacting cosmetic rules.
+        // Stage 2. Compact cosmetic rules.
+
         let cssCompact = Compiler.compactCssRules(cssBlocking: cssBlocking)
+
         compilationResult.cssBlockingWide = cssCompact.cssBlockingWide
-
-        compilationResult.cssBlockingGenericDomainSensitive = Compiler.compactDomainCssRules(
-            entries: cssCompact.cssBlockingGenericDomainSensitive
-        )
-
-        compilationResult.cssBlockingDomainSensitive = Compiler.compactDomainCssRules(
-            entries: cssCompact.cssBlockingDomainSensitive
-        )
+        compilationResult.cssBlockingDomainSensitive = cssCompact.cssBlockingDomainSensitive
+        compilationResult.cssBlockingGenericDomainSensitive =
+            cssCompact.cssBlockingGenericDomainSensitive
 
         guard shouldContinue else { return CompilationResult() }
 
-        // Apply specifichide exceptions
+        // Stage 3: Apply `$specifichide` exceptions.
+
         compilationResult.cssBlockingDomainSensitive = Compiler.applySpecifichide(
             blockingItems: &compilationResult.cssBlockingDomainSensitive,
             specifichideExceptions: specifichideExceptionDomains
         )
 
-        guard shouldContinue else { return CompilationResult() }
-
         return compilationResult
     }
 
-    /// Applies $specifichide exceptions by removing the domain from other rules' `if-domain`.
+    /// Applies `$specifichide` exceptions by removing the domain from other rules' `if-domain`.
     ///
     /// TODO: [ameshkov]: The algorithm is very ineffective, reconsider later.
     private static func applySpecifichide(
@@ -127,6 +134,29 @@ class Compiler {
     }
 
     /// Tries to compress CSS rules by combining generic rules into a single rule.
+    ///
+    /// The explanation below uses AdGuard rules syntax, but it still explains the idea well enough.
+    ///
+    /// For generic rules without domain limitations they're united into a single rule, i.e.
+    /// ```
+    /// ###banner
+    /// ###ad
+    /// ```
+    ///
+    /// Will be united into a single rule: `###banner,#ad`.
+    ///
+    /// Domain sensitive rules are compacted using the same approach:
+    ///
+    /// ```
+    /// example.org###banner
+    /// example.org###ad
+    /// ```
+    ///
+    /// Becomes `example.org###banner,#ad`
+    ///
+    /// - Parameters:
+    ///   - cssBlocking: A list of `css-display-none` content blocking rules that need to be converted.
+    /// - Returns: an object with cosmetic rules split into three arrays (wide/generic/domain-sensitive)
     static func compactCssRules(cssBlocking: [BlockerEntry]) -> CompactCssRulesData {
         var cssBlockingWide: [BlockerEntry] = []
         var cssBlockingDomainSensitive: [BlockerEntry] = []
@@ -156,6 +186,14 @@ class Compiler {
             cssBlockingWide.append(createWideRule(wideSelectors: wideSelectors))
         }
 
+        // Now try to also compact domain-sensitive rules
+        cssBlockingDomainSensitive = Compiler.compactDomainCssRules(
+            entries: cssBlockingDomainSensitive
+        )
+        cssBlockingGenericDomainSensitive = Compiler.compactDomainCssRules(
+            entries: cssBlockingGenericDomainSensitive
+        )
+
         return CompactCssRulesData(
             cssBlockingWide: cssBlockingWide,
             cssBlockingDomainSensitive: cssBlockingDomainSensitive,
@@ -172,6 +210,10 @@ class Compiler {
     /// ```
     ///
     /// They will be essentially compacted to `example.org##.banner,.otherbanner`
+    ///
+    /// - Parameters:
+    ///   - entries: Rules to compact.
+    /// - Returns: the new compacted list of rules.
     static func compactDomainCssRules(entries: [BlockerEntry]) -> [BlockerEntry] {
         var result: [BlockerEntry] = []
         var domainsDictionary: [String: [BlockerEntry]] = [:]
@@ -191,7 +233,7 @@ class Compiler {
                 current.append(entry)
                 domainsDictionary[domain] = current
             } else {
-                // Not a domain sensitive entry
+                // This entry cannot be compressed.
                 result.append(entry)
             }
         }
@@ -249,6 +291,7 @@ class Compiler {
         return result
     }
 
+    /// Represents the result of compacting `css-display-none` rules.
     struct CompactCssRulesData {
         var cssBlockingWide: [BlockerEntry]
         var cssBlockingDomainSensitive: [BlockerEntry]

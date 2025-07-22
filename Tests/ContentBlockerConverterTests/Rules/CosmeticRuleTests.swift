@@ -282,6 +282,7 @@ final class CosmeticRuleTests: XCTestCase {
         XCTAssertThrowsError(try CosmeticRule(ruleText: "jp,b##.banner"))
         XCTAssertThrowsError(try CosmeticRule(ruleText: "jp,~b##.banner"))
         XCTAssertThrowsError(try CosmeticRule(ruleText: "com,/example/##.banner"))
+        XCTAssertThrowsError(try CosmeticRule(ruleText: "[$path=/path]#@#.banner"))
     }
 
     func testForbiddenCSSRules() {

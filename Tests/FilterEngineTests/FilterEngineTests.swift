@@ -217,6 +217,16 @@ final class FilterEngineTests: XCTestCase {
                 expectedCosmeticContent: ["#banner"]
             ),
             TestCase(
+                name: "negate css rule on a subdomain",
+                rules: [
+                    "##.banner",
+                    "sub.example.org#@#.banner",
+                    "###banner",
+                ],
+                urlString: "https://sub.example.org/",
+                expectedCosmeticContent: ["#banner"]
+            ),
+            TestCase(
                 name: "single script inject rule",
                 rules: [
                     "#%#console.log('1')"

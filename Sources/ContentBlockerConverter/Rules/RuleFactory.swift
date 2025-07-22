@@ -49,7 +49,12 @@ public enum RuleFactory {
     }
 
     /// This function filters out rules that are disabled `$badfilter` and modifies domain restrictions
-    /// using cosmetic exceptions.
+    /// using cosmetic exceptions. The first step is to find all `$badfilter` and cosmetic exceptions,
+    /// and the second step is to filter out disabled rules.
+    ///
+    /// Depending on the Safari version the behavior may be different. For older Safari version we do not
+    /// support mixing permitted and restricted domains so `#@#` (cosmetic exceptions) support is limited.
+    /// For newer versions we support it for almost all cosmetic rules save for those with `$path` modifier.
     ///
     /// ## Examples
     ///
@@ -61,8 +66,11 @@ public enum RuleFactory {
     ///
     /// Rule `##.banner` will be changed by `example.org#@#.banner` and the final form will
     /// be `~example.org##.banner`.
-    /// ```
-    public static func filterOutExceptions(from rules: [Rule]) -> [Rule] {
+    ///
+    /// - Parameters:
+    ///   - rules: source AdGuard rules that needs to be filtered.
+    ///   - version: Safari version for which we perform
+    public static func filterOutExceptions(from rules: [Rule], version: SafariVersion) -> [Rule] {
         var networkRules: [NetworkRule] = []
         var cosmeticRules: [CosmeticRule] = []
 
@@ -93,7 +101,8 @@ public enum RuleFactory {
         )
         result += RuleFactory.applyCosmeticExceptions(
             rules: cosmeticRules,
-            cosmeticExceptions: cosmeticExceptions
+            cosmeticExceptions: cosmeticExceptions,
+            version: version
         )
 
         return result
@@ -144,14 +153,18 @@ public enum RuleFactory {
     /// Applies cosmetic exception rules by modifying the cosmetic rule's permitted and restricted domains.
     private static func applyCosmeticExceptions(
         rules: [CosmeticRule],
-        cosmeticExceptions: [String: [CosmeticRule]]
+        cosmeticExceptions: [String: [CosmeticRule]],
+        version: SafariVersion
     ) -> [Rule] {
         var result: [Rule] = []
 
         for rule in rules {
             if let exceptionRules = cosmeticExceptions[rule.content] {
-                if let newRule = applyCosmeticExceptions(rule: rule, exceptionRules: exceptionRules)
-                {
+                if let newRule = applyCosmeticExceptions(
+                    rule: rule,
+                    exceptionRules: exceptionRules,
+                    version: version
+                ) {
                     result.append(newRule)
                 }
             } else {
@@ -163,6 +176,8 @@ public enum RuleFactory {
     }
 
     /// Applies cosmetic exception rules to a cosmetic rule by modifying its permitted/restricted domains.
+    ///
+    /// Depending on Safari version it either supports mixing permitted/restricted domains or not.
     ///
     /// ## Examples
     ///
@@ -181,7 +196,7 @@ public enum RuleFactory {
     ///
     /// ## Edge case #1: negate all domains
     ///
-    /// This rule disables ##.banner on all domains
+    /// This rule disables `##.banner` on all domains
     ///
     /// ```
     /// #@#.banner
@@ -200,10 +215,12 @@ public enum RuleFactory {
     /// - Parameters:
     ///    - rule: Rule to modify
     ///    - exceptionRules: Cosmetic exception rules to apply
+    ///    - version: Safari version
     /// - Returns: modified rule or `nil` if after applying exception the rule is redundant.
     private static func applyCosmeticExceptions(
         rule: CosmeticRule,
-        exceptionRules: [CosmeticRule]
+        exceptionRules: [CosmeticRule],
+        version: SafariVersion
     ) -> CosmeticRule? {
         for exceptionRule in exceptionRules {
             if exceptionRule.permittedDomains.isEmpty {
@@ -221,6 +238,36 @@ public enum RuleFactory {
                     // If the rule has no permitted domains now, skip it.
                     if rule.permittedDomains.isEmpty {
                         return nil
+                    }
+
+                    // For new Safari versions we can mix permitted and restricted
+                    // domains in cosmetic rules and they can be then converted
+                    // to one or multiple entries in the JSON.
+                    if version.isSafari16_4orGreater() && !rule.restrictedDomains.contains(domain) {
+                        /// Check if there's a domain among permitted that can actually
+                        /// be restricted.
+                        ///
+                        /// For example, here it makes sense to add restricted domain:
+                        /// ```
+                        /// permitted = ["example.org"]
+                        /// restricted = ["sub.example.org"]
+                        /// ```
+                        ///
+                        /// But here adding `sub.example.com` to restricted makes no sense
+                        /// since the rule will not be applied on any `example.com` subdomain
+                        /// anyways:
+                        ///
+                        /// ```
+                        /// permitted = ["example.org"]
+                        /// restricted = ["sub.example.com"]
+                        /// ```
+                        let canRestrict = rule.permittedDomains.contains {
+                            DomainUtils.isDomainOrSubdomain(candidate: domain, domain: $0)
+                        }
+
+                        if canRestrict {
+                            rule.restrictedDomains.append(domain)
+                        }
                     }
                 } else if !rule.restrictedDomains.contains(domain) {
                     rule.restrictedDomains.append(domain)

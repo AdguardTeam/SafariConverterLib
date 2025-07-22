@@ -286,8 +286,17 @@ additional extension.
 
 #### Limitations of cosmetic rules
 
-- Specifying domains is subject to the same limitations as the `$domain`
-  modifier of basic rules.
+- Specifying domains is subject to limitations:
+    - "Any TLD" (i.e. `domain.*`) is not fully supported. In the current
+    implementation the converter just replaces `.*` with top 100 popular TLDs.
+    This implementation will be improved [in the future][iftopurlissue].
+    - Using regular expressions in `$domain` is not supported, but it also will
+    be improved [in the future][iftopurlissue].
+
+- CSS exception rules (`#@#`) are supported with limitations:
+    - The same limitations for specifying domains as with other cosmetic rules.
+    - Won't work for "Any TLD" rules (like `google.*#@#.banner`).
+    - Rules with `$path` are not supported (like `[$path=/path]#@#.banner`).
 
 - [Non-basic rules modifiers][nonbasicmodifiers] are supported with some
   limitations:
@@ -314,6 +323,18 @@ by a separate extension.
 
 [scriptrules]: https://adguard.com/kb/general/ad-filtering/create-own-filters/#javascript-rules
 [scriptletrules]: https://adguard.com/kb/general/ad-filtering/create-own-filters/#scriptlets
+
+#### Limitations of scriptlet rules
+
+- Disabling scriptlets with a rule like `example.org#@%#//scriptlet()` is not
+  supported. This is a limitation that [can be lifted][negatingscriptletsbug]
+  in the future.
+- Disabling scriptlet regardless of its arguments is not supported, i.e. a rule
+  like `example.org#@%#//scriptlet('name')` will not disable
+  `example.org#@%#//scriptlet('name', 'arg')`. This is a limitation that
+  [can be lifted][negatingscriptletsbug] in the future.
+
+[negatingscriptletsbug]: https://github.com/AdguardTeam/SafariConverterLib/issues/103
 
 ### HTML filtering rules
 
