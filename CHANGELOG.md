@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Changed the regular expressions that are used when converting `||` and `^`
+  special characters of AdGuard rules: [#102].
+
+  This solved several problems:
+
+    - Improved performance of the compilation process by Safari itself, it
+    now compiles the rules **up to 5.5 times faster**.
+    - The content blocker file is now up to 10% smaller.
+    - Fixed the issue with matching multiple levels of subdomains. Before that
+    change `||example.org` would not much `sub.sub.example.org`, now it does.
+
+[#102]: https://github.com/AdguardTeam/SafariConverterLib/issues/102
+
 ### Fixed
 
 - Fixed the issue with rules for TLD: [#99]

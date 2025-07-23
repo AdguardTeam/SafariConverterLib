@@ -27,6 +27,9 @@ extension ContentBlockerConverterTests {
         //
         // July 18, 2025 (added mixed permitted/restricted rules):
         // 348.29 Mc  69.8%: ContentBlockerConverter.convertArray
+        //
+        // July 23, 2025 (changed regexes for || and ^)
+        // 331.79 Mc  69.4%: ContentBlockerConverter.convertArray
         let conversionResult = ContentBlockerConverter().convertArray(
             rules: rules,
             safariVersion: SafariVersion.safari16_4,
@@ -41,11 +44,11 @@ extension ContentBlockerConverterTests {
         XCTAssertEqual(conversionResult.discardedSafariRules, 0)
     }
 
-    /// Baseline results (July 18, 2025):
+    /// Baseline results (July 23, 2025):
     /// - Machine: MacBook Pro M1 Max, 32GB RAM
     /// - OS: macOS 15.1
     /// - Swift: 6.0
-    /// - Average execution time: ~1.256 sec
+    /// - Average execution time: ~1.260 sec
     ///
     /// To get your machine info: `system_profiler SPHardwareDataType`
     /// To get your macOS version: `sw_vers`

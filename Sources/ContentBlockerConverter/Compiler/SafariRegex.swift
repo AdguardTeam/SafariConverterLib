@@ -5,14 +5,14 @@ public enum SafariRegex {
     /// Safari does not support some regular expressions so we do some additional validations.
     ///
     /// Supported expressions:
-    /// - '.*': Matches all strings with a dot appearing zero or more times. Use this syntax to match every URL.
-    /// - '.': Matches any character.
-    /// - '\.': Explicitly matches the dot character.
-    /// - '[a-b]': Matches a range of alphabetic characters.
-    /// - '(abc)': Matches groups of the specified characters.
-    /// - '+': Matches the preceding term one or more times.
-    /// - '\*': Matches the preceding character zero or more times.
-    /// - '?': Matches the preceding character zero or one time.
+    /// - `.*`: Matches all strings with a dot appearing zero or more times. Use this syntax to match every URL.
+    /// - `.`: Matches any character.
+    /// - `\.`: Explicitly matches the dot character.
+    /// - `[a-b]`: Matches a range of alphabetic characters.
+    /// - `(abc)`: Matches groups of the specified characters.
+    /// - `+`: Matches the preceding term one or more times.
+    /// - `*`: Matches the preceding character zero or more times.
+    /// - `?`: Matches the preceding character zero or one time.
     ///
     /// Also, it only supports ASCII.
     ///
@@ -20,14 +20,14 @@ public enum SafariRegex {
     /// - Brackets for groups MUST be balanced, otherwise it will not tolerate that.
     /// - Brackets for character ranges SHOULD be balanced (does not break anything if unbalanced).
     /// - Explicitly matching special characters is allowed:
-    ///   - Allowed: '\.', '\*', '\+', '\/', '\[', '\(', '\]', '\)', '\|', '\?', '{', '}'.
+    ///   - Allowed: `\.`, `\*`, `\+`, `\/`, `\[`, `\(`, `\]`, `\)`, `\|`, `\?`, `{`, `}`.
     ///   - Any other is not allowed.
-    /// - MUST keep track of quantifiable characters (i.e. those to which you can apply '\*' '?' '+') .
+    /// - MUST keep track of quantifiable characters (i.e. those to which you can apply `\*` `?` `+`) .
     /// - Special characters are not quantifiable unless escaped.
     /// - Nested groups are allowed (but can not mixed).
-    /// - '|', '{', '}' ruin regex unless escaped or inside a character range.
-    /// - '^' and '$' must be either in the beginning / end of the pattern or escaped or inside a character range.
-    /// - '\*', '+', '?' treated as normal characters when inside a character range.
+    /// - `|`, `{`, `}` ruin regex unless escaped or inside a character range.
+    /// - `^` and `$` must be either in the beginning / end of the pattern or escaped or inside a character range.
+    /// - `\*`, `+`, `?` treated as normal characters when inside a character range.
     ///
     /// - Parameters:
     ///   - pattern: regular expression to check.
