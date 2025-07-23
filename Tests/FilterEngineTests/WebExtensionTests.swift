@@ -371,11 +371,11 @@ final class WebExtensionTests: XCTestCase {
 
     /// Benchmark test for the buildFilterEngine method
     ///
-    /// Baseline results (March 2025):
+    /// Baseline results (July 23, 2025):
     /// - Machine: MacBook Pro M1 Max, 32GB RAM
     /// - OS: macOS 15.1
     /// - Swift: 6.0
-    /// - Average execution time: ~0.212 seconds
+    /// - Average execution time: ~0.229 seconds
     ///
     /// To get your machine info: `system_profiler SPHardwareDataType`
     /// To get your macOS version: `sw_vers`
@@ -384,6 +384,9 @@ final class WebExtensionTests: XCTestCase {
         // Create a large filter list with many rules
         var filterRules: [String] = []
         for i in 1...1000 {
+            if i % 2 == 0 {
+                filterRules.append("@@||example\(i).org^$jsinject")
+            }
             filterRules.append("example\(i).org###banner")
             filterRules.append("example\(i).org#$##banner { visibility: hidden }")
             filterRules.append("example\(i).org#?##banner:has(div)")
@@ -405,11 +408,11 @@ final class WebExtensionTests: XCTestCase {
 
     /// Benchmark test for the lookup method
     ///
-    /// Baseline results (April 2025):
+    /// Baseline results (July 23, 2025):
     /// - Machine: MacBook Pro M1 Max, 32GB RAM
     /// - OS: macOS 15.1
     /// - Swift: 6.0
-    /// - Average execution time: ~0.008 seconds
+    /// - Average execution time: ~0.011 seconds
     ///
     /// To get your machine info: `system_profiler SPHardwareDataType`
     /// To get your macOS version: `sw_vers`
@@ -418,6 +421,9 @@ final class WebExtensionTests: XCTestCase {
         // Create a filter list with many rules
         var filterRules: [String] = []
         for i in 1...1000 {
+            if i % 2 == 0 {
+                filterRules.append("@@||example\(i).org^$jsinject")
+            }
             filterRules.append("example\(i).org###banner")
             filterRules.append("example\(i).org#$##banner { visibility: hidden }")
             filterRules.append("example\(i).org#?##banner:has(div)")

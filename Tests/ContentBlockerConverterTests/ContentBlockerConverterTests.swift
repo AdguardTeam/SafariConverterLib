@@ -43,7 +43,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "unless-domain" : [
                             "*example.org"
                           ],
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?example\\.org[\/:]"
                         }
                       }
                     ]
@@ -64,7 +64,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "load-type" : [
                             "first-party"
                           ],
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?adriver\\.ru([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?adriver\\.ru[\/:]"
                         }
                       }
                     ]
@@ -87,7 +87,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "load-type" : [
                             "first-party"
                           ],
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org\\\/.*\\\/test\\.js"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?example\\.org\\\/.*\\\/test\\.js"
                         }
                       }
                     ]
@@ -110,7 +110,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "load-type" : [
                             "third-party"
                           ],
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org\\\/.*\\\/test\\.js"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?example\\.org\\\/.*\\\/test\\.js"
                         }
                       }
                     ]
@@ -142,7 +142,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "if-domain" : [
                             "*example.net"
                           ],
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?example\\.org[\/:]"
                         }
                       },
                       {
@@ -153,7 +153,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "if-domain" : [
                             "*example.net"
                           ],
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?example\\.org[\/:]"
                         }
                       }
                     ]
@@ -254,7 +254,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "resource-type" : [
                             "document"
                           ],
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example1\\.com"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?example1\\.com"
                         }
                       },
                       {
@@ -265,7 +265,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "resource-type" : [
                             "document"
                           ],
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example2\\.com"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?example2\\.com"
                         }
                       },
                       {
@@ -276,7 +276,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "resource-type" : [
                             "document"
                           ],
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example5\\.com"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?example5\\.com"
                         }
                       }
                     ]
@@ -303,7 +303,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "unless-domain" : [
                             "*getsecuredfiles.com"
                           ],
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?getsecuredfiles\\.com([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?getsecuredfiles\\.com[\/:]"
                         }
                       }
                     ]
@@ -330,7 +330,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "resource-type" : [
                             "document"
                           ],
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.net([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?example\\.net[\/:]"
                         }
                       },
                       {
@@ -427,7 +427,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "resource-type" : [
                             "raw"
                           ],
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?test\\.com[\/:]"
                         }
                       }
                     ]
@@ -479,7 +479,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "resource-type" : [
                             "raw"
                           ],
-                          "url-filter" : "^wss?:\\\/\\\/.*\\.rocks([\\\/:&\\?].*)?$"
+                          "url-filter" : "^wss?:\\\/\\\/.*\\.rocks[\/:&?]?"
                         }
                       }
                     ]
@@ -502,7 +502,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "resource-type" : [
                             "websocket"
                           ],
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?test\\.com[\/:]"
                         }
                       }
                     ]
@@ -536,7 +536,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                             "ping",
                             "document"
                           ],
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?test\\.com[\/:]"
                         }
                       }
                     ]
@@ -563,7 +563,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "resource-type" : [
                             "raw"
                           ],
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?example\\.org[\/:]"
                         }
                       },
                       {
@@ -580,7 +580,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                             "font",
                             "document"
                           ],
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.com([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?example\\.com[\/:]"
                         }
                       }
                     ]
@@ -607,7 +607,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "resource-type" : [
                             "websocket"
                           ],
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?example\\.org[\/:]"
                         }
                       },
                       {
@@ -626,7 +626,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                             "ping",
                             "document"
                           ],
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.com([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?example\\.com[\/:]"
                         }
                       }
                     ]
@@ -664,7 +664,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                             "font",
                             "document"
                           ],
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?test\\.com[\/:]"
                         }
                       }
                     ]
@@ -698,7 +698,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                             "ping",
                             "document"
                           ],
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?test\\.com[\/:]"
                         }
                       }
                     ]
@@ -724,7 +724,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "unless-domain" : [
                             "*test.com"
                           ],
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?test\\.com[\/:]"
                         }
                       }
                     ]
@@ -747,7 +747,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "load-type" : [
                             "third-party"
                           ],
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?test\\.com[\/:]"
                         }
                       }
                     ]
@@ -786,7 +786,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "resource-type" : [
                             "document"
                           ],
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?test\\.com[\/:]"
                         }
                       }
                     ]
@@ -812,7 +812,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "load-type" : [
                             "first-party"
                           ],
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?test\\.com[\/:]"
                         }
                       }
                     ]
@@ -847,7 +847,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                             "ping",
                             "document"
                           ],
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?test\\.com[\/:]"
                         }
                       }
                     ]
@@ -1139,7 +1139,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "resource-type" : [
                             "document"
                           ],
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?hulu\\.com\\\/page"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?hulu\\.com\\\/page"
                         }
                       }
                     ]
@@ -1251,7 +1251,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "type" : "block"
                         },
                         "trigger" : {
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?example\\.org[\/:]"
                         }
                       }
                     ]
@@ -1424,7 +1424,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "type" : "block"
                         },
                         "trigger" : {
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?xn--e1agjb\\.xn--p1ai"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?xn--e1agjb\\.xn--p1ai"
                         }
                       }
                     ]
@@ -1459,7 +1459,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "type" : "block"
                         },
                         "trigger" : {
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?xn--12c1bkkg0bkcb9kna7qcr0f\\.com([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?xn--12c1bkkg0bkcb9kna7qcr0f\\.com[\/:]"
                         }
                       },
                       {
@@ -1470,7 +1470,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "if-domain" : [
                             "*xn--12c1bkkg0bkcb9kna7qcr0f.com"
                           ],
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?example\\.org[\/:]"
                         }
                       }
                     ]
@@ -1494,7 +1494,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "if-domain" : [
                             "*xn--\/\\-7kcax4ahj5a.xn--\/-4tbm"
                           ],
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?example\\.org"
                         }
                       }
                     ]
@@ -1594,7 +1594,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "type" : "block"
                         },
                         "trigger" : {
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?example\\.org[\/:]"
                         }
                       },
                       {
@@ -1632,7 +1632,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "type" : "block"
                         },
                         "trigger" : {
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?example\\.org[\/:]"
                         }
                       }
                     ]
@@ -1654,7 +1654,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "type" : "block"
                         },
                         "trigger" : {
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?example\\.org[\/:]"
                         }
                       },
                       {
@@ -1684,7 +1684,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "type" : "block"
                         },
                         "trigger" : {
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?example\\.org[\/:]"
                         }
                       },
                       {
@@ -1722,7 +1722,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "type" : "block"
                         },
                         "trigger" : {
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.org([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?test\\.org[\/:]"
                         }
                       }
                     ]
@@ -1856,7 +1856,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "type" : "block"
                         },
                         "trigger" : {
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?calabriareportage\\.it[\/:&?]?\\+-Banner-"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?calabriareportage\\.it[\/:]\\+-Banner-"
                         }
                       },
                       {
@@ -1894,7 +1894,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "type" : "block"
                         },
                         "trigger" : {
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?gamer\\.no\\\/\\?module=Tumedia\\\\DFProxy\\\\Modules([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?gamer\\.no\\\/\\?module=Tumedia\\\\DFProxy\\\\Modules[\/:&?]?"
                         }
                       },
                       {
@@ -2091,7 +2091,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "resource-type" : [
                             "ping"
                           ],
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?example\\.org[\/:]"
                         }
                       },
                       {
@@ -2113,7 +2113,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                             "font",
                             "document"
                           ],
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?example\\.org[\/:]"
                         }
                       }
                     ]
@@ -2145,7 +2145,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "resource-type" : [
                             "raw"
                           ],
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?test\\.com[\/:]"
                         }
                       },
                       {
@@ -2165,7 +2165,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                             "font",
                             "document"
                           ],
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?test\\.com[\/:]"
                         }
                       }
                     ]
@@ -2191,7 +2191,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "resource-type" : [
                             "other"
                           ],
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?test\\.com[\/:]"
                         }
                       },
                       {
@@ -2213,7 +2213,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                             "ping",
                             "document"
                           ],
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?test\\.com[\/:]"
                         }
                       }
                     ]
@@ -2238,7 +2238,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "resource-type" : [
                             "raw"
                           ],
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?test\\.com[\/:]"
                         }
                       },
                       {
@@ -2258,7 +2258,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                             "font",
                             "document"
                           ],
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?test\\.com[\/:]"
                         }
                       }
                     ]
@@ -2291,7 +2291,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "resource-type" : [
                             "fetch"
                           ],
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?test\\.com[\/:]"
                         }
                       },
                       {
@@ -2313,7 +2313,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                             "ping",
                             "document"
                           ],
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?test\\.com[\/:]"
                         }
                       }
                     ]
@@ -2339,7 +2339,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "resource-type" : [
                             "fetch"
                           ],
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?test\\.com[\/:]"
                         }
                       },
                       {
@@ -2361,7 +2361,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                             "ping",
                             "document"
                           ],
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?test\\.com[\/:]"
                         }
                       }
                     ]
@@ -2390,7 +2390,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "load-context" : [
                             "child-frame"
                           ],
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?test\\.com[\/:]"
                         }
                       },
                       {
@@ -2416,7 +2416,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                             "ping",
                             "document"
                           ],
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?test\\.com([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?test\\.com[\/:]"
                         }
                       }
                     ]
@@ -2505,7 +2505,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "unless-domain" : [
                             "*sub.example.org"
                           ],
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?example\\.org[\/:]"
                         }
                       },
                       {
@@ -2517,7 +2517,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "unless-domain" : [
                             "*sub.example.org"
                           ],
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.com([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?example\\.com[\/:]"
                         }
                       }
                     ]
@@ -2544,7 +2544,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "unless-domain" : [
                             "*sub.example.org"
                           ],
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?example\\.org[\/:]"
                         }
                       },
                       {
@@ -2556,7 +2556,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "unless-domain" : [
                             "*sub.example.org"
                           ],
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.com([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?example\\.com[\/:]"
                         }
                       }
                     ]
@@ -3003,7 +3003,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "type" : "block"
                         },
                         "trigger" : {
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?example\\.org[\/:]"
                         }
                       }
                     ]
@@ -3124,7 +3124,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "type" : "block"
                         },
                         "trigger" : {
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?example\\.org[\/:]"
                         }
                       },
                       {
@@ -3132,7 +3132,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "type" : "ignore-previous-rules"
                         },
                         "trigger" : {
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?example\\.org[\/:]"
                         }
                       },
                       {
@@ -3140,7 +3140,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "type" : "block"
                         },
                         "trigger" : {
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?example\\.org[\/:]"
                         }
                       },
                       {
@@ -3148,7 +3148,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "type" : "ignore-previous-rules"
                         },
                         "trigger" : {
-                          "url-filter" : "^[htpsw]+:\\\/\\\/([a-z0-9-]+\\.)?example\\.org([\\\/:&\\?].*)?$"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?example\\.org[\/:]"
                         }
                       },
                       {
@@ -3254,7 +3254,7 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(decoded.count, 1)
         XCTAssertEqual(
             decoded[0].trigger.urlFilter,
-            "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?.*\\/test-files\\/adguard\\.png"
+            "^[^:]+://+([^:/]+\\.)?.*\\/test-files\\/adguard\\.png"
         )
         XCTAssertEqual(decoded[0].trigger.ifDomain?[0], "*surge.com.bd")
         XCTAssertEqual(decoded[0].trigger.ifDomain?[1], "*surge.com.np")

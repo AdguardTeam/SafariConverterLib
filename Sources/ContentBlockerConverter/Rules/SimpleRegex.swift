@@ -11,15 +11,20 @@ public enum SimpleRegex {
     private static let regexStartString: [UInt8] = Array("^".utf8)
     private static let regexEndString: [UInt8] = Array("$".utf8)
 
-    /// Improved regular expression instead of UrlFilterRule.REGEXP_START_URL (||).
-    ///
-    /// Please note, that this regular expression matches only ONE level of subdomains.
-    /// Using ([a-z0-9-.]+\\.)? instead increases memory usage by 10Mb
-    private static let regexStartUrl: [UInt8] = Array(#"^[htpsw]+:\/\/([a-z0-9-]+\.)?"#.utf8)
+    /// `||` start URL marker regex replacement. We are using the same regex that is recommended
+    /// by Apple: https://webkit.org/blog/4062/targeting-domains-with-content-blockers/.
+    private static let regexStartUrl: [UInt8] = Array(#"^[^:]+://+([^:/]+\.)?"#.utf8)
 
-    /// Simplified separator (to fix an issue with $ restriction - it can be only in the end of regexp).
-    private static let regexEndSeparator: [UInt8] = Array("([\\/:&\\?].*)?$".utf8)
-    private static let regexSeparator: [UInt8] = Array("[/:&?]?".utf8)
+    /// Separator `^` default regex replacement.
+    private static let regexSeparator: [UInt8] = Array("[/:&?]".utf8)
+
+    /// Separator `^` regex replacement for the case when this is the end of pattern.
+    /// We need to account for the fact that "the end of the address is also accepted as separator".
+    private static let regexEndSeparator: [UInt8] = Array("[/:&?]?".utf8)
+
+    /// Separator `^` regex replacement for the case when we're targeting a domain name,
+    /// i.e. when the pattern starts with `||`.
+    private static let regexDomainSeparator: [UInt8] = Array("[/:]".utf8)
 
     /// Creates a regular expression from a network rule pattern.
     ///
@@ -35,6 +40,7 @@ public enum SimpleRegex {
         var resultChars: [UInt8] = []
         let utf8 = pattern.utf8
         var currentIndex = utf8.startIndex
+        var useDomainSeparator = false
 
         @inline(__always)
         func peekNext() -> UInt8? {
@@ -57,15 +63,25 @@ public enum SimpleRegex {
                 // https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/regexp
                 //
                 // '\*', '|', '^', and `$` are processed differently.
-                resultChars.append(Chars.BACKSLASH)
+                resultChars.append(UInt8(ascii: "\\"))
                 resultChars.append(char)
-            case Chars.PIPE:
+
+                // Special character signals that this is not a domain name and we should not
+                // use `regexDomainSeparator` for replacing `^`.
+                if char != UInt8(ascii: ".") {
+                    useDomainSeparator = false
+                }
+            case UInt8(ascii: "|"):
                 let nextChar = peekNext()
 
                 if currentIndex == utf8.startIndex {
-                    if nextChar == Chars.PIPE {
+                    if nextChar == UInt8(ascii: "|") {
                         // This is a start URL mask: `||`
                         resultChars.append(contentsOf: regexStartUrl)
+
+                        // We're dealing with a domain name so prepare to use
+                        // `regexDomainSeparator` for replacing next `^`.
+                        useDomainSeparator = true
 
                         // Increment index since we already processed next char.
                         currentIndex = utf8.index(after: currentIndex)
@@ -78,24 +94,35 @@ public enum SimpleRegex {
                     resultChars.append(contentsOf: regexEndString)
                 } else {
                     // In other cases we just excape `|`.
-                    resultChars.append(Chars.BACKSLASH)
+                    resultChars.append(UInt8(ascii: "\\"))
                     resultChars.append(char)
                 }
-            case Chars.CARET:
+            case UInt8(ascii: "^"):
                 let nextChar = peekNext()
 
-                if nextChar == nil {
+                if useDomainSeparator {
+                    resultChars.append(contentsOf: regexDomainSeparator)
+
+                    // For all other separators use the default separator regex.
+                    useDomainSeparator = false
+                } else if nextChar == nil {
                     resultChars.append(contentsOf: regexEndSeparator)
                 } else {
                     resultChars.append(contentsOf: regexSeparator)
                 }
-            case Chars.WILDCARD:
+            case UInt8(ascii: "*"):
                 resultChars.append(contentsOf: regexAnySymbolChars)
+
+                // Special character, switch to using default separator regex.
+                useDomainSeparator = false
             default:
                 if char > 127 {
                     throw SyntaxError.invalidPattern(
                         message: "Non ASCII characters are not supported"
                     )
+                } else if char == UInt8(ascii: ":") {
+                    // Special character, switch to using default separator regex.
+                    useDomainSeparator = false
                 }
 
                 resultChars.append(char)

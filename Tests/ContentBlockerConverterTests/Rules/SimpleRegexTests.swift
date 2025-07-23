@@ -5,8 +5,21 @@ import XCTest
 final class SimpleRegexTests: XCTestCase {
     func testCreateRegexText() throws {
         let testPatterns: [(pattern: String, expectedRegex: String, expectedError: Bool)] = [
-            ("||example.org", #"^[htpsw]+:\/\/([a-z0-9-]+\.)?example\.org"#, false),
-            ("||example.org^", #"^[htpsw]+:\/\/([a-z0-9-]+\.)?example\.org([\/:&\?].*)?$"#, false),
+            ("||example.org", #"^[^:]+://+([^:/]+\.)?example\.org"#, false),
+            ("||example.org:8080", #"^[^:]+://+([^:/]+\.)?example\.org:8080"#, false),
+            ("||example.org^", #"^[^:]+://+([^:/]+\.)?example\.org[/:]"#, false),
+            ("||example.org^|", #"^[^:]+://+([^:/]+\.)?example\.org[/:]$"#, false),
+            (
+                "||example.org^path^param=value",
+                #"^[^:]+://+([^:/]+\.)?example\.org[/:]path[/:&?]param=value"#,
+                false
+            ),
+            (
+                "||example.org*^test=123",
+                #"^[^:]+://+([^:/]+\.)?example\.org.*[/:&?]test=123"#,
+                false
+            ),
+            ("test^", #"test[/:&?]?"#, false),
             ("экзампл.org", "", true),
             ("test", "test", false),
             ("//test.png", "\\/\\/test\\.png", false),

@@ -26,13 +26,13 @@ final class FilterRuleTests: XCTestCase {
                 ruleText: "@@||example.org^$elemhide",
                 expectedAction: [.disableCSS],
                 expectedUrlPattern: "||example.org^",
-                expectedUrlRegex: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$"
+                expectedUrlRegex: "^[^:]+://+([^:/]+\\.)?example\\.org[/:]"
             ),
             TestCase(
                 ruleText: "@@||example.org^$elemhide,jsinject",
                 expectedAction: [.disableCSS, .disableScript],
                 expectedUrlPattern: "||example.org^",
-                expectedUrlRegex: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$"
+                expectedUrlRegex: "^[^:]+://+([^:/]+\\.)?example\\.org[/:]"
             ),
             TestCase(
                 ruleText: "##.banner",
@@ -49,14 +49,14 @@ final class FilterRuleTests: XCTestCase {
                 ruleText: "@@||example.com^$jsinject",
                 expectedAction: [.disableScript],
                 expectedUrlPattern: "||example.com^",
-                expectedUrlRegex: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.com([\\/:&\\?].*)?$",
+                expectedUrlRegex: "^[^:]+://+([^:/]+\\.)?example\\.com[/:]",
                 expectedPriority: 1
             ),
             TestCase(
                 ruleText: "@@||example.com^$specifichide",
                 expectedAction: [.disableSpecificCSS],
                 expectedUrlPattern: "||example.com^",
-                expectedUrlRegex: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.com([\\/:&\\?].*)?$",
+                expectedUrlRegex: "^[^:]+://+([^:/]+\\.)?example\\.com[/:]",
                 expectedPriority: 1
             ),
             TestCase(
@@ -79,7 +79,7 @@ final class FilterRuleTests: XCTestCase {
                 ruleText: "@@||example.org^$important,elemhide",
                 expectedAction: [.disableCSS],
                 expectedUrlPattern: "||example.org^",
-                expectedUrlRegex: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedUrlRegex: "^[^:]+://+([^:/]+\\.)?example\\.org[/:]",
                 expectedPriority: 2
             ),
             TestCase(

@@ -64,7 +64,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 expectedEntry: BlockerEntry(
                     trigger: BlockerEntry.Trigger(
                         ifDomain: ["*test.com"],
-                        urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.com\\/path"
+                        urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com\/path"#
                     ),
                     action: BlockerEntry.Action(
                         type: "block"
@@ -101,7 +101,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 ruleText: "||example.org^$match-case",
                 expectedEntry: BlockerEntry(
                     trigger: BlockerEntry.Trigger(
-                        urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                        urlFilter: #"^[^:]+://+([^:/]+\.)?example\.org[/:]"#,
                         caseSensitive: true
                     ),
                     action: BlockerEntry.Action(
@@ -114,7 +114,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 ruleText: "||example.org^$all",
                 expectedEntry: BlockerEntry(
                     trigger: BlockerEntry.Trigger(
-                        urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$"
+                        urlFilter: #"^[^:]+://+([^:/]+\.)?example\.org[/:]"#
                     ),
                     action: BlockerEntry.Action(
                         type: "block"
@@ -138,7 +138,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 version: SafariVersion.safari16_4,
                 expectedEntry: BlockerEntry(
                     trigger: BlockerEntry.Trigger(
-                        urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                        urlFilter: #"^[^:]+://+([^:/]+\.)?example\.org[/:]"#,
                         loadType: ["third-party"]
                     ),
                     action: BlockerEntry.Action(
@@ -152,7 +152,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 version: SafariVersion.safari13,
                 expectedEntry: BlockerEntry(
                     trigger: BlockerEntry.Trigger(
-                        urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                        urlFilter: #"^[^:]+://+([^:/]+\.)?example\.org[/:]"#,
                         unlessDomain: ["*example.org"],
                         loadType: ["third-party"]
                     ),
@@ -166,7 +166,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 ruleText: "||example.org^$~third-party",
                 expectedEntry: BlockerEntry(
                     trigger: BlockerEntry.Trigger(
-                        urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                        urlFilter: #"^[^:]+://+([^:/]+\.)?example\.org[/:]"#,
                         loadType: ["first-party"]
                     ),
                     action: BlockerEntry.Action(
@@ -190,7 +190,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 ruleText: "||example.org^$image",
                 expectedEntry: BlockerEntry(
                     trigger: BlockerEntry.Trigger(
-                        urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                        urlFilter: #"^[^:]+://+([^:/]+\.)?example\.org[/:]"#,
                         resourceType: ["image"]
                     ),
                     action: BlockerEntry.Action(
@@ -203,7 +203,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 ruleText: "||example.org^$image,font",
                 expectedEntry: BlockerEntry(
                     trigger: BlockerEntry.Trigger(
-                        urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                        urlFilter: #"^[^:]+://+([^:/]+\.)?example\.org[/:]"#,
                         resourceType: ["image", "font"]
                     ),
                     action: BlockerEntry.Action(
@@ -216,7 +216,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 ruleText: "||example.org^$image,font,~font",
                 expectedEntry: BlockerEntry(
                     trigger: BlockerEntry.Trigger(
-                        urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                        urlFilter: #"^[^:]+://+([^:/]+\.)?example\.org[/:]"#,
                         resourceType: ["image"]
                     ),
                     action: BlockerEntry.Action(
@@ -229,7 +229,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 ruleText: "||example.org^$~image",
                 expectedEntry: BlockerEntry(
                     trigger: BlockerEntry.Trigger(
-                        urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                        urlFilter: #"^[^:]+://+([^:/]+\.)?example\.org[/:]"#,
                         resourceType: ["style-sheet", "script", "media", "raw", "font", "document"]
                     ),
                     action: BlockerEntry.Action(
@@ -243,7 +243,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 version: SafariVersion.safari14,
                 expectedEntry: BlockerEntry(
                     trigger: BlockerEntry.Trigger(
-                        urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                        urlFilter: #"^[^:]+://+([^:/]+\.)?example\.org[/:]"#,
                         resourceType: ["raw"]
                     ),
                     action: BlockerEntry.Action(
@@ -257,7 +257,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 version: SafariVersion.safari15,
                 expectedEntry: BlockerEntry(
                     trigger: BlockerEntry.Trigger(
-                        urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                        urlFilter: #"^[^:]+://+([^:/]+\.)?example\.org[/:]"#,
                         resourceType: ["fetch"]
                     ),
                     action: BlockerEntry.Action(
@@ -271,7 +271,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 version: SafariVersion.safari14,
                 expectedEntry: BlockerEntry(
                     trigger: BlockerEntry.Trigger(
-                        urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                        urlFilter: #"^[^:]+://+([^:/]+\.)?example\.org[/:]"#,
                         resourceType: ["raw"]
                     ),
                     action: BlockerEntry.Action(
@@ -285,7 +285,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 version: SafariVersion.safari15,
                 expectedEntry: BlockerEntry(
                     trigger: BlockerEntry.Trigger(
-                        urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                        urlFilter: #"^[^:]+://+([^:/]+\.)?example\.org[/:]"#,
                         resourceType: ["other"]
                     ),
                     action: BlockerEntry.Action(
@@ -299,7 +299,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 version: SafariVersion.safari14,
                 expectedEntry: BlockerEntry(
                     trigger: BlockerEntry.Trigger(
-                        urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                        urlFilter: #"^[^:]+://+([^:/]+\.)?example\.org[/:]"#,
                         resourceType: ["raw"]
                     ),
                     action: BlockerEntry.Action(
@@ -313,7 +313,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 version: SafariVersion.safari15,
                 expectedEntry: BlockerEntry(
                     trigger: BlockerEntry.Trigger(
-                        urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                        urlFilter: #"^[^:]+://+([^:/]+\.)?example\.org[/:]"#,
                         resourceType: ["websocket"]
                     ),
                     action: BlockerEntry.Action(
@@ -327,7 +327,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 version: SafariVersion.safari14,
                 expectedEntry: BlockerEntry(
                     trigger: BlockerEntry.Trigger(
-                        urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                        urlFilter: #"^[^:]+://+([^:/]+\.)?example\.org[/:]"#,
                         resourceType: ["ping"]
                     ),
                     action: BlockerEntry.Action(
@@ -351,7 +351,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 ruleText: "||example.org^$document",
                 expectedEntry: BlockerEntry(
                     trigger: BlockerEntry.Trigger(
-                        urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                        urlFilter: #"^[^:]+://+([^:/]+\.)?example\.org[/:]"#,
                         resourceType: ["document"]
                     ),
                     action: BlockerEntry.Action(
@@ -364,7 +364,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 ruleText: "||example.org^$popup",
                 expectedEntry: BlockerEntry(
                     trigger: BlockerEntry.Trigger(
-                        urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                        urlFilter: #"^[^:]+://+([^:/]+\.)?example\.org[/:]"#,
                         resourceType: ["document"]
                     ),
                     action: BlockerEntry.Action(
@@ -388,7 +388,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 ruleText: "@@||example.com^",
                 expectedEntry: BlockerEntry(
                     trigger: BlockerEntry.Trigger(
-                        urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.com([\\/:&\\?].*)?$"
+                        urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com[/:]"#
                     ),
                     action: BlockerEntry.Action(
                         type: "ignore-previous-rules"
@@ -452,7 +452,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 ruleText: "@@test.com/path^$document",
                 expectedEntry: BlockerEntry(
                     trigger: BlockerEntry.Trigger(
-                        urlFilter: "test\\.com\\/path([\\/:&\\?].*)?$"
+                        urlFilter: #"test\.com\/path[/:&?]?"#
                     ),
                     action: BlockerEntry.Action(
                         type: "ignore-previous-rules"
@@ -476,7 +476,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 version: SafariVersion.safari16_4,
                 expectedEntry: BlockerEntry(
                     trigger: BlockerEntry.Trigger(
-                        urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                        urlFilter: #"^[^:]+://+([^:/]+\.)?example\.org[/:]"#,
                         loadType: ["first-party"],
                         loadContext: ["child-frame"]
                     ),
@@ -491,7 +491,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 version: SafariVersion.safari16_4,
                 expectedEntry: BlockerEntry(
                     trigger: BlockerEntry.Trigger(
-                        urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                        urlFilter: #"^[^:]+://+([^:/]+\.)?example\.org[/:]"#,
                         resourceType: [
                             "image",
                             "style-sheet",
@@ -578,7 +578,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 version: SafariVersion.safari16_4,
                 expectedEntry: BlockerEntry(
                     trigger: BlockerEntry.Trigger(
-                        urlFilter: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                        urlFilter: #"^[^:]+://+([^:/]+\.)?example\.org[/:]"#,
                         unlessDomain: ["*example.com"]
                     ),
                     action: BlockerEntry.Action(
@@ -595,8 +595,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 expectedEntries: [
                     BlockerEntry(
                         trigger: BlockerEntry.Trigger(
-                            urlFilter:
-                                "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                            urlFilter: #"^[^:]+://+([^:/]+\.)?example\.org[/:]"#,
                             unlessDomain: ["*sub.example.org", "*sub.example.com"]
                         ),
                         action: BlockerEntry.Action(
@@ -606,8 +605,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
                     ),
                     BlockerEntry(
                         trigger: BlockerEntry.Trigger(
-                            urlFilter:
-                                "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.com([\\/:&\\?].*)?$",
+                            urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com[/:]"#,
                             unlessDomain: ["*sub.example.org", "*sub.example.com"]
                         ),
                         action: BlockerEntry.Action(

@@ -24,7 +24,7 @@ final class BlockerEntryEncoderTests: XCTestCase {
             let (result, _) = encoder.encode(entries: entries)
             XCTAssertEqual(
                 result,
-                "[{\"trigger\":{\"url-filter\":\"^[htpsw]+:\\\\/\\\\/([a-z0-9-]+\\\\.)?example\\\\.com\\\\/path\",\"if-domain\":[\"*test.com\"]},\"action\":{\"type\":\"block\"}}]"
+                #"[{"trigger":{"url-filter":"^[^:]+://+([^:/]+\\.)?example\\.com\\/path","if-domain":["*test.com"]},"action":{"type":"block"}}]"#
             )
         }
     }

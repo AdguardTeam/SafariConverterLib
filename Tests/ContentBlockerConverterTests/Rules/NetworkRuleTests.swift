@@ -36,14 +36,13 @@ final class NetworkRuleTests: XCTestCase {
                 ruleText: "||example.org^",
                 expectedUrlRuleText: "||example.org^",
                 expectedUrlRegExpSource:
-                    "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$"
+                    "^[^:]+://+([^:/]+\\.)?example\\.org[/:]"
             ),
             TestCase(
                 // Whitelist rule.
                 ruleText: "@@||example.org^",
                 expectedUrlRuleText: "||example.org^",
-                expectedUrlRegExpSource:
-                    "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedUrlRegExpSource: "^[^:]+://+([^:/]+\\.)?example\\.org[/:]",
                 expectedWhiteList: true
             ),
             TestCase(
@@ -58,16 +57,14 @@ final class NetworkRuleTests: XCTestCase {
                 // $match-case rule.
                 ruleText: "||example.org^$match-case",
                 expectedUrlRuleText: "||example.org^",
-                expectedUrlRegExpSource:
-                    "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedUrlRegExpSource: "^[^:]+://+([^:/]+\\.)?example\\.org[/:]",
                 expectedMatchCase: true
             ),
             TestCase(
                 // $popup rule.
                 ruleText: "||example.org^$popup",
                 expectedUrlRuleText: "||example.org^",
-                expectedUrlRegExpSource:
-                    "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedUrlRegExpSource: "^[^:]+://+([^:/]+\\.)?example\\.org[/:]",
                 expectedPermittedContentTypes: .document,
                 expectedEnabledOptions: .popup
             ),
@@ -75,16 +72,14 @@ final class NetworkRuleTests: XCTestCase {
                 // $important rule.
                 ruleText: "||example.org^$important",
                 expectedUrlRuleText: "||example.org^",
-                expectedUrlRegExpSource:
-                    "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedUrlRegExpSource: "^[^:]+://+([^:/]+\\.)?example\\.org[/:]",
                 expectedImportant: true
             ),
             TestCase(
                 // $document rule.
                 ruleText: "@@||example.org^$document",
                 expectedUrlRuleText: "||example.org^",
-                expectedUrlRegExpSource:
-                    "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedUrlRegExpSource: "^[^:]+://+([^:/]+\\.)?example\\.org[/:]",
                 expectedWhiteList: true,
                 expectedDocumentWhitelist: true,
                 expectedPermittedContentTypes: .document,
@@ -94,8 +89,7 @@ final class NetworkRuleTests: XCTestCase {
                 // $elemhide rule.
                 ruleText: "@@||example.org^$elemhide",
                 expectedUrlRuleText: "||example.org^",
-                expectedUrlRegExpSource:
-                    "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedUrlRegExpSource: "^[^:]+://+([^:/]+\\.)?example\\.org[/:]",
                 expectedWhiteList: true,
                 expectedCssExceptionRule: true,
                 expectedPermittedContentTypes: .document,
@@ -105,8 +99,7 @@ final class NetworkRuleTests: XCTestCase {
                 // $jsinject rule.
                 ruleText: "@@||example.org^$jsinject",
                 expectedUrlRuleText: "||example.org^",
-                expectedUrlRegExpSource:
-                    "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedUrlRegExpSource: "^[^:]+://+([^:/]+\\.)?example\\.org[/:]",
                 expectedWhiteList: true,
                 expectedJsInject: true,
                 expectedPermittedContentTypes: .document,
@@ -116,8 +109,7 @@ final class NetworkRuleTests: XCTestCase {
                 // $jsinject rule.
                 ruleText: "@@||example.org^$urlblock",
                 expectedUrlRuleText: "||example.org^",
-                expectedUrlRegExpSource:
-                    "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedUrlRegExpSource: "^[^:]+://+([^:/]+\\.)?example\\.org[/:]",
                 expectedWhiteList: true,
                 expectedUrlBlock: true,
                 expectedPermittedContentTypes: .document,
@@ -127,8 +119,7 @@ final class NetworkRuleTests: XCTestCase {
                 // $jsinject rule.
                 ruleText: "@@||example.org^$specifichide",
                 expectedUrlRuleText: "||example.org^",
-                expectedUrlRegExpSource:
-                    "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedUrlRegExpSource: "^[^:]+://+([^:/]+\\.)?example\\.org[/:]",
                 expectedWhiteList: true,
                 expectedPermittedContentTypes: .document,
                 expectedEnabledOptions: [.specifichide]
@@ -137,8 +128,7 @@ final class NetworkRuleTests: XCTestCase {
                 // Third-party rule.
                 ruleText: "||example.org^$third-party",
                 expectedUrlRuleText: "||example.org^",
-                expectedUrlRegExpSource:
-                    "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedUrlRegExpSource: "^[^:]+://+([^:/]+\\.)?example\\.org[/:]",
                 expectedThirdParty: true,
                 expectedCheckThirdParty: true
             ),
@@ -146,8 +136,7 @@ final class NetworkRuleTests: XCTestCase {
                 // Third-party alias.
                 ruleText: "||example.org^$3p",
                 expectedUrlRuleText: "||example.org^",
-                expectedUrlRegExpSource:
-                    "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedUrlRegExpSource: "^[^:]+://+([^:/]+\\.)?example\\.org[/:]",
                 expectedThirdParty: true,
                 expectedCheckThirdParty: true
             ),
@@ -155,8 +144,7 @@ final class NetworkRuleTests: XCTestCase {
                 // Third-party alias.
                 ruleText: "||example.org^$~1p",
                 expectedUrlRuleText: "||example.org^",
-                expectedUrlRegExpSource:
-                    "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedUrlRegExpSource: "^[^:]+://+([^:/]+\\.)?example\\.org[/:]",
                 expectedThirdParty: true,
                 expectedCheckThirdParty: true
             ),
@@ -164,8 +152,7 @@ final class NetworkRuleTests: XCTestCase {
                 // Third-party alias.
                 ruleText: "||example.org^$~first-party",
                 expectedUrlRuleText: "||example.org^",
-                expectedUrlRegExpSource:
-                    "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedUrlRegExpSource: "^[^:]+://+([^:/]+\\.)?example\\.org[/:]",
                 expectedThirdParty: true,
                 expectedCheckThirdParty: true
             ),
@@ -173,22 +160,20 @@ final class NetworkRuleTests: XCTestCase {
                 // $all for Safari is the same as a standard rule.
                 ruleText: "||example.org^$all",
                 expectedUrlRuleText: "||example.org^",
-                expectedUrlRegExpSource:
-                    "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$"
+                expectedUrlRegExpSource: "^[^:]+://+([^:/]+\\.)?example\\.org[/:]"
             ),
             TestCase(
                 ruleText: "||example.org/this$is$path$image,font,media",
                 expectedUrlRuleText: "||example.org/this$is$path",
                 expectedUrlRegExpSource:
-                    "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org\\/this\\$is\\$path",
+                    "^[^:]+://+([^:/]+\\.)?example\\.org\\/this\\$is\\$path",
                 expectedPermittedContentTypes: [.image, .font, .media]
             ),
             TestCase(
                 // $websocket rule.
                 ruleText: "||example.org^$websocket",
                 expectedUrlRuleText: "||example.org^",
-                expectedUrlRegExpSource:
-                    "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedUrlRegExpSource: "^[^:]+://+([^:/]+\\.)?example\\.org[/:]",
                 expectedWebsocket: true,
                 expectedPermittedContentTypes: .websocket
             ),
@@ -196,8 +181,7 @@ final class NetworkRuleTests: XCTestCase {
                 // $subdocument blocking rule with $third-party.
                 ruleText: "||example.org^$subdocument,third-party",
                 expectedUrlRuleText: "||example.org^",
-                expectedUrlRegExpSource:
-                    "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedUrlRegExpSource: "^[^:]+://+([^:/]+\\.)?example\\.org[/:]",
                 expectedThirdParty: true,
                 expectedCheckThirdParty: true,
                 expectedPermittedContentTypes: .subdocument
@@ -207,30 +191,27 @@ final class NetworkRuleTests: XCTestCase {
                 ruleText: "||example.org^$subdocument",
                 version: SafariVersion.safari15,
                 expectedUrlRuleText: "||example.org^",
-                expectedUrlRegExpSource:
-                    "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedUrlRegExpSource: "^[^:]+://+([^:/]+\\.)?example\\.org[/:]",
                 expectedPermittedContentTypes: .subdocument
             ),
             TestCase(
                 // $document for blocking page load.
                 ruleText: "||example.org^$document",
                 expectedUrlRuleText: "||example.org^",
-                expectedUrlRegExpSource:
-                    "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedUrlRegExpSource: "^[^:]+://+([^:/]+\\.)?example\\.org[/:]",
                 expectedPermittedContentTypes: .document,
                 expectedEnabledOptions: [.document]
             ),
             TestCase(
                 ruleText: "||example.org\\$smth",
                 expectedUrlRuleText: "||example.org\\$smth",
-                expectedUrlRegExpSource: "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org\\\\\\$smth"
+                expectedUrlRegExpSource: "^[^:]+://+([^:/]+\\.)?example\\.org\\\\\\$smth"
             ),
             TestCase(
                 // Test $domain modifier.
                 ruleText: "||example.org^$domain=example.org|~sub.example.org",
                 expectedUrlRuleText: "||example.org^",
-                expectedUrlRegExpSource:
-                    "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedUrlRegExpSource: "^[^:]+://+([^:/]+\\.)?example\\.org[/:]",
                 expectedPermittedDomains: ["example.org"],
                 expectedRestrictedDomains: ["sub.example.org"]
             ),
@@ -238,8 +219,7 @@ final class NetworkRuleTests: XCTestCase {
                 // Test $domain for TLD.
                 ruleText: "||example.org^$domain=jp|~co",
                 expectedUrlRuleText: "||example.org^",
-                expectedUrlRegExpSource:
-                    "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedUrlRegExpSource: "^[^:]+://+([^:/]+\\.)?example\\.org[/:]",
                 expectedPermittedDomains: ["jp"],
                 expectedRestrictedDomains: ["co"]
             ),
@@ -247,8 +227,7 @@ final class NetworkRuleTests: XCTestCase {
                 // Test $from alias.
                 ruleText: "||example.org^$from=example.org",
                 expectedUrlRuleText: "||example.org^",
-                expectedUrlRegExpSource:
-                    "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedUrlRegExpSource: "^[^:]+://+([^:/]+\\.)?example\\.org[/:]",
                 expectedPermittedDomains: ["example.org"]
             ),
             TestCase(
@@ -305,8 +284,7 @@ final class NetworkRuleTests: XCTestCase {
                 ruleText: "||example.org^$ping",
                 version: SafariVersion.safari14,
                 expectedUrlRuleText: "||example.org^",
-                expectedUrlRegExpSource:
-                    "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedUrlRegExpSource: "^[^:]+://+([^:/]+\\.)?example\\.org[/:]",
                 expectedPermittedContentTypes: .ping
             ),
             TestCase(
@@ -314,8 +292,7 @@ final class NetworkRuleTests: XCTestCase {
                 ruleText: "||example.org^$~ping",
                 version: SafariVersion.safari14,
                 expectedUrlRuleText: "||example.org^",
-                expectedUrlRegExpSource:
-                    "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedUrlRegExpSource: "^[^:]+://+([^:/]+\\.)?example\\.org[/:]",
                 expectedRestrictedContentTypes: .ping
             ),
             TestCase(
@@ -330,23 +307,20 @@ final class NetworkRuleTests: XCTestCase {
                 // $badfilter rule.
                 ruleText: "||example.org^$badfilter",
                 expectedUrlRuleText: "||example.org^",
-                expectedUrlRegExpSource:
-                    "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedUrlRegExpSource: "^[^:]+://+([^:/]+\\.)?example\\.org[/:]",
                 expectedBadfilter: true
             ),
             TestCase(
                 // Testing if we can correctly convert domain in the rule to punycode.
                 ruleText: "||почта.рф^",
                 expectedUrlRuleText: "||xn--80a1acny.xn--p1ai^",
-                expectedUrlRegExpSource:
-                    "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?xn--80a1acny\\.xn--p1ai([\\/:&\\?].*)?$"
+                expectedUrlRegExpSource: "^[^:]+://+([^:/]+\\.)?xn--80a1acny\\.xn--p1ai[/:]"
             ),
             TestCase(
                 // Testing if we can correctly convert domain in the $domain modifier to punycode.
                 ruleText: "||example.org^$domain=почта.рф|example.net",
                 expectedUrlRuleText: "||example.org^",
-                expectedUrlRegExpSource:
-                    "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedUrlRegExpSource: "^[^:]+://+([^:/]+\\.)?example\\.org[/:]",
                 expectedPermittedDomains: ["xn--80a1acny.xn--p1ai", "example.net"]
             ),
             TestCase(
@@ -354,8 +328,7 @@ final class NetworkRuleTests: XCTestCase {
                 ruleText:
                     "||example.org^$domain=example.org,__,_,image,__________,script,_,___,_,_,_,_,__",
                 expectedUrlRuleText: "||example.org^",
-                expectedUrlRegExpSource:
-                    "^[htpsw]+:\\/\\/([a-z0-9-]+\\.)?example\\.org([\\/:&\\?].*)?$",
+                expectedUrlRegExpSource: "^[^:]+://+([^:/]+\\.)?example\\.org[/:]",
                 expectedPermittedDomains: ["example.org"],
                 expectedPermittedContentTypes: [.image, .script]
             ),
