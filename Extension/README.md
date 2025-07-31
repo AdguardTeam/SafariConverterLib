@@ -1,6 +1,18 @@
 # Safari Extension API
 
-The library itself is a part of the [SafariConverterLib] project that is
+- [Build Instructions](#build-instructions)
+- [How does it work](#how-does-it-work)
+- [How to use the library](#how-to-use-the-library)
+    - [Host app](#host-app)
+    - [Safari Web Extension](#safari-web-extension)
+        - [Web Extension's Content Script](#web-extensions-content-script)
+        - [Web Extension's Background Script](#web-extensions-background-script)
+        - [Web Extension's Native Host](#web-extensions-native-host)
+    - [Safari App Extension](#safari-app-extension)
+        - [App Extension's Content Script](#app-extensions-content-script)
+        - [App Extension's Native Host](#app-extensions-native-host)
+
+The library itself is part of the [SafariConverterLib] project that is
 responsible for interpreting AdGuard rules and applying them to web pages.
 
 The output of the [SafariConverterLib] is a set of rules that can be used in
@@ -21,6 +33,13 @@ be used from a browser extension's content script.
 [SafariWebExtension]: https://developer.apple.com/documentation/safariservices/safari-web-extensions
 [SafariAppExtension]: https://developer.apple.com/documentation/safariservices/safari-app-extensions
 
+## Build Instructions
+
+- `pnpm install` - install dependencies.
+- `pnpm build` - build the `dist` directory.
+- `pnpm lint` - run linter.
+- `pnpm test` - run tests.
+
 ## How does it work
 
 The library provides a set of classes that can be used to interpret the rules
@@ -31,6 +50,9 @@ get the rules that should be applied to the web page.
 
 It is mapped to an instance of [WebExtension.Configuration] which should be
 passed from the extension's native host to the content script.
+
+This object is then interpreted either by [ContentScript] or [BackgroundScript]
+depending on the extension type (it will be explained below).
 
 This class has the following fields:
 
@@ -46,45 +68,58 @@ This class has the following fields:
   the configuration. This can be used to determine if the configuration is
   outdated and needs to be updated.
 
-Configuration can then be interpreted by [ContentScript]:
-
-```ts
-new ContentScript(config).run();
-```
-
 [Scriptlets]: https://github.com/AdguardTeam/Scriptlets
 [Configuration]: src/configuration.ts
 [ContentScript]: src/content-script.ts
+[BackgroundScript]: src/background-script.ts
 [WebExtension.Configuration]: ../Sources/FilterEngine/WebExtension.swift
 
 ## How to use the library
 
-We will be using [Safari Web Extension][SafariWebExtension] as an example.
-You can also check out the [safari-blocker][safariblocker] app for a more
-complete example.
+The way the library is used depends on whether it is used in a [Safari App Extension][SafariAppExtension]
+or a [Safari Web Extension][SafariWebExtension].
 
 In the explanation below, we will be using the following terms you need to
 familiarize yourself with:
 
 - "Host app" - the app that hosts the extension. This is the app that the user
   will actually run.
-- "Extension native host" - the app that hosts the Web Extension's native code.
-  It can share files with the "Host app" using app groups.
+- "Extension native host" - the app that hosts the Web Extension's or the
+  App Extension's native code. It can share files with the "Host app" using app
+  groups.
 - "Background page" - the browser extension's background page (written in JS).
   Runs in the extension’s own context, separate from the web pages, there's
-  only one instance of it.
+  only one instance of it. **Only exists in a Web Extension**.
 - "Content script" - the browser extension's content script (written in JS).
   Runs in the context of the web page.
 
+Start with adding the library as a dependency to your extension code:
+
+```sh
+npm add -i @adguard/safari-extension
+```
+
+See the full example here or read below:
+
+- [Web Extension's native host][webextnativehost]
+- [Web Extension's javascript][webextjavascript]
+- [App Extension's native host][appextnativehost]
+- [App Extension's content script][appextcontentscript]
+
+[webextnativehost]: https://github.com/ameshkov/safari-blocker/tree/master/web-extension
+[webextjavascript]: https://github.com/ameshkov/safari-blocker/tree/master/extensions/webext
+[appextnativehost]: https://github.com/ameshkov/safari-blocker/tree/master/app-extension
+[appextcontentscript]: https://github.com/ameshkov/safari-blocker/tree/master/extensions/appext
+
 ### Host app
 
-The main prerequisite is that you first need to figure out which AdGuard rules are
-counted as "advanced" and which can be used natively by Safari, you can read
+The main prerequisite is that you first need to figure out which AdGuard rules
+are counted as "advanced" and which can be used natively by Safari. You can read
 how to do that in the [project README.md](../README.md).
 
 Once you have the advanced rules, use them **in your Host app** to build the
-filtering engine which the extension will use for doing lookups. It is done by
-using this code.
+filtering engine that the extension will use for doing lookups. This is done by
+using this code:
 
 ```swift
 let webExtension = try WebExtension.shared(groupID: "your.group.id")
@@ -93,48 +128,23 @@ let webExtension = try WebExtension.shared(groupID: "your.group.id")
 _ = try webExtension.buildFilterEngine(rules: advancedRulesText)
 ```
 
-### Javascript (Background page and content script)
+### Safari Web Extension
 
-Add the library as a dependency to your extension code:
+In the case of [Safari Web Extension][SafariWebExtension], there's a background
+page and we can use the `browser.scripting` API to inject JS and CSS to avoid the
+risk of being blocked by the website's CSP.
 
-```sh
-npm add -i @adguard/safari-extension
-```
+However, due to [a bug in Safari Web Extension][bugexecutescript], we have to use
+the fallback approach for `about:blank` and `about:srcdoc` frames. Hopefully,
+this will be resolved in the future.
 
-In the content script, you will need to request the rules from a background page:
+[bugexecutescript]: https://bugs.webkit.org/show_bug.cgi?id=296702
 
-```ts
-import browser from 'webextension-polyfill';
-import { type Configuration, ContentScript } from '@adguard/safari-extension';
+#### Web Extension's Content Script
 
-const main = async () => {
-    // Request configuration for the current page from the background script.
-    const message = {
-        type: "lookup",
-    };
-
-    const response = await browser.runtime.sendMessage(message);
-
-    if (response) {
-        // Extract the payload from the response, which contains the configuration.
-        const { configuration, verbose } = response as {
-            configuration: Configuration;
-            verbose: boolean;
-        };
-
-        // Instantiate and run the content script with the provided configuration.
-        new ContentScript(configuration).run(verbose, '[Web Extension]');
-    }
-}
-
-main().catch((error) => {
-    console.error('Error in the content script: ', error);
-});
-```
-
-Make sure, that the content script is configured to run on all pages including
+Make sure that the content script is configured to run on all pages including
 iframes. Below is an example of how the content script should be registered in
-`manifest.json`.
+`manifest.json`:
 
 ```json
     "content_scripts": [
@@ -153,28 +163,87 @@ iframes. Below is an example of how the content script should be registered in
     ]
 ```
 
-On the background page you should listen for incoming messages and pass them
-to the native host. In addition to that we strongly recommend having a local
-cache on the background page to speed up lookups.
+The very first step would be to expose `ContentScript` to other content scripts;
+this way it can be called from scripts injected by `scripting.executeScript()`.
 
 ```ts
+// First of all, make sure that the content script is exposed to the
+// scripts that will be called by background script.
+window.adguard = {
+    contentScript: new ContentScript(),
+};
+```
+
+The second thing is to delay native load events:
+
+```js
+// Initialize the delayed event dispatcher. This may intercept DOMContentLoaded
+// and load events. The delay of 1000ms is used as a buffer to capture critical
+// initial events while waiting for the rules response.
+const cancelDelayedDispatchAndDispatch = setupDelayedEventDispatcher(1000);
+```
+
+Finally, request configuration from the background page:
+
+```js
+const main = async () => {
+    const message = {
+        type: 'lookup',
+    };
+
+    // Send the message to the background script and await the response.
+    const response = await browser.runtime.sendMessage(message);
+
+    // If the background page returned payload with configuration, it means
+    // that it cannot apply it on its own and commands the content script
+    // to do that.
+    if (response?.payload) {
+        window.adguard.contentScript.applyConfiguration(response?.payload);
+    }
+
+    // After processing, cancel any pending delayed event dispatch and process
+    // any queued events immediately.
+    cancelDelayedDispatchAndDispatch();
+};
+
+// Execute the main function and catch any runtime errors.
+main().catch((error) => {
+    console.error('Error in content script: ', error);
+});
+```
+
+#### Web Extension's Background Script
+
+On the background page, you should listen for incoming messages and relay them
+to the native host. In addition to that, we strongly recommend having a local
+cache on the background page to speed up lookups.
+
+```js
 import browser from 'webextension-polyfill';
-import { type Configuration } from '@adguard/safari-extension';
+import { type Configuration, BackgroundScript } from '@adguard/safari-extension';
 
-browser.runtime.onMessage.addListener(async (request: unknown, sender: unknown) => {
-    // Cast the incoming request as a Message.
-    const message = request as { type: string };
+/**
+ * BackgroundScript is used to apply filtering configuration to web pages.
+ * Note that it relies on the content script to be injected into the page
+ * and available in the ISOLATED world via the `adguard.contentScript` object.
+ */
+const backgroundScript = new BackgroundScript();
 
+browser.runtime.onMessage.addListener(async (message, sender) => {
     if (message.type === 'lookup') {
         // Extract the URL from the sender data.
-        const senderData = sender as { url: string, frameId: number, tab: { url: string } };
-        const topUrl = senderData.frameId === 0 ? null : senderData.tab.url;
-        let { url } = senderData;
+        const tabId = sender.tab?.id ?? 0;
+        const frameId = sender.frameId ?? 0;
+        let blankFrame = false;
+
+        let url = sender.url || '';
+        const topUrl = frameId === 0 ? undefined : sender.tab?.url;
 
         if (!url.startsWith('http') && topUrl) {
-            // Handle the case of non-HTTP iframes, i.e. frames created by JS.
-            // For instance, frames can be created as 'about:blank' or 'data:text/html'
+            // Handle the case of non-HTTP iframes, i.e., frames created by JS.
+            // For instance, frames can be created as 'about:blank' or 'data:text/html'.
             url = topUrl;
+            blankFrame = true;
         }
 
         const lookupMessage = {
@@ -186,17 +255,27 @@ browser.runtime.onMessage.addListener(async (request: unknown, sender: unknown) 
         // Ask the native host to lookup rules for the given URL and top-level URL.
         const response = await browser.runtime.sendNativeMessage('application.id', lookupMessage);
 
-        const responseMessage = response as {
-            configuration: Configuration,
-            verbose: boolean
-        };
+        // In the current Safari version, we cannot apply rules to blank frames from
+        // the background: https://bugs.webkit.org/show_bug.cgi?id=296702
+        //
+        // In this case, we fall back to using the content script to apply rules.
+        // The downside here is that the content script cannot override the website's
+        // CSPs.
+        if (!blankFrame && response.payload) {
+            await backgroundScript.applyConfiguration(
+                tabId,
+                frameId,
+                response.payload,
+            );
+        }
 
-        return responseMessage;
+        // Pass the configuration to the content script.
+        return response;
     }
 });
 ```
 
-### Extension native host
+### Web Extension's Native Host
 
 Finally, in the native host code, you should handle the message and use
 `WebExtension` to look up the configuration.
@@ -221,10 +300,6 @@ public class SafariWebExtensionHandler: NSObject, NSExtensionRequestHandling {
         }
 
         var responseMessage: [String: Any] = [:]
-
-        // Enable verbose logging in the content script.
-        // In the real app `verbose` flag should only be true for debugging purposes.
-        responseMessage["verbose"] = true
 
         if type == "lookup" {
             do {
@@ -315,11 +390,111 @@ public class SafariWebExtensionHandler: NSObject, NSExtensionRequestHandling {
 }
 ```
 
-[safariblocker]: https://github.com/ameshkov/safari-blocker
+### Safari App Extension
 
-## Build Instructions
+In the case of [Safari App Extension][SafariAppExtension], there's no background
+page and all rule types are interpreted by [ContentScript].
 
-- `pnpm install` - install dependencies.
-- `pnpm build` - build the `dist` directory.
-- `pnpm lint` - run linter.
-- `pnpm test` - run tests.
+Add the library as a dependency to your extension code:
+
+```sh
+npm add -i @adguard/safari-extension
+```
+
+#### App Extension's Content Script
+
+In the content script request the rules from the native host:
+
+```js
+// Generate a pseudo-unique request ID for properly tracing the response to the
+// request that was sent by this instance of an SFSafariContentScript.
+// We will only accept responses to this specific request.
+const requestId = Math.random().toString(36);
+
+// Prepare the message to request configuration rules for the current page.
+// getUrl() and getTopUrl() need to be implemented (see safari-blocker for an
+// example).
+const message = {
+    requestId,
+    url: getUrl(),
+    topUrl: getTopUrl(),
+};
+
+// Dispatch the "requestRules" message to the Safari extension.
+safari.extension.dispatchMessage('requestRules', message);
+```
+
+You also need to handle the response from the native host and pass the
+[Configuration] object to [ContentScript]:
+
+```js
+import {
+    type Configuration,
+    ContentScript,
+    setupDelayedEventDispatcher
+} from '@adguard/safari-extension';
+
+// Initialize the delayed event dispatcher. This may intercept DOMContentLoaded
+// and load events. The delay of 1000ms is used as a buffer to capture critical
+// initial events while waiting for the rules response.
+const cancelDelayedDispatchAndDispatch = setupDelayedEventDispatcher(1000);
+
+// Register the event listener for incoming messages from the extension.
+safari.self.addEventListener('message', handleMessage);
+
+const handleMessage = (event) => {
+    const message = event.message;
+
+    if (message?.requestId !== requestId) {
+        // Received response for a different request ID; ignore it as it
+        // was sent to a different frame.
+
+        return;
+    }
+
+    // If the configuration payload exists, run the ContentScript with it.
+    if (message?.payload) {
+        new ContentScript().applyConfiguration(message?.payload);
+    }
+
+    // Cancel the pending delayed event dispatch and process any queued events.
+    cancelDelayedDispatchAndDispatch();
+};
+```
+
+#### App Extension's Native Host
+
+Finally, in the extension's native host code, you should handle the message and
+use `WebExtension` to look up the configuration.
+
+```swift
+public override func messageReceived(
+    withName messageName: String,
+    from page: SFSafariPage,
+    userInfo: [String: Any]?
+) {
+    // Skip code
+
+    let webExtension = try WebExtension.shared(
+        groupID: GroupIdentifier.shared.value
+    )
+
+    if let conf = webExtension.lookup(pageUrl: url, topUrl: topUrl) {
+        // Convert the configuration into a payload (dictionary
+        // format) that is consumable by the content script.
+        let payload = convertToPayload(conf)
+
+        // Dispatch the payload back to the web page under the same
+        // message name.
+        let responseUserInfo: [String: Any] = [
+            "requestId": requestId,
+            "payload": payload,
+        ]
+
+        page.dispatchMessageToScript(
+            withName: "requestRules",
+            userInfo: responseUserInfo
+        )
+    }
+}
+```

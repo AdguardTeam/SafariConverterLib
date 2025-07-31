@@ -36,7 +36,7 @@ test('ContentScript adds CSS to the page', () => {
     };
 
     // Act: run the content script with the given configuration
-    new ContentScript(config).run();
+    new ContentScript().applyConfiguration(config);
 
     // Assert: verify that the style is added to the document
     const styleElements = document.head.querySelectorAll('style');
@@ -64,7 +64,7 @@ test('ContentScript adds CSS display:none when given only selector', () => {
     };
 
     // Act: run the content script with the given configuration
-    new ContentScript(config).run();
+    new ContentScript().applyConfiguration(config);
 
     // Assert: verify that the style is added to the document
     const styleElements = document.head.querySelectorAll('style');
@@ -98,7 +98,7 @@ test('ContentScript applies extended CSS', () => {
     document.body.appendChild(element);
 
     // Act: run the content script with the given configuration
-    new ContentScript(config).run();
+    new ContentScript().applyConfiguration(config);
 
     // Assert: verify that the style is added inline to the element
     expect(element.style.backgroundColor).toBe('blue');
@@ -118,7 +118,7 @@ test('ContentScript adds JS to the page', () => {
     };
 
     // Run the content script
-    new ContentScript(config).run();
+    new ContentScript().applyConfiguration(config);
 
     // Now you can safely use the spy
     expect(logSpy).toHaveBeenCalledWith('Hello, world!');
@@ -138,7 +138,7 @@ test('ContentScript applies scriptlets', () => {
     };
 
     // Run the content script
-    new ContentScript(config).run();
+    new ContentScript().applyConfiguration(config);
 
     // Loosely match the expected argument.
     const expectedArgument = expect.arrayContaining([
