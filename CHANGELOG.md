@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Started using `browser.scripting.executeScript()` to inject scripts and JS
+  into web pages. This approach allows us to avoid issues with websites' CSP
+  policies: [#98]. There is one exception, however: we can't inject scripts
+  into the `about:` iframes so in this case the old approach is required.
+
+- Specified exact versions for `@adguard/extended-css` and `@adguard/scriptlets`
+  dependencies: [#95].
+
+- Moved `setupDelayedEventDispatcher` from sample code to the library: [#96].
+
 - Changed the regular expressions that are used when converting `||` and `^`
   special characters of AdGuard rules: [#102].
 
@@ -20,6 +30,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Fixed the issue with matching multiple levels of subdomains. Before that
     change `||example.org` would not much `sub.sub.example.org`, now it does.
 
+[#95]: https://github.com/AdguardTeam/SafariConverterLib/issues/95
+[#96]: https://github.com/AdguardTeam/SafariConverterLib/issues/96
+[#98]: https://github.com/AdguardTeam/SafariConverterLib/issues/98
 [#102]: https://github.com/AdguardTeam/SafariConverterLib/issues/102
 
 ### Fixed
