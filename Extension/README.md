@@ -93,12 +93,6 @@ familiarize yourself with:
 - "Content script" - the browser extension's content script (written in JS).
   Runs in the context of the web page.
 
-Start with adding the library as a dependency to your extension code:
-
-```sh
-npm add -i @adguard/safari-extension
-```
-
 See the full example here or read below:
 
 - [Web Extension's native host][webextnativehost]
@@ -126,6 +120,24 @@ let webExtension = try WebExtension.shared(groupID: "your.group.id")
 
 // Build the engine and serialize it to the shared location.
 _ = try webExtension.buildFilterEngine(rules: advancedRulesText)
+```
+
+### Javascript code
+
+Start with adding the library as a dependency to your extension code:
+
+```sh
+npm add -i @adguard/safari-extension
+```
+
+Logger can be redefined by the library user or you can use `ConsoleLogger` class
+that is provided by the library. Use `setLogger` to set the logger that will
+be used:
+
+```ts
+import { setLogger, ConsoleLogger, LoggingLevel } from '@adguard/safari-extension';
+
+setLogger(new ConsoleLogger('[Safari Extension]', LoggingLevel.Info));
 ```
 
 ### Safari Web Extension

@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Breaking changes
+
+- In `@adguard/safari-extension` the interface of `ContentScript` has been
+  changed, it is now supposed to be used like this:
+
+  ```ts
+  const contentScript = new ContentScript();
+  contentScript.applyConfiguration(configuration);
+  ```
+
 ### Changed
 
 - Started using `browser.scripting.executeScript()` to inject scripts and JS
