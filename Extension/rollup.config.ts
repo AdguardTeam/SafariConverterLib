@@ -1,19 +1,19 @@
 /**
- * @file Rollup configurations for generating CSSTokenizer builds.
+ * @file Rollup configurations for generating SafariExtension builds.
  *
  * ! Please ALWAYS use the "pnpm build" command for building
  * ! Running Rollup directly will not enough, the build script
  * ! does some additional work before and after running Rollup.
  */
 
+import path from 'path';
+import { readFileSync } from 'fs';
 import typescript from '@rollup/plugin-typescript';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import dtsPlugin from 'rollup-plugin-dts';
 import json from '@rollup/plugin-json';
 import { getBabelOutputPlugin } from '@rollup/plugin-babel';
-import path from 'path';
-import { readFileSync } from 'fs';
 
 // Common constants
 const ROOT_DIR = './';
@@ -48,7 +48,8 @@ const BANNER = `/*
  * (c) ${new Date().getFullYear()} ${pkg.author}
  * Released under the ${pkg.license} license
  * ${pkg.homepage}
- */`;
+ */
+`;
 
 // Pre-configured TypeScript plugin.
 const typeScriptPlugin = typescript({
@@ -93,11 +94,16 @@ const esm = {
         {
             file: path.join(distDirLocation, `${BASE_FILE_NAME}.esm.js`),
             format: 'esm',
-            sourcemap: false,
+            sourcemap: true,
             banner: BANNER,
         },
     ],
     plugins: nodePlugins,
+    external: [
+        '@adguard/extended-css',
+        '@adguard/scriptlets',
+        'webextension-polyfill',
+    ],
 };
 
 // Merge .d.ts files (requires `tsc` to be run first, because it merges .d.ts

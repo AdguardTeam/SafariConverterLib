@@ -6,8 +6,10 @@ import { ExtendedCss } from '@adguard/extended-css';
 import { type Source as ScriptletSource, scriptlets as ScriptletsAPI } from '@adguard/scriptlets';
 
 import { type Configuration, type Scriptlet } from './configuration';
-import { log, initLogger } from './logger';
+import { log } from './log';
 import { version as extensionVersion } from '../package.json';
+import { SCRIPTLET_ENGINE_NAME, toCSSRules } from './common';
+import { type IContentScript } from './content-types';
 
 /**
  * Executes code in the context of the page via new script tag and text content.
@@ -65,22 +67,9 @@ const executeScripts = (scripts: string[] = []) => {
     const code = scripts.join('\r\n');
     if (!executeScriptsViaTextContent(code)) {
         if (!executeScriptsViaBlob(code)) {
-            log('Failed to execute scripts');
+            log.error('Failed to execute scripts');
         }
     }
-};
-
-/**
- * Applies JS injections.
- *
- * @param {string[]} scripts Array with JS scripts.
- */
-const applyScripts = (scripts: string[]) => {
-    if (!scripts || scripts.length === 0) {
-        return;
-    }
-
-    executeScripts(scripts);
 };
 
 /**
@@ -139,71 +128,6 @@ const protectStyleElementContent = (protectStyleEl: HTMLElement) => {
 };
 
 /**
- * Makes sure that we're dealing with CSS rules (selector + style)
- *
- * @param {string[]} css Array of CSS selectors (for hiding elemets) or full CSS rules.
- * @returns {string[]} Array of CSS rules.
- */
-const toCSSRules = (css: string[]): string[] => {
-    return css
-        .filter((s) => s.length > 0)
-        .map((s) => s.trim())
-        .map((s) => {
-            return s[s.length - 1] !== '}'
-                ? `${s} {display:none!important;}`
-                : s;
-        });
-};
-
-/**
- * Applies css stylesheet.
- *
- * @param {string[]} css Array of CSS rules to apply.
- */
-const applyCss = (css: string[]) => {
-    if (!css || !css.length) {
-        return;
-    }
-
-    try {
-        const styleElement = document.createElement('style');
-        styleElement.setAttribute('type', 'text/css');
-        (document.head || document.documentElement).appendChild(styleElement);
-
-        if (styleElement.sheet) {
-            const cssRules = toCSSRules(css);
-            for (const style of cssRules) {
-                styleElement.sheet.insertRule(style);
-            }
-        }
-
-        protectStyleElementContent(styleElement);
-    } catch (e) {
-        log('Failed to apply CSS', e);
-    }
-};
-
-/**
- * Applies Extended Css stylesheet.
- *
- * @param {string[]} extendedCss Array with ExtendedCss rules.
- */
-const applyExtendedCss = (extendedCss: string[]) => {
-    if (!extendedCss || !extendedCss.length) {
-        return;
-    }
-
-    try {
-        const cssRules = toCSSRules(extendedCss);
-        const extCss = new ExtendedCss({ cssRules });
-
-        extCss.apply();
-    } catch (e) {
-        log('Failed to apply extended CSS', e);
-    }
-};
-
-/**
  * Converts scriptlet to the code that can be executed.
  *
  * @param {Scriptlet} scriptlet Scriptlet data (name and arguments)
@@ -213,7 +137,7 @@ const applyExtendedCss = (extendedCss: string[]) => {
 const getScriptletCode = (scriptlet: Scriptlet, verbose: boolean): string => {
     try {
         const scriptletSource: ScriptletSource = {
-            engine: 'safari-extension',
+            engine: SCRIPTLET_ENGINE_NAME,
             name: scriptlet.name,
             args: scriptlet.args,
             version: extensionVersion,
@@ -222,61 +146,133 @@ const getScriptletCode = (scriptlet: Scriptlet, verbose: boolean): string => {
 
         return ScriptletsAPI.invoke(scriptletSource);
     } catch (e) {
-        log(`Failed to get scriptlet code ${scriptlet.name}`, e);
+        log.error('Failed to get scriptlet code', scriptlet.name, e);
     }
 
     return '';
 };
 
+// Disable class-methods-use-this rule for the following code since it needs
+// to implement particular interface.
+/* eslint-disable class-methods-use-this  */
+
 /**
- * Applies scriptlets.
+ * Content script object. The way this object is used is different and
+ * depends on whether this code is used from Safari App Extension or from
+ * Safari Web Extension.
  *
- * @param {Scriptlet[]} scriptlets Array with scriptlets data.
- * @param {boolean} verbose Whether to log verbose output.
+ * In the case of Safari App Extension, this object is used from within
+ * the content script, i.e. it is used to apply the configuration to the web
+ * page.
+ *
+ * In the case of Safari Web Extension, `BackgroundScript` relies on the
+ * functions of this object to run scripts and insert extended CSS into the
+ * web page, i.e. it expects that there will be a global `adguard.contentScript`
+ * object in the `ISOLATED` world that implements this interface.
  */
-const applyScriptlets = (scriptlets: Scriptlet[], verbose: boolean) => {
-    if (!scriptlets || !scriptlets.length) {
-        return;
-    }
-
-    const getCode = (scriptlet: Scriptlet) => getScriptletCode(scriptlet, verbose);
-    const scripts = scriptlets.map(getCode);
-
-    executeScripts(scripts);
-};
-
-/**
- * Content script that applies all the rules from the configuration.
- */
-class ContentScript {
-    private readonly configuration: Configuration;
-
-    constructor(configuration: Configuration) {
-        this.configuration = configuration;
+class ContentScript implements IContentScript {
+    /**
+     * Applies the configuration to the web page. This method is supposed to be
+     * run from the extension's content script (ISOLATED world) and it is only
+     * supposed to be used by Safari App Extension.
+     *
+     * @param configuration Configuration to apply.
+     * @param verbose Whether to log verbose output.
+     */
+    public applyConfiguration(configuration: Configuration, verbose: boolean = false) {
+        this.insertCss(configuration.css);
+        this.insertExtendedCss(configuration.extendedCss);
+        this.runScriptlets(configuration.scriptlets, verbose);
+        this.runScripts(configuration.js);
     }
 
     /**
-     * Runs the content script on the page.
+     * Inserts specified CSS rules to the page.
      *
-     * @param verbose Whether to log verbose output.
-     * @param prefix Prefix for log messages.
+     * @param css Array of CSS rules to apply. Can be a selector
      */
-    public run(verbose: boolean = false, prefix: string = '[AdGuard Extension]') {
-        if (verbose) {
-            initLogger('log', prefix);
-        } else {
-            initLogger('discard', '');
+    public insertCss(css: string[]) {
+        if (!css || !css.length) {
+            return;
         }
 
-        log('Starting content script execution...');
+        try {
+            const styleElement = document.createElement('style');
+            styleElement.setAttribute('type', 'text/css');
+            (document.head || document.documentElement).appendChild(styleElement);
 
-        applyCss(this.configuration.css);
-        applyExtendedCss(this.configuration.extendedCss);
-        applyScriptlets(this.configuration.scriptlets, verbose);
-        applyScripts(this.configuration.js);
+            if (styleElement.sheet) {
+                const cssRules = toCSSRules(css);
+                for (const style of cssRules) {
+                    styleElement.sheet.insertRule(style);
+                }
+            }
 
-        log('Finished content script execution');
+            protectStyleElementContent(styleElement);
+        } catch (e) {
+            log.error('Failed to insert CSS', e);
+        }
+    }
+
+    /**
+     * Applies Extended Css stylesheet.
+     *
+     * @param {string[]} extendedCss Array with ExtendedCss rules.
+     */
+    public insertExtendedCss(extendedCss: string[]) {
+        if (!extendedCss || !extendedCss.length) {
+            return;
+        }
+
+        try {
+            const cssRules = toCSSRules(extendedCss);
+            const extCss = new ExtendedCss({ cssRules });
+
+            extCss.apply();
+        } catch (e) {
+            log.error('Failed to insert extended CSS', e);
+        }
+    }
+
+    /**
+     * Runs scripts in the web page. This method is supposed to be run from the
+     * extension's content script (ISOLATED world).
+     *
+     * In the case of Safari Web Extension this method is exposed via
+     * `adguard.contentScript` global object in `ISOLATED` world.
+     *
+     * @param scripts Array of scripts to run.
+     */
+    public runScripts(scripts: string[]) {
+        if (!scripts || scripts.length === 0) {
+            return;
+        }
+
+        executeScripts(scripts);
+    }
+
+    /**
+     * Runs scriptlets in the web page. This method is supposed to be run from
+     * the extension's content script (ISOLATED world).
+     *
+     * In the case of Safari Web Extension this method is exposed via
+     * `adguard.contentScript` global object in `ISOLATED` world.
+     *
+     * @param scriptlets Array of scriptlets to run.
+     * @param verbose Whether to log verbose output.
+     */
+    public runScriptlets(scriptlets: Scriptlet[], verbose: boolean) {
+        if (!scriptlets || !scriptlets.length) {
+            return;
+        }
+
+        const getCode = (scriptlet: Scriptlet) => getScriptletCode(scriptlet, verbose);
+        const scripts = scriptlets.map(getCode);
+
+        executeScripts(scripts);
     }
 }
 
 export { ContentScript };
+
+/* eslint-enable class-methods-use-this */
