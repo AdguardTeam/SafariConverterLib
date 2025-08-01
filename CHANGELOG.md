@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+[unreleased]: https://github.com/AdguardTeam/SafariConverterLib/compare/v4.0.0...HEAD
+
+## [v4.0.0]
+
 ### Breaking changes
 
 - In `@adguard/safari-extension` the interface of `ContentScript` has been
@@ -66,7 +70,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [#74]: https://github.com/AdguardTeam/SafariConverterLib/issues/74
 [#66]: https://github.com/AdguardTeam/SafariConverterLib/issues/66
 
-[unreleased]: https://github.com/AdguardTeam/SafariConverterLib/compare/v3.1.0...HEAD
+[v4.0.0]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v4.0.0
 
 ## [v3.1.0]
 
