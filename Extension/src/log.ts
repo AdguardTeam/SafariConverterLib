@@ -99,15 +99,6 @@ export class NullLogger implements Logger {
 let internalLogger: Logger = new NullLogger();
 
 /**
- * Sets the logger to use.
- *
- * @param logger to use.
- */
-const setLogger = (logger: Logger): void => {
-    internalLogger = logger;
-};
-
-/**
  * Proxy logger that delegates all calls to the internal logger.
  * This internal logger can be redefined by the library user
  * via `setLogger`.
@@ -134,7 +125,18 @@ class ProxyLogger implements Logger {
     }
 }
 
-export const log: Logger = new ProxyLogger();
-export {
-    setLogger,
+/**
+ * Sets the logger to use.
+ *
+ * @param logger to use.
+ */
+export const setLogger = (logger: Logger): void => {
+    internalLogger = logger;
 };
+
+/**
+ * Logger instance that will be used inside the library (and can be actually
+ * used outside the library too). It delegates all calls to the internal logger
+ * that can be redefined via `setLogger`.
+ */
+export const log: Logger = new ProxyLogger();
