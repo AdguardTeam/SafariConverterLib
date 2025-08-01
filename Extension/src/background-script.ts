@@ -6,16 +6,22 @@
 import browser from 'webextension-polyfill';
 import { type Source as ScriptletSource, scriptlets as ScriptletsAPI } from '@adguard/scriptlets';
 
-import adguard from './content-types';
 import { type Scriptlet, type Configuration } from './configuration';
 import { SCRIPTLET_ENGINE_NAME, toCSSRules } from './common';
 import { version as extensionVersion } from '../package.json';
 import { log, LoggingLevel } from './log';
+import type { AdGuard } from './content-types';
 
 /**
  * Type of the registered script function.
  */
 export declare type ScriptFunction = (args: unknown[]) => unknown;
+
+// Declare `adguard` as a global variable, but it is actually
+// only available in the `ISOLATED` world.
+declare global {
+    const adguard: AdGuard;
+}
 
 /**
  * `BackgroundScript` is a class that is used by web extension's background
@@ -230,7 +236,12 @@ export class BackgroundScript {
                 frameIds: [frameId],
             },
             func: (scripts: string[] = []) => {
-                adguard.contentScript.runScripts(scripts);
+                try {
+                    adguard.contentScript.runScripts(scripts);
+                } catch (e) {
+                    // eslint-disable-next-line no-console
+                    console.error('Failed to run scripts, make sure adguard.contentScript is available', e);
+                }
             },
             args: [scriptTexts],
             world: 'ISOLATED',
@@ -261,7 +272,12 @@ export class BackgroundScript {
                 frameIds: [frameId],
             },
             func: (extCss: string[] = []) => {
-                adguard.contentScript.insertExtendedCss(extCss);
+                try {
+                    adguard.contentScript.insertExtendedCss(extCss);
+                } catch (e) {
+                    // eslint-disable-next-line no-console
+                    console.error('Failed to insert extended CSS, make sure adguard.contentScript is available', e);
+                }
             },
             args: [extendedCss],
             world: 'ISOLATED',

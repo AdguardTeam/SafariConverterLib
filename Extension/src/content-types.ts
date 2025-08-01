@@ -83,11 +83,3 @@ export interface IContentScript {
 export interface AdGuard {
     contentScript: IContentScript;
 }
-
-/**
- * Default export for backward compatibility.
- * This represents the global adguard object structure.
- */
-const adguard: AdGuard = {} as AdGuard;
-
-export default adguard;
