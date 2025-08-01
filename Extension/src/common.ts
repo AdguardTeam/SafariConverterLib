@@ -10,15 +10,15 @@ export const SCRIPTLET_ENGINE_NAME = 'safari-extension';
 /**
  * Makes sure that we're dealing with CSS rules (selector + style)
  *
- * @param css Array of CSS selectors (for hiding elemets) or full CSS rules.
+ * @param css Array of CSS selectors (for hiding elements) or full CSS rules.
  * @returns Array of CSS rules.
  */
 export const toCSSRules = (css: string[]): string[] => {
     return css
-        .filter((s) => s.length > 0)
         .map((s) => s.trim())
+        .filter((s) => s.length > 0)
         .map((s) => {
-            return s[s.length - 1] !== '}'
+            return s.at(-1) !== '}'
                 ? `${s} {display:none!important;}`
                 : s;
         });

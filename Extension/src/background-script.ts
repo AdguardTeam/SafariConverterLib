@@ -50,20 +50,16 @@ export class BackgroundScript {
      *
      * @param registeredScripts Map of registered script functions.
      */
-    constructor(registeredScripts: Map<string, ScriptFunction> | undefined = undefined) {
-        if (registeredScripts) {
-            this.registeredScripts = registeredScripts;
-        } else {
-            // This is a default registered script that is used on
-            // testcases.agrd.dev for CSP tests.
-            //
-            // TODO: Add a test case.
-            this.registeredScripts = new Map();
-            this.registeredScripts.set('console.log(Date.now(), "default registered script")', () => {
-                // eslint-disable-next-line no-console
-                console.log(Date.now(), 'default registered script');
-            });
-        }
+    constructor(registeredScripts: Map<string, ScriptFunction> = new Map()) {
+        this.registeredScripts = registeredScripts;
+
+        // Make sure that the default registered script is always added to the
+        // map. This is a default registered script that is used on
+        // testcases.agrd.dev for CSP tests.
+        this.registeredScripts.set('console.log(Date.now(), "default registered script")', () => {
+            // eslint-disable-next-line no-console
+            console.log(Date.now(), 'default registered script');
+        });
     }
 
     /**

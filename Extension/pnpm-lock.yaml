@@ -14,9 +14,6 @@ importers:
       '@adguard/scriptlets':
         specifier: 2.2.8
         version: 2.2.8
-      '@types/webextension-polyfill':
-        specifier: ^0.12.3
-        version: 0.12.3
     devDependencies:
       '@babel/core':
         specifier: ^7.22.8
@@ -39,6 +36,9 @@ importers:
       '@rollup/plugin-typescript':
         specifier: ^11.1.4
         version: 11.1.6(rollup@3.29.5)(tslib@1.14.1)(typescript@5.7.3)
+      '@types/webextension-polyfill':
+        specifier: ^0.12.3
+        version: 0.12.3
       '@typescript-eslint/eslint-plugin':
         specifier: ^7.0.0
         version: 7.18.0(@typescript-eslint/parser@7.18.0(eslint@8.57.1)(typescript@5.7.3))(eslint@8.57.1)(typescript@5.7.3)

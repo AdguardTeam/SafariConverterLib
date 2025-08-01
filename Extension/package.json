@@ -43,8 +43,7 @@
   },
   "dependencies": {
     "@adguard/extended-css": "2.1.1",
-    "@adguard/scriptlets": "2.2.8",
-    "@types/webextension-polyfill": "^0.12.3"
+    "@adguard/scriptlets": "2.2.8"
   },
   "devDependencies": {
     "@babel/core": "^7.22.8",
@@ -54,6 +53,7 @@
     "@rollup/plugin-json": "^6.0.0",
     "@rollup/plugin-node-resolve": "^15.2.1",
     "@rollup/plugin-typescript": "^11.1.4",
+    "@types/webextension-polyfill": "^0.12.3",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",
     "eslint": "^8.57.0",
