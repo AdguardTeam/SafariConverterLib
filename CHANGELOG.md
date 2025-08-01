@@ -7,7 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-[unreleased]: https://github.com/AdguardTeam/SafariConverterLib/compare/v4.0.0...HEAD
+[unreleased]: https://github.com/AdguardTeam/SafariConverterLib/compare/v4.0.1...HEAD
+
+## [v4.0.1]
+
+A small change has been made to `@adguard/safari-extension` library and the way
+`adguard` global variable is defined. It should simplify using the library with
+webpack.
+
+[v4.0.1]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v4.0.1
 
 ## [v4.0.0]
 
