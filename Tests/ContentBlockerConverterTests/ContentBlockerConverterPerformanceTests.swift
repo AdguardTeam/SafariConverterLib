@@ -30,6 +30,12 @@ extension ContentBlockerConverterTests {
         //
         // July 23, 2025 (changed regexes for || and ^)
         // 331.79 Mc  69.4%: ContentBlockerConverter.convertArray
+        //
+        // On MBP M4 Max 2024 48GB
+        // CPU profiler result:
+        //
+        // Aug 8, 2025
+        // 302.14 Mc  68,4%: ContentBlockerConverter.convertArray
         let conversionResult = ContentBlockerConverter().convertArray(
             rules: rules,
             safariVersion: SafariVersion.safari16_4,
