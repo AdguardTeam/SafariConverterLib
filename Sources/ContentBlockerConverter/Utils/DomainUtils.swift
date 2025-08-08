@@ -38,22 +38,27 @@ public enum DomainUtils {
         // Handle wildcard TLD pattern: "<prefix>.*" (e.g., "google.*", "sub.google.*").
         // This branch is only taken for wildcard domains to keep the common path fast.
         if domain.hasSuffix(".*") {
-            let prefix = String(domain.dropLast(2))
-            guard !prefix.isEmpty else { return false }
-
-            // Resolve candidate's public suffix (e.g., "com", "co.uk").
-            guard let (suffix, _) = PublicSuffixList.parsePublicSuffix(candidate) else {
-                return false
-            }
-
-            // Compose a concrete base domain (e.g., "google.com", "sub.google.co.uk").
-            let baseDomain = prefix + "." + suffix
-            let candidateLower = candidate
-            return isDomainOrSubdomainFast(candidate: candidateLower, domain: baseDomain)
+            return isDomainOrSubdomainWithWildcard(candidate: candidate, domain: domain)
         }
 
         // Non-wildcard: use the original fast path.
         return isDomainOrSubdomainFast(candidate: candidate, domain: domain)
+    }
+
+    /// Handles the case when domain ends with `.*` and checks if `candidate` is
+    /// a subdomain (or exactly one of the domains disregarding the TLD).
+    private static func isDomainOrSubdomainWithWildcard(candidate: String, domain: String) -> Bool {
+        let prefix = String(domain.dropLast(2))
+        guard !prefix.isEmpty else { return false }
+
+        // Resolve candidate's public suffix (e.g., "com", "co.uk").
+        guard let (suffix, _) = PublicSuffixList.parsePublicSuffix(candidate) else {
+            return false
+        }
+
+        // Compose a concrete base domain (e.g., "google.com", "sub.google.co.uk").
+        let baseDomain = prefix + "." + suffix
+        return isDomainOrSubdomainFast(candidate: candidate, domain: baseDomain)
     }
 
     /// Fast path for checking if `candidate` is exactly `domain` or a subdomain of it.
