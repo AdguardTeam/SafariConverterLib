@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+[unreleased]: https://github.com/AdguardTeam/SafariConverterLib/compare/v4.0.2...HEAD
+
+## [v4.0.2]
+
 ### Fixed
 
 - Fixed the issue with matching cosmetic rules that use `.*` in domains, e.g.
@@ -14,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [#106]: https://github.com/AdguardTeam/SafariConverterLib/issues/106
 
-[unreleased]: https://github.com/AdguardTeam/SafariConverterLib/compare/v4.0.1...HEAD
+[v4.0.2]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v4.0.2
 
 ## [v4.0.1]
 
