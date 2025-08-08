@@ -44,11 +44,11 @@ extension ContentBlockerConverterTests {
         XCTAssertEqual(conversionResult.discardedSafariRules, 0)
     }
 
-    /// Baseline results (July 23, 2025):
-    /// - Machine: MacBook Pro M1 Max, 32GB RAM
-    /// - OS: macOS 15.1
-    /// - Swift: 6.0
-    /// - Average execution time: ~1.260 sec
+    /// Baseline results (Aug 8, 2025):
+    /// - Machine: MacBook Pro M4 Max, 48GB RAM
+    /// - OS: macOS 26
+    /// - Swift: 6.2
+    /// - Average execution time: ~0.753 sec
     ///
     /// To get your machine info: `system_profiler SPHardwareDataType`
     /// To get your macOS version: `sw_vers`
@@ -77,11 +77,11 @@ extension ContentBlockerConverterTests {
         }
     }
 
-    /// Baseline results (March 2025):
-    /// - Machine: MacBook Pro M1 Max, 32GB RAM
-    /// - OS: macOS 15.1
-    /// - Swift: 6.0
-    /// - Average execution time: ~0.300 seconds
+    /// Baseline results (Aug 2025):
+    /// - Machine: MacBook Pro M4 Max,48GB RAM
+    /// - OS: macOS 26
+    /// - Swift: 6.2
+    /// - Average execution time: ~0.179 seconds
     ///
     /// To get your machine info: `system_profiler SPHardwareDataType`
     /// To get your macOS version: `sw_vers`

@@ -1,24 +1,64 @@
+import PublicSuffixList
+
 /// Helper functions for working with domains.
 public enum DomainUtils {
-    /// Determines if `candidate` is exactly the given `domain` or a subdomain of it.
+    /// Determines if `candidate` is the same as `domain` or its subdomain.
     ///
-    /// This function compares the candidate string to the domain string using their
-    /// UTF-8 representation, ensuring minimal overhead by avoiding unnecessary allocations
-    /// or bridging.
+    /// Fast path:
+    /// For normal domains (no `.*`), this uses UTF-8 byte comparison and avoids
+    /// allocations or bridging.
+    ///
+    /// Wildcard TLD (`.*`) support:
+    /// If `domain` ends with `.*` (e.g., `google.*`, `sub.google.*`), the
+    /// candidate's public suffix is resolved with `PublicSuffixList`. Then a
+    /// concrete base domain is built as `prefix + "." + suffix`, and the same
+    /// fast suffix check is applied. This keeps the common path fast while
+    /// supporting rules that target all effective TLDs.
     ///
     /// ### Examples
-    ///
     /// ```
+    /// // Normal domains
     /// DomainUtils.isDomainOrSubdomain(candidate: "google.com", domain: "google.com") == true
     /// DomainUtils.isDomainOrSubdomain(candidate: "mail.google.com", domain: "google.com") == true
     /// DomainUtils.isDomainOrSubdomain(candidate: "google.com", domain: "mail.google.com") == false
+    ///
+    /// // Wildcard TLD
+    /// DomainUtils.isDomainOrSubdomain(candidate: "google.com", domain: "google.*") == true
+    /// DomainUtils.isDomainOrSubdomain(candidate: "google.co.uk", domain: "google.*") == true
+    /// DomainUtils.isDomainOrSubdomain(candidate: "sub.google.com", domain: "google.*") == true
+    /// DomainUtils.isDomainOrSubdomain(candidate: "sub.google.com", domain: "sub.google.*") == true
     /// ```
     ///
     /// - Parameters:
     ///   - candidate: The domain string being tested.
-    ///   - domain: The reference domain.
-    /// - Returns: `true` if `candidate` is the same as or a subdomain of `domain`; otherwise, `false`.
+    ///   - domain: The reference domain. May end with `.*` to match any TLD.
+    /// - Returns: `true` if `candidate` is the same as or a subdomain of
+    ///   `domain`; otherwise, `false`.
     public static func isDomainOrSubdomain(candidate: String, domain: String) -> Bool {
+        // Handle wildcard TLD pattern: "<prefix>.*" (e.g., "google.*", "sub.google.*").
+        // This branch is only taken for wildcard domains to keep the common path fast.
+        if domain.hasSuffix(".*") {
+            let prefix = String(domain.dropLast(2))
+            guard !prefix.isEmpty else { return false }
+
+            // Resolve candidate's public suffix (e.g., "com", "co.uk").
+            guard let (suffix, _) = PublicSuffixList.parsePublicSuffix(candidate) else {
+                return false
+            }
+
+            // Compose a concrete base domain (e.g., "google.com", "sub.google.co.uk").
+            let baseDomain = prefix + "." + suffix
+            let candidateLower = candidate
+            return isDomainOrSubdomainFast(candidate: candidateLower, domain: baseDomain)
+        }
+
+        // Non-wildcard: use the original fast path.
+        return isDomainOrSubdomainFast(candidate: candidate, domain: domain)
+    }
+
+    /// Fast path for checking if `candidate` is exactly `domain` or a subdomain of it.
+    /// This function uses UTF-8 byte comparison and avoids unnecessary allocations.
+    private static func isDomainOrSubdomainFast(candidate: String, domain: String) -> Bool {
         // 1) Quick check for exact match
         if candidate == domain {
             return true
