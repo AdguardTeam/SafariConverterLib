@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed the issue with matching cosmetic rules that use `.*` in domains, e.g.
+  `example.*###banner` or `example.*#%#//scriptlet('log', 'test')`: [#106]
+
+[#106]: https://github.com/AdguardTeam/SafariConverterLib/issues/106
+
 [unreleased]: https://github.com/AdguardTeam/SafariConverterLib/compare/v4.0.1...HEAD
 
 ## [v4.0.1]

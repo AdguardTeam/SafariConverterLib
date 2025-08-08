@@ -149,4 +149,145 @@ final class DomainUtilsTests: XCTestCase {
         // Assert
         XCTAssertFalse(result, "Expected \(candidate) NOT to be recognized when domain is empty.")
     }
+
+    // MARK: - Wildcard TLD (.*) tests
+
+    func testWildcardTld_SameEtld1() {
+        // Arrange
+        let candidate = "google.com"
+        let domain = "google.*"
+
+        // Act
+        let result = DomainUtils.isDomainOrSubdomain(candidate: candidate, domain: domain)
+
+        // Assert
+        XCTAssertTrue(result, "Expected \(candidate) to match wildcard domain \(domain).")
+    }
+
+    func testWildcardTld_MultipleTld() {
+        // Arrange
+        let candidate = "google.co.uk"
+        let domain = "google.*"
+
+        // Act
+        let result = DomainUtils.isDomainOrSubdomain(candidate: candidate, domain: domain)
+
+        // Assert
+        XCTAssertTrue(result, "Expected \(candidate) to match wildcard domain \(domain).")
+    }
+
+    func testWildcardTld_Subdomain() {
+        // Arrange
+        let candidate = "sub.google.com"
+        let domain = "google.*"
+
+        // Act
+        let result = DomainUtils.isDomainOrSubdomain(candidate: candidate, domain: domain)
+
+        // Assert
+        XCTAssertTrue(result, "Expected \(candidate) to be subdomain of wildcard \(domain).")
+    }
+
+    func testWildcardTld_SubPrefix() {
+        // Arrange
+        let candidate = "sub.google.com"
+        let domain = "sub.google.*"
+
+        // Act
+        let result = DomainUtils.isDomainOrSubdomain(candidate: candidate, domain: domain)
+
+        // Assert
+        XCTAssertTrue(result, "Expected \(candidate) to match wildcard domain \(domain).")
+    }
+
+    func testWildcardTld_NegativeDifferentBase() {
+        // Arrange
+        let candidate = "notgoogle.com"
+        let domain = "google.*"
+
+        // Act
+        let result = DomainUtils.isDomainOrSubdomain(candidate: candidate, domain: domain)
+
+        // Assert
+        XCTAssertFalse(result, "Expected \(candidate) NOT to match wildcard domain \(domain).")
+    }
+
+    func testWildcardTld_NegativeNotSubdomainOfSubPrefix() {
+        // Arrange
+        let candidate = "google.com"
+        let domain = "sub.google.*"
+
+        // Act
+        let result = DomainUtils.isDomainOrSubdomain(candidate: candidate, domain: domain)
+
+        // Assert
+        XCTAssertFalse(result, "Expected \(candidate) NOT to match wildcard domain \(domain).")
+    }
+
+    // MARK: - Performance tests
+
+    /// Baseline results (Aug 8, 2025):
+    /// - Machine: MacBook Pro M4 Max, 48GB RAM
+    /// - OS: macOS 26
+    /// - Swift: 6.2
+    /// - Average execution time: ~0.022 sec
+    ///
+    /// To get your machine info: `system_profiler SPHardwareDataType`
+    /// To get your macOS version: `sw_vers`
+    /// To get your Swift version: `swift --version`
+    func testPerformance_NonWildcardFastPath() {
+        let pairs: [(String, String)] = [
+            ("mail.google.com", "google.com"),
+            ("sub.mail.google.com", "google.com"),
+            ("maps.google.co.uk", "google.co.uk"),
+            ("docs.example.org", "example.org"),
+        ]
+
+        var sink = 0
+        measure {
+            var local = 0
+            for _ in 0..<20_000 {
+                for (c, d) in pairs {
+                    if DomainUtils.isDomainOrSubdomain(candidate: c, domain: d) {
+                        local &+= 1
+                    }
+                }
+            }
+            sink = local
+        }
+        XCTAssertGreaterThanOrEqual(sink, 0)
+    }
+
+    /// Baseline results (Aug 8, 2025):
+    /// - Machine: MacBook Pro M4 Max, 48GB RAM
+    /// - OS: macOS 26
+    /// - Swift: 6.2
+    /// - Average execution time: ~0.022 sec
+    ///
+    /// To get your machine info: `system_profiler SPHardwareDataType`
+    /// To get your macOS version: `sw_vers`
+    /// To get your Swift version: `swift --version`
+    func testPerformance_WildcardTldPath() {
+        let pairs: [(String, String)] = [
+            ("google.com", "google.*"),
+            ("sub.google.com", "google.*"),
+            ("google.co.uk", "google.*"),
+            ("sub.google.co.uk", "sub.google.*"),
+            ("maps.apple.fr", "apple.*"),
+        ]
+
+        var sink = 0
+        measure {
+            var local = 0
+            for _ in 0..<2_000 {
+                for (c, d) in pairs {
+                    if DomainUtils.isDomainOrSubdomain(candidate: c, domain: d) {
+                        local &+= 1
+                    }
+                }
+            }
+            sink = local
+        }
+        XCTAssertGreaterThanOrEqual(sink, 0)
+    }
 }

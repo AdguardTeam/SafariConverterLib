@@ -36,7 +36,8 @@ let package = Package(
         .target(
             name: "ContentBlockerConverter",
             dependencies: [
-                .product(name: "Punycode", package: "PunycodeSwift")
+                .product(name: "Punycode", package: "PunycodeSwift"),
+                .product(name: "PublicSuffixList", package: "swift-psl"),
             ]
         ),
         .target(

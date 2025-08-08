@@ -369,13 +369,57 @@ final class WebExtensionTests: XCTestCase {
         XCTAssertEqual(thirdPartyIframeConf.css, [], "Cosmetic rules should be disabled")
     }
 
+    /// Test that lookup properly applies cosmetic rules with wildcard TLD domains.
+    ///
+    /// Validates that a rule like `example.*###banner` applies to different
+    /// eTLDs (e.g., example.com, example.co.uk) and does not apply to
+    /// non-matching domains.
+    func testLookupWithWildcardTldDomains() throws {
+        // Build the engine with a wildcard TLD cosmetic rule
+        let builder = try WebExtension(
+            containerURL: tempDirectory,
+            version: SafariVersion.safari16_4
+        )
+        let filterList = [
+            "example.*###banner"
+        ].joined(separator: "\n")
+        _ = try builder.buildFilterEngine(rules: filterList)
+
+        // Use a new WebExtension instance for lookups (deserialization path)
+        let webExtension = try WebExtension(
+            containerURL: tempDirectory,
+            version: SafariVersion.safari16_4
+        )
+
+        // Should match example.com
+        let urlCom = URL(string: "https://example.com/")!
+        let confCom = webExtension.lookup(pageUrl: urlCom, topUrl: nil)
+        XCTAssertNotNil(confCom, "Expected configuration for example.com")
+        XCTAssertEqual(confCom?.css, ["#banner"])
+        XCTAssertTrue(confCom?.extendedCss.isEmpty ?? false)
+        XCTAssertTrue(confCom?.js.isEmpty ?? false)
+        XCTAssertTrue(confCom?.scriptlets.isEmpty ?? false)
+
+        // Should also match example.co.uk (different eTLD)
+        let urlCoUk = URL(string: "https://example.co.uk/")!
+        let confCoUk = webExtension.lookup(pageUrl: urlCoUk, topUrl: nil)
+        XCTAssertNotNil(confCoUk, "Expected configuration for example.co.uk")
+        XCTAssertEqual(confCoUk?.css, ["#banner"])
+
+        // Should not match non-related domains
+        let urlOther = URL(string: "https://notexample.com/")!
+        let confOther = webExtension.lookup(pageUrl: urlOther, topUrl: nil)
+        XCTAssertNotNil(confOther, "Expected configuration object even if no rules match")
+        XCTAssertEqual(confOther?.css ?? [], [], "No CSS rules should apply to non-matching domain")
+    }
+
     /// Benchmark test for the buildFilterEngine method
     ///
-    /// Baseline results (July 23, 2025):
-    /// - Machine: MacBook Pro M1 Max, 32GB RAM
-    /// - OS: macOS 15.1
-    /// - Swift: 6.0
-    /// - Average execution time: ~0.229 seconds
+    /// Baseline results (Aug 8, 2025):
+    /// - Machine: MacBook Pro M4 Max, 48GB RAM
+    /// - OS: macOS 26
+    /// - Swift: 6.2
+    /// - Average execution time: ~0.136 seconds
     ///
     /// To get your machine info: `system_profiler SPHardwareDataType`
     /// To get your macOS version: `sw_vers`
@@ -408,11 +452,11 @@ final class WebExtensionTests: XCTestCase {
 
     /// Benchmark test for the lookup method
     ///
-    /// Baseline results (July 23, 2025):
-    /// - Machine: MacBook Pro M1 Max, 32GB RAM
-    /// - OS: macOS 15.1
-    /// - Swift: 6.0
-    /// - Average execution time: ~0.011 seconds
+    /// Baseline results (Aug 8, 2025):
+    /// - Machine: MacBook Pro M4 Max, 48GB RAM
+    /// - OS: macOS 26
+    /// - Swift: 6.2
+    /// - Average execution time: ~0.008 seconds
     ///
     /// To get your machine info: `system_profiler SPHardwareDataType`
     /// To get your macOS version: `sw_vers`

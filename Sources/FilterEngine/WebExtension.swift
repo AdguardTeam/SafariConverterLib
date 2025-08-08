@@ -109,6 +109,8 @@ public class WebExtension {
 extension WebExtension {
     /// Dictionary to store WebExtension instances by (groupID, version)
     private static var instances: [InstanceKey: WebExtension] = [:]
+
+    // periphery:ignore - fields are for synthesized Hashable implementation.
     private struct InstanceKey: Hashable {
         let groupID: String
         let version: Double

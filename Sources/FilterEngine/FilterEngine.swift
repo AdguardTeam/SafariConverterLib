@@ -1,5 +1,6 @@
 import ContentBlockerConverter
 import Foundation
+import PublicSuffixList
 
 /// FilterEngine is a class that's used for quickly looking up `FilterRule` objects
 /// without keeping them in memory. In order to do that this class operates with rule
@@ -520,9 +521,29 @@ extension FilterEngine {
         }
     }
 
-    /// Extracts hostnames of all levels from the URL.
+    /// Extracts candidate hostnames for domain-trie lookup from a URL.
     ///
-    /// For example, if the url is `https://example.org/`, it will return `['example.org', 'org']`.
+    /// The result contains:
+    /// - The full host (e.g., `sub.example.co.uk`).
+    /// - All parent domains by progressively dropping the left-most label
+    ///   (e.g., `example.co.uk`, `co.uk`, `uk`).
+    /// - Wildcard-TLD variants where the public suffix is replaced with `.*`
+    ///   using the Public Suffix List:
+    ///   - For the registrable domain (eTLD+1), e.g., `example.*`.
+    ///   - For deeper subdomain prefixes above eTLD+1, e.g.,
+    ///     `b.c.example.*`, `c.example.*`, `example.*` for
+    ///     `a.b.c.example.com`.
+    ///
+    /// This supports AdGuard-style TLD wildcard constraints like `example.*`
+    /// in runtime lookups without expanding to a static list of concrete
+    /// TLDs. If the URL has no host (e.g., malformed or file URLs), an empty
+    /// array is returned.
+    ///
+    /// Notes:
+    /// - Host is used as provided by `URL`, which is typically lowercased and
+    ///   punycoded by the system URL parser.
+    /// - IP hosts are returned as-is; PSL-based wildcard variants are only
+    ///   produced for domain names with a recognized public suffix.
     private static func extractHostnames(from url: URL) -> [String] {
         let host = FilterEngine.host(from: url)
 
@@ -538,9 +559,32 @@ extension FilterEngine {
             return hostnames
         }
 
+        // Add parent domains by progressively dropping the left-most label
         for i in 1..<parts.count {
             let domain = parts[i...].joined(separator: ".")
             hostnames.append(domain)
+        }
+
+        // Add wildcard-TLD variants derived from the Public Suffix List (PSL).
+        // This produces keys like `example.*` for the registrable domain
+        // (eTLD+1) and also for deeper subdomain prefixes above eTLD+1.
+        // For `a.b.c.example.com`, we add `b.c.example.*`, `c.example.*`,
+        // and `example.*`. These keys let us match rules that use TLD-
+        // wildcard domains without expanding concrete TLDs.
+        if let (suffix, _) = PublicSuffixList.parsePublicSuffix(host) {
+            let suffixWithDot = "." + suffix
+            if host.hasSuffix(suffixWithDot) {
+                let remainder = host.dropLast(suffixWithDot.count)
+                let remainderParts = remainder.split(separator: ".")
+                if remainderParts.count == 1 {
+                    hostnames.append(remainder + ".*")
+                }
+
+                for i in 1..<remainderParts.count {
+                    let baseLabel = remainderParts[i...].joined(separator: ".")
+                    hostnames.append(baseLabel + ".*")
+                }
+            }
         }
 
         return hostnames
