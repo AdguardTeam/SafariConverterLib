@@ -568,7 +568,7 @@ extension FilterEngine {
         // Add wildcard-TLD variants derived from the Public Suffix List (PSL).
         // This produces keys like `example.*` for the registrable domain
         // (eTLD+1) and also for deeper subdomain prefixes above eTLD+1.
-        // For `a.b.c.example.com`, we add `b.c.example.*`, `c.example.*`,
+        // For `a.b.example.com`, we add `a.b.example.*`, `b.example.*`,
         // and `example.*`. These keys let us match rules that use TLD-
         // wildcard domains without expanding concrete TLDs.
         if let (suffix, _) = PublicSuffixList.parsePublicSuffix(host) {
@@ -576,13 +576,14 @@ extension FilterEngine {
             if host.hasSuffix(suffixWithDot) {
                 let remainder = host.dropLast(suffixWithDot.count)
                 let remainderParts = remainder.split(separator: ".")
-                if remainderParts.count == 1 {
-                    hostnames.append(remainder + ".*")
-                }
 
-                for i in 1..<remainderParts.count {
-                    let baseLabel = remainderParts[i...].joined(separator: ".")
-                    hostnames.append(baseLabel + ".*")
+                hostnames.append(remainder + ".*")
+
+                if remainderParts.count > 1 {
+                    for i in 1..<remainderParts.count {
+                        let baseLabel = remainderParts[i...].joined(separator: ".")
+                        hostnames.append(baseLabel + ".*")
+                    }
                 }
             }
         }

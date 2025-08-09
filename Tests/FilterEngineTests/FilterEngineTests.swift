@@ -499,6 +499,14 @@ final class FilterEngineTests: XCTestCase {
                 expectedCosmeticContent: [".banner"]
             ),
             TestCase(
+                name: "wildcard tld subdomain .com",
+                rules: [
+                    "sub.example.*##.banner"
+                ],
+                urlString: "https://sub.example.com/",
+                expectedCosmeticContent: [".banner"]
+            ),
+            TestCase(
                 name: "wildcard tld subdomain",
                 rules: [
                     "example.*##.banner"
@@ -545,6 +553,16 @@ final class FilterEngineTests: XCTestCase {
                     "example.*#%#//scriptlet('set-constant', 'test', '1')"
                 ],
                 urlString: "https://example.co.uk/",
+                expectedCosmeticContent: [
+                    "//scriptlet('set-constant', 'test', '1')"
+                ]
+            ),
+            TestCase(
+                name: "wildcard tld subdomain .com",
+                rules: [
+                    "sub.example.*#%#//scriptlet('set-constant', 'test', '1')"
+                ],
+                urlString: "https://sub.example.com/",
                 expectedCosmeticContent: [
                     "//scriptlet('set-constant', 'test', '1')"
                 ]
@@ -600,6 +618,16 @@ final class FilterEngineTests: XCTestCase {
                 urlString: "https://example.co.uk/",
                 expectedCosmeticContent: [
                     "console.log('1')"
+                ]
+            ),
+            TestCase(
+                name: "wildcard tld subdomain .co.uk",
+                rules: [
+                    "sub.example.*#%#//scriptlet('set-constant', 'test', '1')"
+                ],
+                urlString: "https://sub.example.co.uk/",
+                expectedCosmeticContent: [
+                    "//scriptlet('set-constant', 'test', '1')"
                 ]
             ),
             TestCase(
