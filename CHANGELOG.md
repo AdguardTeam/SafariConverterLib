@@ -7,12 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+[unreleased]: https://github.com/AdguardTeam/SafariConverterLib/compare/v4.0.3...HEAD
+
+## [v4.0.3]
+
 ### Fixed
 
 - Fixed the issue with matching subdomain wildcard rules, e.g. `sub.example.*`,
   that were not matched before, this is the second fix for [#106].
 
-[unreleased]: https://github.com/AdguardTeam/SafariConverterLib/compare/v4.0.2...HEAD
+[v4.0.3]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v4.0.3
 
 ## [v4.0.2]
 
