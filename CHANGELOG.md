@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Updated `@adguard/safari-extension` to `2.2.9`: [#107]
+
+[#107]: https://github.com/AdguardTeam/SafariConverterLib/issues/107
+
 [unreleased]: https://github.com/AdguardTeam/SafariConverterLib/compare/v4.0.3...HEAD
 
 ## [v4.0.3]

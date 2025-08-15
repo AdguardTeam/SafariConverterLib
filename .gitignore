@@ -1,5 +1,8 @@
 .DS_Store
 
+# VSCode/Windsurf
+.vscode
+
 # Swift
 /.swiftpm
 /.build
