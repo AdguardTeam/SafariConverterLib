@@ -4,10 +4,10 @@
 /// used in the apps that are using this library.
 public enum ContentBlockerConverterVersion {
     /// Version of SafariConverterLib and @adguard/safari-extension.
-    public static let library = "4.0.3"
+    public static let library = "4.0.4"
 
     /// Version of @adguard/scriptlets (component of the JS library).
-    public static let scriptlets = "2.2.8"
+    public static let scriptlets = "2.2.9"
 
     /// Version of @adguard/extended-css (component of the JS library).
     public static let extendedCSS = "2.1.1"
