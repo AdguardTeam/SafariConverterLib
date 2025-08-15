@@ -12,8 +12,8 @@ importers:
         specifier: 2.1.1
         version: 2.1.1
       '@adguard/scriptlets':
-        specifier: 2.2.8
-        version: 2.2.8
+        specifier: 2.2.9
+        version: 2.2.9
     devDependencies:
       '@babel/core':
         specifier: ^7.22.8
@@ -101,8 +101,8 @@ packages:
     resolution: {integrity: sha512-TsHZ20oUWhbtrzQ4w70B96oHkGBIUZg2FdMfkq4StGfLmXQb+kI7fQb6BtXP2D0bvraIHMq6/mtKExglDJ9vsg==}
     engines: {node: '>=16'}
 
-  '@adguard/scriptlets@2.2.8':
-    resolution: {integrity: sha512-V6d6akdFgRTHu6m6Q4E/j3v54xjRIntOUcoNLY+Wd/ch2BOGb6cmXGig/T767aoR5c5S1HkJq8LC6KDe9HqHGA==}
+  '@adguard/scriptlets@2.2.9':
+    resolution: {integrity: sha512-q3hHnjy7RKbRWa6HJ4zIOjUjtIV2myB1nQOrpTk39DrTde9cgpV5avQxl1msWhdeq/KvXh8dG8+yJSfesjcDQg==}
 
   '@ampproject/remapping@2.3.0':
     resolution: {integrity: sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw==}
@@ -2852,7 +2852,7 @@ snapshots:
 
   '@adguard/extended-css@2.1.1': {}
 
-  '@adguard/scriptlets@2.2.8':
+  '@adguard/scriptlets@2.2.9':
     dependencies:
       '@adguard/agtree': 3.2.2
       '@types/trusted-types': 2.0.7
