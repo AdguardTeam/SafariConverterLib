@@ -7,7 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-[unreleased]: https://github.com/AdguardTeam/SafariConverterLib/compare/v4.0.4...HEAD
+[unreleased]: https://github.com/AdguardTeam/SafariConverterLib/compare/v4.0.5...HEAD
+
+## [v4.0.5]
+
+### Fixed
+
+- Fixed the issue with `^` separator path matching: [#110]
+
+[#110]: https://github.com/AdguardTeam/SafariConverterLib/issues/110
+
+[v4.0.5]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v4.0.5
 
 ## [v4.0.4]
 
