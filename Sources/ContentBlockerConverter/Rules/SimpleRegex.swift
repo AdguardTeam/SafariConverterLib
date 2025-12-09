@@ -20,7 +20,7 @@ public enum SimpleRegex {
 
     /// Separator `^` regex replacement for the case when this is the end of pattern.
     /// We need to account for the fact that "the end of the address is also accepted as separator".
-    private static let regexEndSeparator: [UInt8] = Array("[/:&?]?".utf8)
+    private static let regexEndSeparator: [UInt8] = Array("([/:&?]|$)".utf8)
 
     /// Separator `^` regex replacement for the case when we're targeting a domain name,
     /// i.e. when the pattern starts with `||`.

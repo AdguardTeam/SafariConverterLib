@@ -18,7 +18,7 @@ public enum Schema {
     /// to serialization logic in the `FilterRuleStorage`, `FilterRule` or `FilterEngine`.
     /// You should also increment the schema version whenever you change
     /// `FILTER_RULE_STORAGE_FILE_NAME` or `FILTER_ENGINE_INDEX_FILE_NAME`.
-    public static let VERSION = 1
+    public static let VERSION = 2
 
     /// Base directory name for storing all WebExtension related files.
     ///

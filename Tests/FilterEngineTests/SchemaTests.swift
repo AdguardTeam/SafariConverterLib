@@ -41,7 +41,7 @@ final class SchemaTests: XCTestCase {
     /// 1. Fix this test.
     /// 2. Increment `Schema.VERSION`.
     func testSchemaVersion() throws {
-        XCTAssertEqual(1, Schema.VERSION)
+        XCTAssertEqual(2, Schema.VERSION)
 
         let thisSourceFile = URL(fileURLWithPath: #file)
         let thisDirectory = thisSourceFile.deletingLastPathComponent()

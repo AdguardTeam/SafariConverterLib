@@ -479,7 +479,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "resource-type" : [
                             "raw"
                           ],
-                          "url-filter" : "^wss?:\\\/\\\/.*\\.rocks[\/:&?]?"
+                          "url-filter" : "^wss?:\\\/\\\/.*\\.rocks([\/:&?]|$)"
                         }
                       }
                     ]
@@ -1894,7 +1894,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "type" : "block"
                         },
                         "trigger" : {
-                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?gamer\\.no\\\/\\?module=Tumedia\\\\DFProxy\\\\Modules[\/:&?]?"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?gamer\\.no\\\/\\?module=Tumedia\\\\DFProxy\\\\Modules([\/:&?]|$)"
                         }
                       },
                       {

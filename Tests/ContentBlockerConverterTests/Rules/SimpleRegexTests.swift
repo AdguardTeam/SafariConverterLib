@@ -19,7 +19,7 @@ final class SimpleRegexTests: XCTestCase {
                 #"^[^:]+://+([^:/]+\.)?example\.org.*[/:&?]test=123"#,
                 false
             ),
-            ("test^", #"test[/:&?]?"#, false),
+            ("test^", #"test([/:&?]|$)"#, false),
             ("экзампл.org", "", true),
             ("test", "test", false),
             ("//test.png", "\\/\\/test\\.png", false),
