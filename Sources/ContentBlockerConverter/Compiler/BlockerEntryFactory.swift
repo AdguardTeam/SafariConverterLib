@@ -511,15 +511,15 @@ class BlockerEntryFactory {
         var result: [String] = []
         result.reserveCapacity(domains.count)
 
-        for domain in domains {
-            if domain.utf8.last == Chars.WILDCARD {
-                let prefix = String(domain.dropLast(2))
-                let escaped = NSRegularExpression.escapedPattern(for: prefix)
-                result.append(#"^[^:]+://+([^:/]+\.)?\#(escaped)\.[^/:]+[/:]"#)
-            } else {
-                result.append(try SimpleRegex.createRegexText(pattern: "||\(domain)^"))
+            for domain in domains {
+                if domain.utf8.last == Chars.WILDCARD {
+                    let prefix = String(domain.dropLast(2))
+                    let escaped = NSRegularExpression.escapedPattern(for: prefix)
+                    result.append(#"^[^:]+://+([^:/]+\.)?\#(escaped)\.[^/:]+[/:]?"#)
+                } else {
+                    result.append(try SimpleRegex.createRegexText(pattern: "||\(domain)^"))
+                }
             }
-        }
 
         return result
     }

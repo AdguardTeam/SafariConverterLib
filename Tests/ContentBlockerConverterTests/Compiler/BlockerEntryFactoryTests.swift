@@ -142,6 +142,17 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 )
             ),
             TestCase(
+                ruleText: "||example.com/path$domain=test.*",
+                version: SafariVersion(26.0),
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        ifFrameUrl: [#"^[^:]+://+([^:/]+\.)?test\.[^/:]+[/:]?"#],
+                        urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com\/path"#
+                    ),
+                    action: BlockerEntry.Action(type: "block")
+                )
+            ),
+            TestCase(
                 ruleText: "||example.com/path$domain=~test.com",
                 version: SafariVersion(26.0),
                 expectedEntry: BlockerEntry(
