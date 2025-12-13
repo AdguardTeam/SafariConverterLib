@@ -128,6 +128,80 @@ final class BlockerEntryFactoryTests: XCTestCase {
         }
     }
 
+    func testSafari26FrameUrlDomainOptions() {
+        let testCases: [TestCase] = [
+            TestCase(
+                ruleText: "||example.com/path$domain=test.com",
+                version: SafariVersion(26.0),
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        ifFrameUrl: [#"^[^:]+://+([^:/]+\.)?test\.com[/:]"#],
+                        urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com\/path"#
+                    ),
+                    action: BlockerEntry.Action(type: "block")
+                )
+            ),
+            TestCase(
+                ruleText: "||example.com/path$domain=~test.com",
+                version: SafariVersion(26.0),
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com\/path"#,
+                        unlessFrameUrl: [#"^[^:]+://+([^:/]+\.)?test\.com[/:]"#]
+                    ),
+                    action: BlockerEntry.Action(type: "block")
+                )
+            ),
+        ]
+
+        for testCase in testCases {
+            runTest(testCase)
+        }
+    }
+
+    func testSafari26RequestMethod() {
+        let testCases: [TestCase] = [
+            TestCase(
+                ruleText: "||example.com/path$domain=test.com,method=post",
+                version: SafariVersion(26.0),
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        ifFrameUrl: [#"^[^:]+://+([^:/]+\.)?test\.com[/:]"#],
+                        urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com\/path"#,
+                        requestMethod: "post"
+                    ),
+                    action: BlockerEntry.Action(type: "block")
+                )
+            ),
+            TestCase(
+                ruleText: "||example.com/path$domain=test.com,method=get|post",
+                version: SafariVersion(26.0),
+                expectedEntries: [
+                    BlockerEntry(
+                        trigger: BlockerEntry.Trigger(
+                            ifFrameUrl: [#"^[^:]+://+([^:/]+\.)?test\.com[/:]"#],
+                            urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com\/path"#,
+                            requestMethod: "get"
+                        ),
+                        action: BlockerEntry.Action(type: "block")
+                    ),
+                    BlockerEntry(
+                        trigger: BlockerEntry.Trigger(
+                            ifFrameUrl: [#"^[^:]+://+([^:/]+\.)?test\.com[/:]"#],
+                            urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com\/path"#,
+                            requestMethod: "post"
+                        ),
+                        action: BlockerEntry.Action(type: "block")
+                    ),
+                ]
+            ),
+        ]
+
+        for testCase in testCases {
+            runTest(testCase)
+        }
+    }
+
     // MARK: - Third-party
 
     func testThirdPartyRules() {
@@ -734,5 +808,19 @@ final class BlockerEntryFactoryTests: XCTestCase {
         XCTAssertTrue(result![0].trigger.ifDomain!.count >= 100)
         XCTAssertTrue(result![0].trigger.ifDomain!.contains("*example.com"))
         XCTAssertTrue(result![0].trigger.ifDomain!.contains("*example.com.tr"))
+    }
+
+    func testTldDomainsSafari26UsesFrameUrlPattern() throws {
+        let converter = BlockerEntryFactory(
+            errorsCounter: ErrorsCounter(),
+            version: SafariVersion(26.0)
+        )
+        let rule = try CosmeticRule(ruleText: "example.*##.banner")
+
+        let result = converter.createBlockerEntries(rule: rule)
+        XCTAssertNotNil(result)
+        XCTAssertEqual(result!.count, 1)
+        XCTAssertNil(result![0].trigger.ifDomain)
+        XCTAssertEqual(result![0].trigger.ifFrameUrl, [#"^[^:]+://+([^:/]+\.)?example\.[^/:]+[/:]"#])
     }
 }
