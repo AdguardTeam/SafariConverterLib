@@ -43,6 +43,7 @@ public struct BlockerEntry: Codable, Equatable, CustomStringConvertible {
             unlessDomain: [String]? = nil,
             loadType: [String]? = nil,
             resourceType: [String]? = nil,
+            requestMethod: String? = nil,
             caseSensitive: Bool? = nil,
             loadContext: [String]? = nil
         ) {
@@ -51,6 +52,7 @@ public struct BlockerEntry: Codable, Equatable, CustomStringConvertible {
             self.unlessDomain = unlessDomain
             self.loadType = loadType
             self.resourceType = resourceType
+            self.requestMethod = requestMethod
             self.caseSensitive = caseSensitive
             self.loadContext = loadContext
         }
@@ -60,6 +62,7 @@ public struct BlockerEntry: Codable, Equatable, CustomStringConvertible {
         public var unlessDomain: [String]?
         public var loadType: [String]?
         public var resourceType: [String]?
+        public var requestMethod: String?
         public var caseSensitive: Bool?
         public var loadContext: [String]?
 
@@ -70,6 +73,7 @@ public struct BlockerEntry: Codable, Equatable, CustomStringConvertible {
             case unlessDomain = "unless-domain"
             case loadType = "load-type"
             case resourceType = "resource-type"
+            case requestMethod = "request-method"
             case caseSensitive = "url-filter-is-case-sensitive"
             case loadContext = "load-context"
         }
@@ -78,8 +82,8 @@ public struct BlockerEntry: Codable, Equatable, CustomStringConvertible {
         public static func == (lhs: Trigger, rhs: Trigger) -> Bool {
             return lhs.ifDomain == rhs.ifDomain && lhs.urlFilter == rhs.urlFilter
                 && lhs.unlessDomain == rhs.unlessDomain && lhs.loadType == rhs.loadType
-                && lhs.resourceType == rhs.resourceType && lhs.caseSensitive == rhs.caseSensitive
-                && lhs.loadContext == rhs.loadContext
+                && lhs.resourceType == rhs.resourceType && lhs.requestMethod == rhs.requestMethod
+                && lhs.caseSensitive == rhs.caseSensitive && lhs.loadContext == rhs.loadContext
         }
     }
 

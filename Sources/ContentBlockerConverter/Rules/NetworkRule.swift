@@ -25,6 +25,7 @@ public class NetworkRule: Rule {
     public var isCheckThirdParty = false
     public var isThirdParty = false
     public var isMatchCase = false
+    public var requestMethods: [String] = []
 
     // TODO: [ameshkov]: Modifying url-filter for WebSocket was required until
     // Safari 15, it can be removed now.
@@ -176,6 +177,51 @@ public class NetworkRule: Rule {
         try addDomains(domainsStr: domains, separator: Chars.PIPE)
     }
 
+    private static let supportedRequestMethods: Set<String> = [
+        "get",
+        "head",
+        "options",
+        "trace",
+        "put",
+        "delete",
+        "post",
+        "patch",
+        "connect",
+    ]
+
+    private func setRequestMethods(methods: String, version: SafariVersion) throws {
+        if !version.isSafari26orGreater() {
+            throw SyntaxError.invalidModifier(message: "$method is not supported")
+        }
+
+        if methods.isEmpty {
+            throw SyntaxError.invalidModifier(message: "$method cannot be empty")
+        }
+
+        let values = methods.split(delimiter: Chars.PIPE, escapeChar: Chars.BACKSLASH)
+        for value in values {
+            let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+            if trimmed.isEmpty {
+                throw SyntaxError.invalidModifier(message: "$method contains an empty method name")
+            }
+
+            if trimmed.utf8.first == Chars.TILDE {
+                throw SyntaxError.invalidModifier(
+                    message: "$method does not support excluded methods: \(trimmed)"
+                )
+            }
+
+            let normalized = trimmed.lowercased()
+            if !NetworkRule.supportedRequestMethods.contains(normalized) {
+                throw SyntaxError.invalidModifier(message: "Unsupported $method value: \(trimmed)")
+            }
+
+            if !requestMethods.contains(normalized) {
+                requestMethods.append(normalized)
+            }
+        }
+    }
+
     /// Checks that the rule and its options is valid.
     ///
     /// - Throws: SyntaxError if the rule is not valid.
@@ -285,6 +331,8 @@ public class NetworkRule: Rule {
             isBadfilter = true
         case "domain", "from":
             try setNetworkRuleDomains(domains: optionValue)
+        case "method":
+            try setRequestMethods(methods: optionValue, version: version)
         case "elemhide", "ehide":
             try setOptionEnabled(option: .elemhide, value: true)
         case "generichide", "ghide":
@@ -356,7 +404,7 @@ public class NetworkRule: Rule {
             throw SyntaxError.invalidModifier(message: "Unsupported modifier: \(optionName)")
         }
 
-        if optionName != "domain" && optionName != "from" && !optionValue.isEmpty {
+        if optionName != "domain" && optionName != "from" && optionName != "method" && !optionValue.isEmpty {
             throw SyntaxError.invalidModifier(message: "Option \(optionName) must not have value")
         }
     }
