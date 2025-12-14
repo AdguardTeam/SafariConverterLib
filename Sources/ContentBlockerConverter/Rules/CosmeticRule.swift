@@ -130,7 +130,7 @@ public class CosmeticRule: Rule {
             // Support for *## for generic rules
             // https://github.com/AdguardTeam/SafariConverterLib/issues/11
             if !(domains.utf8.count == 1 && domains.utf8.first == Chars.WILDCARD) {
-                try setCosmeticRuleDomains(domains: domains)
+                try setCosmeticRuleDomains(domains: domains, version: version)
             }
         }
 
@@ -258,13 +258,13 @@ public class CosmeticRule: Rule {
     }
 
     /// Parses a single cosmetic option.
-    private func parseOption(name: String, value: String) throws {
+    private func parseOption(name: String, value: String, version: SafariVersion) throws {
         switch name {
         case "domain", "from":
             if value.isEmpty {
                 throw SyntaxError.invalidModifier(message: "$domain modifier cannot be empty")
             }
-            try addDomains(domainsStr: value, separator: Chars.PIPE)
+            try addDomains(domainsStr: value, separator: Chars.PIPE, version: version)
         case "path":
             if value.isEmpty {
                 throw SyntaxError.invalidRule(message: "$path modifier cannot be empty")
@@ -299,7 +299,7 @@ public class CosmeticRule: Rule {
     /// https://adguard.com/kb/general/ad-filtering/create-own-filters/#non-basic-rules-modifiers
     ///
     /// - Returns: what's left of the domains string or nil if the rule only has cosmetic options.
-    private func parseCosmeticOptions(domains: String) throws -> String? {
+    private func parseCosmeticOptions(domains: String, version: SafariVersion) throws -> String? {
         let startIndex = domains.utf8.index(domains.utf8.startIndex, offsetBy: 2)
         guard let endIndex = domains.utf8.lastIndex(of: Chars.SQUARE_BRACKET_CLOSE) else {
             throw SyntaxError.invalidModifier(message: "Invalid option format")
@@ -321,7 +321,7 @@ public class CosmeticRule: Rule {
                 optionValue = String(option[option.utf8.index(after: valueIndex)...])
             }
 
-            try parseOption(name: optionName, value: optionValue)
+            try parseOption(name: optionName, value: optionValue, version: version)
         }
 
         // Parse what's left after the options string.
@@ -334,15 +334,15 @@ public class CosmeticRule: Rule {
         return nil
     }
 
-    func setCosmeticRuleDomains(domains: String) throws {
+    func setCosmeticRuleDomains(domains: String, version: SafariVersion) throws {
         if domains.utf8.first == Chars.SQUARE_BRACKET_OPEN {
-            if let remainingDomains = try parseCosmeticOptions(domains: domains),
+            if let remainingDomains = try parseCosmeticOptions(domains: domains, version: version),
                 !remainingDomains.isEmpty
             {
-                try addDomains(domainsStr: remainingDomains, separator: Chars.COMMA)
+                try addDomains(domainsStr: remainingDomains, separator: Chars.COMMA, version: version)
             }
         } else {
-            try addDomains(domainsStr: domains, separator: Chars.COMMA)
+            try addDomains(domainsStr: domains, separator: Chars.COMMA, version: version)
         }
     }
 }

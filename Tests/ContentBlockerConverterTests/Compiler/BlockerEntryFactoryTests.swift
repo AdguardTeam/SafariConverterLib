@@ -128,6 +128,81 @@ final class BlockerEntryFactoryTests: XCTestCase {
         }
     }
 
+    // MARK: - Safari 26 domains
+
+    func testSafari26FrameUrlDomainOptions() {
+        let testCases: [TestCase] = [
+            TestCase(
+                ruleText: "||example.com/path$domain=test.com",
+                version: SafariVersion.safari26,
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        ifDomain: ["*test.com"],
+                        urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com\/path"#
+                    ),
+                    action: BlockerEntry.Action(type: "block")
+                )
+            ),
+            TestCase(
+                ruleText: "||example.com/path$domain=test.*",
+                version: SafariVersion.safari26,
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        ifFrameUrl: [#"^[^:]+://+([^:/]+\.)?test\.[^/:]+(?:[/:?#]|$)"#],
+                        urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com\/path"#
+                    ),
+                    action: BlockerEntry.Action(type: "block")
+                )
+            ),
+            TestCase(
+                ruleText: "||example.com/path$domain=test.com|test.*",
+                version: SafariVersion.safari26,
+                expectedEntries: [
+                    BlockerEntry(
+                        trigger: BlockerEntry.Trigger(
+                            ifDomain: ["*test.com"],
+                            urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com\/path"#
+                        ),
+                        action: BlockerEntry.Action(type: "block")
+                    ),
+                    BlockerEntry(
+                        trigger: BlockerEntry.Trigger(
+                            ifFrameUrl: [#"^[^:]+://+([^:/]+\.)?test\.[^/:]+(?:[/:?#]|$)"#],
+                            urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com\/path"#
+                        ),
+                        action: BlockerEntry.Action(type: "block")
+                    ),
+                ]
+            ),
+            TestCase(
+                ruleText: "||example.com/path$domain=~test.*",
+                version: SafariVersion.safari26,
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com\/path"#,
+                        unlessFrameUrl: [#"^[^:]+://+([^:/]+\.)?test\.[^/:]+(?:[/:?#]|$)"#]
+                    ),
+                    action: BlockerEntry.Action(type: "block")
+                )
+            ),
+            TestCase(
+                ruleText: #"||example.com/path$domain=/test\.(com|net)/"#,
+                version: SafariVersion.safari26,
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        ifFrameUrl: [#"^[^:]+://+([^:/]+\.)?test\.(com|net)(?:[/:?#]|$)"#],
+                        urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com\/path"#
+                    ),
+                    action: BlockerEntry.Action(type: "block")
+                )
+            ),
+        ]
+
+        for testCase in testCases {
+            runTest(testCase)
+        }
+    }
+
     // MARK: - Request methods
 
     func testRequestMethodRules() {

@@ -174,12 +174,12 @@ public class NetworkRule: Rule {
     }
 
     /// Sets rule domains from the $domain modifier.
-    private func setNetworkRuleDomains(domains: String) throws {
+    private func setNetworkRuleDomains(domains: String, version: SafariVersion) throws {
         if domains.isEmpty {
             throw SyntaxError.invalidModifier(message: "$domain cannot be empty")
         }
 
-        try addDomains(domainsStr: domains, separator: Chars.PIPE)
+        try addDomains(domainsStr: domains, separator: Chars.PIPE, version: version)
     }
 
     /// Supported HTTP request methods for the `$method` modifier.
@@ -337,9 +337,9 @@ public class NetworkRule: Rule {
         case "badfilter":
             isBadfilter = true
         case "domain", "from":
-            try setNetworkRuleDomains(domains: optionValue)
         case "method":
             try setRequestMethods(methods: optionValue)
+            try setNetworkRuleDomains(domains: optionValue, version: version)
         case "elemhide", "ehide":
             try setOptionEnabled(option: .elemhide, value: true)
         case "generichide", "ghide":
