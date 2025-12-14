@@ -217,6 +217,14 @@ final class NetworkRuleTests: XCTestCase {
                 expectedRestrictedDomains: ["sub.example.org"]
             ),
             TestCase(
+                // Regex domain should terminate on a slash preceded by an even number of backslashes.
+                ruleText: #"||example.org^$domain=/test\\/|example.net"#,
+                version: SafariVersion(26.0),
+                expectedUrlRuleText: "||example.org^",
+                expectedUrlRegExpSource: "^[^:]+://+([^:/]+\\.)?example\\.org[/:]",
+                expectedPermittedDomains: [#"/test\\/"#, "example.net"]
+            ),
+            TestCase(
                 // Test $domain for TLD.
                 ruleText: "||example.org^$domain=jp|~co",
                 expectedUrlRuleText: "||example.org^",

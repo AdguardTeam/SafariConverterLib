@@ -33,7 +33,10 @@ public class Rule {
         var nonASCIIFound = false
         var restricted = false
         var insideRegex = false
-        var previousCharWasBackslash = false
+        // Number of consecutive backslashes immediately preceding `currentIndex`.
+        // Used to detect whether a slash is escaped inside a regex domain (odd count)
+        // or can terminate the regex (even count).
+        var precedingBackslashCount = 0
 
         /// Creates domain string from `current` buffer and adds it to the corresponding list.
         ///
@@ -98,8 +101,8 @@ public class Rule {
                 insideRegex = true
             }
 
-            if insideRegex && char == Chars.SLASH && !previousCharWasBackslash
-                && currentIndex != domainStartIndex
+            if insideRegex && char == Chars.SLASH && currentIndex != domainStartIndex
+                && (precedingBackslashCount % 2 == 0)
             {
                 // Closing slash of the regex domain.
                 insideRegex = false
@@ -136,10 +139,10 @@ public class Rule {
                 }
             }
 
-            if previousCharWasBackslash {
-                previousCharWasBackslash = false
+            if char == Chars.BACKSLASH {
+                precedingBackslashCount += 1
             } else {
-                previousCharWasBackslash = char == Chars.BACKSLASH
+                precedingBackslashCount = 0
             }
 
             currentIndex = utf8.index(after: currentIndex)
