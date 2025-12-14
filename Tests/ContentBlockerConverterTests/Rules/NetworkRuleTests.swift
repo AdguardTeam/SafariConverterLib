@@ -421,6 +421,8 @@ final class NetworkRuleTests: XCTestCase {
         XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org^$domain=~e"))
         // $domain with regexes are not supported.
         XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org^$domain=/example.org/"))
+        // Empty $domain regex should be rejected.
+        XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org^$domain=//"))
         // $domain with regexes are not supported.
         XCTAssertThrowsError(
             try NetworkRule(ruleText: "||example.org^$domain=example.org|/test.com/")

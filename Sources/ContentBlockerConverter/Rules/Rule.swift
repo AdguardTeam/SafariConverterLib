@@ -47,30 +47,39 @@ public class Rule {
             }
 
             var domain = String(domainsStr[domainStartIndex..<currentIndex])
+            let domainUtf8 = domain.utf8
+            let domainByteCount = domainUtf8.count
 
-            if domain.utf8.count < 2 {
+            if domainByteCount < 2 {
                 throw SyntaxError.invalidModifier(
                     message: "Domain is too short: \(domain)"
                 )
             }
 
-            if domain.utf8.first == Chars.SLASH && domain.utf8.last == Chars.SLASH {
+            let domainStartsWithSlash = domainUtf8.first == Chars.SLASH
+            if domainStartsWithSlash, domainByteCount == 2 {
+                let secondByte = domainUtf8[domainUtf8.index(after: domainUtf8.startIndex)]
+                if secondByte == Chars.SLASH {
+                    throw SyntaxError.invalidModifier(
+                        message: "Empty regular expression for domain modifier"
+                    )
+                }
+            }
+
+            let domainEndsWithSlash = domainUtf8.last == Chars.SLASH
+            if domainStartsWithSlash {
+                if !domainEndsWithSlash {
+                    throw SyntaxError.invalidModifier(
+                        message: "Invalid regular expression for domain modifier: \(domain)"
+                    )
+                }
+
                 if !version.isSafari26orGreater() {
                     // https://github.com/AdguardTeam/SafariConverterLib/issues/53
                     throw SyntaxError.invalidModifier(
                         message: "Using regular expression for domain modifier is not supported"
                     )
                 }
-
-                if domain.utf8.count <= 2 {
-                    throw SyntaxError.invalidModifier(
-                        message: "Empty regular expression for domain modifier"
-                    )
-                }
-            } else if domain.utf8.first == Chars.SLASH || domain.utf8.last == Chars.SLASH {
-                throw SyntaxError.invalidModifier(
-                    message: "Invalid regular expression for domain modifier: \(domain)"
-                )
             } else if nonASCIIFound, let encodedDomain = domain.idnaEncoded {
                 domain = encodedDomain
             }
