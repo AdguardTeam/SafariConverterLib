@@ -28,4 +28,23 @@ final class BlockerEntryEncoderTests: XCTestCase {
             )
         }
     }
+
+    func testRequestMethod() throws {
+        let safari26 = SafariVersion(26.0)
+        let converter = BlockerEntryFactory(
+            errorsCounter: ErrorsCounter(),
+            version: safari26
+        )
+        let rule = try NetworkRule(ruleText: "||example.com/path$domain=test.com,method=post", for: safari26)
+
+        let entries = converter.createBlockerEntries(rule: rule)
+
+        if let entries = entries {
+            let (result, _) = encoder.encode(entries: entries)
+            XCTAssertEqual(
+                result,
+                #"[{"trigger":{"url-filter":"^[^:]+://+([^:/]+\\.)?example\\.com\\/path","request-method":"post","if-domain":["*test.com"]},"action":{"type":"block"}}]"#
+            )
+        }
+    }
 }

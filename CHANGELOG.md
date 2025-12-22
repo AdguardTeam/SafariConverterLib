@@ -7,7 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Adopted `$method` modifier by using Safari's `request-method` trigger field (Safari 26+): [#88]
+
 [unreleased]: https://github.com/AdguardTeam/SafariConverterLib/compare/v4.0.4...HEAD
+[#88]: https://github.com/AdguardTeam/SafariConverterLib/issues/88
 
 ## [v4.0.4]
 

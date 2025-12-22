@@ -128,6 +128,49 @@ final class BlockerEntryFactoryTests: XCTestCase {
         }
     }
 
+    func testSafari26RequestMethod() {
+        let testCases: [TestCase] = [
+            TestCase(
+                ruleText: "||example.com/path$domain=test.com,method=post",
+                version: SafariVersion(26.0),
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        ifDomain: ["*test.com"],
+                        urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com\/path"#,
+                        requestMethod: "post"
+                    ),
+                    action: BlockerEntry.Action(type: "block")
+                )
+            ),
+            TestCase(
+                ruleText: "||example.com/path$domain=test.com,method=get|post",
+                version: SafariVersion(26.0),
+                expectedEntries: [
+                    BlockerEntry(
+                        trigger: BlockerEntry.Trigger(
+                            ifDomain: ["*test.com"],
+                            urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com\/path"#,
+                            requestMethod: "get"
+                        ),
+                        action: BlockerEntry.Action(type: "block")
+                    ),
+                    BlockerEntry(
+                        trigger: BlockerEntry.Trigger(
+                            ifDomain: ["*test.com"],
+                            urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com\/path"#,
+                            requestMethod: "post"
+                        ),
+                        action: BlockerEntry.Action(type: "block")
+                    ),
+                ]
+            ),
+        ]
+
+        for testCase in testCases {
+            runTest(testCase)
+        }
+    }
+
     // MARK: - Third-party
 
     func testThirdPartyRules() {
