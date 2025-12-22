@@ -82,7 +82,6 @@ enum SafariCbBuilder {
         let (encoded, count) = encoder.encode(entries: entries, maxJsonSizeBytes: maxJsonSizeBytes)
 
         // if nothing was converted due to limits, return empty result json
-        // swiftlint:disable:next empty_count
         if count == 0 {
             return (ConversionResult.EMPTY_RESULT_JSON, 0)
         }

@@ -404,8 +404,10 @@ public class NetworkRule: Rule {
             throw SyntaxError.invalidModifier(message: "Unsupported modifier: \(optionName)")
         }
 
-        if optionName != "domain" && optionName != "from" && optionName != "method" && !optionValue.isEmpty {
-            throw SyntaxError.invalidModifier(message: "Option \(optionName) must not have value")
+        if optionName != "domain" && optionName != "from" && optionName != "method"
+            && !optionValue.isEmpty
+        {
+            throw SyntaxError.invalidModifier(message: "Option \(optionName) must NOT have a value")
         }
     }
 

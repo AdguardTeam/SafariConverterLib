@@ -100,7 +100,10 @@ class BlockerEntryFactory {
     ///   - rule: Network rule to convert.
     /// - Returns: Safari content blocker entry.
     /// - Throws: `ConversionError` if the rule cannot be converted.
-    private func convertNetworkRule(rule: NetworkRule, requestMethod: String?) throws -> BlockerEntry {
+    private func convertNetworkRule(
+        rule: NetworkRule,
+        requestMethod: String?
+    ) throws -> BlockerEntry {
         let urlFilter = try createUrlFilterString(rule: rule)
 
         var trigger = BlockerEntry.Trigger(urlFilter: urlFilter)

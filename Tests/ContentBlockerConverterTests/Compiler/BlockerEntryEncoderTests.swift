@@ -35,7 +35,10 @@ final class BlockerEntryEncoderTests: XCTestCase {
             errorsCounter: ErrorsCounter(),
             version: safari26
         )
-        let rule = try NetworkRule(ruleText: "||example.com/path$domain=test.com,method=post", for: safari26)
+        let rule = try NetworkRule(
+            ruleText: "||example.com/path$domain=test.com,method=post",
+            for: safari26
+        )
 
         let entries = converter.createBlockerEntries(rule: rule)
 
