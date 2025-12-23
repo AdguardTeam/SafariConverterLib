@@ -58,6 +58,12 @@ extension ContentBlockerConverterTests {
     /// - Swift: 6.2
     /// - Average execution time: ~0.753 sec
     ///
+    /// Baseline results (Dec 23, 2025):
+    /// - Machine: MacBook Pro M4 Max, 48GB RAM
+    /// - OS: macOS 26
+    /// - Swift: 6.2
+    /// - Average execution time: ~0.787 sec
+    ///
     /// To get your machine info: `system_profiler SPHardwareDataType`
     /// To get your macOS version: `sw_vers`
     /// To get your Swift version: `swift --version`
@@ -85,11 +91,20 @@ extension ContentBlockerConverterTests {
         }
     }
 
+    /// Benchmark test for handling $specifichide rules
+    ///
     /// Baseline results (Aug 2025):
     /// - Machine: MacBook Pro M4 Max,48GB RAM
     /// - OS: macOS 26
     /// - Swift: 6.2
     /// - Average execution time: ~0.179 seconds
+    ///
+    /// Baseline results (Dec 23, 2025):
+    /// - Machine: MacBook Pro M4 Max,48GB RAM
+    /// - OS: macOS 26
+    /// - Swift: 6.2
+    /// - Average execution time: ~0.196 seconds
+    /// - No considerable changes since the prev baseline so the diff is due to env changes.
     ///
     /// To get your machine info: `system_profiler SPHardwareDataType`
     /// To get your macOS version: `sw_vers`

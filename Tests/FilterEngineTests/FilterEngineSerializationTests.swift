@@ -91,13 +91,19 @@ final class FilterEngineSerializationTests: XCTestCase {
         }
     }
 
-    /// Test how fast the engine and storage can be serialized to a file.
+    /// Benchmark to test how fast the engine and storage can be serialized to a file.
     ///
     /// Baseline results (March 2025):
     /// - Machine: MacBook Pro M1 Max, 32GB RAM
     /// - OS: macOS 15.1
     /// - Swift: 6.0
     /// - Average execution time: ~2.488 seconds
+    ///
+    /// Baseline results (Dec 23, 2025):
+    /// - Machine: MacBook Pro M4 Max, 48GB RAM
+    /// - OS: macOS 26
+    /// - Swift: 6.2
+    /// - Average execution time: ~1.400 sec
     ///
     /// To get your machine info: `system_profiler SPHardwareDataType`
     /// To get your macOS version: `sw_vers`
