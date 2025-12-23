@@ -57,9 +57,7 @@ class BlockerEntryFactory {
     func createBlockerEntries(rule: Rule) -> [BlockerEntry]? {
         do {
             if let rule = rule as? NetworkRule {
-                let entry = try convertNetworkRule(rule: rule)
-
-                return [entry]
+                return try convertNetworkRuleEntries(rule: rule)
             }
 
             if let rule = rule as? CosmeticRule {
@@ -82,13 +80,37 @@ class BlockerEntryFactory {
         return nil
     }
 
+    /// Converts a network rule into one or more Safari content blocking rules.
+    /// Depending on the rule modifiers, this may create multiple Safari CB
+    /// rules for a single network rule (example: $method modifier).
+    ///
+    /// - Parameter rule: The network rule to convert.
+    /// - Returns: An array of Safari content blocking rules.
+    /// - Throws: `ConversionError` if the rule cannot be converted.
+    private func convertNetworkRuleEntries(rule: NetworkRule) throws -> [BlockerEntry] {
+        if rule.requestMethods.isEmpty {
+            return [try convertNetworkRule(rule: rule, requestMethod: nil)]
+        }
+
+        if !self.version.isSafari26orGreater() {
+            throw ConversionError.unsupportedRule(message: "$method is not supported")
+        }
+
+        return try rule.requestMethods.map { method in
+            try convertNetworkRule(rule: rule, requestMethod: method)
+        }
+    }
+
     /// Converts a network rule into a Safari content blocking rule.
     ///
     /// - Parameters:
     ///   - rule: Network rule to convert.
     /// - Returns: Safari content blocker entry.
     /// - Throws: `ConversionError` if the rule cannot be converted.
-    private func convertNetworkRule(rule: NetworkRule) throws -> BlockerEntry {
+    private func convertNetworkRule(
+        rule: NetworkRule,
+        requestMethod: String?
+    ) throws -> BlockerEntry {
         let urlFilter = try createUrlFilterString(rule: rule)
 
         var trigger = BlockerEntry.Trigger(urlFilter: urlFilter)
@@ -101,6 +123,10 @@ class BlockerEntryFactory {
         try addDomainOptions(rule: rule, trigger: &trigger)
 
         try updateTriggerForDocumentLevelExceptionRules(rule: rule, trigger: &trigger)
+
+        if let requestMethod {
+            trigger.requestMethod = requestMethod
+        }
 
         let result = BlockerEntry(trigger: trigger, action: action)
 

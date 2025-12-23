@@ -41,7 +41,7 @@ Lint:
             # Run linters.
             make lint
   requirements:
-    - image: registry.int.agrd.dev/macos/sequoia-build-agent-xcode16.3:latest
+    - image: registry.int.agrd.dev/macos/tahoe-build-agent-xcode26.1.1:latest
     - ephemeral
 
 Test:
@@ -59,7 +59,7 @@ Test:
             # Run all tests.
             make test
   requirements:
-    - image: registry.int.agrd.dev/macos/sequoia-build-agent-xcode16.3:latest
+    - image: registry.int.agrd.dev/macos/tahoe-build-agent-xcode26.1.1:latest
     - ephemeral
 
 Build:
@@ -77,7 +77,7 @@ Build:
             # Run build.
             make build
   requirements:
-    - image: registry.int.agrd.dev/macos/sequoia-build-agent-xcode16.3:latest
+    - image: registry.int.agrd.dev/macos/tahoe-build-agent-xcode26.1.1:latest
     - ephemeral
 
 branches:

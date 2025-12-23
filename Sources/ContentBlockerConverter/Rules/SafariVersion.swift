@@ -32,14 +32,17 @@ public enum SafariVersion: CustomStringConvertible, CustomDebugStringConvertible
     case safari15
     case safari16
     case safari16_4
-    case safari16_4Plus(Double)
+    case safari26
+    case latest(Double)
 
     public init(_ version: Double) {
-        if version == 16.4 {
-            self = .safari16_4
+        if version > 26 {
+            self = .latest(version)
             return
-        } else if version > 16.4 {
-            self = .safari16_4Plus(version)
+        }
+
+        if version >= 16.4 && version < 26 {
+            self = .safari16_4
             return
         }
 
@@ -49,6 +52,7 @@ public enum SafariVersion: CustomStringConvertible, CustomDebugStringConvertible
         case 14: self = .safari14
         case 15: self = .safari15
         case 16: self = .safari16
+        case 26: self = .safari26
         default: self = DEFAULT_SAFARI_VERSION
         }
     }
@@ -60,7 +64,8 @@ public enum SafariVersion: CustomStringConvertible, CustomDebugStringConvertible
         case .safari15: return 15
         case .safari16: return 16
         case .safari16_4: return 16.4
-        case .safari16_4Plus(let version): return version
+        case .safari26: return 26
+        case .latest(let version): return version
         default: return 13
         }
     }
@@ -79,11 +84,39 @@ public enum SafariVersion: CustomStringConvertible, CustomDebugStringConvertible
         return self.doubleValue >= SafariVersion.safari16_4.doubleValue
     }
 
+    /// Starting from Safari 26 content blockers add new trigger fields like
+    /// `request-method`.
+    public func isSafari26orGreater() -> Bool {
+        return self.doubleValue >= SafariVersion.safari26.doubleValue
+    }
+
     /// Detects the Safari version based on the current OS version.
+    ///
+    /// Safari is bundled with the OS and its version is tied to the OS version.
+    /// This method maps OS versions to Safari versions based on the following:
+    ///
+    /// **macOS to Safari mapping:**
+    /// - macOS 26+ → Safari 26
+    /// - macOS 13.3+ (Ventura) → Safari 16.4
+    /// - macOS 13.0+ (Ventura) → Safari 16
+    /// - macOS 12.0+ (Monterey) → Safari 15
+    /// - macOS 11.0+ (Big Sur) → Safari 14
+    /// - macOS 10.15+ (Catalina) → Safari 13
+    ///
+    /// **iOS to Safari mapping:**
+    /// - iOS 26+ → Safari 26
+    /// - iOS 16.4+ → Safari 16.4
+    /// - iOS 16.0+ → Safari 16
+    /// - iOS 15.0+ → Safari 15
+    /// - iOS 14.0+ → Safari 14
+    /// - iOS 13.0+ → Safari 13
+    ///
     /// - Returns: The detected SafariVersion based on the OS.
     public static func autodetect() -> SafariVersion {
         #if os(macOS)
-        if #available(macOS 13.3, *) {
+        if #available(macOS 26, *) {
+            return .safari26
+        } else if #available(macOS 13.3, *) {
             return .safari16_4
         } else if #available(macOS 13.0, *) {
             return .safari16
@@ -97,7 +130,9 @@ public enum SafariVersion: CustomStringConvertible, CustomDebugStringConvertible
             return DEFAULT_SAFARI_VERSION
         }
         #elseif os(iOS)
-        if #available(iOS 16.4, *) {
+        if #available(iOS 26, *) {
+            return .safari26
+        } else if #available(iOS 16.4, *) {
             return .safari16_4
         } else if #available(iOS 16.0, *) {
             return .safari16

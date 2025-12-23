@@ -224,9 +224,12 @@ certainly supports the most important types of those rules.
   `jsinject` modifiers can be used only as a single modifier in a rule. This
   limitation may be lifted in the future: [#73].
 
-- `$websocket` (fully supported starting with Safari 15).
+- `$websocket` is fully supported starting with Safari 15.
 
-- `$ping` (fully supported starting with Safari 14).
+- `$ping` is fully supported starting with Safari 14.
+
+- `$method` is only supported starting with Safari 26+. Negating `$method` is
+  not supported, i.e. rules like `||example.org^$method=~get` are not supported.
 
 - `$jsinject` - rules with this modifier are converted to advanced blocking rules.
   Currently, `$jsinject` modifier can be used only as a single modifier in a rule. This
@@ -247,7 +250,6 @@ certainly supports the most important types of those rules.
 
 - `$app`
 - `$header`
-- `$method`
 - `$strict-first-party` (to be supported in the future: [#64])
 - `$strict-third-party` (to be supported in the future: [#65])
 - `$to` (to be supported in the future: [#60])

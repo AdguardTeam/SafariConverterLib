@@ -120,6 +120,12 @@ class BlockerEntryEncoder {
             result.append(loadContext.encodeToJSON())
         }
 
+        if let requestMethod = trigger.requestMethod {
+            result.append(",\"request-method\":\"")
+            result.append(requestMethod.escapeForJSON())
+            result.append("\"")
+        }
+
         if let ifDomain = trigger.ifDomain {
             result.append(",\"if-domain\":")
             result.append(ifDomain.encodeToJSON(escape: true))

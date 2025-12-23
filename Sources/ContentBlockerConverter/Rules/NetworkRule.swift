@@ -12,6 +12,11 @@ import Foundation
 /// - $redirect-rule
 /// - $csp
 /// - $object
+///
+/// TODO: [ameshkov] Consider removing version-gating in NetworkRule.
+/// Generally, we should try to avoid version-specific logic here and handle it
+/// in BlockerEntryFactory unless it's absolutely necessary or
+/// performance-critical.
 public class NetworkRule: Rule {
     /// If true, the network rule unblocks everything on the website (cosmetic + network).
     public var isDocumentWhiteList = false
@@ -25,6 +30,7 @@ public class NetworkRule: Rule {
     public var isCheckThirdParty = false
     public var isThirdParty = false
     public var isMatchCase = false
+    public var requestMethods: [String] = []
 
     // TODO: [ameshkov]: Modifying url-filter for WebSocket was required until
     // Safari 15, it can be removed now.
@@ -176,6 +182,53 @@ public class NetworkRule: Rule {
         try addDomains(domainsStr: domains, separator: Chars.PIPE)
     }
 
+    /// Supported HTTP request methods for the `$method` modifier.
+    /// These are the standard HTTP methods that Safari content blockers support.
+    ///
+    /// See: https://github.com/WebKit/WebKit/blob/b222c16/Source/WebCore/loader/ResourceLoadInfo.cpp#L156
+    private static let supportedRequestMethods: Set<String> = [
+        "get",
+        "head",
+        "options",
+        "trace",
+        "put",
+        "delete",
+        "post",
+        "patch",
+        "connect",
+    ]
+
+    /// Sets the HTTP request methods for this rule based on the `$method`
+    /// modifier.
+    private func setRequestMethods(methods: String) throws {
+        if methods.isEmpty {
+            throw SyntaxError.invalidModifier(message: "$method cannot be empty")
+        }
+
+        let values = methods.split(delimiter: Chars.PIPE, escapeChar: Chars.BACKSLASH)
+        for value in values {
+            let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+            if trimmed.isEmpty {
+                throw SyntaxError.invalidModifier(message: "$method contains an empty method name")
+            }
+
+            if trimmed.utf8.first == Chars.TILDE {
+                throw SyntaxError.invalidModifier(
+                    message: "$method does not support negating values: \(trimmed)"
+                )
+            }
+
+            let normalized = trimmed.lowercased()
+            if !NetworkRule.supportedRequestMethods.contains(normalized) {
+                throw SyntaxError.invalidModifier(message: "Unsupported $method value: \(trimmed)")
+            }
+
+            if !requestMethods.contains(normalized) {
+                requestMethods.append(normalized)
+            }
+        }
+    }
+
     /// Checks that the rule and its options is valid.
     ///
     /// - Throws: SyntaxError if the rule is not valid.
@@ -285,6 +338,8 @@ public class NetworkRule: Rule {
             isBadfilter = true
         case "domain", "from":
             try setNetworkRuleDomains(domains: optionValue)
+        case "method":
+            try setRequestMethods(methods: optionValue)
         case "elemhide", "ehide":
             try setOptionEnabled(option: .elemhide, value: true)
         case "generichide", "ghide":
@@ -356,8 +411,12 @@ public class NetworkRule: Rule {
             throw SyntaxError.invalidModifier(message: "Unsupported modifier: \(optionName)")
         }
 
-        if optionName != "domain" && optionName != "from" && !optionValue.isEmpty {
-            throw SyntaxError.invalidModifier(message: "Option \(optionName) must not have value")
+        if optionName != "domain" && optionName != "from" && optionName != "method"
+            && !optionValue.isEmpty
+        {
+            throw SyntaxError.invalidModifier(
+                message: "Modifier \(optionName) must not have a value"
+            )
         }
     }
 

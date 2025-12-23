@@ -128,6 +128,57 @@ final class BlockerEntryFactoryTests: XCTestCase {
         }
     }
 
+    // MARK: - Request methods
+
+    func testRequestMethodRules() {
+        let testCases: [TestCase] = [
+            TestCase(
+                ruleText: "||example.com/path$domain=test.com,method=post",
+                version: SafariVersion.safari26,
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        ifDomain: ["*test.com"],
+                        urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com\/path"#,
+                        requestMethod: "post"
+                    ),
+                    action: BlockerEntry.Action(type: "block")
+                )
+            ),
+            TestCase(
+                ruleText: "||example.com/path$domain=test.com,method=get|post",
+                version: SafariVersion.safari26,
+                expectedEntries: [
+                    BlockerEntry(
+                        trigger: BlockerEntry.Trigger(
+                            ifDomain: ["*test.com"],
+                            urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com\/path"#,
+                            requestMethod: "get"
+                        ),
+                        action: BlockerEntry.Action(type: "block")
+                    ),
+                    BlockerEntry(
+                        trigger: BlockerEntry.Trigger(
+                            ifDomain: ["*test.com"],
+                            urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com\/path"#,
+                            requestMethod: "post"
+                        ),
+                        action: BlockerEntry.Action(type: "block")
+                    ),
+                ]
+            ),
+            TestCase(
+                // Not supported in Safari before 26
+                ruleText: "||example.com^$method=post",
+                version: SafariVersion.safari16_4,
+                expectedErrorsCount: 1
+            ),
+        ]
+
+        for testCase in testCases {
+            runTest(testCase)
+        }
+    }
+
     // MARK: - Third-party
 
     func testThirdPartyRules() {

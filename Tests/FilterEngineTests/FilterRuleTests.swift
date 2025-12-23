@@ -42,6 +42,7 @@ final class FilterRuleTests: XCTestCase {
                 expectedCosmeticContent: ".banner"
             ),
             TestCase(
+                // Not a whitelist network rule
                 ruleText: "example.org#@#.banner",
                 expectedError: true
             ),
@@ -68,11 +69,18 @@ final class FilterRuleTests: XCTestCase {
                 expectedCosmeticContent: "div[id^=\"imAd_\"] { visibility: hidden!important; }"
             ),
             TestCase(
+                // Not a whitelist rule
                 ruleText: "||example.org^$third-party",
                 expectedError: true
             ),
             TestCase(
+                // Does not unblock anything cosmetic
                 ruleText: "@@||example.org^$important",
+                expectedError: true
+            ),
+            TestCase(
+                // $method modifier is not supported
+                ruleText: "@@||example.org^$document,method=post",
                 expectedError: true
             ),
             TestCase(
@@ -83,6 +91,7 @@ final class FilterRuleTests: XCTestCase {
                 expectedPriority: 2
             ),
             TestCase(
+                // Not a whitelist rule
                 ruleText: "||example.org^$important",
                 expectedError: true
             ),

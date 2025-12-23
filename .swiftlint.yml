@@ -118,4 +118,4 @@ trailing_whitespace:
   ignores_comments: false
 
 vertical_whitespace:
-  max_empty_lines: 0
+  max_empty_lines: 1
