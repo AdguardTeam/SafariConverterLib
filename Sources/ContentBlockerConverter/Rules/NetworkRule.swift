@@ -13,8 +13,10 @@ import Foundation
 /// - $csp
 /// - $object
 ///
-/// TODO(ameshkov): Consider removing version-gating in NetworkRule and keep it
-/// only in `BlockerEntryFactory`.
+/// TODO: [ameshkov] Consider removing version-gating in NetworkRule.
+/// Generally, we should try to avoid version-specific logic here and handle it
+/// in BlockerEntryFactory unless it's absolutely necessary or
+/// performance-critical.
 public class NetworkRule: Rule {
     /// If true, the network rule unblocks everything on the website (cosmetic + network).
     public var isDocumentWhiteList = false

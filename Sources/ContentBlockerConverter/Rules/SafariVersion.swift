@@ -91,6 +91,26 @@ public enum SafariVersion: CustomStringConvertible, CustomDebugStringConvertible
     }
 
     /// Detects the Safari version based on the current OS version.
+    ///
+    /// Safari is bundled with the OS and its version is tied to the OS version.
+    /// This method maps OS versions to Safari versions based on the following:
+    ///
+    /// **macOS to Safari mapping:**
+    /// - macOS 26+ → Safari 26
+    /// - macOS 13.3+ (Ventura) → Safari 16.4
+    /// - macOS 13.0+ (Ventura) → Safari 16
+    /// - macOS 12.0+ (Monterey) → Safari 15
+    /// - macOS 11.0+ (Big Sur) → Safari 14
+    /// - macOS 10.15+ (Catalina) → Safari 13
+    ///
+    /// **iOS to Safari mapping:**
+    /// - iOS 26+ → Safari 26
+    /// - iOS 16.4+ → Safari 16.4
+    /// - iOS 16.0+ → Safari 16
+    /// - iOS 15.0+ → Safari 15
+    /// - iOS 14.0+ → Safari 14
+    /// - iOS 13.0+ → Safari 13
+    ///
     /// - Returns: The detected SafariVersion based on the OS.
     public static func autodetect() -> SafariVersion {
         #if os(macOS)
