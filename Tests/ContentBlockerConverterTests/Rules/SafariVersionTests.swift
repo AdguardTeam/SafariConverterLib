@@ -57,14 +57,14 @@ final class SafariVersionTests: XCTestCase {
 
         safariVersion = 17
         safariVersionResolved = SafariVersion(safariVersion)
-        XCTAssertEqual(safariVersionResolved, .safari16_4Plus(safariVersion))
+        XCTAssertEqual(safariVersionResolved, .safari16_4)
         XCTAssertTrue(safariVersionResolved.isSafari15orGreater())
         XCTAssertTrue(safariVersionResolved.isSafari16_4orGreater())
         XCTAssertFalse(safariVersionResolved.isSafari26orGreater())
 
         safariVersion = 26
         safariVersionResolved = SafariVersion(safariVersion)
-        XCTAssertEqual(safariVersionResolved, .safari16_4Plus(safariVersion))
+        XCTAssertEqual(safariVersionResolved, .safari26)
         XCTAssertTrue(safariVersionResolved.isSafari15orGreater())
         XCTAssertTrue(safariVersionResolved.isSafari16_4orGreater())
         XCTAssertTrue(safariVersionResolved.isSafari26orGreater())
@@ -80,7 +80,7 @@ final class SafariVersionTests: XCTestCase {
 
         safariVersion = 35.0
         safariVersionResolved = SafariVersion(safariVersion)
-        XCTAssertEqual(safariVersionResolved, .safari16_4Plus(safariVersion))
+        XCTAssertEqual(safariVersionResolved, .latest(safariVersion))
         XCTAssertTrue(safariVersionResolved.isSafari15orGreater())
         XCTAssertTrue(safariVersionResolved.isSafari16_4orGreater())
         XCTAssertTrue(safariVersionResolved.isSafari26orGreater())

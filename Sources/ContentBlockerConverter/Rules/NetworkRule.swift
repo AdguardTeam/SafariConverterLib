@@ -12,6 +12,9 @@ import Foundation
 /// - $redirect-rule
 /// - $csp
 /// - $object
+///
+/// TODO(ameshkov): Consider removing version-gating in NetworkRule and keep it
+/// only in `BlockerEntryFactory`.
 public class NetworkRule: Rule {
     /// If true, the network rule unblocks everything on the website (cosmetic + network).
     public var isDocumentWhiteList = false
@@ -177,6 +180,10 @@ public class NetworkRule: Rule {
         try addDomains(domainsStr: domains, separator: Chars.PIPE)
     }
 
+    /// Supported HTTP request methods for the `$method` modifier.
+    /// These are the standard HTTP methods that Safari content blockers support.
+    ///
+    /// See: https://github.com/WebKit/WebKit/blob/b222c16/Source/WebCore/loader/ResourceLoadInfo.cpp#L156
     private static let supportedRequestMethods: Set<String> = [
         "get",
         "head",
@@ -189,11 +196,9 @@ public class NetworkRule: Rule {
         "connect",
     ]
 
-    private func setRequestMethods(methods: String, version: SafariVersion) throws {
-        if !version.isSafari26orGreater() {
-            throw SyntaxError.invalidModifier(message: "$method is not supported")
-        }
-
+    /// Sets the HTTP request methods for this rule based on the `$method`
+    /// modifier.
+    private func setRequestMethods(methods: String) throws {
         if methods.isEmpty {
             throw SyntaxError.invalidModifier(message: "$method cannot be empty")
         }
@@ -207,7 +212,7 @@ public class NetworkRule: Rule {
 
             if trimmed.utf8.first == Chars.TILDE {
                 throw SyntaxError.invalidModifier(
-                    message: "$method does not support excluded methods: \(trimmed)"
+                    message: "$method does not support negating values: \(trimmed)"
                 )
             }
 
@@ -332,7 +337,7 @@ public class NetworkRule: Rule {
         case "domain", "from":
             try setNetworkRuleDomains(domains: optionValue)
         case "method":
-            try setRequestMethods(methods: optionValue, version: version)
+            try setRequestMethods(methods: optionValue)
         case "elemhide", "ehide":
             try setOptionEnabled(option: .elemhide, value: true)
         case "generichide", "ghide":
@@ -407,7 +412,9 @@ public class NetworkRule: Rule {
         if optionName != "domain" && optionName != "from" && optionName != "method"
             && !optionValue.isEmpty
         {
-            throw SyntaxError.invalidModifier(message: "Option \(optionName) must NOT have a value")
+            throw SyntaxError.invalidModifier(
+                message: "Modifier \(optionName) must not have a value"
+            )
         }
     }
 

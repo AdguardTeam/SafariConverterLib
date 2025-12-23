@@ -128,11 +128,13 @@ final class BlockerEntryFactoryTests: XCTestCase {
         }
     }
 
-    func testSafari26RequestMethod() {
+    // MARK: - Request methods
+
+    func testRequestMethodRules() {
         let testCases: [TestCase] = [
             TestCase(
                 ruleText: "||example.com/path$domain=test.com,method=post",
-                version: SafariVersion(26.0),
+                version: SafariVersion.safari26,
                 expectedEntry: BlockerEntry(
                     trigger: BlockerEntry.Trigger(
                         ifDomain: ["*test.com"],
@@ -144,7 +146,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
             ),
             TestCase(
                 ruleText: "||example.com/path$domain=test.com,method=get|post",
-                version: SafariVersion(26.0),
+                version: SafariVersion.safari26,
                 expectedEntries: [
                     BlockerEntry(
                         trigger: BlockerEntry.Trigger(
@@ -163,6 +165,12 @@ final class BlockerEntryFactoryTests: XCTestCase {
                         action: BlockerEntry.Action(type: "block")
                     ),
                 ]
+            ),
+            TestCase(
+                // Not supported in Safari before 26
+                ruleText: "||example.com^$method=post",
+                version: SafariVersion.safari16_4,
+                expectedErrorsCount: 1
             ),
         ]
 

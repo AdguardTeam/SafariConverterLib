@@ -28,6 +28,7 @@ final class NetworkRuleTests: XCTestCase {
             var expectedRestrictedContentTypes: NetworkRule.ContentType = []
             var expectedEnabledOptions: NetworkRule.Option = []
             var expectedDisabledOptions: NetworkRule.Option = []
+            var expectedRequestMethods: [String] = []
         }
 
         let testCases: [TestCase] = [
@@ -332,6 +333,24 @@ final class NetworkRuleTests: XCTestCase {
                 expectedPermittedDomains: ["example.org"],
                 expectedPermittedContentTypes: [.image, .script]
             ),
+            TestCase(
+                // $method modifier
+                ruleText:
+                    "||example.org^$method=post",
+                version: SafariVersion.safari26,
+                expectedUrlRuleText: "||example.org^",
+                expectedUrlRegExpSource: "^[^:]+://+([^:/]+\\.)?example\\.org[/:]",
+                expectedRequestMethods: ["post"]
+            ),
+            TestCase(
+                // $method with multiple values
+                ruleText:
+                    "||example.org^$method=post|head",
+                version: SafariVersion.safari26,
+                expectedUrlRuleText: "||example.org^",
+                expectedUrlRegExpSource: "^[^:]+://+([^:/]+\\.)?example\\.org[/:]",
+                expectedRequestMethods: ["post", "head"]
+            ),
         ]
 
         for testCase in testCases {
@@ -363,6 +382,7 @@ final class NetworkRuleTests: XCTestCase {
             )
             XCTAssertEqual(result.enabledOptions, testCase.expectedEnabledOptions, msg)
             XCTAssertEqual(result.disabledOptions, testCase.expectedDisabledOptions, msg)
+            XCTAssertEqual(result.requestMethods, testCase.expectedRequestMethods, msg)
         }
     }
 
@@ -418,6 +438,13 @@ final class NetworkRuleTests: XCTestCase {
         // Safari 15 when load-context was introduced.
         XCTAssertThrowsError(
             try NetworkRule(ruleText: "||example.org^$subdocument", for: SafariVersion.safari14)
+        )
+        // $method negation is not supported.
+        XCTAssertThrowsError(
+            try NetworkRule(
+                ruleText: "||example.org^$method=~get",
+                for: SafariVersion.safari26
+            )
         )
     }
 

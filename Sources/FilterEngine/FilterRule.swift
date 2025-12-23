@@ -77,10 +77,11 @@ public struct FilterRule: Codable {
 
     /// Initializes a `FilterRule` from a `NetworkRule` instance.
     ///
-    /// Note, that we only support whitelist (`@@`) rules that disable cosmetic rules, it will throw an error
-    /// on any other rule.
+    /// Note, that we only support whitelist (`@@`) rules that disable cosmetic
+    /// rules, it will throw an error on any other rule.
     ///
     /// `$badfilter` rules aren't supported either, they're supposed to be interpreted by `RuleFactory`.
+    /// `$method` rules aren't supported as they're not relevant to document-level rules anyway.
     public init(from rule: NetworkRule) throws {
         if !rule.isWhiteList {
             throw RuleError.unsupported(
@@ -92,6 +93,12 @@ public struct FilterRule: Codable {
             // $badfilter rules are filtered out on earlier stages.
             throw RuleError.unsupported(
                 message: "$badfilter rules are not supported: \(rule.ruleText)"
+            )
+        }
+
+        if !rule.requestMethods.isEmpty {
+            throw RuleError.unsupported(
+                message: "Network rules with $method modifier are not supported: \(rule.ruleText)"
             )
         }
 

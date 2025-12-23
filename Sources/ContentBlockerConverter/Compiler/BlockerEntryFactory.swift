@@ -80,6 +80,13 @@ class BlockerEntryFactory {
         return nil
     }
 
+    /// Converts a network rule into one or more Safari content blocking rules.
+    /// Depending on the rule modifiers, this may create multiple Safari CB
+    /// rules for a single network rule (example: $method modifier).
+    ///
+    /// - Parameter rule: The network rule to convert.
+    /// - Returns: An array of Safari content blocking rules.
+    /// - Throws: `ConversionError` if the rule cannot be converted.
     private func convertNetworkRuleEntries(rule: NetworkRule) throws -> [BlockerEntry] {
         if rule.requestMethods.isEmpty {
             return [try convertNetworkRule(rule: rule, requestMethod: nil)]
