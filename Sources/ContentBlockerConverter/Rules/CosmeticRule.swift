@@ -339,7 +339,11 @@ public class CosmeticRule: Rule {
             if let remainingDomains = try parseCosmeticOptions(domains: domains, version: version),
                 !remainingDomains.isEmpty
             {
-                try addDomains(domainsStr: remainingDomains, separator: Chars.COMMA, version: version)
+                try addDomains(
+                    domainsStr: remainingDomains,
+                    separator: Chars.COMMA,
+                    version: version
+                )
             }
         } else {
             try addDomains(domainsStr: domains, separator: Chars.COMMA, version: version)
