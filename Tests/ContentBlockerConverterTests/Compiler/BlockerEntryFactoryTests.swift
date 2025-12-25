@@ -148,7 +148,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 version: SafariVersion.safari26,
                 expectedEntry: BlockerEntry(
                     trigger: BlockerEntry.Trigger(
-                        ifFrameUrl: [#"^[^:]+://+([^:/]+\.)?test\.[^/:]+(?:[/:?#]|$)"#],
+                        ifFrameUrl: [#"^[^:]+://+([^:/]+\.)?test\.[^/:]+([/:?#].*)?$"#],
                         urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com\/path"#
                     ),
                     action: BlockerEntry.Action(type: "block")
@@ -167,7 +167,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
                     ),
                     BlockerEntry(
                         trigger: BlockerEntry.Trigger(
-                            ifFrameUrl: [#"^[^:]+://+([^:/]+\.)?test\.[^/:]+(?:[/:?#]|$)"#],
+                            ifFrameUrl: [#"^[^:]+://+([^:/]+\.)?test\.[^/:]+([/:?#].*)?$"#],
                             urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com\/path"#
                         ),
                         action: BlockerEntry.Action(type: "block")
@@ -180,17 +180,17 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 expectedEntry: BlockerEntry(
                     trigger: BlockerEntry.Trigger(
                         urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com\/path"#,
-                        unlessFrameUrl: [#"^[^:]+://+([^:/]+\.)?test\.[^/:]+(?:[/:?#]|$)"#]
+                        unlessFrameUrl: [#"^[^:]+://+([^:/]+\.)?test\.[^/:]+([/:?#].*)?$"#]
                     ),
                     action: BlockerEntry.Action(type: "block")
                 )
             ),
             TestCase(
-                ruleText: #"||example.com/path$domain=/test\.(com|net)/"#,
+                ruleText: #"||example.com/path$domain=/test\.[a-z]+/"#,
                 version: SafariVersion.safari26,
                 expectedEntry: BlockerEntry(
                     trigger: BlockerEntry.Trigger(
-                        ifFrameUrl: [#"^[^:]+://+([^:/]+\.)?test\.(com|net)(?:[/:?#]|$)"#],
+                        ifFrameUrl: [#"^[^:]+://+([^:/]+\.)?test\.[a-z]+([/:?#].*)?$"#],
                         urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com\/path"#
                     ),
                     action: BlockerEntry.Action(type: "block")

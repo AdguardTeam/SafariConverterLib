@@ -63,7 +63,7 @@ final class BlockerEntryEncoderTests: XCTestCase {
             let (result, _) = encoder.encode(entries: entries)
             XCTAssertEqual(
                 result,
-                #"[{"trigger":{"url-filter":"^[^:]+://+([^:/]+\\.)?example\\.com\\/path","if-frame-url":["^[^:]+://+([^:/]+\\.)?test\\.[^/:]+(?:[/:?#]|$)"]},"action":{"type":"block"}}]"#
+                #"[{"trigger":{"url-filter":"^[^:]+://+([^:/]+\\.)?example\\.com\\/path","if-frame-url":["^[^:]+://+([^:/]+\\.)?test\\.[^/:]+([/:?#].*)?$"]},"action":{"type":"block"}}]"#
             )
         }
     }
