@@ -337,9 +337,9 @@ public class NetworkRule: Rule {
         case "badfilter":
             isBadfilter = true
         case "domain", "from":
+            try setNetworkRuleDomains(domains: optionValue, version: version)
         case "method":
             try setRequestMethods(methods: optionValue)
-            try setNetworkRuleDomains(domains: optionValue, version: version)
         case "elemhide", "ehide":
             try setOptionEnabled(option: .elemhide, value: true)
         case "generichide", "ghide":
