@@ -52,6 +52,12 @@ extension ContentBlockerConverterTests {
 
     /// Benchmark test for convertArray performance.
     ///
+    /// Baseline results (Dec 25, 2025):
+    /// - Machine: Apple M3, 16GB RAM
+    /// - OS: macOS 26.2
+    /// - Swift: 6.2.3
+    /// - Average execution time: ~0.924 sec
+    ///
     /// Baseline results (Aug 8, 2025):
     /// - Machine: MacBook Pro M4 Max, 48GB RAM
     /// - OS: macOS 26
@@ -92,6 +98,12 @@ extension ContentBlockerConverterTests {
     }
 
     /// Benchmark test for handling $specifichide rules
+    ///
+    /// Baseline results (Dec 25, 2025):
+    /// - Machine: Apple M3, 16GB RAM
+    /// - OS: macOS 26.2
+    /// - Swift: 6.2.3
+    /// - Average execution time: ~0.223 seconds
     ///
     /// Baseline results (Aug 2025):
     /// - Machine: MacBook Pro M4 Max,48GB RAM
