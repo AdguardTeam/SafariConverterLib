@@ -155,11 +155,13 @@ certainly supports the most important types of those rules.
     `$domain=example.org|~sub.example.org`). Please upvote the
     [feature request][webkitmixeddomainsissue] to WebKit to lift this
     limitation.
-    - "Any TLD" (i.e. `domain.*`) is not fully supported. In the current
-    implementation the converter just replaces `.*` with top 100 popular TLDs.
-    This implementation will be improved [in the future][iftopurlissue].
-    - Using regular expressions in `$domain` is not supported, but it also will
-    be improved [in the future][iftopurlissue].
+    - "Any TLD" (i.e. `domain.*`):
+        - Safari 26+: supported via `if-frame-url`/`unless-frame-url`.
+        - Safari < 26: the converter replaces `.*` with top 100 popular TLDs.
+    - Using regular expressions in `$domain` (i.e. `$domain=/regexp/`):
+        - Safari 26+: supported via `if-frame-url`/`unless-frame-url` (limited to
+          regex that is [supported by Safari][safariregex]).
+        - Safari < 26: not supported.
 
 - `$denyallow` - this modifier is supported via converting `$denyallow` rule to
   a set of rules (one blocking rule + several unblocking rules).
@@ -239,7 +241,6 @@ certainly supports the most important types of those rules.
 [safariregex]: https://developer.apple.com/documentation/safariservices/creating-a-content-blocker#Capture-URLs-by-pattern
 [webkitmixeddomainsissue]: https://bugs.webkit.org/show_bug.cgi?id=226076
 [domainmodifier]: https://adguard.com/kb/general/ad-filtering/create-own-filters/#domain-modifier
-[iftopurlissue]: https://github.com/AdguardTeam/SafariConverterLib/issues/20#issuecomment-2532818732
 [#69]: https://github.com/AdguardTeam/SafariConverterLib/issues/69
 [#70]: https://github.com/AdguardTeam/SafariConverterLib/issues/70
 [#71]: https://github.com/AdguardTeam/SafariConverterLib/issues/71
@@ -289,11 +290,13 @@ additional extension.
 #### Limitations of cosmetic rules
 
 - Specifying domains is subject to limitations:
-    - "Any TLD" (i.e. `domain.*`) is not fully supported. In the current
-    implementation the converter just replaces `.*` with top 100 popular TLDs.
-    This implementation will be improved [in the future][iftopurlissue].
-    - Using regular expressions in `$domain` is not supported, but it also will
-    be improved [in the future][iftopurlissue].
+    - "Any TLD" (i.e. `domain.*`):
+        - Safari 26+: supported via `if-frame-url`/`unless-frame-url`.
+        - Safari < 26: the converter replaces `.*` with top 100 popular TLDs.
+    - Using regular expressions in `$domain` (i.e. `$domain=/regexp/`):
+        - Safari 26+: supported via `if-frame-url`/`unless-frame-url` (limited to
+          regex that is [supported by Safari][safariregex]).
+        - Safari < 26: not supported.
 
 - CSS exception rules (`#@#`) are supported with limitations:
     - The same limitations for specifying domains as with other cosmetic rules.

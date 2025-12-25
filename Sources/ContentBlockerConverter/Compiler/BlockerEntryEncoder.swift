@@ -126,6 +126,16 @@ class BlockerEntryEncoder {
             result.append("\"")
         }
 
+        if let ifFrameUrl = trigger.ifFrameUrl {
+            result.append(",\"if-frame-url\":")
+            result.append(ifFrameUrl.encodeToJSON(escape: true))
+        }
+
+        if let unlessFrameUrl = trigger.unlessFrameUrl {
+            result.append(",\"unless-frame-url\":")
+            result.append(unlessFrameUrl.encodeToJSON(escape: true))
+        }
+
         if let ifDomain = trigger.ifDomain {
             result.append(",\"if-domain\":")
             result.append(ifDomain.encodeToJSON(escape: true))

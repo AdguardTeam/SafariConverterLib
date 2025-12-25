@@ -281,7 +281,8 @@ final class CosmeticRuleTests: XCTestCase {
         XCTAssertThrowsError(try CosmeticRule(ruleText: "jp,##.banner"))
         XCTAssertThrowsError(try CosmeticRule(ruleText: "jp,b##.banner"))
         XCTAssertThrowsError(try CosmeticRule(ruleText: "jp,~b##.banner"))
-        XCTAssertThrowsError(try CosmeticRule(ruleText: "com,/example/##.banner"))
+        XCTAssertThrowsError(try CosmeticRule(ruleText: "com,/example/##.banner", for: .safari16_4))
+        XCTAssertNoThrow(try CosmeticRule(ruleText: "com,/example/##.banner", for: .safari26))
         XCTAssertThrowsError(try CosmeticRule(ruleText: "[$path=/path]#@#.banner"))
     }
 

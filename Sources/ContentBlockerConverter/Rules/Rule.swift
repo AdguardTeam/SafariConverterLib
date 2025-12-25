@@ -23,14 +23,20 @@ public class Rule {
     ///           starts with `~` it will be added to `restrictedDomains`,
     ///           otherwise to `permittedDomains`.
     ///   - separator: Separator character for the domains list.
+    ///   - version: Safari version which will use that rule.
     ///
     /// - Throws: `SyntaxError` if the list is invalid.
-    func addDomains(domainsStr: String, separator: UInt8) throws {
+    func addDomains(domainsStr: String, separator: UInt8, version: SafariVersion) throws {
         let utf8 = domainsStr.utf8
         var currentIndex = utf8.startIndex
         var domainStartIndex = currentIndex
         var nonASCIIFound = false
         var restricted = false
+        var insideRegex = false
+        // Number of consecutive backslashes immediately preceding `currentIndex`.
+        // Used to detect whether a slash is escaped inside a regex domain (odd count)
+        // or can terminate the regex (even count).
+        var precedingBackslashCount = 0
 
         /// Creates domain string from `current` buffer and adds it to the corresponding list.
         ///
@@ -44,22 +50,41 @@ public class Rule {
             }
 
             var domain = String(domainsStr[domainStartIndex..<currentIndex])
+            let domainUtf8 = domain.utf8
+            let domainByteCount = domainUtf8.count
 
-            if domain.utf8.count < 2 {
+            if domainByteCount < 2 {
                 throw SyntaxError.invalidModifier(
                     message: "Domain is too short: \(domain)"
                 )
             }
 
-            if nonASCIIFound, let encodedDomain = domain.idnaEncoded {
-                domain = encodedDomain
+            let domainStartsWithSlash = domainUtf8.first == Chars.SLASH
+            if domainStartsWithSlash, domainByteCount == 2 {
+                let secondByte = domainUtf8[domainUtf8.index(after: domainUtf8.startIndex)]
+                if secondByte == Chars.SLASH {
+                    throw SyntaxError.invalidModifier(
+                        message: "Empty regular expression for domain modifier"
+                    )
+                }
             }
 
-            if domain.utf8.first == Chars.SLASH && domain.utf8.last == Chars.SLASH {
-                // https://github.com/AdguardTeam/SafariConverterLib/issues/53
-                throw SyntaxError.invalidModifier(
-                    message: "Using regular expression for domain modifier is not supported"
-                )
+            let domainEndsWithSlash = domainUtf8.last == Chars.SLASH
+            if domainStartsWithSlash {
+                if !domainEndsWithSlash {
+                    throw SyntaxError.invalidModifier(
+                        message: "Invalid regular expression for domain modifier: \(domain)"
+                    )
+                }
+
+                if !version.isSafari26orGreater() {
+                    // https://github.com/AdguardTeam/SafariConverterLib/issues/53
+                    throw SyntaxError.invalidModifier(
+                        message: "Using regular expression for domain modifier is not supported"
+                    )
+                }
+            } else if nonASCIIFound, let encodedDomain = domain.idnaEncoded {
+                domain = encodedDomain
             }
 
             if restricted {
@@ -72,14 +97,30 @@ public class Rule {
         while currentIndex < utf8.endIndex {
             let char = utf8[currentIndex]
 
+            if currentIndex == domainStartIndex && char == Chars.SLASH {
+                insideRegex = true
+            }
+
+            if insideRegex && char == Chars.SLASH && currentIndex != domainStartIndex
+                && (precedingBackslashCount % 2 == 0)
+            {
+                // Closing slash of the regex domain.
+                insideRegex = false
+            }
+
             switch char {
             case separator:
+                if insideRegex {
+                    break
+                }
+
                 try addDomain()
 
                 // Reset
                 domainStartIndex = utf8.index(after: currentIndex)
                 nonASCIIFound = false
                 restricted = false
+                insideRegex = false
             case UInt8(ascii: "~"):
                 // Validate that the previous character was separator
                 if domainStartIndex != currentIndex {
@@ -96,6 +137,12 @@ public class Rule {
                     // Record that a non-ASCII character was found in the domain name.
                     nonASCIIFound = true
                 }
+            }
+
+            if char == Chars.BACKSLASH {
+                precedingBackslashCount += 1
+            } else {
+                precedingBackslashCount = 0
             }
 
             currentIndex = utf8.index(after: currentIndex)
