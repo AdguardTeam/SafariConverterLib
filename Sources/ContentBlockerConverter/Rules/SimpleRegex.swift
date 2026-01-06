@@ -158,4 +158,44 @@ public enum SimpleRegex {
 
         return String(pattern[startIndex..<endIndex])
     }
+
+    /// Unescapes a regular expression used in `$domain=/regexp/`.
+    ///
+    /// In the filter syntax, the following characters must be escaped:
+    /// `/`, `$`, `,`, `|`.
+    ///
+    /// This helper removes the extra escaping so the resulting regex matches
+    /// the intended pattern.
+    ///
+    /// You can read more about `$domain` modifier syntax in AdGuard KB:
+    /// https://adguard.com/kb/general/ad-filtering/create-own-filters/#domain-modifier
+    public static func unescapeDomainRegex(_ pattern: String) -> String {
+        let utf8 = pattern.utf8
+        var index = utf8.startIndex
+        let endIndex = utf8.endIndex
+        var bytes: [UInt8] = []
+        bytes.reserveCapacity(utf8.count)
+
+        while index < endIndex {
+            let char = utf8[index]
+            if char == Chars.BACKSLASH {
+                let nextIndex = utf8.index(after: index)
+                if nextIndex < endIndex {
+                    let nextChar = utf8[nextIndex]
+                    if nextChar == Chars.SLASH || nextChar == UInt8(ascii: "$")
+                        || nextChar == UInt8(ascii: ",") || nextChar == UInt8(ascii: "|")
+                    {
+                        bytes.append(nextChar)
+                        index = utf8.index(after: nextIndex)
+                        continue
+                    }
+                }
+            }
+
+            bytes.append(char)
+            index = utf8.index(after: index)
+        }
+
+        return String(bytes: bytes, encoding: .utf8) ?? pattern
+    }
 }
