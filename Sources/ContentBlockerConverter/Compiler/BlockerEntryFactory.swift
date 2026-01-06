@@ -99,7 +99,12 @@ class BlockerEntryFactory {
         entries.reserveCapacity(rule.requestMethods.count)
 
         for method in rule.requestMethods {
-            entries.append(contentsOf: try convertNetworkRuleEntries(rule: rule, requestMethod: method))
+            entries.append(
+                contentsOf: try convertNetworkRuleEntries(
+                    rule: rule,
+                    requestMethod: method
+                )
+            )
         }
         return entries
     }
