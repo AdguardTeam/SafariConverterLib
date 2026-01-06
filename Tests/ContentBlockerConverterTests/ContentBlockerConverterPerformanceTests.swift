@@ -69,6 +69,14 @@ extension ContentBlockerConverterTests {
     /// - Swift: 6.2.3
     /// - Average execution time: ~0.924 sec
     ///
+    /// PR #115 performance check (Jan 6, 2026):
+    /// - Machine: Apple M3, 16GB RAM
+    /// - OS: macOS 26.2
+    /// - Swift: 6.2.3
+    /// - Before (upstream/master @ 8b2eab8): ~0.892 sec
+    /// - After (pr-frame-url-triggers @ 364e903): ~0.923 sec
+    /// - Difference: +~0.031 sec (~+3.5%)
+    ///
     /// To get your machine info: `system_profiler SPHardwareDataType`
     /// To get your macOS version: `sw_vers`
     /// To get your Swift version: `swift --version`

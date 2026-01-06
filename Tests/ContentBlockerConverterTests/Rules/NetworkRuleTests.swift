@@ -219,7 +219,7 @@ final class NetworkRuleTests: XCTestCase {
             TestCase(
                 // Regex domain should terminate on a slash preceded by an even number of backslashes.
                 ruleText: #"||example.org^$domain=/test\\/|example.net"#,
-                version: SafariVersion(26.0),
+                version: SafariVersion.safari26,
                 expectedUrlRuleText: "||example.org^",
                 expectedUrlRegExpSource: "^[^:]+://+([^:/]+\\.)?example\\.org[/:]",
                 expectedPermittedDomains: [#"/test\\/"#, "example.net"]
