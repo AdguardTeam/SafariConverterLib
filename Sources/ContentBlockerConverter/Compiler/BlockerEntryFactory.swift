@@ -514,6 +514,10 @@ class BlockerEntryFactory {
         )
     }
 
+    /// Creates a trigger using the legacy domain fields (`if-domain`/`unless-domain`).
+    ///
+    /// This path is used for Safari versions earlier than Safari 26, where we cannot
+    /// fall back to `if-frame-url`/`unless-frame-url` for advanced domain patterns.
     private func createLegacyDomainTrigger(
         rule: Rule,
         baseTrigger: BlockerEntry.Trigger
@@ -581,7 +585,7 @@ class BlockerEntryFactory {
         plain.reserveCapacity(domains.count)
 
         for domain in domains {
-            if isRegexDomain(domain) || isTldWildcardDomain(domain) {
+            if SimpleRegex.isRegexPattern(domain) || isTldWildcardDomain(domain) {
                 special.append(domain)
             } else {
                 plain.append(domain)
@@ -591,111 +595,67 @@ class BlockerEntryFactory {
         return (plain, special)
     }
 
-    private func isRegexDomain(_ domain: String) -> Bool {
-        SimpleRegex.isRegexPattern(domain)
-    }
-
     private func isTldWildcardDomain(_ domain: String) -> Bool {
         return domain.hasSuffix(".*")
     }
 
-    private func unescapeDomainRegex(_ pattern: String) -> String {
-        // In `$domain=/regexp/` the following characters must be escaped in the filter syntax:
-        // `/`, `$`, `,`, `|`. Unescape them so the final regex is correct.
-        // https://adguard.com/kb/general/ad-filtering/create-own-filters/#domain-modifier
-        let utf8 = pattern.utf8
-        var i = utf8.startIndex
-        let end = utf8.endIndex
-        var bytes: [UInt8] = []
-        bytes.reserveCapacity(utf8.count)
-
-        while i < end {
-            let c = utf8[i]
-            if c == Chars.BACKSLASH {
-                let nextIndex = utf8.index(after: i)
-                if nextIndex < end {
-                    let next = utf8[nextIndex]
-                    if next == Chars.SLASH || next == UInt8(ascii: "$") || next == UInt8(ascii: ",")
-                        || next == UInt8(ascii: "|")
-                    {
-                        bytes.append(next)
-                        i = utf8.index(after: nextIndex)
-                        continue
-                    }
-                }
-            }
-
-            bytes.append(c)
-            i = utf8.index(after: i)
-        }
-
-        return String(bytes: bytes, encoding: .utf8) ?? pattern
-    }
-
     private func createFrameUrlPatterns(domains: [String]) throws -> [String] {
-        var result: [String] = []
-        result.reserveCapacity(domains.count)
-
-        for domain in domains {
+        return try domains.map { domain in
             if isTldWildcardDomain(domain) {
-                // Convert `example.*` to a regex that matches `example.<any suffix>`.
-                let prefix = String(domain.dropLast(2))
-                let escaped = prefix.replacingOccurrences(of: ".", with: #"\."#)
-                let pattern = #"^[^:]+://+([^:/]+\.)?\#(escaped)\.[^/:]+([/:?#].*)?$"#
-                try validateSafariRegex(pattern: pattern, context: domain)
-                result.append(pattern)
-                continue
+                return try createTldWildcardFrameUrlPattern(domain: domain)
+            } else if SimpleRegex.isRegexPattern(domain) {
+                return try createRegexFrameUrlPattern(domain: domain)
             }
 
-            if isRegexDomain(domain) {
-                guard var inner = SimpleRegex.extractRegex(domain) else {
-                    throw ConversionError.invalidDomains(
-                        message: "Invalid regular expression in domain: \(domain)"
-                    )
-                }
-                inner = unescapeDomainRegex(inner)
-                if inner.isEmpty {
-                    throw ConversionError.invalidDomains(
-                        message: "Empty regular expression in domain"
-                    )
-                }
-
-                var hostAnchored = false
-                if inner.utf8.first == Chars.CARET {
-                    hostAnchored = true
-                    inner = String(inner.dropFirst())
-                }
-
-                if inner.utf8.last == Chars.DOLLAR {
-                    inner = String(inner.dropLast())
-                }
-
-                if inner.isEmpty {
-                    throw ConversionError.invalidDomains(
-                        message: "Empty regular expression in domain"
-                    )
-                }
-
-                if hostAnchored {
-                    let pattern = #"^[^:]+://+\#(inner)([/:?#].*)?$"#
-                    try validateSafariRegex(pattern: pattern, context: domain)
-                    result.append(pattern)
-                } else {
-                    let pattern = #"^[^:]+://+([^:/]+\.)?\#(inner)([/:?#].*)?$"#
-                    try validateSafariRegex(pattern: pattern, context: domain)
-                    result.append(pattern)
-                }
-
-                continue
-            }
-
-            // This should not happen as we only call this for `special` domains.
             throw ConversionError.invalidDomains(
                 message: "Unsupported frame-url domain pattern: \(domain)"
             )
         }
+    }
 
-        return result
+    private func createTldWildcardFrameUrlPattern(domain: String) throws -> String {
+        // Convert `example.*` to a regex that matches `example.<any suffix>`.
+        let prefix = String(domain.dropLast(2))
+        let escaped = prefix.replacingOccurrences(of: ".", with: #"\."#)
+        let pattern = #"^[^:]+://+([^:/]+\.)?\#(escaped)\.[^/:]+([/:?#].*)?$"#
+        try validateSafariRegex(pattern: pattern, context: domain)
+        return pattern
+    }
+
+    private func createRegexFrameUrlPattern(domain: String) throws -> String {
+        guard var inner = SimpleRegex.extractRegex(domain) else {
+            throw ConversionError.invalidDomains(
+                message: "Invalid regular expression in domain: \(domain)"
+            )
+        }
+
+        inner = SimpleRegex.unescapeDomainRegex(inner)
+
+        var hostAnchored = false
+        if inner.utf8.first == Chars.CARET {
+            hostAnchored = true
+            inner = String(inner.dropFirst())
+        }
+
+        if inner.utf8.last == Chars.DOLLAR {
+            inner = String(inner.dropLast())
+        }
+
+        if inner.isEmpty {
+            throw ConversionError.invalidDomains(
+                message: "Empty regular expression in domain"
+            )
+        }
+
+        let pattern: String
+        if hostAnchored {
+            pattern = #"^[^:]+://+\#(inner)([/:?#].*)?$"#
+        } else {
+            pattern = #"^[^:]+://+([^:/]+\.)?\#(inner)([/:?#].*)?$"#
+        }
+
+        try validateSafariRegex(pattern: pattern, context: domain)
+        return pattern
     }
 
     private func validateSafariRegex(pattern: String, context: String) throws {
