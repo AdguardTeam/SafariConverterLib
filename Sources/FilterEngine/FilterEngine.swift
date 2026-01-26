@@ -513,7 +513,10 @@ extension FilterEngine {
 
 extension FilterEngine {
     private static func host(from url: URL) -> String {
-        if #available(macOS 13.0, iOS 16.0, *) {
+        if #available(macOS 13.4, iOS 16.4, *) {
+            // URL.host() crashes on macOS 13.0–13.3 / iOS 16.0–16.3
+            // due to an undocumented Foundation issue.
+            // Observed stable starting from macOS 13.4 / iOS 16.4.
             return url.host() ?? ""
         } else {
             // Fallback on earlier versions
