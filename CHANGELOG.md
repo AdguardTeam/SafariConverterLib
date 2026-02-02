@@ -7,11 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+[unreleased]: https://github.com/AdguardTeam/SafariConverterLib/compare/v4.1.1...HEAD
+
+## [v4.1.1]
+
 ### Fixed
 
 - Fixed a crash when extracting URL host on macOS 13.0–13.3 and iOS 16.0–16.3.
-
-[unreleased]: https://github.com/AdguardTeam/SafariConverterLib/compare/v4.1.0...HEAD
 
 ## [v4.1.0]
 
