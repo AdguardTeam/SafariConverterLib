@@ -87,4 +87,26 @@ final class SimpleRegexTests: XCTestCase {
             )
         }
     }
+
+    func testUnescapeDomainRegex() {
+        let testCases: [(pattern: String, expected: String)] = [
+            (#"abc"#, #"abc"#),
+            (#"a\/b"#, #"a/b"#),
+            (#"a\|b"#, #"a|b"#),
+            (#"a\$b"#, #"a$b"#),
+            (#"a\,b"#, #"a,b"#),
+            (#"a\.b"#, #"a\.b"#),
+            (#"a\\/"#, #"a\/"#),
+            ("a\\", "a\\"),
+        ]
+
+        for (pattern, expected) in testCases {
+            let result = SimpleRegex.unescapeDomainRegex(pattern)
+            XCTAssertEqual(
+                result,
+                expected,
+                "Pattern '\(pattern)': expected unescapeDomainRegex to return \(expected), but got \(result)"
+            )
+        }
+    }
 }

@@ -1484,24 +1484,12 @@ final class ContentBlockerConverterTests: XCTestCase {
                 rules: [
                     "||example.org$domain=/реклама\\.рф/"
                 ],
-                expectedSafariRulesJSON: #"""
-                    [
-                      {
-                        "action" : {
-                          "type" : "block"
-                        },
-                        "trigger" : {
-                          "if-domain" : [
-                            "*xn--\/\\-7kcax4ahj5a.xn--\/-4tbm"
-                          ],
-                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?example\\.org"
-                        }
-                      }
-                    ]
-                    """#,
+                version: SafariVersion.safari26,
+                expectedSafariRulesJSON: ConversionResult.EMPTY_RESULT_JSON,
                 expectedSourceRulesCount: 1,
                 expectedSourceSafariCompatibleRulesCount: 1,
-                expectedSafariRulesCount: 1
+                expectedSafariRulesCount: 0,
+                expectedErrorsCount: 1
             ),
         ]
 

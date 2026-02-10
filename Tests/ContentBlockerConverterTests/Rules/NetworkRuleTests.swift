@@ -217,6 +217,14 @@ final class NetworkRuleTests: XCTestCase {
                 expectedRestrictedDomains: ["sub.example.org"]
             ),
             TestCase(
+                // Regex domain should terminate on a slash preceded by an even number of backslashes.
+                ruleText: #"||example.org^$domain=/test\\/|example.net"#,
+                version: SafariVersion.safari26,
+                expectedUrlRuleText: "||example.org^",
+                expectedUrlRegExpSource: "^[^:]+://+([^:/]+\\.)?example\\.org[/:]",
+                expectedPermittedDomains: [#"/test\\/"#, "example.net"]
+            ),
+            TestCase(
                 // Test $domain for TLD.
                 ruleText: "||example.org^$domain=jp|~co",
                 expectedUrlRuleText: "||example.org^",
@@ -421,6 +429,8 @@ final class NetworkRuleTests: XCTestCase {
         XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org^$domain=~e"))
         // $domain with regexes are not supported.
         XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org^$domain=/example.org/"))
+        // Empty $domain regex should be rejected.
+        XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org^$domain=//"))
         // $domain with regexes are not supported.
         XCTAssertThrowsError(
             try NetworkRule(ruleText: "||example.org^$domain=example.org|/test.com/")
