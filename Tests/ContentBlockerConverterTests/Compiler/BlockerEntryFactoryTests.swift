@@ -7,10 +7,30 @@ final class BlockerEntryFactoryTests: XCTestCase {
 
     struct TestCase {
         let ruleText: String
-        var version: SafariVersion = DEFAULT_SAFARI_VERSION
+        var version: SafariVersion
         var expectedEntry: BlockerEntry?
         var expectedEntries: [BlockerEntry]?
-        var expectedErrorsCount = 0
+        var expectedErrorsCount: Int
+        var file: StaticString
+        var line: UInt
+
+        init(
+            ruleText: String,
+            version: SafariVersion = DEFAULT_SAFARI_VERSION,
+            expectedEntry: BlockerEntry? = nil,
+            expectedEntries: [BlockerEntry]? = nil,
+            expectedErrorsCount: Int = 0,
+            file: StaticString = #filePath,
+            line: UInt = #line
+        ) {
+            self.ruleText = ruleText
+            self.version = version
+            self.expectedEntry = expectedEntry
+            self.expectedEntries = expectedEntries
+            self.expectedErrorsCount = expectedErrorsCount
+            self.file = file
+            self.line = line
+        }
     }
 
     func runTest(_ testCase: TestCase) {
@@ -26,7 +46,12 @@ final class BlockerEntryFactoryTests: XCTestCase {
         )
 
         guard let rule = rule else {
-            XCTAssert(false, "Failed to create a rule for \(testCase.ruleText)")
+            XCTAssert(
+                false,
+                "Failed to create a rule for \(testCase.ruleText)",
+                file: testCase.file,
+                line: testCase.line
+            )
 
             return
         }
@@ -36,7 +61,9 @@ final class BlockerEntryFactoryTests: XCTestCase {
         XCTAssertEqual(
             errorsCounter.getCount(),
             testCase.expectedErrorsCount,
-            "Rule \(testCase.ruleText) conversion errors count didn't match"
+            "Rule \(testCase.ruleText) conversion errors count didn't match",
+            file: testCase.file,
+            line: testCase.line
         )
 
         if let result = result {
@@ -44,13 +71,17 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 XCTAssertEqual(
                     result,
                     [expectedEntry],
-                    "Rule \(testCase.ruleText) conversion result didn't match"
+                    "Rule \(testCase.ruleText) conversion result didn't match",
+                    file: testCase.file,
+                    line: testCase.line
                 )
             } else if let expectedEntries = testCase.expectedEntries {
                 XCTAssertEqual(
                     result,
                     expectedEntries,
-                    "Rule \(testCase.ruleText) conversion result didn't match"
+                    "Rule \(testCase.ruleText) conversion result didn't match",
+                    file: testCase.file,
+                    line: testCase.line
                 )
             }
         }
