@@ -203,6 +203,133 @@ final class BlockerEntryFactoryTests: XCTestCase {
         }
     }
 
+    // MARK: - Safari 26 mixed restricted domains
+
+    func testSafari26MixedRestrictedDomains() {
+        let testCases: [TestCase] = [
+            // Mixed restricted plain + TLD wildcard.
+            // Must produce a single rule with unless-frame-url.
+            TestCase(
+                ruleText: "||example.com/path$domain=~test.com|~test.*",
+                version: SafariVersion.safari26,
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com\/path"#,
+                        unlessFrameUrl: [
+                            #"^[^:]+://+([^:/]+\.)?test\.com([/:?#].*)?$"#,
+                            #"^[^:]+://+([^:/]+\.)?test\.[^/:]+([/:?#].*)?$"#,
+                        ]
+                    ),
+                    action: BlockerEntry.Action(type: "block")
+                )
+            ),
+            // Mixed restricted plain + regex domain.
+            TestCase(
+                ruleText: #"||example.com/path$domain=~test.com|~/test\.[a-z]+/"#,
+                version: SafariVersion.safari26,
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com\/path"#,
+                        unlessFrameUrl: [
+                            #"^[^:]+://+([^:/]+\.)?test\.com([/:?#].*)?$"#,
+                            #"^[^:]+://+([^:/]+\.)?test\.[a-z]+([/:?#].*)?$"#,
+                        ]
+                    ),
+                    action: BlockerEntry.Action(type: "block")
+                )
+            ),
+            // Multiple plain + one TLD wildcard restricted.
+            TestCase(
+                ruleText: "||example.com$domain=~test.com|~other.org|~foo.*",
+                version: SafariVersion.safari26,
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com"#,
+                        unlessFrameUrl: [
+                            #"^[^:]+://+([^:/]+\.)?test\.com([/:?#].*)?$"#,
+                            #"^[^:]+://+([^:/]+\.)?other\.org([/:?#].*)?$"#,
+                            #"^[^:]+://+([^:/]+\.)?foo\.[^/:]+([/:?#].*)?$"#,
+                        ]
+                    ),
+                    action: BlockerEntry.Action(type: "block")
+                )
+            ),
+            // Only plain restricted — no regression.
+            TestCase(
+                ruleText: "||example.com/path$domain=~test.com|~other.org",
+                version: SafariVersion.safari26,
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com\/path"#,
+                        unlessDomain: ["*test.com", "*other.org"]
+                    ),
+                    action: BlockerEntry.Action(type: "block")
+                )
+            ),
+            // Single plain restricted — no regression.
+            TestCase(
+                ruleText: "||example.com$domain=~test.com",
+                version: SafariVersion.safari26,
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com"#,
+                        unlessDomain: ["*test.com"]
+                    ),
+                    action: BlockerEntry.Action(type: "block")
+                )
+            ),
+            // Only regex restricted — no regression.
+            TestCase(
+                ruleText: #"||example.com/path$domain=~/test\.[a-z]+/"#,
+                version: SafariVersion.safari26,
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com\/path"#,
+                        unlessFrameUrl: [
+                            #"^[^:]+://+([^:/]+\.)?test\.[a-z]+([/:?#].*)?$"#
+                        ]
+                    ),
+                    action: BlockerEntry.Action(type: "block")
+                )
+            ),
+            // Mixed restricted + $method modifier.
+            TestCase(
+                ruleText: "||example.com$domain=~test.com|~test.*,method=post",
+                version: SafariVersion.safari26,
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com"#,
+                        unlessFrameUrl: [
+                            #"^[^:]+://+([^:/]+\.)?test\.com([/:?#].*)?$"#,
+                            #"^[^:]+://+([^:/]+\.)?test\.[^/:]+([/:?#].*)?$"#,
+                        ],
+                        requestMethod: "post"
+                    ),
+                    action: BlockerEntry.Action(type: "block")
+                )
+            ),
+            // Mixed restricted with whitelist rule.
+            TestCase(
+                ruleText: "@@||example.com$domain=~test.com|~test.*",
+                version: SafariVersion.safari26,
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com"#,
+                        unlessFrameUrl: [
+                            #"^[^:]+://+([^:/]+\.)?test\.com([/:?#].*)?$"#,
+                            #"^[^:]+://+([^:/]+\.)?test\.[^/:]+([/:?#].*)?$"#,
+                        ]
+                    ),
+                    action: BlockerEntry.Action(type: "ignore-previous-rules")
+                )
+            ),
+        ]
+
+        for testCase in testCases {
+            runTest(testCase)
+        }
+    }
+
     // MARK: - Request methods
 
     func testRequestMethodRules() {

@@ -550,6 +550,23 @@ class BlockerEntryFactory {
         special: [String],
         baseTrigger: BlockerEntry.Trigger
     ) throws -> [BlockerEntry.Trigger] {
+        // For restricted domains (included is empty) with both plain and
+        // special types we must merge everything into a single
+        // unless-frame-url trigger. Splitting into two rules (one with
+        // unless-domain, one with unless-frame-url) would weaken the
+        // exclusion logic because Safari applies rules with OR semantics.
+        if included.isEmpty && !plain.isEmpty && !special.isEmpty {
+            var trigger = baseTrigger
+            let plainPatterns = try plain.map {
+                try createPlainDomainFrameUrlPattern(domain: $0)
+            }
+            let specialPatterns = try createFrameUrlPatterns(
+                domains: special
+            )
+            trigger.unlessFrameUrl = plainPatterns + specialPatterns
+            return [trigger]
+        }
+
         var triggers: [BlockerEntry.Trigger] = []
         triggers.reserveCapacity((plain.isEmpty ? 0 : 1) + (special.isEmpty ? 0 : 1))
 
@@ -618,6 +635,22 @@ class BlockerEntryFactory {
         }
     }
 
+    /// Converts a plain domain (e.g. `test.com`) to a frame-url regex
+    /// pattern that matches the domain and its subdomains.
+    ///
+    /// For example, `test.com` becomes:
+    /// `^[^:]+://+([^:/]+\.)?test\.com([/:?#].*)?$`
+    private func createPlainDomainFrameUrlPattern(
+        domain: String
+    ) throws -> String {
+        let escaped = domain.replacingOccurrences(of: ".", with: #"\."#)
+        let pattern = #"^[^:]+://+([^:/]+\.)?\#(escaped)([/:?#].*)?$"#
+        try validateSafariRegex(pattern: pattern, context: domain)
+        return pattern
+    }
+
+    /// Converts a TLD wildcard domain (e.g. `example.*`) to a frame-url
+    /// regex pattern that matches `example.<any TLD>` and subdomains.
     private func createTldWildcardFrameUrlPattern(domain: String) throws -> String {
         // Convert `example.*` to a regex that matches `example.<any suffix>`.
         let prefix = String(domain.dropLast(2))
