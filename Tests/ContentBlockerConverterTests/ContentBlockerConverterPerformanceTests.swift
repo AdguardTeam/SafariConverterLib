@@ -51,6 +51,7 @@ extension ContentBlockerConverterTests {
     }
 
     /// Benchmark test for convertArray performance.
+    ///
     /// Baseline results (Aug 8, 2025):
     /// - Machine: MacBook Pro M4 Max, 48GB RAM
     /// - OS: macOS 26
