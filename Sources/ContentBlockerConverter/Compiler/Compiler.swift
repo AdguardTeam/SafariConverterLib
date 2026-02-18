@@ -96,6 +96,10 @@ class Compiler {
     /// Applies `$specifichide` exceptions by removing the domain from other rules' `if-domain`.
     ///
     /// TODO: [ameshkov]: The algorithm is very ineffective, reconsider later.
+    /// TODO: This function only handles `if-domain` entries. Rules with
+    /// `if-frame-url` (Safari 26+ wildcard/regex domains) are not matched
+    /// against specifichide exceptions, so `$specifichide` won't apply to
+    /// cosmetic rules like `example.*##.banner`.
     private static func applySpecifichide(
         blockingItems: inout [BlockerEntry],
         specifichideExceptions: [String]
