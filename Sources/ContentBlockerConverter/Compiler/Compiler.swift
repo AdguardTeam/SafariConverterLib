@@ -167,7 +167,11 @@ class Compiler {
         for entry in cssBlocking {
             if let domains = entry.trigger.ifDomain, !domains.isEmpty {
                 cssBlockingDomainSensitive.append(entry)
+            } else if let frameUrls = entry.trigger.ifFrameUrl, !frameUrls.isEmpty {
+                cssBlockingDomainSensitive.append(entry)
             } else if let domains = entry.trigger.unlessDomain, !domains.isEmpty {
+                cssBlockingGenericDomainSensitive.append(entry)
+            } else if let frameUrls = entry.trigger.unlessFrameUrl, !frameUrls.isEmpty {
                 cssBlockingGenericDomainSensitive.append(entry)
             } else if let selector = entry.action.selector,
                 entry.trigger.urlFilter == BlockerEntryFactory.URL_FILTER_COSMETIC_RULES
