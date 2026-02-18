@@ -1003,6 +1003,217 @@ final class BlockerEntryFactoryTests: XCTestCase {
         }
     }
 
+    // MARK: - Safari 26 vs legacy TLD wildcard
+
+    func testSafari26VsLegacyTldWildcard() throws {
+        // TLD wildcard on Safari 16.4 — legacy TLD expansion.
+        let legacyConverter = BlockerEntryFactory(
+            errorsCounter: ErrorsCounter(),
+            version: .safari16_4
+        )
+        let legacyRule = try NetworkRule(
+            ruleText: "||ads.example^$domain=example.*",
+            for: .safari16_4
+        )
+        let legacyResult = legacyConverter.createBlockerEntries(rule: legacyRule)
+        XCTAssertNotNil(legacyResult)
+        XCTAssertEqual(legacyResult!.count, 1)
+        XCTAssertNotNil(legacyResult![0].trigger.ifDomain)
+        XCTAssertTrue(legacyResult![0].trigger.ifDomain!.count >= 100)
+        XCTAssertTrue(legacyResult![0].trigger.ifDomain!.contains("*example.com"))
+        XCTAssertTrue(legacyResult![0].trigger.ifDomain!.contains("*example.net"))
+        XCTAssertNil(legacyResult![0].trigger.ifFrameUrl)
+
+        // Safari 26 and regression tests.
+        let testCases: [TestCase] = [
+            TestCase(
+                // TLD wildcard on Safari 26 — if-frame-url.
+                ruleText: "||ads.example^$domain=example.*",
+                version: .safari26,
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        ifFrameUrl: [
+                            #"^[^:]+://+([^:/]+\.)?example\.[^/:]+([/:?#].*)?$"#
+                        ],
+                        urlFilter: #"^[^:]+://+([^:/]+\.)?ads\.example[/:]"#
+                    ),
+                    action: BlockerEntry.Action(type: "block")
+                )
+            ),
+            TestCase(
+                // Restricted TLD wildcard on Safari 26 — unless-frame-url.
+                ruleText: "||ads.example^$domain=~example.*",
+                version: .safari26,
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        urlFilter: #"^[^:]+://+([^:/]+\.)?ads\.example[/:]"#,
+                        unlessFrameUrl: [
+                            #"^[^:]+://+([^:/]+\.)?example\.[^/:]+([/:?#].*)?$"#
+                        ]
+                    ),
+                    action: BlockerEntry.Action(type: "block")
+                )
+            ),
+            TestCase(
+                // Mixed restricted plain + TLD wildcard on Safari 26.
+                ruleText: "||ads.example^$domain=~example.com|~example.*",
+                version: .safari26,
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        urlFilter: #"^[^:]+://+([^:/]+\.)?ads\.example[/:]"#,
+                        unlessFrameUrl: [
+                            #"^[^:]+://+([^:/]+\.)?example\.com([/:?#].*)?$"#,
+                            #"^[^:]+://+([^:/]+\.)?example\.[^/:]+([/:?#].*)?$"#,
+                        ]
+                    ),
+                    action: BlockerEntry.Action(type: "block")
+                )
+            ),
+            TestCase(
+                // Restricted TLD wildcard with different domain.
+                ruleText: "||example.com^$domain=~test.*",
+                version: .safari26,
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com[/:]"#,
+                        unlessFrameUrl: [
+                            #"^[^:]+://+([^:/]+\.)?test\.[^/:]+([/:?#].*)?$"#
+                        ]
+                    ),
+                    action: BlockerEntry.Action(type: "block")
+                )
+            ),
+        ]
+
+        for testCase in testCases {
+            runTest(testCase)
+        }
+
+        // Unicode regex domain on old Safari — rejected at parsing.
+        // Before the Safari 26 PR, this was incorrectly punycode-encoded
+        // instead of being rejected. Now it throws at parsing stage.
+        XCTAssertThrowsError(
+            try NetworkRule(
+                ruleText: #"||example.org$domain=/реклама\.рф/"#,
+                for: .safari16_4
+            )
+        )
+    }
+
+    // MARK: - Cosmetic rule frame-url domains (Safari 26)
+
+    func testSafari26CosmeticRuleFrameUrlDomains() {
+        let testCases: [TestCase] = [
+            TestCase(
+                // TLD wildcard cosmetic rule — if-frame-url.
+                ruleText: "example.*##.banner",
+                version: .safari26,
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        ifFrameUrl: [
+                            #"^[^:]+://+([^:/]+\.)?example\.[^/:]+([/:?#].*)?$"#
+                        ],
+                        urlFilter: ".*"
+                    ),
+                    action: BlockerEntry.Action(
+                        type: "css-display-none",
+                        selector: ".banner"
+                    )
+                )
+            ),
+            TestCase(
+                // Restricted TLD wildcard cosmetic rule — unless-frame-url.
+                ruleText: "~example.*##.banner",
+                version: .safari26,
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        urlFilter: ".*",
+                        unlessFrameUrl: [
+                            #"^[^:]+://+([^:/]+\.)?example\.[^/:]+([/:?#].*)?$"#
+                        ]
+                    ),
+                    action: BlockerEntry.Action(
+                        type: "css-display-none",
+                        selector: ".banner"
+                    )
+                )
+            ),
+            TestCase(
+                // Regex domain cosmetic rule — if-frame-url.
+                ruleText: "/example/##.banner",
+                version: .safari26,
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        ifFrameUrl: [
+                            #"^[^:]+://+([^:/]+\.)?example([/:?#].*)?$"#
+                        ],
+                        urlFilter: ".*"
+                    ),
+                    action: BlockerEntry.Action(
+                        type: "css-display-none",
+                        selector: ".banner"
+                    )
+                )
+            ),
+            TestCase(
+                // Restricted regex domain cosmetic rule — unless-frame-url.
+                ruleText: "~/example/##.banner",
+                version: .safari26,
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        urlFilter: ".*",
+                        unlessFrameUrl: [
+                            #"^[^:]+://+([^:/]+\.)?example([/:?#].*)?$"#
+                        ]
+                    ),
+                    action: BlockerEntry.Action(
+                        type: "css-display-none",
+                        selector: ".banner"
+                    )
+                )
+            ),
+        ]
+
+        for testCase in testCases {
+            runTest(testCase)
+        }
+    }
+
+    // MARK: - Document-level exception regression (Safari 26)
+
+    func testDocumentExceptionSafari26() {
+        let testCases: [TestCase] = [
+            TestCase(
+                // @@||example.org^$document on Safari 26.
+                ruleText: "@@||example.org^$document",
+                version: .safari26,
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        ifDomain: ["*example.org"],
+                        urlFilter: ".*"
+                    ),
+                    action: BlockerEntry.Action(type: "ignore-previous-rules")
+                )
+            ),
+            TestCase(
+                // @@||example.org^$urlblock on Safari 26.
+                ruleText: "@@||example.org^$urlblock",
+                version: .safari26,
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        ifDomain: ["*example.org"],
+                        urlFilter: ".*"
+                    ),
+                    action: BlockerEntry.Action(type: "ignore-previous-rules")
+                )
+            ),
+        ]
+
+        for testCase in testCases {
+            runTest(testCase)
+        }
+    }
+
     // MARK: - TLD domains conversion
 
     func testTldDomains() throws {
