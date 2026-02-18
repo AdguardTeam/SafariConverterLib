@@ -7,7 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Support domain wildcards (`domain.*`) and domain regexes on Safari 26+ using `if-frame-url`/`unless-frame-url`, thanks to @hyeonjongyang: [#100]
+
 [unreleased]: https://github.com/AdguardTeam/SafariConverterLib/compare/v4.1.1...HEAD
+[#100]: https://github.com/AdguardTeam/SafariConverterLib/issues/100
 
 ## [v4.1.1]
 

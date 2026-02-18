@@ -84,8 +84,8 @@ public enum SafariVersion: CustomStringConvertible, CustomDebugStringConvertible
         return self.doubleValue >= SafariVersion.safari16_4.doubleValue
     }
 
-    /// Starting from Safari 26 content blockers add new trigger fields like
-    /// `request-method`.
+    /// Starting from Safari 26 content blockers add new trigger fields like `request-method`,
+    /// `if-frame-url`, and `unless-frame-url`.
     public func isSafari26orGreater() -> Bool {
         return self.doubleValue >= SafariVersion.safari26.doubleValue
     }

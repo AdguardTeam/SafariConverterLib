@@ -39,8 +39,10 @@ public struct BlockerEntry: Codable, Equatable, CustomStringConvertible {
     public struct Trigger: Codable, Equatable {
         public init(
             ifDomain: [String]? = nil,
+            ifFrameUrl: [String]? = nil,
             urlFilter: String? = nil,
             unlessDomain: [String]? = nil,
+            unlessFrameUrl: [String]? = nil,
             loadType: [String]? = nil,
             resourceType: [String]? = nil,
             requestMethod: String? = nil,
@@ -48,8 +50,10 @@ public struct BlockerEntry: Codable, Equatable, CustomStringConvertible {
             loadContext: [String]? = nil
         ) {
             self.ifDomain = ifDomain
+            self.ifFrameUrl = ifFrameUrl
             self.urlFilter = urlFilter
             self.unlessDomain = unlessDomain
+            self.unlessFrameUrl = unlessFrameUrl
             self.loadType = loadType
             self.resourceType = resourceType
             self.requestMethod = requestMethod
@@ -58,8 +62,10 @@ public struct BlockerEntry: Codable, Equatable, CustomStringConvertible {
         }
 
         public var ifDomain: [String]?
+        public var ifFrameUrl: [String]?
         public var urlFilter: String?
         public var unlessDomain: [String]?
+        public var unlessFrameUrl: [String]?
         public var loadType: [String]?
         public var resourceType: [String]?
         public var requestMethod: String?
@@ -69,8 +75,10 @@ public struct BlockerEntry: Codable, Equatable, CustomStringConvertible {
         // swiftlint:disable:next nesting
         enum CodingKeys: String, CodingKey {
             case ifDomain = "if-domain"
+            case ifFrameUrl = "if-frame-url"
             case urlFilter = "url-filter"
             case unlessDomain = "unless-domain"
+            case unlessFrameUrl = "unless-frame-url"
             case loadType = "load-type"
             case resourceType = "resource-type"
             case requestMethod = "request-method"
@@ -81,9 +89,14 @@ public struct BlockerEntry: Codable, Equatable, CustomStringConvertible {
         // Custom Equatable implementation
         public static func == (lhs: Trigger, rhs: Trigger) -> Bool {
             return lhs.ifDomain == rhs.ifDomain && lhs.urlFilter == rhs.urlFilter
-                && lhs.unlessDomain == rhs.unlessDomain && lhs.loadType == rhs.loadType
-                && lhs.resourceType == rhs.resourceType && lhs.requestMethod == rhs.requestMethod
-                && lhs.caseSensitive == rhs.caseSensitive && lhs.loadContext == rhs.loadContext
+                && lhs.ifFrameUrl == rhs.ifFrameUrl
+                && lhs.unlessDomain == rhs.unlessDomain
+                && lhs.unlessFrameUrl == rhs.unlessFrameUrl
+                && lhs.loadType == rhs.loadType
+                && lhs.resourceType == rhs.resourceType
+                && lhs.requestMethod == rhs.requestMethod
+                && lhs.caseSensitive == rhs.caseSensitive
+                && lhs.loadContext == rhs.loadContext
         }
     }
 

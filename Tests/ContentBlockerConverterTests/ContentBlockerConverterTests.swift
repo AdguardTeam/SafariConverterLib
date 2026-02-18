@@ -1484,24 +1484,12 @@ final class ContentBlockerConverterTests: XCTestCase {
                 rules: [
                     "||example.org$domain=/реклама\\.рф/"
                 ],
-                expectedSafariRulesJSON: #"""
-                    [
-                      {
-                        "action" : {
-                          "type" : "block"
-                        },
-                        "trigger" : {
-                          "if-domain" : [
-                            "*xn--\/\\-7kcax4ahj5a.xn--\/-4tbm"
-                          ],
-                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?example\\.org"
-                        }
-                      }
-                    ]
-                    """#,
+                version: SafariVersion.safari26,
+                expectedSafariRulesJSON: ConversionResult.EMPTY_RESULT_JSON,
                 expectedSourceRulesCount: 1,
                 expectedSourceSafariCompatibleRulesCount: 1,
-                expectedSafariRulesCount: 1
+                expectedSafariRulesCount: 0,
+                expectedErrorsCount: 1
             ),
         ]
 
@@ -3299,6 +3287,204 @@ final class ContentBlockerConverterTests: XCTestCase {
         XCTAssertEqual(result.safariRulesCount, 3)
         XCTAssertEqual(result.advancedRulesCount, 3)
         XCTAssertEqual(result.errorsCount, 0)
+    }
+
+    func testConvertArraySafari26FrameUrl() {
+        let testCases: [TestCase] = [
+            TestCase(
+                // Network rule with permitted TLD wildcard domain.
+                rules: [
+                    "||ads.example^$domain=example.*"
+                ],
+                version: .safari26,
+                expectedSafariRulesJSON: #"""
+                    [
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "if-frame-url" : [
+                            "^[^:]+://+([^:/]+\\.)?example\\.[^/:]+([/:?#].*)?$"
+                          ],
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?ads\\.example[\/:]"
+                        }
+                      }
+                    ]
+                    """#,
+                expectedSourceRulesCount: 1,
+                expectedSourceSafariCompatibleRulesCount: 1,
+                expectedSafariRulesCount: 1
+            ),
+            TestCase(
+                // Cosmetic rule with permitted TLD wildcard domain.
+                rules: [
+                    "example.*##.banner"
+                ],
+                version: .safari26,
+                expectedSafariRulesJSON: #"""
+                    [
+                      {
+                        "action" : {
+                          "selector" : ".banner",
+                          "type" : "css-display-none"
+                        },
+                        "trigger" : {
+                          "if-frame-url" : [
+                            "^[^:]+://+([^:/]+\\.)?example\\.[^/:]+([/:?#].*)?$"
+                          ],
+                          "url-filter" : ".*"
+                        }
+                      }
+                    ]
+                    """#,
+                expectedSourceRulesCount: 1,
+                expectedSourceSafariCompatibleRulesCount: 1,
+                expectedSafariRulesCount: 1
+            ),
+            TestCase(
+                // Network rule with mixed restricted domains.
+                rules: [
+                    "||ads.example^$domain=~example.com|~example.*"
+                ],
+                version: .safari26,
+                expectedSafariRulesJSON: #"""
+                    [
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "unless-frame-url" : [
+                            "^[^:]+://+([^:/]+\\.)?example\\.com([/:?#].*)?$",
+                            "^[^:]+://+([^:/]+\\.)?example\\.[^/:]+([/:?#].*)?$"
+                          ],
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?ads\\.example[\/:]"
+                        }
+                      }
+                    ]
+                    """#,
+                expectedSourceRulesCount: 1,
+                expectedSourceSafariCompatibleRulesCount: 1,
+                expectedSafariRulesCount: 1
+            ),
+            TestCase(
+                // Document exception on Safari 26.
+                rules: [
+                    "@@||example.org^$document"
+                ],
+                version: .safari26,
+                expectedSafariRulesJSON: #"""
+                    [
+                      {
+                        "action" : {
+                          "type" : "ignore-previous-rules"
+                        },
+                        "trigger" : {
+                          "if-domain" : [
+                            "*example.org"
+                          ],
+                          "url-filter" : ".*"
+                        }
+                      }
+                    ]
+                    """#,
+                expectedSourceRulesCount: 1,
+                expectedSourceSafariCompatibleRulesCount: 1,
+                expectedSafariRulesCount: 1
+            ),
+            TestCase(
+                // Cosmetic rule with restricted TLD wildcard domain.
+                rules: [
+                    "~example.*##.banner"
+                ],
+                version: .safari26,
+                expectedSafariRulesJSON: #"""
+                    [
+                      {
+                        "action" : {
+                          "selector" : ".banner",
+                          "type" : "css-display-none"
+                        },
+                        "trigger" : {
+                          "unless-frame-url" : [
+                            "^[^:]+://+([^:/]+\\.)?example\\.[^/:]+([/:?#].*)?$"
+                          ],
+                          "url-filter" : ".*"
+                        }
+                      }
+                    ]
+                    """#,
+                expectedSourceRulesCount: 1,
+                expectedSourceSafariCompatibleRulesCount: 1,
+                expectedSafariRulesCount: 1
+            ),
+            TestCase(
+                // Cosmetic rule with regex domain.
+                rules: [
+                    "/example/##.banner"
+                ],
+                version: .safari26,
+                expectedSafariRulesJSON: #"""
+                    [
+                      {
+                        "action" : {
+                          "selector" : ".banner",
+                          "type" : "css-display-none"
+                        },
+                        "trigger" : {
+                          "if-frame-url" : [
+                            "^[^:]+://+([^:/]+\\.)?example([/:?#].*)?$"
+                          ],
+                          "url-filter" : ".*"
+                        }
+                      }
+                    ]
+                    """#,
+                expectedSourceRulesCount: 1,
+                expectedSourceSafariCompatibleRulesCount: 1,
+                expectedSafariRulesCount: 1
+            ),
+            TestCase(
+                // Network rule with regex domain (non-unicode, valid).
+                rules: [
+                    #"||example.com^$domain=/test\.com/"#
+                ],
+                version: .safari26,
+                expectedSafariRulesJSON: #"""
+                    [
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "if-frame-url" : [
+                            "^[^:]+://+([^:/]+\\.)?test\\.com([/:?#].*)?$"
+                          ],
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?example\\.com[\/:]"
+                        }
+                      }
+                    ]
+                    """#,
+                expectedSourceRulesCount: 1,
+                expectedSourceSafariCompatibleRulesCount: 1,
+                expectedSafariRulesCount: 1
+            ),
+            TestCase(
+                // Unicode regex domain on old Safari — rejected at parsing.
+                // Regression: before the PR this produced invalid punycode if-domain.
+                rules: [
+                    #"||example.org$domain=/реклама\.рф/"#
+                ],
+                expectedSafariRulesJSON: ConversionResult.EMPTY_RESULT_JSON,
+                expectedSourceRulesCount: 0,
+                expectedSourceSafariCompatibleRulesCount: 0,
+                expectedSafariRulesCount: 0,
+                expectedErrorsCount: 1
+            ),
+        ]
+
+        runTests(testCases)
     }
 
     func testCreateInvertedAllowlistRule() {

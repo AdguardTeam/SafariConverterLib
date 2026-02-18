@@ -67,8 +67,7 @@ class BlockerEntryFactory {
                     return try convertCosmeticRuleMixedDomains(rule: rule)
                 }
 
-                let entry = try convertCosmeticRule(rule: rule)
-                return [entry]
+                return try convertCosmeticRuleEntries(rule: rule)
             }
         } catch {
             self.errorsCounter.add()
@@ -89,50 +88,59 @@ class BlockerEntryFactory {
     /// - Throws: `ConversionError` if the rule cannot be converted.
     private func convertNetworkRuleEntries(rule: NetworkRule) throws -> [BlockerEntry] {
         if rule.requestMethods.isEmpty {
-            return [try convertNetworkRule(rule: rule, requestMethod: nil)]
+            return try convertNetworkRuleEntries(rule: rule, requestMethod: nil)
         }
 
         if !self.version.isSafari26orGreater() {
             throw ConversionError.unsupportedRule(message: "$method is not supported")
         }
 
-        return try rule.requestMethods.map { method in
-            try convertNetworkRule(rule: rule, requestMethod: method)
+        var entries: [BlockerEntry] = []
+        entries.reserveCapacity(rule.requestMethods.count)
+
+        for method in rule.requestMethods {
+            entries.append(
+                contentsOf: try convertNetworkRuleEntries(
+                    rule: rule,
+                    requestMethod: method
+                )
+            )
         }
+        return entries
     }
 
-    /// Converts a network rule into a Safari content blocking rule.
+    /// Converts a network rule into one or more Safari content blocking rules with a fixed request method.
     ///
     /// - Parameters:
     ///   - rule: Network rule to convert.
-    /// - Returns: Safari content blocker entry.
+    ///   - requestMethod: HTTP request method to match, if any.
+    /// - Returns: Array of Safari content blocker entries.
     /// - Throws: `ConversionError` if the rule cannot be converted.
-    private func convertNetworkRule(
+    private func convertNetworkRuleEntries(
         rule: NetworkRule,
         requestMethod: String?
-    ) throws -> BlockerEntry {
+    ) throws -> [BlockerEntry] {
         let urlFilter = try createUrlFilterString(rule: rule)
 
-        var trigger = BlockerEntry.Trigger(urlFilter: urlFilter)
+        var baseTrigger = BlockerEntry.Trigger(urlFilter: urlFilter)
         let action = BlockerEntry.Action(type: rule.isWhiteList ? "ignore-previous-rules" : "block")
 
-        try addResourceType(rule: rule, trigger: &trigger)
-        addLoadContext(rule: rule, trigger: &trigger)
-        addThirdParty(rule: rule, trigger: &trigger)
-        addMatchCase(rule: rule, trigger: &trigger)
-        try addDomainOptions(rule: rule, trigger: &trigger)
+        try addResourceType(rule: rule, trigger: &baseTrigger)
+        addLoadContext(rule: rule, trigger: &baseTrigger)
+        addThirdParty(rule: rule, trigger: &baseTrigger)
+        addMatchCase(rule: rule, trigger: &baseTrigger)
 
-        try updateTriggerForDocumentLevelExceptionRules(rule: rule, trigger: &trigger)
+        updateTriggerForDocumentLevelExceptionRules(rule: rule, trigger: &baseTrigger)
 
+        var triggers = try createTriggersWithDomainOptions(rule: rule, baseTrigger: baseTrigger)
         if let requestMethod {
-            trigger.requestMethod = requestMethod
+            for index in triggers.indices {
+                triggers[index].requestMethod = requestMethod
+            }
         }
 
-        let result = BlockerEntry(trigger: trigger, action: action)
-
-        return result
+        return triggers.map { BlockerEntry(trigger: $0, action: action) }
     }
-
     /// Validates if the cosmetic rule can be converted into a content blocker rule.
     ///
     /// - Parameters:
@@ -162,18 +170,15 @@ class BlockerEntryFactory {
     ///   - rule: Cosmetic rule to convert.
     /// - Returns: Content blocker entry.
     /// - Throws: `ConversionError` if the rule cannot be converted.
-    private func convertCosmeticRule(rule: CosmeticRule) throws -> BlockerEntry {
+    private func convertCosmeticRuleEntries(rule: CosmeticRule) throws -> [BlockerEntry] {
         try validateCosmeticRule(rule: rule)
 
         let urlFilter = try createUrlFilterStringForCosmetic(rule: rule)
-        var trigger = BlockerEntry.Trigger(urlFilter: urlFilter)
         let action = BlockerEntry.Action(type: "css-display-none", selector: rule.content)
 
-        try addDomainOptions(rule: rule, trigger: &trigger)
-
-        let result = BlockerEntry(trigger: trigger, action: action)
-
-        return result
+        let baseTrigger = BlockerEntry.Trigger(urlFilter: urlFilter)
+        let triggers = try createTriggersWithDomainOptions(rule: rule, baseTrigger: baseTrigger)
+        return triggers.map { BlockerEntry(trigger: $0, action: action) }
     }
 
     /// Creates several `css-display-none` entries for a cosmetic rule that has
@@ -469,14 +474,24 @@ class BlockerEntryFactory {
         }
     }
 
-    /// Adds domain limitations to the rule's trigger block.
+    /// Applies domain limitations to the rule's trigger block.
     ///
-    /// Domain limitations are controlled by the "if-domain" and "unless-domain" arrays.
-    private func addDomainOptions(rule: Rule, trigger: inout BlockerEntry.Trigger) throws {
-        let included = resolveDomains(domains: rule.permittedDomains)
-        var excluded = resolveDomains(domains: rule.restrictedDomains)
-
-        addUnlessDomainForThirdParty(rule: rule, domains: &excluded)
+    /// For older Safari versions we use `if-domain`/`unless-domain`.
+    /// Starting from Safari 26, to support `domain.*` and domain regexes we use a hybrid approach:
+    /// prefer `if-domain`/`unless-domain` where possible and fall back to
+    /// `if-frame-url`/`unless-frame-url` for `domain.*` and regex domains.
+    ///
+    /// - Parameters:
+    ///   - rule: Rule for which we apply domain limitations.
+    ///   - baseTrigger: Trigger without domain-related fields.
+    /// - Returns: One or more triggers (for Safari 26+ we may need to split domain limitations).
+    /// - Throws: `ConversionError` if the domain limitations cannot be represented.
+    private func createTriggersWithDomainOptions(
+        rule: Rule,
+        baseTrigger: BlockerEntry.Trigger
+    ) throws -> [BlockerEntry.Trigger] {
+        let included = rule.permittedDomains
+        let excluded = rule.restrictedDomains
 
         if !included.isEmpty && !excluded.isEmpty {
             throw ConversionError.invalidDomains(
@@ -484,12 +499,212 @@ class BlockerEntryFactory {
             )
         }
 
-        if !included.isEmpty {
-            trigger.ifDomain = included
+        if !self.version.isSafari26orGreater() {
+            return [createLegacyDomainTrigger(rule: rule, baseTrigger: baseTrigger)]
         }
 
-        if !excluded.isEmpty {
-            trigger.unlessDomain = excluded
+        // No domain limitations.
+        if included.isEmpty && excluded.isEmpty {
+            return [baseTrigger]
+        }
+
+        let domains = included.isEmpty ? excluded : included
+        let (plain, special) = splitDomainsForSafari26(domains: domains)
+
+        return try createTriggersWithFrameUrlSupport(
+            included: included,
+            plain: plain,
+            special: special,
+            baseTrigger: baseTrigger
+        )
+    }
+
+    /// Creates a trigger using the legacy domain fields (`if-domain`/`unless-domain`).
+    ///
+    /// This path is used for Safari versions earlier than Safari 26, where we cannot
+    /// fall back to `if-frame-url`/`unless-frame-url` for advanced domain patterns.
+    private func createLegacyDomainTrigger(
+        rule: Rule,
+        baseTrigger: BlockerEntry.Trigger
+    ) -> BlockerEntry.Trigger {
+        var trigger = baseTrigger
+
+        let resolvedIncluded = resolveDomains(domains: rule.permittedDomains)
+        var resolvedExcluded = resolveDomains(domains: rule.restrictedDomains)
+        addUnlessDomainForThirdParty(rule: rule, domains: &resolvedExcluded)
+
+        if !resolvedIncluded.isEmpty {
+            trigger.ifDomain = resolvedIncluded
+        }
+
+        if !resolvedExcluded.isEmpty {
+            trigger.unlessDomain = resolvedExcluded
+        }
+
+        return trigger
+    }
+
+    private func createTriggersWithFrameUrlSupport(
+        included: [String],
+        plain: [String],
+        special: [String],
+        baseTrigger: BlockerEntry.Trigger
+    ) throws -> [BlockerEntry.Trigger] {
+        // For restricted domains (included is empty) with both plain and
+        // special types we must merge everything into a single
+        // unless-frame-url trigger. Splitting into two rules (one with
+        // unless-domain, one with unless-frame-url) would weaken the
+        // exclusion logic because Safari applies rules with OR semantics.
+        if included.isEmpty && !plain.isEmpty && !special.isEmpty {
+            var trigger = baseTrigger
+            let plainPatterns = try plain.map {
+                try createPlainDomainFrameUrlPattern(domain: $0)
+            }
+            let specialPatterns = try createFrameUrlPatterns(
+                domains: special
+            )
+            trigger.unlessFrameUrl = plainPatterns + specialPatterns
+            return [trigger]
+        }
+
+        var triggers: [BlockerEntry.Trigger] = []
+        triggers.reserveCapacity((plain.isEmpty ? 0 : 1) + (special.isEmpty ? 0 : 1))
+
+        if !plain.isEmpty {
+            var trigger = baseTrigger
+            // Prepend * to include subdomains.
+            let wildcardDomains = plain.map { "*" + $0 }
+            if included.isEmpty {
+                trigger.unlessDomain = wildcardDomains
+            } else {
+                trigger.ifDomain = wildcardDomains
+            }
+            triggers.append(trigger)
+        }
+
+        if !special.isEmpty {
+            var trigger = baseTrigger
+            let frameUrlPatterns = try createFrameUrlPatterns(domains: special)
+            if included.isEmpty {
+                trigger.unlessFrameUrl = frameUrlPatterns
+            } else {
+                trigger.ifFrameUrl = frameUrlPatterns
+            }
+            triggers.append(trigger)
+        }
+
+        return triggers
+    }
+
+    private func splitDomainsForSafari26(
+        domains: [String]
+    ) -> (
+        plain: [String],
+        special: [String]
+    ) {
+        var plain: [String] = []
+        var special: [String] = []
+        plain.reserveCapacity(domains.count)
+
+        for domain in domains {
+            if SimpleRegex.isRegexPattern(domain) || isTldWildcardDomain(domain) {
+                special.append(domain)
+            } else {
+                plain.append(domain)
+            }
+        }
+
+        return (plain, special)
+    }
+
+    private func isTldWildcardDomain(_ domain: String) -> Bool {
+        return domain.hasSuffix(".*")
+    }
+
+    private func createFrameUrlPatterns(domains: [String]) throws -> [String] {
+        return try domains.map { domain in
+            if isTldWildcardDomain(domain) {
+                return try createTldWildcardFrameUrlPattern(domain: domain)
+            } else if SimpleRegex.isRegexPattern(domain) {
+                return try createRegexFrameUrlPattern(domain: domain)
+            }
+
+            throw ConversionError.invalidDomains(
+                message: "Unsupported frame-url domain pattern: \(domain)"
+            )
+        }
+    }
+
+    /// Converts a plain domain (e.g. `test.com`) to a frame-url regex
+    /// pattern that matches the domain and its subdomains.
+    ///
+    /// For example, `test.com` becomes:
+    /// `^[^:]+://+([^:/]+\.)?test\.com([/:?#].*)?$`
+    private func createPlainDomainFrameUrlPattern(
+        domain: String
+    ) throws -> String {
+        let escaped = domain.replacingOccurrences(of: ".", with: #"\."#)
+        let pattern = #"^[^:]+://+([^:/]+\.)?\#(escaped)([/:?#].*)?$"#
+        try validateSafariRegex(pattern: pattern, context: domain)
+        return pattern
+    }
+
+    /// Converts a TLD wildcard domain (e.g. `example.*`) to a frame-url
+    /// regex pattern that matches `example.<any TLD>` and subdomains.
+    private func createTldWildcardFrameUrlPattern(domain: String) throws -> String {
+        // Convert `example.*` to a regex that matches `example.<any suffix>`.
+        let prefix = String(domain.dropLast(2))
+        let escaped = prefix.replacingOccurrences(of: ".", with: #"\."#)
+        let pattern = #"^[^:]+://+([^:/]+\.)?\#(escaped)\.[^/:]+([/:?#].*)?$"#
+        try validateSafariRegex(pattern: pattern, context: domain)
+        return pattern
+    }
+
+    private func createRegexFrameUrlPattern(domain: String) throws -> String {
+        guard var inner = SimpleRegex.extractRegex(domain) else {
+            throw ConversionError.invalidDomains(
+                message: "Invalid regular expression in domain: \(domain)"
+            )
+        }
+
+        inner = SimpleRegex.unescapeDomainRegex(inner)
+
+        var hostAnchored = false
+        if inner.utf8.first == Chars.CARET {
+            hostAnchored = true
+            inner = String(inner.dropFirst())
+        }
+
+        if inner.utf8.last == Chars.DOLLAR {
+            inner = String(inner.dropLast())
+        }
+
+        if inner.isEmpty {
+            throw ConversionError.invalidDomains(
+                message: "Empty regular expression in domain"
+            )
+        }
+
+        let pattern: String
+        if hostAnchored {
+            pattern = #"^[^:]+://+\#(inner)([/:?#].*)?$"#
+        } else {
+            pattern = #"^[^:]+://+([^:/]+\.)?\#(inner)([/:?#].*)?$"#
+        }
+
+        try validateSafariRegex(pattern: pattern, context: domain)
+        return pattern
+    }
+
+    private func validateSafariRegex(pattern: String, context: String) throws {
+        let support = SafariRegex.isSupported(pattern: pattern)
+        switch support {
+        case .success:
+            return
+        case .failure(let error):
+            throw ConversionError.unsupportedRegExp(
+                message: "Unsupported regexp in domain \(context): \(error)"
+            )
         }
     }
 
@@ -548,7 +763,7 @@ class BlockerEntryFactory {
     private func updateTriggerForDocumentLevelExceptionRules(
         rule: NetworkRule,
         trigger: inout BlockerEntry.Trigger
-    ) throws {
+    ) {
         if !rule.isWhiteList {
             return
         }
@@ -568,8 +783,9 @@ class BlockerEntryFactory {
                 return
             }
 
-            rule.permittedDomains.append(ruleDomain.domain)
-            try addDomainOptions(rule: rule, trigger: &trigger)
+            if !rule.permittedDomains.contains(ruleDomain.domain) {
+                rule.permittedDomains.append(ruleDomain.domain)
+            }
 
             // Note, that for some domains it is crucial to use `.*` pattern as otherwise
             // Safari fails to match the page URL.
