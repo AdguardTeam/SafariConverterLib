@@ -43,7 +43,7 @@
   },
   "dependencies": {
     "@adguard/extended-css": "2.1.1",
-    "@adguard/scriptlets": "2.2.9"
+    "@adguard/scriptlets": "2.2.16"
   },
   "devDependencies": {
     "@babel/core": "^7.22.8",
