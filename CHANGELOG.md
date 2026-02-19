@@ -7,11 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+[unreleased]: https://github.com/AdguardTeam/SafariConverterLib/compare/v4.2.1...HEAD
+
+## [v4.2.1]
+
 ### Changed
 
 - Updated [@adguard/scriptlets] to `2.2.16`.
 
-[unreleased]: https://github.com/AdguardTeam/SafariConverterLib/compare/v4.2.0...HEAD
+[v4.2.1]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v4.2.1
 
 ## [v4.2.0]
 
