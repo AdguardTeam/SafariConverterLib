@@ -12,8 +12,8 @@ importers:
         specifier: 2.1.1
         version: 2.1.1
       '@adguard/scriptlets':
-        specifier: 2.2.9
-        version: 2.2.9
+        specifier: 2.2.16
+        version: 2.2.16
     devDependencies:
       '@babel/core':
         specifier: ^7.22.8
@@ -90,8 +90,8 @@ importers:
 
 packages:
 
-  '@adguard/agtree@3.2.2':
-    resolution: {integrity: sha512-Z0Z+zMf6POCG64BUK5Iif36pAj09vMNT3qZruiUj631EDDo3hiVBHTg9kBG62Qp+94zjO/QrAiKKTilN47cfwg==}
+  '@adguard/agtree@4.0.1':
+    resolution: {integrity: sha512-rqIWmwzd51GisUxWzXsvmGBZpY5gyQA/CwzicBWyZKDG/BOXA+N74RUSTjotuewFkwmiu/pZT+9vlbBAjFSawA==}
     engines: {node: '>=22'}
 
   '@adguard/css-tokenizer@1.2.0':
@@ -101,8 +101,8 @@ packages:
     resolution: {integrity: sha512-TsHZ20oUWhbtrzQ4w70B96oHkGBIUZg2FdMfkq4StGfLmXQb+kI7fQb6BtXP2D0bvraIHMq6/mtKExglDJ9vsg==}
     engines: {node: '>=16'}
 
-  '@adguard/scriptlets@2.2.9':
-    resolution: {integrity: sha512-q3hHnjy7RKbRWa6HJ4zIOjUjtIV2myB1nQOrpTk39DrTde9cgpV5avQxl1msWhdeq/KvXh8dG8+yJSfesjcDQg==}
+  '@adguard/scriptlets@2.2.16':
+    resolution: {integrity: sha512-CpLzFOIR3ypvGD7Zax2ZiP2Kjhb70scbtRDneQcRnBaO+cPDGwLp0hEzMdI6eBZ8Is53svWzNpqGr9gAVum4SA==}
 
   '@ampproject/remapping@2.3.0':
     resolution: {integrity: sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw==}
@@ -589,10 +589,6 @@ packages:
     resolution: {integrity: sha512-HrcgcIESLm9aIR842yhJ5RWan/gebQUJ6E/E5+rf0y9o6oj7w0Br+sWuL6kEQ/o/AdfvR1Je9jG18/gnpwjEyA==}
     peerDependencies:
       '@babel/core': ^7.0.0-0 || ^8.0.0-0 <8.0.0
-
-  '@babel/runtime-corejs3@7.26.7':
-    resolution: {integrity: sha512-55gRV8vGrCIYZnaQHQrD92Lo/hYE3Sj5tmbuf0hhHR7sj2CWhEhHU89hbq+UVDXvFG1zUVXJhUkEq1eAfqXtFw==}
-    engines: {node: '>=6.9.0'}
 
   '@babel/runtime@7.26.7':
     resolution: {integrity: sha512-AOPI3D+a8dXnja+iwsUqGRjr1BbZIe771sXdapOtYI531gSqpi92vXivKcq2asu/DFpdl1ceFAKZyRzK2PCVcQ==}
@@ -1359,9 +1355,6 @@ packages:
   core-js-compat@3.40.0:
     resolution: {integrity: sha512-0XEDpr5y5mijvw8Lbc6E5AkjrHfp7eEoPlu36SWeAbcL8fn1G1ANe8DBlo2XoNN89oVpxWwOjYIPVzR4ZvsKCQ==}
 
-  core-js-pure@3.40.0:
-    resolution: {integrity: sha512-AtDzVIgRrmRKQai62yuSIN5vNiQjcJakJb4fbhVw3ehxx7Lohphvw9SGNWKhLFqSxC4ilD0g/L1huAYFQU3Q6A==}
-
   cross-spawn@7.0.6:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
     engines: {node: '>= 8'}
@@ -1739,6 +1732,9 @@ packages:
   glob-parent@6.0.2:
     resolution: {integrity: sha512-XxwI8EOhVQgWp6iDL+3b0r86f4d6AX6zSU55HfB4ydCEuXLXc5FcYeOu+nnGftS4TEju/11rt4KJPTMgbfmv4A==}
     engines: {node: '>=10.13.0'}
+
+  glob-to-regexp@0.4.1:
+    resolution: {integrity: sha512-lkX1HJXwyMcprw/5YUZc2s7DrpAiHB21/V+E1rHUrVNokkvB6bqMzT0VfV6/86ZNabt1k14YOIaT7nDvOX3Iiw==}
 
   glob@10.3.16:
     resolution: {integrity: sha512-JDKXl1DiuuHJ6fVS2FXjownaavciiHNUU4mOvV/B793RLh05vZL1rcPnCSaOgv1hDT6RDlY7AB7ZUvFYAtPgAw==}
@@ -2752,6 +2748,7 @@ packages:
   whatwg-encoding@2.0.0:
     resolution: {integrity: sha512-p41ogyeMUrw3jWclHWTQg1k05DSVXPLcVxRTYsXUk+ZooOCZLcoYgPZ/HL/D/N+uQPOtcp1me1WhBEaX02mhWg==}
     engines: {node: '>=12'}
+    deprecated: Use @exodus/bytes instead for a more spec-conformant and faster implementation
 
   whatwg-mimetype@3.0.0:
     resolution: {integrity: sha512-nt+N2dzIutVRxARx1nghPKGv1xHikU7HKdfafKkLNLindmPU/ch3U31NOCGGA/dmPcmb1VlofO0vnKAcsm0o/Q==}
@@ -2821,9 +2818,6 @@ packages:
   xmlchars@2.2.0:
     resolution: {integrity: sha512-JZnDKK8B0RCDw84FNdDAIpZK+JuJw+s7Lz8nksI7SIuU3UXJJslUthsi+uWBUYOwPFwW7W7PRLRfUKpxjtjFCw==}
 
-  xregexp@5.1.1:
-    resolution: {integrity: sha512-fKXeVorD+CzWvFs7VBuKTYIW63YD1e1osxwQ8caZ6o1jg6pDAbABDG54LCIq0j5cy7PjRvGIq6sef9DYPXpncg==}
-
   yallist@3.1.1:
     resolution: {integrity: sha512-a4UGQaWPH59mOXUYnAG2ewncQS4i4F43Tv3JoAM+s2VDAmS9NsK8GpDMLrCHPksFT7h3K6TOoUNn2pb7RoXx4g==}
 
@@ -2836,25 +2830,25 @@ packages:
 
 snapshots:
 
-  '@adguard/agtree@3.2.2':
+  '@adguard/agtree@4.0.1':
     dependencies:
       '@adguard/css-tokenizer': 1.2.0
       camelcase-keys: 7.0.2
       clone-deep: 4.0.1
+      glob-to-regexp: 0.4.1
       is-ip: 3.1.0
       json5: 2.2.3
       sprintf-js: 1.1.3
       tldts: 5.7.112
-      xregexp: 5.1.1
       zod: 3.24.4
 
   '@adguard/css-tokenizer@1.2.0': {}
 
   '@adguard/extended-css@2.1.1': {}
 
-  '@adguard/scriptlets@2.2.9':
+  '@adguard/scriptlets@2.2.16':
     dependencies:
-      '@adguard/agtree': 3.2.2
+      '@adguard/agtree': 4.0.1
       '@types/trusted-types': 2.0.7
       js-yaml: 3.14.1
 
@@ -3485,11 +3479,6 @@ snapshots:
       '@babel/helper-plugin-utils': 7.26.5
       '@babel/types': 7.26.7
       esutils: 2.0.3
-
-  '@babel/runtime-corejs3@7.26.7':
-    dependencies:
-      core-js-pure: 3.40.0
-      regenerator-runtime: 0.14.1
 
   '@babel/runtime@7.26.7':
     dependencies:
@@ -4231,8 +4220,6 @@ snapshots:
     dependencies:
       browserslist: 4.24.4
 
-  core-js-pure@3.40.0: {}
-
   cross-spawn@7.0.6:
     dependencies:
       path-key: 3.1.1
@@ -4744,6 +4731,8 @@ snapshots:
   glob-parent@6.0.2:
     dependencies:
       is-glob: 4.0.3
+
+  glob-to-regexp@0.4.1: {}
 
   glob@10.3.16:
     dependencies:
@@ -5929,10 +5918,6 @@ snapshots:
 
   xmlchars@2.2.0:
     optional: true
-
-  xregexp@5.1.1:
-    dependencies:
-      '@babel/runtime-corejs3': 7.26.7
 
   yallist@3.1.1: {}
 

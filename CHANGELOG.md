@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Updated [@adguard/scriptlets] to `2.2.16`.
+
 [unreleased]: https://github.com/AdguardTeam/SafariConverterLib/compare/v4.2.0...HEAD
 
 ## [v4.2.0]
@@ -93,7 +97,7 @@ webpack.
   policies: [#98]. There is one exception, however: we can't inject scripts
   into the `about:` iframes so in this case the old approach is required.
 
-- Specified exact versions for `@adguard/extended-css` and `@adguard/scriptlets`
+- Specified exact versions for [@adguard/extended-css] and [@adguard/scriptlets]
   dependencies: [#95].
 
 - Moved `setupDelayedEventDispatcher` from sample code to the library: [#96].
@@ -146,7 +150,7 @@ webpack.
 - Web extension schema migration now takes into account that the extension
   process can be interrupted and in this case it won't make another attempt
   to migrate.
-- Updated scriptlets dependency to `2.2.8`: [#92]
+- Updated [@adguard/scriptlets] to `2.2.8`: [#92]
 
 [#84]: https://github.com/AdguardTeam/SafariConverterLib/issues/84
 [#91]: https://github.com/AdguardTeam/SafariConverterLib/issues/91
@@ -428,3 +432,6 @@ Here's how it was achieved:
 [webkit248868]: https://bugs.webkit.org/show_bug.cgi?id=248868
 
 [v2.0.34]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v2.0.34
+
+[@adguard/extended-css]: https://github.com/AdguardTeam/ExtendedCss/blob/master/CHANGELOG.md
+[@adguard/scriptlets]: https://github.com/AdguardTeam/Scriptlets/blob/master/CHANGELOG.md
