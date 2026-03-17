@@ -120,19 +120,24 @@ class BlockerEntryFactory {
         rule: NetworkRule,
         requestMethod: String?
     ) throws -> [BlockerEntry] {
-        let urlFilter = try createUrlFilterString(rule: rule)
+        let urlFilters = try createUrlFilterStrings(rule: rule)
 
-        var baseTrigger = BlockerEntry.Trigger(urlFilter: urlFilter)
+        var baseTriggers: [BlockerEntry.Trigger] = urlFilters.map { BlockerEntry.Trigger(urlFilter: $0) }
         let action = BlockerEntry.Action(type: rule.isWhiteList ? "ignore-previous-rules" : "block")
 
-        try addResourceType(rule: rule, trigger: &baseTrigger)
-        addLoadContext(rule: rule, trigger: &baseTrigger)
-        addThirdParty(rule: rule, trigger: &baseTrigger)
-        addMatchCase(rule: rule, trigger: &baseTrigger)
+        for index in baseTriggers.indices {
+            try addResourceType(rule: rule, trigger: &baseTriggers[index])
+            addLoadContext(rule: rule, trigger: &baseTriggers[index])
+            addThirdParty(rule: rule, trigger: &baseTriggers[index])
+            addMatchCase(rule: rule, trigger: &baseTriggers[index])
+            updateTriggerForDocumentLevelExceptionRules(rule: rule, trigger: &baseTriggers[index])
+        }
 
-        updateTriggerForDocumentLevelExceptionRules(rule: rule, trigger: &baseTrigger)
-
-        var triggers = try createTriggersWithDomainOptions(rule: rule, baseTrigger: baseTrigger)
+        var triggers: [BlockerEntry.Trigger] = []
+        triggers.reserveCapacity(baseTriggers.count)
+        for baseTrigger in baseTriggers {
+            triggers.append(contentsOf: try createTriggersWithDomainOptions(rule: rule, baseTrigger: baseTrigger))
+        }
         if let requestMethod {
             for index in triggers.indices {
                 triggers[index].requestMethod = requestMethod
@@ -295,25 +300,25 @@ class BlockerEntryFactory {
     ///   - rule: Network rule for which we're creating `url-filter`.
     /// - Returns: Regular expression for `url-filter`.
     /// - Throws: Throws `ConversionError` for unsupported regular expressions.
-    private func createUrlFilterString(rule: NetworkRule) throws -> String {
+    private func createUrlFilterStrings(rule: NetworkRule) throws -> [String] {
         let isWebSocket = rule.isWebSocket
 
         // Use a single standard regex for rules that are supposed to match every URL.
         for anyUrlTmpl in BlockerEntryFactory.ANY_URL_TEMPLATES where rule.urlRuleText == anyUrlTmpl
         {
             if isWebSocket {
-                return BlockerEntryFactory.URL_FILTER_WS_ANY_URL
+                return [BlockerEntryFactory.URL_FILTER_WS_ANY_URL]
             }
-            return BlockerEntryFactory.URL_FILTER_ANY_URL
+            return [BlockerEntryFactory.URL_FILTER_ANY_URL]
         }
 
         if rule.urlRegExpSource == nil {
             // Rule with empty regexp, matches any URL.
-            return BlockerEntryFactory.URL_FILTER_ANY_URL
+            return [BlockerEntryFactory.URL_FILTER_ANY_URL]
         }
 
         guard let urlFilter = rule.urlRegExpSource else {
-            return BlockerEntryFactory.URL_FILTER_ANY_URL
+            return [BlockerEntryFactory.URL_FILTER_ANY_URL]
         }
 
         // Regex that we generate for basic non-regex rules are okay.
@@ -333,10 +338,24 @@ class BlockerEntryFactory {
         // Prepending WebSocket protocol to resolve this:
         // https://github.com/AdguardTeam/AdguardBrowserExtension/issues/957
         if isWebSocket && !urlFilter.hasPrefix("^") && !urlFilter.hasPrefix("ws") {
-            return BlockerEntryFactory.URL_FILTER_WS_ANY_URL + ".*" + urlFilter
+            return [BlockerEntryFactory.URL_FILTER_WS_ANY_URL + ".*" + urlFilter]
         }
 
-        return urlFilter
+        if rule.urlRuleText.utf8.last == Chars.CARET {
+            let trimmed: String
+            if urlFilter.hasSuffix("[/:&?]") {
+                trimmed = String(urlFilter.dropLast("[/:&?]".count))
+            } else if urlFilter.hasSuffix("[/:]") {
+                trimmed = String(urlFilter.dropLast("[/:]".count))
+            } else {
+                trimmed = urlFilter
+            }
+
+            let endAnchored = trimmed + "$"
+            return [urlFilter, endAnchored]
+        }
+
+        return [urlFilter]
     }
 
     /// Adds resource type based on the content types specified in the network rule.
