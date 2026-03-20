@@ -116,6 +116,39 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 )
             ),
             TestCase(
+                ruleText: "||google.com/log^",
+                expectedEntries: [
+                    BlockerEntry(
+                        trigger: BlockerEntry.Trigger(
+                            urlFilter: #"^[^:]+://+([^:/]+\.)?google\.com\/log[/:&?]"#
+                        ),
+                        action: BlockerEntry.Action(
+                            type: "block"
+                        )
+                    ),
+                    BlockerEntry(
+                        trigger: BlockerEntry.Trigger(
+                            urlFilter: #"^[^:]+://+([^:/]+\.)?google\.com\/log$"#
+                        ),
+                        action: BlockerEntry.Action(
+                            type: "block"
+                        )
+                    ),
+                ]
+            ),
+            TestCase(
+                ruleText: "||google.com^",
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        urlFilter: #"^[^:]+:\/\/+([^:\/]+\\.)?google\\.com[\/:]"#
+                    ),
+                    action: BlockerEntry.Action(
+                        type: "block"
+                    )
+                )
+                
+            ),
+            TestCase(
                 // Rule matching path.
                 ruleText: "/addyn|*|adtech",
                 expectedEntry: BlockerEntry(

@@ -36,6 +36,11 @@ extension ContentBlockerConverterTests {
         //
         // Aug 8, 2025
         // 302.14 Mc  68,4%: ContentBlockerConverter.convertArray
+        //
+        // On MBP M1 Pro 2021 16GB
+        // CPU profiler result:
+        //
+        // March 20, 2025 (Split SimpleRegex.splitAlternateRegexEndSeparator)
         let conversionResult = ContentBlockerConverter().convertArray(
             rules: rules,
             safariVersion: SafariVersion.safari16_4,
@@ -43,7 +48,7 @@ extension ContentBlockerConverterTests {
         )
 
         XCTAssertEqual(conversionResult.sourceRulesCount, 32660)
-        XCTAssertEqual(conversionResult.safariRulesCount, 20020)
+        XCTAssertEqual(conversionResult.safariRulesCount, 20178)
         XCTAssertEqual(conversionResult.sourceSafariCompatibleRulesCount, 28620)
         XCTAssertEqual(conversionResult.advancedRulesCount, 7299)
         XCTAssertEqual(conversionResult.errorsCount, 88)
@@ -89,7 +94,7 @@ extension ContentBlockerConverterTests {
             )
 
             XCTAssertEqual(conversionResult.sourceRulesCount, 32660)
-            XCTAssertEqual(conversionResult.safariRulesCount, 20020)
+            XCTAssertEqual(conversionResult.safariRulesCount, 20178)
             XCTAssertEqual(conversionResult.sourceSafariCompatibleRulesCount, 28620)
             XCTAssertEqual(conversionResult.advancedRulesCount, 7299)
             XCTAssertEqual(conversionResult.errorsCount, 88)

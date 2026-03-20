@@ -122,8 +122,41 @@ class BlockerEntryFactory {
     ) throws -> [BlockerEntry] {
         let urlFilter = try createUrlFilterString(rule: rule)
 
-        var baseTrigger = BlockerEntry.Trigger(urlFilter: urlFilter)
+        var triggers: [BlockerEntry.Trigger]
+        // We define if urlFilter ends with regexEndSeparator and if - split initial filter for two
+        if let splitRules = SimpleRegex.splitAlternateRegexEndSeparator(urlFilter) {
+            triggers = []
+            try splitRules.forEach {
+                triggers.append(
+                    contentsOf: try prepareNetworkRulesTriggers(urlFilter: $0, rule: rule)
+                )
+            }
+        } else {
+            triggers = try prepareNetworkRulesTriggers(urlFilter: urlFilter, rule: rule)
+        }
+
+        if let requestMethod {
+            for index in triggers.indices {
+                triggers[index].requestMethod = requestMethod
+            }
+        }
+
         let action = BlockerEntry.Action(type: rule.isWhiteList ? "ignore-previous-rules" : "block")
+        return triggers.map { BlockerEntry(trigger: $0, action: action) }
+    }
+
+    /// Prepares network rules triggers for the given URL filter and rule.
+    ///
+    /// - Parameters:
+    ///   - urlFilter: The URL filter string.
+    ///   - rule: The network rule to prepare triggers for.
+    /// - Returns: An array of `BlockerEntry.Trigger` objects.
+    /// - Throws: `ConversionError` if the rule cannot be converted.
+    private func prepareNetworkRulesTriggers(
+        urlFilter: String,
+        rule: NetworkRule
+    ) throws -> [BlockerEntry.Trigger] {
+        var baseTrigger = BlockerEntry.Trigger(urlFilter: urlFilter)
 
         try addResourceType(rule: rule, trigger: &baseTrigger)
         addLoadContext(rule: rule, trigger: &baseTrigger)
@@ -132,15 +165,10 @@ class BlockerEntryFactory {
 
         updateTriggerForDocumentLevelExceptionRules(rule: rule, trigger: &baseTrigger)
 
-        var triggers = try createTriggersWithDomainOptions(rule: rule, baseTrigger: baseTrigger)
-        if let requestMethod {
-            for index in triggers.indices {
-                triggers[index].requestMethod = requestMethod
-            }
-        }
-
-        return triggers.map { BlockerEntry(trigger: $0, action: action) }
+        let triggers = try createTriggersWithDomainOptions(rule: rule, baseTrigger: baseTrigger)
+        return triggers
     }
+
     /// Validates if the cosmetic rule can be converted into a content blocker rule.
     ///
     /// - Parameters:
