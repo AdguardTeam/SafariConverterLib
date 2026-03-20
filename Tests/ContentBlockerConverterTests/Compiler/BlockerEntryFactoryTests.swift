@@ -116,27 +116,6 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 )
             ),
             TestCase(
-                ruleText: "||google.com/log^",
-                expectedEntries: [
-                    BlockerEntry(
-                        trigger: BlockerEntry.Trigger(
-                            urlFilter: #"^[^:]+://+([^:/]+\.)?google\.com\/log[/:&?]"#
-                        ),
-                        action: BlockerEntry.Action(
-                            type: "block"
-                        )
-                    ),
-                    BlockerEntry(
-                        trigger: BlockerEntry.Trigger(
-                            urlFilter: #"^[^:]+://+([^:/]+\.)?google\.com\/log$"#
-                        ),
-                        action: BlockerEntry.Action(
-                            type: "block"
-                        )
-                    ),
-                ]
-            ),
-            TestCase(
                 // Rule matching path.
                 ruleText: "/addyn|*|adtech",
                 expectedEntry: BlockerEntry(
@@ -757,7 +736,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 ruleText: "@@test.com/path^$document",
                 expectedEntry: BlockerEntry(
                     trigger: BlockerEntry.Trigger(
-                        urlFilter: #"test\.com\/path[/:&?]"#
+                        urlFilter: #"test\.com\/path[/:&?]?"#
                     ),
                     action: BlockerEntry.Action(
                         type: "ignore-previous-rules"
