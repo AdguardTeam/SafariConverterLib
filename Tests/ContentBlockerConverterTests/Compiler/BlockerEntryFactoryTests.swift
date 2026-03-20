@@ -146,7 +146,6 @@ final class BlockerEntryFactoryTests: XCTestCase {
                         type: "block"
                     )
                 )
-                
             ),
             TestCase(
                 // Rule matching path.
