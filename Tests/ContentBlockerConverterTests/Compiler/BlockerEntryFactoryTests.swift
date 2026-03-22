@@ -140,7 +140,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 ruleText: "||google.com^",
                 expectedEntry: BlockerEntry(
                     trigger: BlockerEntry.Trigger(
-                        urlFilter: #"^[^:]+:\/\/+([^:\/]+\\.)?google\\.com[\/:]"#
+                        urlFilter: #"^[^:]+://+([^:/]+\.)?google\.com[/:]"#
                     ),
                     action: BlockerEntry.Action(
                         type: "block"
@@ -766,14 +766,24 @@ final class BlockerEntryFactoryTests: XCTestCase {
             TestCase(
                 // Domain cannot be extracted so relying just on url-filter.
                 ruleText: "@@test.com/path^$document",
-                expectedEntry: BlockerEntry(
-                    trigger: BlockerEntry.Trigger(
-                        urlFilter: #"test\.com\/path[/:&?]?"#
+                expectedEntries: [
+                    BlockerEntry(
+                        trigger: BlockerEntry.Trigger(
+                            urlFilter: #"test\.com\/path[/:&?]"#
+                        ),
+                        action: BlockerEntry.Action(
+                            type: "ignore-previous-rules"
+                        )
                     ),
-                    action: BlockerEntry.Action(
-                        type: "ignore-previous-rules"
-                    )
-                )
+                    BlockerEntry(
+                        trigger: BlockerEntry.Trigger(
+                            urlFilter: #"test\.com\/path$"#
+                        ),
+                        action: BlockerEntry.Action(
+                            type: "ignore-previous-rules"
+                        )
+                    ),
+                ]
             ),
         ]
 
