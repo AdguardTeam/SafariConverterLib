@@ -163,8 +163,7 @@ class BlockerEntryFactory {
 
         updateTriggerForDocumentLevelExceptionRules(rule: rule, trigger: &baseTrigger)
 
-        let triggers = try createTriggersWithDomainOptions(rule: rule, baseTrigger: baseTrigger)
-        return triggers
+        return try createTriggersWithDomainOptions(rule: rule, baseTrigger: baseTrigger)
     }
 
     /// Validates if the cosmetic rule can be converted into a content blocker rule.
