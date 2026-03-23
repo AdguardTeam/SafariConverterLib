@@ -9,7 +9,7 @@ public enum SimpleRegex {
     private static let regexAnySymbol = ".*"
     private static let regexAnySymbolChars: [UInt8] = Array(".*".utf8)
     private static let regexStartString: [UInt8] = Array("^".utf8)
-    private static let regexEndStringSymbol: String = "$"
+    private static let regexEndStringSymbol = "$"
     private static let regexEndString: [UInt8] = Array(regexEndStringSymbol.utf8)
 
     /// `||` start URL marker regex replacement. We are using the same regex that is recommended
@@ -17,13 +17,12 @@ public enum SimpleRegex {
     private static let regexStartUrl: [UInt8] = Array(#"^[^:]+://+([^:/]+\.)?"#.utf8)
 
     /// Separator `^` default regex replacement.
-    private static let regexSeparatorString: String = "[/:&?]"
+    private static let regexSeparatorString = "[/:&?]"
     private static let regexSeparator: [UInt8] = Array(regexSeparatorString.utf8)
 
     /// Separator `^` regex replacement for the case when this is the end of pattern.
     /// We need to account for the fact that "the end of the address is also accepted as separator".
-    private static let regexEndSeparatorString: String = "[/:&?]?"
-    private static let regexEndSeparator: [UInt8] = Array(regexEndSeparatorString.utf8)
+    private static let regexEndSeparator: [UInt8] = Array("[/:&?]?".utf8)
 
     /// Separator `^` regex replacement for the case when we're targeting a domain name,
     /// i.e. when the pattern starts with `||`.
@@ -148,11 +147,22 @@ public enum SimpleRegex {
     ///   - urlFilter: urlRegExpSource
     /// - Returns: [String] with 2 rules, 1 with $ other with regexSeparator
     public static func splitAlternateRegexEndSeparator(_ urlFilter: String) -> [String]? {
-        if urlFilter.hasSuffix(regexEndSeparatorString) {
-            let trimmed = String(urlFilter.dropLast(regexEndSeparatorString.count))
-            return [trimmed + regexSeparatorString, trimmed + regexEndStringSymbol]
+        let utf8 = urlFilter.utf8
+        guard utf8.count >= regexEndSeparator.count else { return nil }
+
+        // Compare suffix bytes directly
+        let startOffset = utf8.count - regexEndSeparator.count
+        let suffixStart = utf8.index(utf8.startIndex, offsetBy: startOffset)
+
+        guard utf8[suffixStart...].elementsEqual(regexEndSeparator) else { return nil }
+
+        guard let prefix = String(urlFilter.utf8.prefix(startOffset)) else {
+            return nil
         }
-        return nil
+        return [
+            prefix + regexSeparatorString,
+            prefix + regexEndStringSymbol,
+        ]
     }
 
     /// Checks if the rule pattern is a regex rule, i.e. enclosed in `/`.

@@ -125,12 +125,10 @@ class BlockerEntryFactory {
         var triggers: [BlockerEntry.Trigger]
         // We define if urlFilter ends with regexEndSeparator and if - split initial filter for two
         if let splitRules = SimpleRegex.splitAlternateRegexEndSeparator(urlFilter) {
-            triggers = []
-            try splitRules.forEach {
-                triggers.append(
-                    contentsOf: try prepareNetworkRulesTriggers(urlFilter: $0, rule: rule)
-                )
-            }
+            triggers = try prepareNetworkRulesTriggers(urlFilter: splitRules[0], rule: rule)
+            triggers.append(
+                contentsOf: try prepareNetworkRulesTriggers(urlFilter: splitRules[1], rule: rule)
+            )
         } else {
             triggers = try prepareNetworkRulesTriggers(urlFilter: urlFilter, rule: rule)
         }
