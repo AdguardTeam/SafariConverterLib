@@ -19,10 +19,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fixed separator `^` conversion at the end of a rule pattern. Rules ending
-  with `regexEndSeparator` are now split into two content blocker triggers —
-  one matching the separator character class (`[/:&?]`) and one matching the
-  end of the URL (`$`).
+- Fixed separator `^` conversion at the end of a rule pattern. Rules ending with `regexEndSeparator` are now split into two content blocker triggers — one matching the separator character class (`[/:&?]`) and one matching the end of the URL (`$`): [#110]
+
+[#110]: https://github.com/AdguardTeam/SafariConverterLib/issues/110
 
 [unreleased]: https://github.com/AdguardTeam/SafariConverterLib/compare/v4.2.1...HEAD
 
