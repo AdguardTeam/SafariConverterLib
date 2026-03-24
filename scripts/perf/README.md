@@ -1,7 +1,3 @@
----
-description: Run all performance tests and update baseline comments in test files
----
-
 # Performance Benchmark Workflow
 
 Run all performance tests, gather system information, and update baseline
