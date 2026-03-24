@@ -123,7 +123,8 @@ class BlockerEntryFactory {
         let urlFilter = try createUrlFilterString(rule: rule)
 
         var triggers: [BlockerEntry.Trigger]
-        // We define if urlFilter ends with regexEndSeparator and if - split initial filter for two
+        // Split urlFilter into two alternate triggers
+        // if it ends with regexEndSeparator.
         if let splitRules = SimpleRegex.splitAlternateRegexEndSeparator(urlFilter) {
             triggers = try prepareNetworkRulesTriggers(urlFilter: splitRules[0], rule: rule)
             triggers.append(
@@ -133,12 +134,14 @@ class BlockerEntryFactory {
             triggers = try prepareNetworkRulesTriggers(urlFilter: urlFilter, rule: rule)
         }
 
+        // Apply the request method to all triggers.
         if let requestMethod {
             for index in triggers.indices {
                 triggers[index].requestMethod = requestMethod
             }
         }
 
+        // Combine each trigger with the appropriate action.
         let action = BlockerEntry.Action(type: rule.isWhiteList ? "ignore-previous-rules" : "block")
         return triggers.map { BlockerEntry(trigger: $0, action: action) }
     }

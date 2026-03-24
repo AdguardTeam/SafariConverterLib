@@ -70,6 +70,18 @@ extension ContentBlockerConverterTests {
     /// - Swift: 6.2.3
     /// - Average execution time: ~0.924 sec
     ///
+    /// Baseline results (March 2026):
+    /// - Machine: MacBook Pro M1 Pro, 16GB RAM
+    /// - OS: macOS 15.7
+    /// - Swift: 6.2
+    /// - Average execution time: ~1.169 seconds
+    ///
+    /// Baseline results (Mar 24, 2026):
+    /// - Machine: MacBook Pro M1 Pro, 16GB RAM
+    /// - OS: macOS 15.7
+    /// - Swift: 6.2
+    /// - Average execution time: ~1.178 seconds
+    ///
     /// To get your machine info: `system_profiler SPHardwareDataType`
     /// To get your macOS version: `sw_vers`
     /// To get your Swift version: `swift --version`
@@ -117,6 +129,18 @@ extension ContentBlockerConverterTests {
     /// - OS: macOS 26.2
     /// - Swift: 6.2.3
     /// - Average execution time: ~0.223 seconds
+    ///
+    /// Baseline results (March 2026):
+    /// - Machine: MacBook Pro M1 Pro, 16GB RAM
+    /// - OS: macOS 15.7
+    /// - Swift: 6.2
+    /// - Average execution time: ~0.265 seconds
+    ///
+    /// Baseline results (Mar 24, 2026):
+    /// - Machine: MacBook Pro M1 Pro, 16GB RAM
+    /// - OS: macOS 15.7
+    /// - Swift: 6.2
+    /// - Average execution time: ~0.263 seconds
     ///
     /// To get your machine info: `system_profiler SPHardwareDataType`
     /// To get your macOS version: `sw_vers`

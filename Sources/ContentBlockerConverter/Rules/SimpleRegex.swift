@@ -141,11 +141,12 @@ public enum SimpleRegex {
         return regexAnySymbol
     }
 
-    /// Checks if the rule ends with regexEndSeparator and split it into 2 rules with $ and regexSeparator
+    /// Checks if the URL filter ends with `regexEndSeparator` and splits it into two variants: one ending with
+    /// `regexSeparator` and another ending with `$` (end of string).
     ///
     /// - Parameters:
-    ///   - urlFilter: urlRegExpSource
-    /// - Returns: [String] with 2 rules, 1 with $ other with regexSeparator
+    ///   - urlFilter: URL filter regular expression string.
+    /// - Returns: An array of two filter strings or `nil` if the filter does not end with `regexEndSeparator`.
     public static func splitAlternateRegexEndSeparator(_ urlFilter: String) -> [String]? {
         let utf8 = urlFilter.utf8
         guard utf8.count >= regexEndSeparator.count else { return nil }
@@ -153,12 +154,9 @@ public enum SimpleRegex {
         // Compare suffix bytes directly
         let startOffset = utf8.count - regexEndSeparator.count
         let suffixStart = utf8.index(utf8.startIndex, offsetBy: startOffset)
-
         guard utf8[suffixStart...].elementsEqual(regexEndSeparator) else { return nil }
 
-        guard let prefix = String(urlFilter.utf8.prefix(startOffset)) else {
-            return nil
-        }
+        let prefix = String(urlFilter[..<suffixStart])
         return [
             prefix + regexSeparatorString,
             prefix + regexEndStringSymbol,

@@ -325,6 +325,18 @@ final class ByteArrayTrieTests: XCTestCase {
     /// - Swift: 6.0
     /// - Average execution time: ~0.657 seconds
     ///
+    /// Baseline results (March 2026):
+    /// - Machine: MacBook Pro M1 Pro, 16GB RAM
+    /// - OS: macOS 15.7
+    /// - Swift: 6.2
+    /// - Average execution time: ~0.519 seconds
+    ///
+    /// Baseline results (Mar 24, 2026):
+    /// - Machine: MacBook Pro M1 Pro, 16GB RAM
+    /// - OS: macOS 15.7
+    /// - Swift: 6.2
+    /// - Average execution time: ~0.516 seconds
+    ///
     /// To get your machine info: `system_profiler SPHardwareDataType`
     /// To get your macOS version: `sw_vers`
     /// To get your Swift version: `swift --version`
@@ -359,6 +371,18 @@ final class ByteArrayTrieTests: XCTestCase {
     /// - OS: macOS 15.1
     /// - Swift: 6.0
     /// - Average execution time: ~0.051 seconds
+    ///
+    /// Baseline results (March 2026):
+    /// - Machine: MacBook Pro M1 Pro, 16GB RAM
+    /// - OS: macOS 15.7
+    /// - Swift: 6.2
+    /// - Average execution time: ~0.015 seconds
+    ///
+    /// Baseline results (Mar 24, 2026):
+    /// - Machine: MacBook Pro M1 Pro, 16GB RAM
+    /// - OS: macOS 15.7
+    /// - Swift: 6.2
+    /// - Average execution time: ~0.015 seconds
     ///
     /// To get your machine info: `system_profiler SPHardwareDataType`
     /// To get your macOS version: `sw_vers`
@@ -397,6 +421,18 @@ final class ByteArrayTrieTests: XCTestCase {
     /// - OS: macOS 15.1
     /// - Swift: 6.0
     /// - Average execution time: ~0.121 seconds
+    ///
+    /// Baseline results (March 2026):
+    /// - Machine: MacBook Pro M1 Pro, 16GB RAM
+    /// - OS: macOS 15.7
+    /// - Swift: 6.2
+    /// - Average execution time: ~0.053 seconds
+    ///
+    /// Baseline results (Mar 24, 2026):
+    /// - Machine: MacBook Pro M1 Pro, 16GB RAM
+    /// - OS: macOS 15.7
+    /// - Swift: 6.2
+    /// - Average execution time: ~0.053 seconds
     ///
     /// To get your machine info: `system_profiler SPHardwareDataType`
     /// To get your macOS version: `sw_vers`

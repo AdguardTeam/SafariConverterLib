@@ -116,11 +116,11 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 )
             ),
             TestCase(
-                ruleText: "||google.com/log^",
+                ruleText: "||example.com/log^",
                 expectedEntries: [
                     BlockerEntry(
                         trigger: BlockerEntry.Trigger(
-                            urlFilter: #"^[^:]+://+([^:/]+\.)?google\.com\/log[/:&?]"#
+                            urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com\/log[/:&?]"#
                         ),
                         action: BlockerEntry.Action(
                             type: "block"
@@ -128,7 +128,7 @@ final class BlockerEntryFactoryTests: XCTestCase {
                     ),
                     BlockerEntry(
                         trigger: BlockerEntry.Trigger(
-                            urlFilter: #"^[^:]+://+([^:/]+\.)?google\.com\/log$"#
+                            urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com\/log$"#
                         ),
                         action: BlockerEntry.Action(
                             type: "block"
@@ -137,15 +137,170 @@ final class BlockerEntryFactoryTests: XCTestCase {
                 ]
             ),
             TestCase(
-                ruleText: "||google.com^",
+                ruleText: "||example.com^",
                 expectedEntry: BlockerEntry(
                     trigger: BlockerEntry.Trigger(
-                        urlFilter: #"^[^:]+://+([^:/]+\.)?google\.com[/:]"#
+                        urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com[/:]"#
                     ),
                     action: BlockerEntry.Action(
                         type: "block"
                     )
                 )
+            ),
+            TestCase(
+                // Split + $domain: both triggers get ifDomain.
+                ruleText: "||example.com/path^$domain=test.com",
+                expectedEntries: [
+                    BlockerEntry(
+                        trigger: BlockerEntry.Trigger(
+                            ifDomain: ["*test.com"],
+                            urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com\/path[/:&?]"#
+                        ),
+                        action: BlockerEntry.Action(type: "block")
+                    ),
+                    BlockerEntry(
+                        trigger: BlockerEntry.Trigger(
+                            ifDomain: ["*test.com"],
+                            urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com\/path$"#
+                        ),
+                        action: BlockerEntry.Action(type: "block")
+                    ),
+                ]
+            ),
+            TestCase(
+                // Split + $third-party: both triggers get loadType.
+                ruleText: "||example.com/path^$third-party",
+                version: SafariVersion.safari16_4,
+                expectedEntries: [
+                    BlockerEntry(
+                        trigger: BlockerEntry.Trigger(
+                            urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com\/path[/:&?]"#,
+                            loadType: ["third-party"]
+                        ),
+                        action: BlockerEntry.Action(type: "block")
+                    ),
+                    BlockerEntry(
+                        trigger: BlockerEntry.Trigger(
+                            urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com\/path$"#,
+                            loadType: ["third-party"]
+                        ),
+                        action: BlockerEntry.Action(type: "block")
+                    ),
+                ]
+            ),
+            TestCase(
+                // Split + $image: both triggers get resourceType.
+                ruleText: "||example.com/path^$image",
+                expectedEntries: [
+                    BlockerEntry(
+                        trigger: BlockerEntry.Trigger(
+                            urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com\/path[/:&?]"#,
+                            resourceType: ["image"]
+                        ),
+                        action: BlockerEntry.Action(type: "block")
+                    ),
+                    BlockerEntry(
+                        trigger: BlockerEntry.Trigger(
+                            urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com\/path$"#,
+                            resourceType: ["image"]
+                        ),
+                        action: BlockerEntry.Action(type: "block")
+                    ),
+                ]
+            ),
+            TestCase(
+                // Split + $match-case: both triggers get caseSensitive.
+                ruleText: "||example.com/path^$match-case",
+                expectedEntries: [
+                    BlockerEntry(
+                        trigger: BlockerEntry.Trigger(
+                            urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com\/path[/:&?]"#,
+                            caseSensitive: true
+                        ),
+                        action: BlockerEntry.Action(type: "block")
+                    ),
+                    BlockerEntry(
+                        trigger: BlockerEntry.Trigger(
+                            urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com\/path$"#,
+                            caseSensitive: true
+                        ),
+                        action: BlockerEntry.Action(type: "block")
+                    ),
+                ]
+            ),
+            TestCase(
+                // Split + allowlist: both triggers get ignore-previous-rules.
+                ruleText: "@@||example.com/path^",
+                expectedEntries: [
+                    BlockerEntry(
+                        trigger: BlockerEntry.Trigger(
+                            urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com\/path[/:&?]"#
+                        ),
+                        action: BlockerEntry.Action(type: "ignore-previous-rules")
+                    ),
+                    BlockerEntry(
+                        trigger: BlockerEntry.Trigger(
+                            urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com\/path$"#
+                        ),
+                        action: BlockerEntry.Action(type: "ignore-previous-rules")
+                    ),
+                ]
+            ),
+            TestCase(
+                // Split + $method: both triggers get requestMethod.
+                ruleText: "||example.com/path^$method=post",
+                version: SafariVersion.safari26,
+                expectedEntries: [
+                    BlockerEntry(
+                        trigger: BlockerEntry.Trigger(
+                            urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com\/path[/:&?]"#,
+                            requestMethod: "post"
+                        ),
+                        action: BlockerEntry.Action(type: "block")
+                    ),
+                    BlockerEntry(
+                        trigger: BlockerEntry.Trigger(
+                            urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com\/path$"#,
+                            requestMethod: "post"
+                        ),
+                        action: BlockerEntry.Action(type: "block")
+                    ),
+                ]
+            ),
+            TestCase(
+                // Split + multiple methods: 2 methods × 2 split = 4 entries.
+                ruleText: "||example.com/path^$method=get|post",
+                version: SafariVersion.safari26,
+                expectedEntries: [
+                    BlockerEntry(
+                        trigger: BlockerEntry.Trigger(
+                            urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com\/path[/:&?]"#,
+                            requestMethod: "get"
+                        ),
+                        action: BlockerEntry.Action(type: "block")
+                    ),
+                    BlockerEntry(
+                        trigger: BlockerEntry.Trigger(
+                            urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com\/path$"#,
+                            requestMethod: "get"
+                        ),
+                        action: BlockerEntry.Action(type: "block")
+                    ),
+                    BlockerEntry(
+                        trigger: BlockerEntry.Trigger(
+                            urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com\/path[/:&?]"#,
+                            requestMethod: "post"
+                        ),
+                        action: BlockerEntry.Action(type: "block")
+                    ),
+                    BlockerEntry(
+                        trigger: BlockerEntry.Trigger(
+                            urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com\/path$"#,
+                            requestMethod: "post"
+                        ),
+                        action: BlockerEntry.Action(type: "block")
+                    ),
+                ]
             ),
             TestCase(
                 // Rule matching path.
