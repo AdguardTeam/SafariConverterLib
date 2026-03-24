@@ -36,6 +36,12 @@ extension ContentBlockerConverterTests {
         //
         // Aug 8, 2025
         // 302.14 Mc  68,4%: ContentBlockerConverter.convertArray
+        //
+        // On MBP M1 Pro 2021 16GB
+        // CPU profiler result:
+        //
+        // Mar 24, 2025
+        // 461.00 Mc  69.2%: ContentBlockerConverter.convertArray
         let conversionResult = ContentBlockerConverter().convertArray(
             rules: rules,
             safariVersion: SafariVersion.safari16_4,

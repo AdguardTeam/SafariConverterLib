@@ -37,6 +37,17 @@ This is a library that provides a compatibility layer between
    case of code, it should be under 100.
 6. Avoid comments on the same line as the code; place them on a previous line.
 
+## Contribution Instructions
+
+You MUST follow the following rules for EVERY task that you perform:
+
+- You MUST verify the code with linter, formatter, compiler: `make lint`
+    and fix all the issues that are found.
+
+- You MUST run tests: `make test` and make sure that all tests pass.
+
+- After adding new functionality or changing existing one, you MUST update the documentation, add Unit-tests for new code and verify/update existing tests.
+
 ## Build Instructions
 
 ### Prerequisites
@@ -87,26 +98,62 @@ Run `make init` to setup pre-commit hooks.
 
 ### Performance Tests
 
-Performance tests live in
-`Tests/ContentBlockerConverterTests/ContentBlockerConverterPerformanceTests.swift`.
+All benchmark tests use `XCTest.measure` unless noted otherwise.
+Each test's doc comment contains historical wall-clock baselines per
+machine — update them after profiling on your hardware.
+
+#### ContentBlockerConverter
+
+File:
+`Tests/ContentBlockerConverterTests/ContentBlockerConverterPerformanceTests.swift`
 
 - **`testPerformanceSingleRun`** — a single invocation of
   `ContentBlockerConverter.convertArray` on the bundled
   `test-rules.txt` (~32 660 rules). It is intended for CPU profiling
-  with Instruments (not wrapped in `measure`). The test comments
+  with Instruments (**not** wrapped in `measure`). The test comments
   contain historical CPU-cycle baselines per machine — update them
   after profiling on your hardware.
-- **`testPerformance`** — the same workload wrapped in
-  `XCTCase.measure` to track wall-clock regression (~0.75–0.92 s
-  depending on hardware).
+- **`testPerformance`** — the same workload wrapped in `measure` to
+  track wall-clock regression.
 - **`testSpecifichidePerformance`** — measures `$specifichide`
-  processing cost (1 000 rule pairs, ~0.18–0.22 s).
+  processing cost (1 000 rule pairs).
 
-When you change core conversion logic, run `testPerformanceSingleRun`
-under Instruments → CPU Profiler and compare the cycle count for
-`ContentBlockerConverter.convertArray` against the baselines recorded
-in the test file. Add a new dated entry if the numbers shift
-noticeably.
+#### FilterEngine Serialization
+
+File: `Tests/FilterEngineTests/FilterEngineSerializationTests.swift`
+
+- **`testPerformanceSerialization`** — builds `FilterRuleStorage` +
+  `FilterEngine` from `advanced-rules.txt` and serializes to a file.
+- **`testPerformanceDeserialization`** — deserializes
+  `FilterRuleStorage` + `FilterEngine` from a previously written
+  file.
+
+#### ByteArrayTrie
+
+File: `Tests/FilterEngineTests/Utils/ByteArrayTrieTests.swift`
+
+- **`testPerformanceBuildTrie`** — inserts 10 000 random words into
+  a `TrieNode` and builds a `ByteArrayTrie` from it.
+- **`testPerformanceFind`** — performs `find` lookups on 10 000
+  words in a pre-built `ByteArrayTrie`.
+- **`testPerformanceCollectPayload`** — performs `collectPayload`
+  lookups on 10 000 words in a pre-built `ByteArrayTrie`.
+
+#### TrieNode
+
+File: `Tests/FilterEngineTests/Utils/TrieNodeTests.swift`
+
+- **`testPerformanceBuildTrie`** — inserts 10 000 random words into
+  a `TrieNode`.
+- **`testPerformanceFind`** — performs `find` lookups on 10 000
+  words in a pre-built `TrieNode`.
+- **`testPerformanceCollectPayload`** — performs `collectPayload`
+  lookups on 10 000 words in a pre-built `TrieNode`.
+
+When you change core conversion logic, run all performance tests
+and compare the results against the baselines recorded in each
+test's doc comment. Add a new dated baseline entry to the
+corresponding test if the numbers shift noticeably.
 
 ## Project Structure
 
@@ -188,23 +235,3 @@ is organized there.
   have to create a separate helper app.
 
 [extension]: ./Extension/README.md
-
-## Contribution Instructions
-
-1. Run `make init` once after cloning to set up pre-commit hooks.
-2. Before committing, run `make lint` (or at minimum `make swift-lint`
-   for Swift-only changes) and fix all warnings.
-3. Run `make test` (or `make swift-test` / `make js-test`) and ensure
-   all tests pass before pushing.
-4. If you change serialization logic in `FilterRuleStorage`,
-   `FilterRule`, or `FilterEngine`, you **must** increment
-   `Schema.VERSION` in `Sources/FilterEngine/Schema.swift` and update
-   the reference binary files in `Tests/FilterEngineTests/Resources/`.
-5. Safari Content Blocker supports a **limited regex dialect** — no
-   alternation (`|`), no non-capturing groups (`(?:…)`), no
-   look-ahead/behind. Always verify generated `url-filter` values
-   against `SafariRegex.isSupported` in
-   `Sources/ContentBlockerConverter/Compiler/SafariRegex.swift`.
-6. Keep performance in mind — the converter processes thousands of rules
-   and heavily uses `UTF8View` / `[UInt8]` arrays to avoid unnecessary
-   String allocations.
