@@ -55,7 +55,7 @@ You MUST follow the following rules for EVERY task that you perform:
 - When changing the directory structure, adding/removing modules, or
     altering public APIs, you MUST update `AGENTS.md`.
 
-- When the task is finished ask the user if you should update `CHANGELOG.md`. 
+- When the task is finished ask the user if you should update `CHANGELOG.md`.
   If you do, explain changes in the Unreleased section. Add entries to the appropriate subsection (Added, Changed, or Fixed) if it already exists; do not create duplicate subsections.
 
 ## Build Instructions
