@@ -479,14 +479,28 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "resource-type" : [
                             "raw"
                           ],
-                          "url-filter" : "^wss?:\\\/\\\/.*\\.rocks[\/:&?]?"
+                          "url-filter" : "^wss?:\\\/\\\/.*\\.rocks[\/:&?]"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "load-type" : [
+                            "third-party"
+                          ],
+                          "resource-type" : [
+                            "raw"
+                          ],
+                          "url-filter" : "^wss?:\\\/\\\/.*\\.rocks$"
                         }
                       }
                     ]
                     """#,
                 expectedSourceRulesCount: 1,
                 expectedSourceSafariCompatibleRulesCount: 1,
-                expectedSafariRulesCount: 1
+                expectedSafariRulesCount: 2
             ),
             TestCase(
                 // $websocket conversion for Safari 15+.
@@ -1882,7 +1896,15 @@ final class ContentBlockerConverterTests: XCTestCase {
                           "type" : "block"
                         },
                         "trigger" : {
-                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?gamer\\.no\\\/\\?module=Tumedia\\\\DFProxy\\\\Modules[\/:&?]?"
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?gamer\\.no\\\/\\?module=Tumedia\\\\DFProxy\\\\Modules[\/:&?]"
+                        }
+                      },
+                      {
+                        "action" : {
+                          "type" : "block"
+                        },
+                        "trigger" : {
+                          "url-filter" : "^[^:]+:\/\/+([^:\/]+\\.)?gamer\\.no\\\/\\?module=Tumedia\\\\DFProxy\\\\Modules$"
                         }
                       },
                       {
@@ -1897,7 +1919,7 @@ final class ContentBlockerConverterTests: XCTestCase {
                     """#,
                 expectedSourceRulesCount: 2,
                 expectedSourceSafariCompatibleRulesCount: 2,
-                expectedSafariRulesCount: 2
+                expectedSafariRulesCount: 3
             ),
         ]
 

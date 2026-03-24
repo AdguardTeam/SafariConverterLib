@@ -36,6 +36,15 @@ extension ContentBlockerConverterTests {
         //
         // Aug 8, 2025
         // 302.14 Mc  68,4%: ContentBlockerConverter.convertArray
+        //
+        // On MBP M1 Pro 2021 16GB
+        // CPU profiler result:
+        //
+        // Mar 24, 2025
+        // 376.00 Mc  69.6%: ContentBlockerConverter.convertArray
+        //
+        // Mar 24, 2025 (split regexEndSeparator into regexEndString and regexSeparator)
+        // 368.00 Mc  70.8%: ContentBlockerConverter.convertArray
         let conversionResult = ContentBlockerConverter().convertArray(
             rules: rules,
             safariVersion: SafariVersion.safari16_4,
@@ -43,7 +52,7 @@ extension ContentBlockerConverterTests {
         )
 
         XCTAssertEqual(conversionResult.sourceRulesCount, 32660)
-        XCTAssertEqual(conversionResult.safariRulesCount, 20020)
+        XCTAssertEqual(conversionResult.safariRulesCount, 20178)
         XCTAssertEqual(conversionResult.sourceSafariCompatibleRulesCount, 28620)
         XCTAssertEqual(conversionResult.advancedRulesCount, 7299)
         XCTAssertEqual(conversionResult.errorsCount, 88)
@@ -70,6 +79,18 @@ extension ContentBlockerConverterTests {
     /// - Swift: 6.2.3
     /// - Average execution time: ~0.924 sec
     ///
+    /// Baseline results (March 2026):
+    /// - Machine: MacBook Pro M1 Pro, 16GB RAM
+    /// - OS: macOS 15.7
+    /// - Swift: 6.2
+    /// - Average execution time: ~1.169 seconds
+    ///
+    /// Baseline results (Mar 24, 2026):
+    /// - Machine: MacBook Pro M1 Pro, 16GB RAM
+    /// - OS: macOS 15.7
+    /// - Swift: 6.2
+    /// - Average execution time: ~1.178 seconds
+    ///
     /// To get your machine info: `system_profiler SPHardwareDataType`
     /// To get your macOS version: `sw_vers`
     /// To get your Swift version: `swift --version`
@@ -89,7 +110,7 @@ extension ContentBlockerConverterTests {
             )
 
             XCTAssertEqual(conversionResult.sourceRulesCount, 32660)
-            XCTAssertEqual(conversionResult.safariRulesCount, 20020)
+            XCTAssertEqual(conversionResult.safariRulesCount, 20178)
             XCTAssertEqual(conversionResult.sourceSafariCompatibleRulesCount, 28620)
             XCTAssertEqual(conversionResult.advancedRulesCount, 7299)
             XCTAssertEqual(conversionResult.errorsCount, 88)
@@ -117,6 +138,18 @@ extension ContentBlockerConverterTests {
     /// - OS: macOS 26.2
     /// - Swift: 6.2.3
     /// - Average execution time: ~0.223 seconds
+    ///
+    /// Baseline results (March 2026):
+    /// - Machine: MacBook Pro M1 Pro, 16GB RAM
+    /// - OS: macOS 15.7
+    /// - Swift: 6.2
+    /// - Average execution time: ~0.265 seconds
+    ///
+    /// Baseline results (Mar 24, 2026):
+    /// - Machine: MacBook Pro M1 Pro, 16GB RAM
+    /// - OS: macOS 15.7
+    /// - Swift: 6.2
+    /// - Average execution time: ~0.263 seconds
     ///
     /// To get your machine info: `system_profiler SPHardwareDataType`
     /// To get your macOS version: `sw_vers`

@@ -88,6 +88,63 @@ final class SimpleRegexTests: XCTestCase {
         }
     }
 
+    func testSplitAlternateRegexEndSeparator() {
+        // Returns nil for inputs that don't end with regexEndSeparator
+        let nilCases = [
+            "",
+            "test",
+            #"^[^:]+://+([^:/]+\.)?example\.org[/:]"#,
+            #"test[/:&?]"#,
+            "abc$",
+            "[/:&?",
+        ]
+
+        for input in nilCases {
+            XCTAssertNil(
+                SimpleRegex.splitAlternateRegexEndSeparator(input),
+                "Expected nil for '\(input)'"
+            )
+        }
+
+        // Splits inputs ending with "[/:&?]?" into two variants
+        let splitCases: [(input: String, first: String, second: String)] = [
+            // Realistic: pattern "test^" produces "test[/:&?]?"
+            (
+                #"test[/:&?]?"#,
+                #"test[/:&?]"#,
+                "test$"
+            ),
+            // Realistic: "||example.org/path^" conversion result
+            (
+                #"^[^:]+://+([^:/]+\.)?example\.org\/path[/:&?]?"#,
+                #"^[^:]+://+([^:/]+\.)?example\.org\/path[/:&?]"#,
+                #"^[^:]+://+([^:/]+\.)?example\.org\/path$"#
+            ),
+            // Minimal: just the suffix itself
+            (
+                "[/:&?]?",
+                "[/:&?]",
+                "$"
+            ),
+        ]
+
+        for (input, expectedFirst, expectedSecond) in splitCases {
+            let result = SimpleRegex.splitAlternateRegexEndSeparator(input)
+            XCTAssertNotNil(result, "Expected non-nil for '\(input)'")
+            XCTAssertEqual(result?.count, 2, "Expected 2 elements for '\(input)'")
+            XCTAssertEqual(
+                result?[0],
+                expectedFirst,
+                "First variant mismatch for '\(input)'"
+            )
+            XCTAssertEqual(
+                result?[1],
+                expectedSecond,
+                "Second variant mismatch for '\(input)'"
+            )
+        }
+    }
+
     func testUnescapeDomainRegex() {
         let testCases: [(pattern: String, expected: String)] = [
             (#"abc"#, #"abc"#),

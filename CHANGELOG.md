@@ -7,9 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added performance benchmarking tooling (`scripts/perf/`) and
+  `make test-performance` target for CPU profiling with `xctrace`.
+
 ### Changed
 
+- Restructured `AGENTS.md` documentation.
 - Updated [@adguard/scriptlets] to `2.3.0`.
+
+### Fixed
+
+- Fixed separator `^` conversion at the end of a rule pattern. Rules ending with `regexEndSeparator` are now split into two content blocker triggers — one matching the separator character class (`[/:&?]`) and one matching the end of the URL (`$`): [#110]
+
+[#110]: https://github.com/AdguardTeam/SafariConverterLib/issues/110
 
 [unreleased]: https://github.com/AdguardTeam/SafariConverterLib/compare/v4.2.1...HEAD
 

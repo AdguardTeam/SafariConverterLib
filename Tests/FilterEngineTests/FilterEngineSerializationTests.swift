@@ -105,6 +105,18 @@ final class FilterEngineSerializationTests: XCTestCase {
     /// - Swift: 6.2
     /// - Average execution time: ~1.400 sec
     ///
+    /// Baseline results (March 2026):
+    /// - Machine: MacBook Pro M1 Pro, 16GB RAM
+    /// - OS: macOS 15.7
+    /// - Swift: 6.2
+    /// - Average execution time: ~1.958 seconds
+    ///
+    /// Baseline results (Mar 24, 2026):
+    /// - Machine: MacBook Pro M1 Pro, 16GB RAM
+    /// - OS: macOS 15.7
+    /// - Swift: 6.2
+    /// - Average execution time: ~1.947 seconds
+    ///
     /// To get your machine info: `system_profiler SPHardwareDataType`
     /// To get your macOS version: `sw_vers`
     /// To get your Swift version: `swift --version`
@@ -150,6 +162,18 @@ final class FilterEngineSerializationTests: XCTestCase {
     /// - Machine: MacBook Pro M1 Max, 32GB RAM
     /// - OS: macOS 15.1
     /// - Swift: 6.0
+    /// - Average execution time: ~0.001 seconds
+    ///
+    /// Baseline results (March 2026):
+    /// - Machine: MacBook Pro M1 Pro, 16GB RAM
+    /// - OS: macOS 15.7
+    /// - Swift: 6.2
+    /// - Average execution time: ~0.001 seconds
+    ///
+    /// Baseline results (Mar 24, 2026):
+    /// - Machine: MacBook Pro M1 Pro, 16GB RAM
+    /// - OS: macOS 15.7
+    /// - Swift: 6.2
     /// - Average execution time: ~0.001 seconds
     ///
     /// To get your machine info: `system_profiler SPHardwareDataType`

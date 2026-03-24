@@ -72,6 +72,9 @@ js-lint:
 
 test: swift-test js-test filelock-test command-line-wrapper-test
 
+test-performance:
+	bash scripts/perf/profile.sh
+
 swift-test:
 	swift test --quiet
 
