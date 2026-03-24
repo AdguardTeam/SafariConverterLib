@@ -46,7 +46,14 @@ You MUST follow the following rules for EVERY task that you perform:
 
 - You MUST run tests: `make test` and make sure that all tests pass.
 
-- After adding new functionality or changing existing one, you MUST update the documentation, add Unit-tests for new code and verify/update existing tests.
+- After adding new functionality or changing existing one, you MUST
+    add unit tests for new code and verify/update existing tests.
+
+- When changing user-facing behavior (e.g. supported rule types,
+    conversion options, CLI flags), you MUST update `README.md`.
+
+- When changing the directory structure, adding/removing modules, or
+    altering public APIs, you MUST update `AGENTS.md`.
 
 ## Build Instructions
 
@@ -100,76 +107,27 @@ Run `make init` to setup pre-commit hooks.
 
 All benchmark tests use `XCTest.measure` unless noted otherwise.
 Each test's doc comment contains historical wall-clock baselines per
-machine — update them after profiling on your hardware.
+machine — update them after profiling on your hardware. When you
+change core conversion logic, run all performance tests and compare
+the results against the baselines. Add a new dated baseline entry
+to the corresponding test if the numbers shift noticeably.
 
-#### ContentBlockerConverter
+Performance test files:
 
-File:
-`Tests/ContentBlockerConverterTests/ContentBlockerConverterPerformanceTests.swift`
+- `Tests/ContentBlockerConverterTests/ContentBlockerConverterPerformanceTests.swift`
+- `Tests/FilterEngineTests/FilterEngineSerializationTests.swift`
+- `Tests/FilterEngineTests/Utils/ByteArrayTrieTests.swift`
+- `Tests/FilterEngineTests/Utils/TrieNodeTests.swift`
 
-- **`testPerformanceSingleRun`** — a single invocation of
-  `ContentBlockerConverter.convertArray` on the bundled
-  `test-rules.txt` (~32 660 rules). It is intended for CPU profiling
-  with Instruments (**not** wrapped in `measure`). The test comments
-  contain historical CPU-cycle baselines per machine — update them
-  after profiling on your hardware.
-- **`testPerformance`** — the same workload wrapped in `measure` to
-  track wall-clock regression.
-- **`testSpecifichidePerformance`** — measures `$specifichide`
-  processing cost (1 000 rule pairs).
+Running performance tests: `make test-performance`. Follow the
+instructions in `scripts/perf/README.md` for the full procedure
+(gathering system info, running tests, updating baselines).
 
-#### FilterEngine Serialization
+You MUST run performance tests after any changes to files under
+`Sources/` that could affect runtime behavior.
 
-File: `Tests/FilterEngineTests/FilterEngineSerializationTests.swift`
-
-- **`testPerformanceSerialization`** — builds `FilterRuleStorage` +
-  `FilterEngine` from `advanced-rules.txt` and serializes to a file.
-- **`testPerformanceDeserialization`** — deserializes
-  `FilterRuleStorage` + `FilterEngine` from a previously written
-  file.
-
-#### ByteArrayTrie
-
-File: `Tests/FilterEngineTests/Utils/ByteArrayTrieTests.swift`
-
-- **`testPerformanceBuildTrie`** — inserts 10 000 random words into
-  a `TrieNode` and builds a `ByteArrayTrie` from it.
-- **`testPerformanceFind`** — performs `find` lookups on 10 000
-  words in a pre-built `ByteArrayTrie`.
-- **`testPerformanceCollectPayload`** — performs `collectPayload`
-  lookups on 10 000 words in a pre-built `ByteArrayTrie`.
-
-#### TrieNode
-
-File: `Tests/FilterEngineTests/Utils/TrieNodeTests.swift`
-
-- **`testPerformanceBuildTrie`** — inserts 10 000 random words into
-  a `TrieNode`.
-- **`testPerformanceFind`** — performs `find` lookups on 10 000
-  words in a pre-built `TrieNode`.
-- **`testPerformanceCollectPayload`** — performs `collectPayload`
-  lookups on 10 000 words in a pre-built `TrieNode`.
-
-When you change core conversion logic, run all performance tests
-and compare the results against the baselines recorded in each
-test's doc comment. Add a new dated baseline entry to the
-corresponding test if the numbers shift noticeably.
-
-#### Automated Benchmarking
-
-Use the `/perf-benchmark` workflow to automate the full procedure.
-It will:
-
-1. Gather system information (`system_profiler SPHardwareDataType`,
-   `sw_vers`, `swift --version`).
-2. Run `make test-performance` for the CPU profiler test.
-3. Run `swift test --filter` for each measure-based test.
-4. Compare results against the most recent baselines and append new
-   entries only when results shift noticeably (±5 % for measure
-   tests, ±3 % Mc for the CPU profiler test).
-
-You MUST run this workflow after any changes to files under `Sources/` that
-affect runtime behavior.
+When adding or changing performance tests, you MUST update the
+test list in `scripts/perf/README.md` accordingly.
 
 ## Project Structure
 
