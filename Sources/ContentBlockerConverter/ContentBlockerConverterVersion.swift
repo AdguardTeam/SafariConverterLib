@@ -7,7 +7,7 @@ public enum ContentBlockerConverterVersion {
     public static let library = "4.2.1"
 
     /// Version of @adguard/scriptlets (component of the JS library).
-    public static let scriptlets = "2.3.0"
+    public static let scriptlets = "2.3.1"
 
     /// Version of @adguard/extended-css (component of the JS library).
     public static let extendedCSS = "2.1.1"
