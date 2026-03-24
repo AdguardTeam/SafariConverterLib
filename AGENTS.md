@@ -106,22 +106,9 @@ Run `make init` to setup pre-commit hooks.
 ### Performance Tests
 
 All benchmark tests use `XCTest.measure` unless noted otherwise.
-Each test's doc comment contains historical wall-clock baselines per
-machine — update them after profiling on your hardware. When you
-change core conversion logic, run all performance tests and compare
-the results against the baselines. Add a new dated baseline entry
-to the corresponding test if the numbers shift noticeably.
-
-Performance test files:
-
-- `Tests/ContentBlockerConverterTests/ContentBlockerConverterPerformanceTests.swift`
-- `Tests/FilterEngineTests/FilterEngineSerializationTests.swift`
-- `Tests/FilterEngineTests/Utils/ByteArrayTrieTests.swift`
-- `Tests/FilterEngineTests/Utils/TrieNodeTests.swift`
 
 Running performance tests: `make test-performance`. Follow the
-instructions in `scripts/perf/README.md` for the full procedure
-(gathering system info, running tests, updating baselines).
+instructions in `scripts/perf/README.md` for the full procedure.
 
 You MUST run performance tests after any changes to files under
 `Sources/` that could affect runtime behavior.

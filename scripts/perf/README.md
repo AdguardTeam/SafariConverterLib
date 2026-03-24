@@ -48,7 +48,6 @@ subsequent baseline entries:
 
 ### Step 2 — Run the CPU profiler test (`testPerformanceSingleRun`)
 
-// turbo
 Run `make test-performance` from the repository root.
 
 **Parse the output**: Find the line matching the pattern:
@@ -81,8 +80,6 @@ For each test listed below, run the command and parse the average time.
 | 10 | `TrieNodeTests/testPerformanceCollectPayload` | same as above |
 
 For each test:
-
-// turbo
 
 1. Run: `swift test --filter '<Filter expression>'`
 
