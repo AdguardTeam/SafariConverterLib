@@ -12,8 +12,8 @@ importers:
         specifier: 2.1.1
         version: 2.1.1
       '@adguard/scriptlets':
-        specifier: 2.2.16
-        version: 2.2.16
+        specifier: 2.3.0
+        version: 2.3.0
     devDependencies:
       '@babel/core':
         specifier: ^7.22.8
@@ -90,8 +90,8 @@ importers:
 
 packages:
 
-  '@adguard/agtree@4.0.1':
-    resolution: {integrity: sha512-rqIWmwzd51GisUxWzXsvmGBZpY5gyQA/CwzicBWyZKDG/BOXA+N74RUSTjotuewFkwmiu/pZT+9vlbBAjFSawA==}
+  '@adguard/agtree@4.0.2':
+    resolution: {integrity: sha512-frg1DGOBldBgkAoc3rLBHZfH/t1sq36IbRyIIIEcbo7PRfTXt0b9aD1GTrplefnFfHl+Jx1GP7gY9ijSapLvCg==}
     engines: {node: '>=22'}
 
   '@adguard/css-tokenizer@1.2.0':
@@ -101,8 +101,8 @@ packages:
     resolution: {integrity: sha512-TsHZ20oUWhbtrzQ4w70B96oHkGBIUZg2FdMfkq4StGfLmXQb+kI7fQb6BtXP2D0bvraIHMq6/mtKExglDJ9vsg==}
     engines: {node: '>=16'}
 
-  '@adguard/scriptlets@2.2.16':
-    resolution: {integrity: sha512-CpLzFOIR3ypvGD7Zax2ZiP2Kjhb70scbtRDneQcRnBaO+cPDGwLp0hEzMdI6eBZ8Is53svWzNpqGr9gAVum4SA==}
+  '@adguard/scriptlets@2.3.0':
+    resolution: {integrity: sha512-Ypok4pOdcri0Eut6js/DNh9cKDMpD5Gh9CsXqZsoi2nmpqmnlErMXw5WeyamodJN5DAI/WBoqcClImwIFTTL3Q==}
 
   '@ampproject/remapping@2.3.0':
     resolution: {integrity: sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw==}
@@ -2830,7 +2830,7 @@ packages:
 
 snapshots:
 
-  '@adguard/agtree@4.0.1':
+  '@adguard/agtree@4.0.2':
     dependencies:
       '@adguard/css-tokenizer': 1.2.0
       camelcase-keys: 7.0.2
@@ -2846,9 +2846,9 @@ snapshots:
 
   '@adguard/extended-css@2.1.1': {}
 
-  '@adguard/scriptlets@2.2.16':
+  '@adguard/scriptlets@2.3.0':
     dependencies:
-      '@adguard/agtree': 4.0.1
+      '@adguard/agtree': 4.0.2
       '@types/trusted-types': 2.0.7
       js-yaml: 3.14.1
 
