@@ -155,6 +155,22 @@ and compare the results against the baselines recorded in each
 test's doc comment. Add a new dated baseline entry to the
 corresponding test if the numbers shift noticeably.
 
+#### Automated Benchmarking
+
+Use the `/perf-benchmark` workflow to automate the full procedure.
+It will:
+
+1. Gather system information (`system_profiler SPHardwareDataType`,
+   `sw_vers`, `swift --version`).
+2. Run `make test-performance` for the CPU profiler test.
+3. Run `swift test --filter` for each measure-based test.
+4. Compare results against the most recent baselines and append new
+   entries only when results shift noticeably (±5 % for measure
+   tests, ±3 % Mc for the CPU profiler test).
+
+You MUST run this workflow after any changes to files under `Sources/` that
+affect runtime behavior.
+
 ## Project Structure
 
 ```text

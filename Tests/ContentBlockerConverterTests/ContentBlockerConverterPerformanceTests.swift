@@ -41,7 +41,10 @@ extension ContentBlockerConverterTests {
         // CPU profiler result:
         //
         // Mar 24, 2025
-        // 461.00 Mc  69.2%: ContentBlockerConverter.convertArray
+        // 376.00 Mc  69.6%: ContentBlockerConverter.convertArray
+        //
+        // Mar 24, 2025 (split regexEndSeparator into regexEndString and regexSeparator)
+        // 368.00 Mc  70.8%: ContentBlockerConverter.convertArray
         let conversionResult = ContentBlockerConverter().convertArray(
             rules: rules,
             safariVersion: SafariVersion.safari16_4,
