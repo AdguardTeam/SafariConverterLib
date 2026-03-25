@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+[unreleased]: https://github.com/AdguardTeam/SafariConverterLib/compare/v4.2.2...HEAD
+
+## [v4.2.2]
+
 ### Added
 
 - Added performance benchmarking tooling (`scripts/perf/`) and
@@ -23,7 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [#110]: https://github.com/AdguardTeam/SafariConverterLib/issues/110
 
-[unreleased]: https://github.com/AdguardTeam/SafariConverterLib/compare/v4.2.1...HEAD
+[v4.2.2]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v4.2.2
 
 ## [v4.2.1]
 
