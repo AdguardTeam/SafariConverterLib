@@ -105,6 +105,7 @@ Run `make init` to setup pre-commit hooks.
     - `make js-test` — runs JS tests.
     - `make filelock-test` — runs file lock test suite.
     - `make command-line-wrapper-test` — runs command-line wrapper test suite.
+    - `make webkit-test` — runs WebKit compilation tests (macOS only).
 
 ### Performance Tests
 
@@ -135,7 +136,8 @@ test list in `scripts/perf/README.md` accordingly.
 │   └── test/                     # Vitest tests
 ├── Tests/
 │   ├── ContentBlockerConverterTests/  # XCTest tests for the converter
-│   └── FilterEngineTests/             # XCTest tests for the engine
+│   ├── FilterEngineTests/             # XCTest tests for the engine
+│   └── WebKitCompilationTests/        # macOS-only WebKit compilation tests
 ├── scripts/                      # Build, test, and CI helper scripts
 ├── bamboo-specs/                 # CI pipeline definitions
 ├── Package.swift                 # Swift Package Manager manifest

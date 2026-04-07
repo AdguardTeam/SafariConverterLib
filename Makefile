@@ -70,7 +70,11 @@ js-lint:
 
 # Testing
 
-test: swift-test js-test filelock-test command-line-wrapper-test
+test: swift-test js-test filelock-test command-line-wrapper-test webkit-test
+
+webkit-test:
+	/usr/bin/defaults read /System/Library/Frameworks/WebKit.framework/Resources/Info CFBundleVersion
+	swift test --filter WebKitCompilation
 
 test-performance:
 	bash scripts/perf/profile.sh

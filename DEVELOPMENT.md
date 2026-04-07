@@ -61,6 +61,7 @@ Run `make init` to setup pre-commit hooks.
     - `make js-test` - runs JS tests.
     - `make filelock-test` - runs file lock test suite.
     - `make command-line-wrapper-test` - runs command-line wrapper test suite.
+    - `make webkit-test` - runs WebKit compilation tests (macOS only).
 
 - `make build` - builds JS and Swift code (debug).
 
