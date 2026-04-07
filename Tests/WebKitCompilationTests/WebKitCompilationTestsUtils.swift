@@ -26,17 +26,15 @@ func compileWithWebKit(_ json: String, identifier: String) async throws {
 /// - Parameters:
 ///   - rules: The filter rules to convert.
 ///   - safariVersion: The target Safari version.
-///   - advancedBlocking: Whether to include advanced blocking rules.
 /// - Returns: The conversion result.
 func convertRules(
     _ rules: [String],
-    safariVersion: SafariVersion = SafariVersion.autodetect(),
-    advancedBlocking: Bool = false
+    safariVersion: SafariVersion = SafariVersion.autodetect()
 ) -> ConversionResult {
     ContentBlockerConverter().convertArray(
         rules: rules,
         safariVersion: safariVersion,
-        advancedBlocking: advancedBlocking
+        advancedBlocking: false
     )
 }
 
@@ -50,7 +48,7 @@ func convertRules(
 func convertAndCompile(
     _ rules: [String],
     safariVersion: SafariVersion = SafariVersion.autodetect(),
-    identifier: String = UUID().uuidString
+    identifier: String = #function
 ) async throws {
     let result = convertRules(rules, safariVersion: safariVersion)
     try await compileWithWebKit(result.safariRulesJSON, identifier: identifier)

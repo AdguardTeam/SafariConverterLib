@@ -16,8 +16,7 @@ final class WebKitCompilationTests: XCTestCase {
                 "||ads.example.com^",
                 "-ad-banner.",
                 "/^https:\\/\\/example\\.com\\/ads\\//",
-            ],
-            identifier: #function
+            ]
         )
     }
 
@@ -28,8 +27,7 @@ final class WebKitCompilationTests: XCTestCase {
                 "@@||example.org^$document",
                 "@@||safe.example.org^$image",
                 "@@||cdn.example.org^$script,domain=example.org",
-            ],
-            identifier: #function
+            ]
         )
     }
 
@@ -42,8 +40,7 @@ final class WebKitCompilationTests: XCTestCase {
                 "example.org##div[id^=\"ad-\"]",
                 "###advertisement",
                 "##.sponsored-content",
-            ],
-            identifier: #function
+            ]
         )
     }
 
@@ -56,8 +53,7 @@ final class WebKitCompilationTests: XCTestCase {
                 "||tracker.com^$domain=~example.org",
                 "||cdn.example.*^$domain=example.*",
                 "||ad.example.net^$domain=example.com|example.net",
-            ],
-            identifier: #function
+            ]
         )
     }
 
@@ -67,8 +63,7 @@ final class WebKitCompilationTests: XCTestCase {
             "Regex domain rules require Safari 26+"
         )
         try await convertAndCompile(
-            ["||banner.example.org^$domain=/example\\.(com|net|org)/"],
-            identifier: #function
+            ["||banner.example.org^$domain=/example\\.(com|net|org)/"]
         )
     }
 
@@ -79,8 +74,7 @@ final class WebKitCompilationTests: XCTestCase {
             [
                 "||ads.example.org^$important",
                 "@@||safe.example.org^$important",
-            ],
-            identifier: #function
+            ]
         )
     }
 
@@ -89,15 +83,13 @@ final class WebKitCompilationTests: XCTestCase {
             [
                 "example.org##.ad-banner",
                 "@@||example.org^$specifichide",
-            ],
-            identifier: #function
+            ]
         )
     }
 
     func testDenyallowModifier() async throws {
         try await convertAndCompile(
-            ["*$image,denyallow=x.com,domain=a.com|~b.com"],
-            identifier: #function
+            ["*$image,denyallow=x.com,domain=a.com|~b.com"]
         )
     }
 
@@ -110,8 +102,7 @@ final class WebKitCompilationTests: XCTestCase {
             [
                 "||tracker.example.com^$method=post",
                 "||api.example.com^$method=get|post",
-            ],
-            identifier: #function
+            ]
         )
     }
 
@@ -126,13 +117,12 @@ final class WebKitCompilationTests: XCTestCase {
                 "||tracker.com^$domain=example.org",
                 "||important.bad.com^$important",
                 "@@||safe.example.org^$specifichide",
-            ],
-            identifier: #function
+            ]
         )
     }
 
     func testEmptyRuleSet() async throws {
-        try await convertAndCompile([], identifier: #function)
+        try await convertAndCompile([])
     }
 
     func testUnicodeSelectors() async throws {
@@ -141,8 +131,7 @@ final class WebKitCompilationTests: XCTestCase {
                 "example.org##.\u{0431}\u{0430}\u{043D}\u{043D}\u{0435}\u{0440}",
                 "example.org##.\u{5E7F}\u{544A}",
                 "example.org##.\u{0935}\u{093F}\u{091C}\u{094D}\u{091E}\u{093E}\u{092A}\u{0928}",
-            ],
-            identifier: #function
+            ]
         )
     }
 
@@ -160,8 +149,7 @@ final class WebKitCompilationTests: XCTestCase {
             [
                 "||example.org^$domain=/example\\d*\\.(com|net|org)/",
                 "||example.com^$domain=/test\\d*\\.(org|net|com)/",
-            ],
-            identifier: #function
+            ]
         )
     }
 

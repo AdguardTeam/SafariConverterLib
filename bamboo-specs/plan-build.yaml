@@ -79,7 +79,7 @@ WebKit Test Sequoia:
             # Run WebKit compilation tests.
             make webkit-test
   requirements:
-    - image: registry.int.agrd.dev/macos/sequoia-build-agent-xcode26.1.1:latest
+    - image: registry.int.agrd.dev/macos/sequoia-build-agent-xcode16.3:latest
     - ephemeral
 
 WebKit Test Tahoe:
