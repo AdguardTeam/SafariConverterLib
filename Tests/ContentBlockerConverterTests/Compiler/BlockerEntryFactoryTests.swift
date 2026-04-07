@@ -414,6 +414,18 @@ final class BlockerEntryFactoryTests: XCTestCase {
                     action: BlockerEntry.Action(type: "block")
                 )
             ),
+            TestCase(
+                // Restricted regex domain for network rule.
+                ruleText: #"||example.com/path$domain=~/test\.[a-z]+/"#,
+                version: SafariVersion.safari26,
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        urlFilter: #"^[^:]+://+([^:/]+\.)?example\.com\/path"#,
+                        unlessFrameUrl: [#"^[^:]+://+([^:/]+\.)?test\.[a-z]+([/:?#].*)?$"#]
+                    ),
+                    action: BlockerEntry.Action(type: "block")
+                )
+            ),
         ]
 
         for testCase in testCases {
@@ -1368,6 +1380,35 @@ final class BlockerEntryFactoryTests: XCTestCase {
                         selector: ".banner"
                     )
                 )
+            ),
+            TestCase(
+                // Regex domain with \| alternation must be gracefully discarded
+                // (pipe alternation is unsupported in Safari URL filter), NOT produce
+                // invalid broken domain entries that crash the WebKit content blocker
+                // compiler.
+                ruleText: #"[$domain=/foo\.(com\|net)/]##.banner"#,
+                version: .safari26,
+                expectedEntry: nil,
+                expectedErrorsCount: 1
+            ),
+            TestCase(
+                // Two regex domains: one valid (no pipe), one with \| — the valid one
+                // must still produce a rule while the invalid one is reported as error.
+                ruleText: #"[$domain=/foo\.com/|/bar\.(com\|net)/]##.banner"#,
+                version: .safari26,
+                expectedEntry: BlockerEntry(
+                    trigger: BlockerEntry.Trigger(
+                        ifFrameUrl: [
+                            #"^[^:]+://+([^:/]+\.)?foo\.com([/:?#].*)?$"#
+                        ],
+                        urlFilter: ".*"
+                    ),
+                    action: BlockerEntry.Action(
+                        type: "css-display-none",
+                        selector: ".banner"
+                    )
+                ),
+                expectedErrorsCount: 1
             ),
         ]
 
