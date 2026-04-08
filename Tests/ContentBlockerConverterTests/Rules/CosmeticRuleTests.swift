@@ -192,6 +192,23 @@ final class CosmeticRuleTests: XCTestCase {
                 expectedRestrictedDomains: ["example.com"]
             ),
             TestCase(
+                // Regex domain containing \| (escaped pipe) must be treated as a single
+                // domain, not split on |.
+                ruleText: #"[$domain=/foo\.(com\|net)/]##.banner"#,
+                version: .safari26,
+                expectedContent: ".banner",
+                expectedIsElemhide: true,
+                expectedPermittedDomains: [#"/foo\.(com\|net)/"#]
+            ),
+            TestCase(
+                // Restricted regex domain containing \| must also parse as single domain.
+                ruleText: #"[$domain=~/foo\.(com\|net)/]##.banner"#,
+                version: .safari26,
+                expectedContent: ".banner",
+                expectedIsElemhide: true,
+                expectedRestrictedDomains: [#"/foo\.(com\|net)/"#]
+            ),
+            TestCase(
                 // Cosmetic rule with mixed $domain options.
                 ruleText: "[$domain=example.org|~example.com]example.net##.banner",
                 expectedContent: ".banner",

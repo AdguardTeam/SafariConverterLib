@@ -225,6 +225,32 @@ final class NetworkRuleTests: XCTestCase {
                 expectedPermittedDomains: [#"/test\\/"#, "example.net"]
             ),
             TestCase(
+                // Regex domain containing \| (escaped pipe = alternation) must not be
+                // split into multiple domains. The whole pattern should be treated as
+                // one regex domain.
+                ruleText: #"||example.org^$domain=/foo\.(com\|net)/"#,
+                version: SafariVersion.safari26,
+                expectedUrlRuleText: "||example.org^",
+                expectedUrlRegExpSource: #"^[^:]+://+([^:/]+\.)?example\.org[/:]"#,
+                expectedPermittedDomains: [#"/foo\.(com\|net)/"#]
+            ),
+            TestCase(
+                // Two separate regex domains split by |.
+                ruleText: #"||example.org^$domain=/foo\.com/|/bar\.org/"#,
+                version: SafariVersion.safari26,
+                expectedUrlRuleText: "||example.org^",
+                expectedUrlRegExpSource: #"^[^:]+://+([^:/]+\.)?example\.org[/:]"#,
+                expectedPermittedDomains: [#"/foo\.com/"#, #"/bar\.org/"#]
+            ),
+            TestCase(
+                // Regex with escaped slash inside and \| alternation.
+                ruleText: #"||example.org^$domain=/test\/path\.(com\|net)/"#,
+                version: SafariVersion.safari26,
+                expectedUrlRuleText: "||example.org^",
+                expectedUrlRegExpSource: #"^[^:]+://+([^:/]+\.)?example\.org[/:]"#,
+                expectedPermittedDomains: [#"/test\/path\.(com\|net)/"#]
+            ),
+            TestCase(
                 // Test $domain for TLD.
                 ruleText: "||example.org^$domain=jp|~co",
                 expectedUrlRuleText: "||example.org^",
@@ -434,6 +460,13 @@ final class NetworkRuleTests: XCTestCase {
         // $domain with regexes are not supported.
         XCTAssertThrowsError(
             try NetworkRule(ruleText: "||example.org^$domain=example.org|/test.com/")
+        )
+        // Unclosed regex domain (missing closing slash) should be rejected.
+        XCTAssertThrowsError(
+            try NetworkRule(
+                ruleText: #"||example.org^$domain=/foo\.(com\|net"#,
+                for: SafariVersion.safari26
+            )
         )
         // Non-ASCII symbols outside the domain are not supported and not encoded.
         XCTAssertThrowsError(try NetworkRule(ruleText: "||example.org/почта"))

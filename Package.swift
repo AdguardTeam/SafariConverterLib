@@ -65,5 +65,9 @@ let package = Package(
                 .copy("Resources/reference-engine.bin"),
             ]
         ),
+        .testTarget(
+            name: "WebKitCompilationTests",
+            dependencies: ["ContentBlockerConverter"]
+        ),
     ]
 )

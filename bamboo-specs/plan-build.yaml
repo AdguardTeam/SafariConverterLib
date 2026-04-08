@@ -15,6 +15,8 @@ stages:
       final: false
       jobs:
         - Test
+        - WebKit Test Sequoia
+        - WebKit Test Tahoe
   - Build:
       manual: false
       final: false
@@ -58,6 +60,42 @@ Test:
 
             # Run all tests.
             make test
+  requirements:
+    - image: registry.int.agrd.dev/macos/tahoe-build-agent-xcode26.1.1:latest
+    - ephemeral
+
+WebKit Test Sequoia:
+  key: WEBKITTESTSEQUOIA
+  tasks:
+    - checkout:
+        force-clean-build: "true"
+    - script:
+        interpreter: SHELL
+        scripts:
+          - |-
+            set -e
+            set -x
+
+            # Run WebKit compilation tests.
+            make webkit-test
+  requirements:
+    - image: registry.int.agrd.dev/macos/sequoia-build-agent-xcode16.3:latest
+    - ephemeral
+
+WebKit Test Tahoe:
+  key: WEBKITTESTTAHOE
+  tasks:
+    - checkout:
+        force-clean-build: "true"
+    - script:
+        interpreter: SHELL
+        scripts:
+          - |-
+            set -e
+            set -x
+
+            # Run WebKit compilation tests.
+            make webkit-test
   requirements:
     - image: registry.int.agrd.dev/macos/tahoe-build-agent-xcode26.1.1:latest
     - ephemeral
