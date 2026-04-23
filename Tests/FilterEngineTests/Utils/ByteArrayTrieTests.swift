@@ -384,6 +384,12 @@ final class ByteArrayTrieTests: XCTestCase {
     /// - Swift: 6.2
     /// - Average execution time: ~0.015 seconds
     ///
+    /// Baseline results (Apr 23, 2026):
+    /// - Machine: MacBook Pro M1 Pro, 16GB RAM
+    /// - OS: macOS 15.7.4
+    /// - Swift: 6.2.4
+    /// - Average execution time: ~0.018 seconds
+    ///
     /// To get your machine info: `system_profiler SPHardwareDataType`
     /// To get your macOS version: `sw_vers`
     /// To get your Swift version: `swift --version`
@@ -433,6 +439,12 @@ final class ByteArrayTrieTests: XCTestCase {
     /// - OS: macOS 15.7
     /// - Swift: 6.2
     /// - Average execution time: ~0.053 seconds
+    ///
+    /// Baseline results (Apr 23, 2026):
+    /// - Machine: MacBook Pro M1 Pro, 16GB RAM
+    /// - OS: macOS 15.7.4
+    /// - Swift: 6.2.4
+    /// - Average execution time: ~0.056 seconds
     ///
     /// To get your machine info: `system_profiler SPHardwareDataType`
     /// To get your macOS version: `sw_vers`

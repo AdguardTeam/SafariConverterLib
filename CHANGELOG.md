@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed cosmetic exception matching for wildcard TLD domains with `www.` prefix
+  (e.g. `www.google.*`). Previously, an exception like `google.com#@#.selector`
+  was not applied to a rule like `www.google.*##.selector` because domain
+  overlap was only checked in one direction: [#120]
+
+[#120]: https://github.com/AdguardTeam/SafariConverterLib/issues/120
+
 [unreleased]: https://github.com/AdguardTeam/SafariConverterLib/compare/v4.2.2...HEAD
 
 ## [v4.2.2]

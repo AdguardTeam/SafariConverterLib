@@ -224,6 +224,95 @@ final class DomainUtilsTests: XCTestCase {
         XCTAssertFalse(result, "Expected \(candidate) NOT to match wildcard domain \(domain).")
     }
 
+    // MARK: - doDomainsOverlap tests
+
+    func testDoDomainsOverlap_WildcardSubdomainOfConcrete() {
+        // "www.google.*" resolved with "com" → "www.google.com"
+        // "www.google.com" IS a subdomain of "google.com" → true
+        XCTAssertTrue(
+            DomainUtils.doDomainsOverlap(
+                concreteDomain: "google.com",
+                wildcardDomain: "www.google.*"
+            )
+        )
+    }
+
+    func testDoDomainsOverlap_WildcardExactMatch() {
+        // "google.*" resolved with "com" → "google.com"
+        // "google.com" == "google.com" → true
+        XCTAssertTrue(
+            DomainUtils.doDomainsOverlap(
+                concreteDomain: "google.com",
+                wildcardDomain: "google.*"
+            )
+        )
+    }
+
+    func testDoDomainsOverlap_ConcreteSubdomainOfWildcard() {
+        // "google.*" resolved with "com" → "google.com"
+        // "sub.google.com" IS a subdomain of "google.com" → true
+        XCTAssertTrue(
+            DomainUtils.doDomainsOverlap(
+                concreteDomain: "sub.google.com",
+                wildcardDomain: "google.*"
+            )
+        )
+    }
+
+    func testDoDomainsOverlap_DeepSubdomainWildcard() {
+        // "sub.example.*" resolved with "com" → "sub.example.com"
+        // "sub.example.com" IS a subdomain of "example.com" → true
+        XCTAssertTrue(
+            DomainUtils.doDomainsOverlap(
+                concreteDomain: "example.com",
+                wildcardDomain: "sub.example.*"
+            )
+        )
+    }
+
+    func testDoDomainsOverlap_NegativeDifferentBase() {
+        // "example.*" resolved with "com" → "example.com"
+        // "other.com" is NOT related to "example.com" → false
+        XCTAssertFalse(
+            DomainUtils.doDomainsOverlap(
+                concreteDomain: "other.com",
+                wildcardDomain: "example.*"
+            )
+        )
+    }
+
+    func testDoDomainsOverlap_PlainDomains() {
+        XCTAssertTrue(
+            DomainUtils.doDomainsOverlap(
+                concreteDomain: "sub.example.org",
+                wildcardDomain: "example.org"
+            )
+        )
+        XCTAssertTrue(
+            DomainUtils.doDomainsOverlap(
+                concreteDomain: "example.org",
+                wildcardDomain: "sub.example.org"
+            )
+        )
+        XCTAssertFalse(
+            DomainUtils.doDomainsOverlap(
+                concreteDomain: "example.org",
+                wildcardDomain: "other.org"
+            )
+        )
+    }
+
+    func testDoDomainsOverlap_WildcardMultipleTld() {
+        // "www.google.*" resolved with "co.uk" → "www.google.co.uk"
+        // "www.google.co.uk" IS a subdomain of "google.co.uk" → true
+        XCTAssertTrue(
+            DomainUtils.doDomainsOverlap(
+                concreteDomain: "google.co.uk",
+                wildcardDomain: "www.google.*"
+            )
+        )
+    }
+
     // MARK: - Performance tests
 
     /// Baseline results (Aug 8, 2025):
