@@ -301,6 +301,9 @@ additional extension.
 - CSS exception rules (`#@#`) are supported with limitations:
     - The same limitations for specifying domains as with other cosmetic rules.
     - Won't work for "Any TLD" rules (like `google.*#@#.banner`).
+    - On Safari < 26, exceptions with a concrete domain also do not cover
+      wildcard subdomain cosmetic rules derived from `domain.*`. For example,
+      `google.com#@#.banner` will not disable `www.google.*##.banner`.
     - Rules with `$path` are not supported (like `[$path=/path]#@#.banner`).
 
 - [Non-basic rules modifiers][nonbasicmodifiers] are supported with some

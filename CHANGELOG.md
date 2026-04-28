@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Documented a limitation for Safari < 26: a concrete-domain cosmetic
+  exception like `google.com#@#.selector` does not disable wildcard subdomain
+  rules derived from `domain.*` such as `www.google.*##.selector`: [#120]
+
+[#120]: https://github.com/AdguardTeam/SafariConverterLib/issues/120
+
 [unreleased]: https://github.com/AdguardTeam/SafariConverterLib/compare/v4.2.2...HEAD
 
 ## [v4.2.2]
