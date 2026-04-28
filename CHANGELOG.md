@@ -7,12 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Fixed
+### Changed
 
-- Fixed cosmetic exception matching for wildcard TLD domains with `www.` prefix
-  (e.g. `www.google.*`). Previously, an exception like `google.com#@#.selector`
-  was not applied to a rule like `www.google.*##.selector` because domain
-  overlap was only checked in one direction: [#120]
+- Documented a limitation for Safari < 26: a concrete-domain cosmetic
+  exception like `google.com#@#.selector` does not disable wildcard subdomain
+  rules derived from `domain.*` such as `www.google.*##.selector`: [#120]
 
 [#120]: https://github.com/AdguardTeam/SafariConverterLib/issues/120
 

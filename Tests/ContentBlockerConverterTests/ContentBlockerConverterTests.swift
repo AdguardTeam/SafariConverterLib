@@ -1104,41 +1104,6 @@ final class ContentBlockerConverterTests: XCTestCase {
         runTests(testCases)
     }
 
-    // MARK: - Cosmetic exceptions with wildcard TLD domains (issue #120)
-
-    func testCosmeticExceptionWildcardTldWithWww() {
-        // Verify that exception is applied and produces a valid
-        // result with at least one rule (not zero, which would
-        // mean the exception was not applied and removed the rule
-        // entirely).
-        let converter = ContentBlockerConverter()
-
-        // Before the fix, the exception was ignored completely
-        // and the rule was left unmodified (no unless-domain).
-        let result = converter.convertArray(
-            rules: [
-                "www.google.*##.cu-container",
-                "google.com#@#.cu-container",
-            ],
-            safariVersion: .safari16_4,
-            advancedBlocking: false
-        )
-
-        XCTAssertEqual(result.safariRulesCount, 1)
-        XCTAssertEqual(result.sourceRulesCount, 2)
-
-        // The output must contain unless-domain with google.com.
-        let json = result.safariRulesJSON
-        XCTAssertTrue(
-            json.contains("\"unless-domain\""),
-            "Expected unless-domain in the output JSON"
-        )
-        XCTAssertTrue(
-            json.contains("google.com"),
-            "Expected google.com in the unless-domain list"
-        )
-    }
-
     func testConvertArrayExceptionRules() {
         let testCases: [TestCase] = [
             TestCase(

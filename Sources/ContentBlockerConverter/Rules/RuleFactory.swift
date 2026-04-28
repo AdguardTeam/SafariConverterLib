@@ -262,10 +262,7 @@ public enum RuleFactory {
                         /// restricted = ["sub.example.com"]
                         /// ```
                         let canRestrict = rule.permittedDomains.contains {
-                            DomainUtils.doDomainsOverlap(
-                                concreteDomain: domain,
-                                wildcardDomain: $0
-                            )
+                            DomainUtils.isDomainOrSubdomain(candidate: domain, domain: $0)
                         }
 
                         if canRestrict {

@@ -117,12 +117,6 @@ final class FilterEngineSerializationTests: XCTestCase {
     /// - Swift: 6.2
     /// - Average execution time: ~1.947 seconds
     ///
-    /// Baseline results (Apr 23, 2026):
-    /// - Machine: MacBook Pro M1 Pro, 16GB RAM
-    /// - OS: macOS 15.7.4
-    /// - Swift: 6.2.4
-    /// - Average execution time: ~2.197 seconds
-    ///
     /// To get your machine info: `system_profiler SPHardwareDataType`
     /// To get your macOS version: `sw_vers`
     /// To get your Swift version: `swift --version`

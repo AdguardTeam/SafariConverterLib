@@ -174,12 +174,6 @@ final class TrieNodeTests: XCTestCase {
     /// - Swift: 6.2
     /// - Average execution time: ~0.073 seconds
     ///
-    /// Baseline results (Apr 23, 2026):
-    /// - Machine: MacBook Pro M1 Pro, 16GB RAM
-    /// - OS: macOS 15.7.4
-    /// - Swift: 6.2.4
-    /// - Average execution time: ~0.098 seconds
-    ///
     /// To get your machine info: `system_profiler SPHardwareDataType`
     /// To get your macOS version: `sw_vers`
     /// To get your Swift version: `swift --version`
@@ -271,12 +265,6 @@ final class TrieNodeTests: XCTestCase {
     /// - OS: macOS 15.7
     /// - Swift: 6.2
     /// - Average execution time: ~0.039 seconds
-    ///
-    /// Baseline results (Apr 23, 2026):
-    /// - Machine: MacBook Pro M1 Pro, 16GB RAM
-    /// - OS: macOS 15.7.4
-    /// - Swift: 6.2.4
-    /// - Average execution time: ~0.041 seconds
     ///
     /// To get your machine info: `system_profiler SPHardwareDataType`
     /// To get your macOS version: `sw_vers`

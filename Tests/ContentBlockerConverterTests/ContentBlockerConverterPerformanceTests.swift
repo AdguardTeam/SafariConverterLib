@@ -45,9 +45,6 @@ extension ContentBlockerConverterTests {
         //
         // Mar 24, 2025 (split regexEndSeparator into regexEndString and regexSeparator)
         // 368.00 Mc  70.8%: ContentBlockerConverter.convertArray
-        //
-        // Apr 23, 2026 (fixed cosmetic exception wildcard domain overlap)
-        // 480.00 Mc  68.8%: ContentBlockerConverter.convertArray(rules:safariVersion:advancedBlocking:maxJsonSizeBytes:progress:)
         let conversionResult = ContentBlockerConverter().convertArray(
             rules: rules,
             safariVersion: SafariVersion.safari16_4,
@@ -93,12 +90,6 @@ extension ContentBlockerConverterTests {
     /// - OS: macOS 15.7
     /// - Swift: 6.2
     /// - Average execution time: ~1.178 seconds
-    ///
-    /// Baseline results (Apr 23, 2026):
-    /// - Machine: MacBook Pro M1 Pro, 16GB RAM
-    /// - OS: macOS 15.7.4
-    /// - Swift: 6.2.4
-    /// - Average execution time: ~1.391 seconds
     ///
     /// To get your machine info: `system_profiler SPHardwareDataType`
     /// To get your macOS version: `sw_vers`
@@ -159,12 +150,6 @@ extension ContentBlockerConverterTests {
     /// - OS: macOS 15.7
     /// - Swift: 6.2
     /// - Average execution time: ~0.263 seconds
-    ///
-    /// Baseline results (Apr 23, 2026):
-    /// - Machine: MacBook Pro M1 Pro, 16GB RAM
-    /// - OS: macOS 15.7.4
-    /// - Swift: 6.2.4
-    /// - Average execution time: ~0.337 seconds
     ///
     /// To get your machine info: `system_profiler SPHardwareDataType`
     /// To get your macOS version: `sw_vers`
