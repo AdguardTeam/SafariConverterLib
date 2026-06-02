@@ -351,12 +351,8 @@ Follow these rules (configured in `.markdownlint.json`):
 [nodejs]: https://nodejs.org/
 [nvm]: https://github.com/nvm-sh/nvm
 [pnpm]: https://pnpm.io/
-[swiftlint]: https://github.com/realm/SwiftLint
 [xcbeautify]: https://github.com/cpisciotta/xcbeautify
-[periphery]: https://github.com/peripheryapp/periphery
-[markdownlint]: https://www.npmjs.com/package/markdownlint-cli
 [jq]: https://jqlang.org/
-[swift-format]: https://github.com/swiftlang/swift-format
 
 ### Building
 
