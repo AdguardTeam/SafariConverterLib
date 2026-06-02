@@ -352,6 +352,34 @@ technical capabilities to implement them.
 
 [htmlfilteringrules]: https://adguard.com/kb/general/ad-filtering/create-own-filters/#html-filtering-rules
 
+### Safari affinity
+
+Safari limits each content blocker to 150,000 active rules. AdGuard for Safari
+and AdGuard for iOS split rules into 6 content blockers (General, Privacy,
+Social, Security, Other, Custom), increasing the limit to 900,000 rules.
+
+The main disadvantage of using multiple content blockers is that rules from
+different blockers are applied independently. Blocking rules are not affected,
+but unblocking rules may cause problems. If a blocking rule is in one content
+blocker and an exception is in another, the exception will not work.
+
+Filter maintainers use `!#safari_cb_affinity` to define Safari content blocker
+affinity for the rules inside of the directive block. See the
+[full documentation][safari-affinity] for syntax and examples.
+
+The library provides `AffinityRulesGrouper` utility for grouping rules across
+Safari content blocker types based on `!#safari_cb_affinity(...)` directives:
+
+```swift
+// Group rules by affinity directives
+let grouped = AffinityRulesGrouper.group(rules: rules)
+
+// Wrap a rule with affinity directives
+let wrappedRule = AffinityRulesGrouper.rule(rule, withAffinity: affinity)
+```
+
+[safari-affinity]: https://adguard.com/kb/general/ad-filtering/create-own-filters/#safari-affinity-directive
+
 ## For developers
 
 Please note, that the library is published under GPLv3.
