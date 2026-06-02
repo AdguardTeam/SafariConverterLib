@@ -142,15 +142,22 @@ public enum AffinityRulesGrouper {
             }
 
             // Distribute the rule
-            distributeRule(trimmed, affinity: currentAffinity, defaultType: defaultType, result: &result)
+            distributeRule(
+                trimmed,
+                affinity: currentAffinity,
+                defaultType: defaultType,
+                result: &result
+            )
         }
     }
 
     private static func parseAffinity(from line: String) -> Affinity? {
-        let prefixCount = Constants.affinityPrefix.count + 1  // +1 for "("
+        // +1 for "("
+        let prefixCount = Constants.affinityPrefix.count + 1
 
         guard line.count > prefixCount + 1,
-            line.last == ")" else {
+            line.last == ")"
+        else {
             return nil
         }
 

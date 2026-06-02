@@ -15,7 +15,7 @@ final class AffinityRulesGrouperTests: XCTestCase {
         ]
 
         let result = AffinityRulesGrouper.group(rules: [
-            (.general, generalRules),
+            (.general, generalRules)
         ])
 
         XCTAssertEqual(result[.general]?.count, 4)
@@ -41,7 +41,7 @@ final class AffinityRulesGrouperTests: XCTestCase {
         ]
 
         let result = AffinityRulesGrouper.group(rules: [
-            (.general, rules),
+            (.general, rules)
         ])
 
         // 2 rules without affinity + 3 affinity rules + 1 after closing = 6
@@ -65,7 +65,7 @@ final class AffinityRulesGrouperTests: XCTestCase {
         ]
 
         let result = AffinityRulesGrouper.group(rules: [
-            (.custom, rules),
+            (.custom, rules)
         ])
 
         // custom gets: 2 default rules + 1 all-rules affinity = 3
@@ -85,7 +85,7 @@ final class AffinityRulesGrouperTests: XCTestCase {
         ]
 
         let privacyBatch = [
-            "||tracker.org^",
+            "||tracker.org^"
         ]
 
         let result = AffinityRulesGrouper.group(rules: [
@@ -114,7 +114,7 @@ final class AffinityRulesGrouperTests: XCTestCase {
         ]
 
         let result = AffinityRulesGrouper.group(rules: [
-            (.security, rules),
+            (.security, rules)
         ])
 
         // security (default): default.com^ + after-first-close.com^ + default2.com^
@@ -131,7 +131,7 @@ final class AffinityRulesGrouperTests: XCTestCase {
         ]
 
         let result = AffinityRulesGrouper.group(rules: [
-            (.general, rules),
+            (.general, rules)
         ])
 
         XCTAssertEqual(result[.general]?.count, 1)
@@ -148,7 +148,7 @@ final class AffinityRulesGrouperTests: XCTestCase {
         ]
 
         let result = AffinityRulesGrouper.group(rules: [
-            (.general, rules),
+            (.general, rules)
         ])
 
         // Empty affinity () means nil — rules stay in default
@@ -164,7 +164,7 @@ final class AffinityRulesGrouperTests: XCTestCase {
         ]
 
         let result = AffinityRulesGrouper.group(rules: [
-            (.privacy, rules),
+            (.privacy, rules)
         ])
 
         // "general" is recognized, so the rule goes there
