@@ -7,15 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+[Unreleased]: https://github.com/AdguardTeam/SafariConverterLib/compare/v4.3.0...HEAD
+
+## [v4.3.0]
+
+### Added
+
+- Added `AffinityRulesGrouper` utility, `Affinity` OptionSet, and
+  `ContentBlockerType` enum for grouping rules across Safari content blocker
+  types based on `!#safari_cb_affinity(...)` directives.
+
 ### Changed
 
 - Documented a limitation for Safari < 26: a concrete-domain cosmetic
   exception like `google.com#@#.selector` does not disable wildcard subdomain
   rules derived from `domain.*` such as `www.google.*##.selector`: [#120]
+- Restructured `AGENTS.md` with new sections: System Design, Architecture, Code
+  Quality, Testing, Dependency Management, Configuration & Documentation, and
+  Markdown Formatting guidelines.
+- Added "Safari affinity" section to `README.md` documenting the
+  `AffinityRulesGrouper` API with usage examples.
 
 [#120]: https://github.com/AdguardTeam/SafariConverterLib/issues/120
 
-[unreleased]: https://github.com/AdguardTeam/SafariConverterLib/compare/v4.2.2...HEAD
+[v4.3.0]: https://github.com/AdguardTeam/SafariConverterLib/compare/v4.2.2...4.3.0
 
 ## [v4.2.2]
 
