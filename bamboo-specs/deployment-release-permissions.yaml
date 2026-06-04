@@ -1,0 +1,36 @@
+---
+version: 2
+deployment:
+  name: Converter - deploy
+
+deployment-permissions:
+- users:
+    - bamboo-bot
+  groups:
+    - ios-developers
+  permissions:
+    - view
+- users:
+    - a.ivanov
+    - s.berdov
+    - v.bachinskiy
+  permissions:
+    - view
+    - edit
+
+default-environment-permissions:
+  - users:
+      - bamboo-bot
+    groups:
+      - ios-developers
+    permissions:
+      - view
+      - deploy
+  - users:
+      - a.ivanov
+      - s.berdov
+      - v.bachinskiy
+    permissions:
+      - view
+      - edit
+      - deploy
