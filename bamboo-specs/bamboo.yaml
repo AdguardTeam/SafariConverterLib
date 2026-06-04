@@ -7,4 +7,7 @@
 ---
 !include 'deployment-release-plan.yaml'
 
+---
+!include 'deployment-release-permissions.yaml'
+
 ...
