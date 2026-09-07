@@ -111,7 +111,12 @@ extension WebExtension {
     private static var instances: [InstanceKey: WebExtension] = [:]
 
     private struct InstanceKey: Hashable {
+        // The fields are only read by the synthesized Hashable implementation,
+        // which periphery cannot see. The comments must sit on the fields: on
+        // the struct periphery reports the ignore itself as superfluous.
+        // periphery:ignore
         let groupID: String
+        // periphery:ignore
         let version: Double
     }
 

@@ -120,9 +120,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Report WebKit version
-        run: /usr/bin/defaults read /System/Library/Frameworks/WebKit.framework/Resources/Info CFBundleVersion
-
+      # webkit-test prints the WebKit version itself.
       - name: Swift tests
         run: make swift-test webkit-test filelock-test command-line-wrapper-test
 
