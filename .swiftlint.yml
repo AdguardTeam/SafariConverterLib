@@ -4,7 +4,6 @@ excluded:
   - ${PWD}/DerivedData
   - ${PWD}/.build
   - ${PWD}/.swiftpm
-  - ${PWD}/bamboo-specs
 
   # Excluding tests as the linter fails on long rule texts. Splitting test rules
   # into smaller chunks would be actually counter-productive and harder to

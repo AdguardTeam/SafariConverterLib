@@ -86,7 +86,7 @@ The library is consumed by iOS and macOS applications (adguard-ios, adguard-mini
 │   ├── make/                        # Build codegen scripts
 │   ├── perf/                        # Performance profiling scripts
 │   └── tests/                       # Integration test scripts
-├── bamboo-specs/                    # CI pipeline definitions
+├── .github/workflows/               # CI/CD pipeline definitions
 ├── Package.swift                    # Swift Package Manager manifest
 ├── Makefile                         # Build/test/lint commands
 ├── README.md                        # User-facing documentation

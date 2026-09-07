@@ -391,22 +391,24 @@ Please refer to [DEVELOPMENT.md](DEVELOPMENT.md) for details.
 ### Releasing new version
 
 1. Choose the new version using [Semantic Versioning][semver].
-2. Update the [CHANGELOG.md](CHANGELOG.md) and add new version
-   information.
-3. Run `VERSION=${version} make codegen` to update the version of the extension,
-   and to generate `ContentBlockerConverterVersion`. For example,
-   `VERSION=3.0.1 make codegen`.
-4. Make `Bump version to ${version}` commit.
-5. Run `Converter - build for release` plan in Bamboo and override
-   `release.version` variable.
-6. This plan will add a new tag in `v*.*.*` format.
-7. Run the linked `Converter - deploy` plan:
-    - This plan will publish to NPM the new version of the library
-      [@adguard/safari-extension][adguard-safari-extension]
-    - It will also publish a new Github release to this repo.
+2. Make sure the changes are described under `## [Unreleased]` in
+   [CHANGELOG.md](CHANGELOG.md).
+3. Run the `Prepare release` workflow and pass the tag **with** the `v` prefix,
+   for example `v4.4.0`. It rolls `Unreleased` over to that version and opens a
+   release PR.
+4. Check out the PR branch and run `VERSION=${version} make codegen` **without**
+   the `v` prefix, for example `VERSION=4.4.0 make codegen`. It sets the version
+   in `Extension/package.json` and regenerates `ContentBlockerConverterVersion`.
+   Push the result to the same branch; CI fails while these disagree with the
+   changelog.
+5. Merge the release PR. `Publish release` then tags the commit as `v*.*.*`,
+   publishes [@adguard/safari-extension][adguard-safari-extension] to npm and
+   creates a GitHub release with the `ConverterTool` binary on
+   [SafariConverterLib][safari-converter-lib].
 
 [semver]: https://semver.org/
 [adguard-safari-extension]: https://www.npmjs.com/package/@adguard/safari-extension
+[safari-converter-lib]: https://github.com/AdguardTeam/SafariConverterLib
 
 ### Third-party dependencies
 

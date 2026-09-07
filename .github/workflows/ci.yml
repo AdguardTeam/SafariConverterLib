@@ -76,6 +76,23 @@ jobs:
       - name: Install dependencies
         run: pnpm -C ./Extension install
 
+      # `make codegen` writes the release version into package.json and into
+      # ContentBlockerConverterVersion.swift, but create-release-pr only rolls
+      # the changelog over. Without this gate a forgotten codegen would ship an
+      # npm package under the previous version.
+      - name: Check version consistency
+        run: |
+          set -euo pipefail
+          changelog=$(grep -m1 -oE '^## \[[0-9][^]]*\]' CHANGELOG.md | sed 's/^## \[//; s/\]$//')
+          package=$(grep -m1 -oE '"version": *"[^"]+"' Extension/package.json | cut -d'"' -f4)
+          swift=$(grep -m1 -oE 'library = "[^"]+"' \
+            Sources/ContentBlockerConverter/ContentBlockerConverterVersion.swift | cut -d'"' -f2)
+          echo "CHANGELOG.md=$changelog package.json=$package generated=$swift"
+          if [ "$changelog" != "$package" ] || [ "$changelog" != "$swift" ]; then
+            echo "::error::Version mismatch. Run 'VERSION=$changelog make codegen' and commit the result."
+            exit 1
+          fi
+
       - name: Lint markdown
         run: ./Extension/node_modules/.bin/markdownlint .
 
