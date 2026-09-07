@@ -39,6 +39,10 @@ jobs:
     uses: AdGuardSoftwareLimited/actions/.github/workflows/check-fixme.yml@master
     with:
       team: mobile
+      # The hook's own grep pattern contains these words, which is why the hook
+      # excludes itself too.
+      check-fixme-exclude: |
+        pre-commit
 
   # make swiftlint-lint — runs --strict, reads .swiftlint.yml from the root.
   swiftlint:
@@ -62,23 +66,25 @@ jobs:
         with:
           node-version: '22'
 
-      # markdownlint-cli is a devDependency of Extension/, but md-lint runs from
-      # the repo root where there is no node_modules, so it is installed
-      # globally — the same thing the Bamboo plan did.
-      - name: Install Node tooling
-        run: npm install --global pnpm markdownlint-cli
+      - name: Install pnpm
+        run: npm install --global pnpm
+
+      # The team runner has no `make`, so these mirror the md-lint and js-*
+      # Makefile targets directly. One install serves all four steps.
+      - name: Install dependencies
+        run: pnpm -C ./Extension install
 
       - name: Lint markdown
-        run: make md-lint
+        run: ./Extension/node_modules/.bin/markdownlint .
 
       - name: Lint JS
-        run: make js-lint
+        run: pnpm -C ./Extension lint
 
       - name: Test JS
-        run: make js-test
+        run: CI=1 pnpm -C ./Extension test
 
       - name: Build JS
-        run: make js-build
+        run: pnpm -C ./Extension build
 
   # Dead-code analysis needs an index store, so it stays on macOS.
   periphery:

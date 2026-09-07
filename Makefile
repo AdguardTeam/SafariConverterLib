@@ -5,6 +5,9 @@
 .POSIX:
 
 PNPM = pnpm -C ./Extension
+# markdownlint-cli is a devDependency of Extension; the package named
+# markdownlint is a library and exposes no executable.
+MARKDOWNLINT = ./Extension/node_modules/.bin/markdownlint
 
 # Init the repo
 
@@ -24,7 +27,6 @@ tools:
 	node --version
 	npm --version
 	pnpm --version
-	npx markdownlint --version
 
 # Building debug builds
 
@@ -51,7 +53,8 @@ js-release:
 lint: md-lint swift-lint js-lint
 
 md-lint:
-	npx markdownlint .
+	$(PNPM) install
+	$(MARKDOWNLINT) .
 
 swift-lint: swiftlint-lint swiftformat-lint periphery-lint
 
