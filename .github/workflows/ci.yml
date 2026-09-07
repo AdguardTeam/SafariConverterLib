@@ -1,0 +1,122 @@
+name: CI
+
+# Lints, tests and builds on pull requests and pushes to master.
+#
+# Work is split by what actually needs macOS. SwiftLint and swift-format have
+# purpose-built reusable workflows that run in Docker on a Linux team runner,
+# and the JS half needs nothing but Node — so only the Swift toolchain and
+# WebKit tests occupy a scarce ephemeral-mac VM.
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+# kv-get is an unauthenticated fetch and every job only reads the repo,
+# so no OIDC token is needed here.
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Image tags must be exact, never :latest, so the current one is resolved
+  # from the KV store at the start of every run.
+  resolve-runner:
+    runs-on: [team-mobile]
+    outputs:
+      macos: ${{ steps.kv.outputs.value }}
+    steps:
+      - uses: AdGuardSoftwareLimited/actions/actions/kv-get@master
+        id: kv
+        with:
+          key: build-images/macos
+
+  # The repo's own pre-commit hook warns about these; this enforces it in CI.
+  check-fixme:
+    uses: AdGuardSoftwareLimited/actions/.github/workflows/check-fixme.yml@master
+    with:
+      team: mobile
+
+  # make swiftlint-lint — runs --strict, reads .swiftlint.yml from the root.
+  swiftlint:
+    uses: AdGuardSoftwareLimited/actions/.github/workflows/lint-swiftlint.yml@master
+    with:
+      team: mobile
+
+  # make swiftformat-lint — runs --strict, reads .swift-format from the root.
+  swiftformat:
+    uses: AdGuardSoftwareLimited/actions/.github/workflows/lint-swiftformat.yml@master
+    with:
+      team: mobile
+
+  # markdownlint, ESLint, vitest and the package build: Node only, no macOS.
+  js:
+    runs-on: team-mobile
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+
+      # markdownlint-cli is a devDependency of Extension/, but md-lint runs from
+      # the repo root where there is no node_modules, so it is installed
+      # globally — the same thing the Bamboo plan did.
+      - name: Install Node tooling
+        run: npm install --global pnpm markdownlint-cli
+
+      - name: Lint markdown
+        run: make md-lint
+
+      - name: Lint JS
+        run: make js-lint
+
+      - name: Test JS
+        run: make js-test
+
+      - name: Build JS
+        run: make js-build
+
+  # Dead-code analysis needs an index store, so it stays on macOS.
+  periphery:
+    needs: [resolve-runner]
+    runs-on:
+      - ephemeral
+      - ephemeral-mac
+      - ${{ needs.resolve-runner.outputs.macos }}
+      - ephemeral-limit-memory-8192
+      - ephemeral-limit-cpu-4
+      - ephemeral-limit-disk-gb-40
+    steps:
+      - uses: actions/checkout@v5
+      - name: Check tooling
+        run: make tools
+      - name: Periphery scan
+        run: make periphery-lint
+
+  # Swift tests and build. make test also covers webkit-test, so there is no
+  # separate WebKit job: with a single macOS image it would be pure duplication.
+  # js-test is excluded here because the js job above already ran it.
+  swift:
+    needs: [resolve-runner]
+    runs-on:
+      - ephemeral
+      - ephemeral-mac
+      - ${{ needs.resolve-runner.outputs.macos }}
+      - ephemeral-limit-memory-8192
+      - ephemeral-limit-cpu-4
+      - ephemeral-limit-disk-gb-40
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Report WebKit version
+        run: /usr/bin/defaults read /System/Library/Frameworks/WebKit.framework/Resources/Info CFBundleVersion
+
+      - name: Swift tests
+        run: make swift-test webkit-test filelock-test command-line-wrapper-test
+
+      - name: Swift build
+        run: make swift-build

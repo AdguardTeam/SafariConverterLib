@@ -1,0 +1,135 @@
+name: Publish release
+
+# Tags the release commit, builds the release artifacts, publishes the JS
+# package to npm and creates a GitHub Release on the public mirror.
+#
+# Replaces the Bamboo "Converter - build for release" plan and the
+# "Converter - deploy" deployment (npmjs + GitHub environments).
+
+on:
+  # Release PRs are always internal, created by prepare-release.yml.
+  pull_request:
+    types: [closed]
+    branches: [master]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Ref to publish manually
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  # A closed PR is not necessarily a merged one, and not every merged PR is a
+  # release. Only merged release-bump/* branches (the ones create-release-pr
+  # produces) may publish.
+  tag:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.pull_request.merged == true &&
+       startsWith(github.event.pull_request.head.ref, 'release-bump/'))
+    uses: AdGuardSoftwareLimited/actions/.github/workflows/tag-from-changelog.yml@master
+    with:
+      ref: ${{ inputs.ref || github.event.pull_request.merge_commit_sha || github.ref_name }}
+      team: mobile
+    # `contents: write` — create the git tag
+    permissions:
+      contents: write
+
+  # swift build -c release needs the Swift toolchain, so this half runs on
+  # an ephemeral macOS VM.
+  resolve-runner:
+    needs: tag
+    runs-on: [team-mobile]
+    outputs:
+      macos: ${{ steps.kv.outputs.value }}
+    steps:
+      - uses: AdGuardSoftwareLimited/actions/actions/kv-get@master
+        id: kv
+        with:
+          key: build-images/macos
+
+  build-swift:
+    needs: [tag, resolve-runner]
+    runs-on:
+      - ephemeral
+      - ephemeral-mac
+      - ${{ needs.resolve-runner.outputs.macos }}
+      - ephemeral-limit-memory-8192
+      - ephemeral-limit-cpu-4
+      - ephemeral-limit-disk-gb-40
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.tag.outputs.tag }}
+
+      - name: Build release binary
+        run: make swift-release
+
+      - name: Upload ConverterTool
+        uses: actions/upload-artifact@v7
+        with:
+          name: converter-tool
+          path: .build/release/ConverterTool
+          if-no-files-found: error
+
+  # The npm package is pure Node, so it does not need a macOS VM.
+  build-js:
+    needs: tag
+    runs-on: team-mobile
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.tag.outputs.tag }}
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+
+      - name: Install pnpm
+        run: npm install --global pnpm
+
+      - name: Package
+        run: make js-release
+
+      - name: Upload npm package
+        uses: actions/upload-artifact@v7
+        with:
+          name: npm-package
+          path: Extension/adguard-safari-extension.tgz
+          if-no-files-found: error
+
+  publish-npm:
+    needs: build-js
+    uses: AdGuardSoftwareLimited/actions/.github/workflows/deploy-to-npm.yml@master
+    with:
+      artifact-name: npm-package
+      package-file: adguard-safari-extension.tgz
+    # `contents: read` — download artifact only
+    # `id-token: write` — npm Trusted Publishing via OIDC
+    permissions:
+      contents: read
+      id-token: write
+
+  # Mirrors the tag to the public repo and creates the GitHub Release there
+  # with the changelog section and the ConverterTool binary attached.
+  mirror-and-release:
+    needs: [tag, build-swift, publish-npm]
+    uses: AdGuardSoftwareLimited/actions/.github/workflows/mirror-and-release.yml@master
+    with:
+      team: mobile
+      target_repo: AdguardTeam/SafariConverterLib
+      tag: ${{ needs.tag.outputs.tag }}
+      changelog: ${{ needs.tag.outputs.changelog }}
+      artifact_name: converter-tool
+      prerelease: ${{ needs.tag.outputs.prerelease == 'true' }}
+    secrets: inherit
+    # `actions: write` — disable workflows in the public mirror
+    # `contents: write` — create GitHub Release on public repo
+    # `id-token: write` — Octopass token for mirror push
+    permissions:
+      actions: write
+      contents: write
+      id-token: write

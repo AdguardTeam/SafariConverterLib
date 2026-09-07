@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [Unreleased]: https://github.com/AdguardTeam/SafariConverterLib/compare/v4.3.0...HEAD
 
-## [v4.3.0]
+## [4.3.0]
 
 ### Added
 
@@ -30,9 +30,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [#120]: https://github.com/AdguardTeam/SafariConverterLib/issues/120
 
-[v4.3.0]: https://github.com/AdguardTeam/SafariConverterLib/compare/v4.2.2...4.3.0
+[4.3.0]: https://github.com/AdguardTeam/SafariConverterLib/compare/v4.2.2...4.3.0
 
-## [v4.2.2]
+## [4.2.2]
 
 ### Added
 
@@ -50,17 +50,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [#110]: https://github.com/AdguardTeam/SafariConverterLib/issues/110
 
-[v4.2.2]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v4.2.2
+[4.2.2]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v4.2.2
 
-## [v4.2.1]
+## [4.2.1]
 
 ### Changed
 
 - Updated [@adguard/scriptlets] to `2.2.16`.
 
-[v4.2.1]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v4.2.1
+[4.2.1]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v4.2.1
 
-## [v4.2.0]
+## [4.2.0]
 
 ### Added
 
@@ -68,15 +68,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [#100]: https://github.com/AdguardTeam/SafariConverterLib/issues/100
 
-[v4.2.0]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v4.2.0
+[4.2.0]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v4.2.0
 
-## [v4.1.1]
+## [4.1.1]
 
 ### Fixed
 
 - Fixed a crash when extracting URL host on macOS 13.0–13.3 and iOS 16.0–16.3.
 
-## [v4.1.0]
+## [4.1.0]
 
 ### Added
 
@@ -85,9 +85,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [#88]: https://github.com/AdguardTeam/SafariConverterLib/issues/88
 
-[v4.1.0]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v4.1.0
+[4.1.0]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v4.1.0
 
-## [v4.0.4]
+## [4.0.4]
 
 ### Changed
 
@@ -95,18 +95,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [#107]: https://github.com/AdguardTeam/SafariConverterLib/issues/107
 
-[v4.0.4]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v4.0.4
+[4.0.4]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v4.0.4
 
-## [v4.0.3]
+## [4.0.3]
 
 ### Fixed
 
 - Fixed the issue with matching subdomain wildcard rules, e.g. `sub.example.*`,
   that were not matched before, this is the second fix for [#106].
 
-[v4.0.3]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v4.0.3
+[4.0.3]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v4.0.3
 
-## [v4.0.2]
+## [4.0.2]
 
 ### Fixed
 
@@ -115,17 +115,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [#106]: https://github.com/AdguardTeam/SafariConverterLib/issues/106
 
-[v4.0.2]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v4.0.2
+[4.0.2]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v4.0.2
 
-## [v4.0.1]
+## [4.0.1]
 
 A small change has been made to `@adguard/safari-extension` library and the way
 `adguard` global variable is defined. It should simplify using the library with
 webpack.
 
-[v4.0.1]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v4.0.1
+[4.0.1]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v4.0.1
 
-## [v4.0.0]
+## [4.0.0]
 
 ### Breaking changes
 
@@ -186,9 +186,9 @@ webpack.
 [#74]: https://github.com/AdguardTeam/SafariConverterLib/issues/74
 [#66]: https://github.com/AdguardTeam/SafariConverterLib/issues/66
 
-[v4.0.0]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v4.0.0
+[4.0.0]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v4.0.0
 
-## [v3.1.0]
+## [3.1.0]
 
 ### Changed
 
@@ -209,9 +209,9 @@ webpack.
 
 [#93]: https://github.com/AdguardTeam/SafariConverterLib/issues/93
 
-[v3.1.0]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v3.1.0
+[3.1.0]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v3.1.0
 
-## [v3.0.1]
+## [3.0.1]
 
 ### Fixed
 
@@ -219,9 +219,9 @@ webpack.
 
 [#90]: https://github.com/AdguardTeam/SafariConverterLib/issues/90
 
-[v3.0.1]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v3.0.1
+[3.0.1]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v3.0.1
 
-## [v3.0.0]
+## [3.0.0]
 
 ### Added `ContentBlockerConverterVersion` [#78]
 
@@ -312,9 +312,9 @@ Several deprecated arguments were removed from the `convertArray` function:
 AdGuard for Safari will soon switch from Electron so the node wrapper is not
 required anymore.
 
-[v3.0.0]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v3.0.0
+[3.0.0]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v3.0.0
 
-## [v2.1.1]
+## [2.1.1]
 
 ### Performance
 
@@ -404,9 +404,9 @@ Here's how it was achieved:
   expressions (which made it much faster), but at the same time it is more
   thorough and careful. Check out `SafariRegex` to see how it's done.
 
-[v2.1.1]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v2.1.1
+[2.1.1]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v2.1.1
 
-## [v2.0.48]
+## [2.0.48]
 
 ### Added
 
@@ -414,9 +414,9 @@ Here's how it was achieved:
 
 [#56]: https://github.com/AdguardTeam/SafariConverterLib/issues/56
 
-[v2.0.48]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v2.0.48
+[2.0.48]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v2.0.48
 
-## [v2.0.43]
+## [2.0.43]
 
 ### Fixed
 
@@ -424,9 +424,9 @@ Here's how it was achieved:
 
 [#55]: https://github.com/AdguardTeam/SafariConverterLib/issues/55
 
-[v2.0.43]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v2.0.43
+[2.0.43]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v2.0.43
 
-## [v2.0.40]
+## [2.0.40]
 
 ### Changed
 
@@ -443,9 +443,9 @@ Here's how it was achieved:
 [#51]: https://github.com/AdguardTeam/SafariConverterLib/issues/51
 [#53]: https://github.com/AdguardTeam/SafariConverterLib/issues/53
 
-[v2.0.40]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v2.0.40
+[2.0.40]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v2.0.40
 
-## [v2.0.39]
+## [2.0.39]
 
 ### Added
 
@@ -457,18 +457,18 @@ Here's how it was achieved:
 - Handling provided Safari version for minor version as well, not just the major
   one.
 
-[v2.0.39]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v2.0.39
+[2.0.39]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v2.0.39
 [#43]: https://github.com/AdguardTeam/SafariConverterLib/issues/43
 
-## [v2.0.38]
+## [2.0.38]
 
 ### Fixed
 
 - Handling provided Safari version.
 
-[v2.0.38]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v2.0.38
+[2.0.38]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v2.0.38
 
-## [v2.0.34]
+## [2.0.34]
 
 ### Fixed
 
@@ -478,7 +478,7 @@ Here's how it was achieved:
 
 [webkit248868]: https://bugs.webkit.org/show_bug.cgi?id=248868
 
-[v2.0.34]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v2.0.34
+[2.0.34]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v2.0.34
 
 [@adguard/extended-css]: https://github.com/AdguardTeam/ExtendedCss/blob/master/CHANGELOG.md
 [@adguard/scriptlets]: https://github.com/AdguardTeam/Scriptlets/blob/master/CHANGELOG.md

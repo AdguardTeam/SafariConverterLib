@@ -20,7 +20,6 @@ codegen:
 tools:
 	swift --version
 	swiftlint --version
-	xcbeautify --version
 	periphery version
 	node --version
 	npm --version

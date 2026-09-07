@@ -343,7 +343,6 @@ Follow these rules (configured in `.markdownlint.json`):
 - Install [Node.js][nodejs]: recommend to use [nvm][nvm] for that.
 - Install [pnpm][pnpm]: `brew install pnpm`.
 - Install [SwiftLint][swiftlint]: `brew install swiftlint`.
-- Install [xcbeautify][xcbeautify]: `brew install xcbeautify`.
 - Install [periphery][periphery]: `brew install periphery`.
 - Install [markdownlint-cli][markdownlint]: `npm install -g markdownlint-cli`.
 - Install [jq][jq]: `brew install jq`.
@@ -351,7 +350,6 @@ Follow these rules (configured in `.markdownlint.json`):
 [nodejs]: https://nodejs.org/
 [nvm]: https://github.com/nvm-sh/nvm
 [pnpm]: https://pnpm.io/
-[xcbeautify]: https://github.com/cpisciotta/xcbeautify
 [jq]: https://jqlang.org/
 
 ### Building
