@@ -66,8 +66,10 @@ jobs:
         with:
           node-version: '22'
 
+      # Pinned to the major version the lockfile and the macOS image use.
+      # pnpm 11+ turns ignored dependency build scripts into a hard error.
       - name: Install pnpm
-        run: npm install --global pnpm
+        run: npm install --global pnpm@10
 
       # The team runner has no `make`, so these mirror the md-lint and js-*
       # Makefile targets directly. One install serves all four steps.

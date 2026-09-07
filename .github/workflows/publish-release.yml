@@ -88,11 +88,16 @@ jobs:
         with:
           node-version: '22'
 
+      # Pinned to the major version the lockfile and the macOS image use.
+      # pnpm 11+ turns ignored dependency build scripts into a hard error.
       - name: Install pnpm
-        run: npm install --global pnpm
+        run: npm install --global pnpm@10
 
+      # The team runner has no `make`, so this mirrors the js-release target.
       - name: Package
-        run: make js-release
+        run: |
+          pnpm -C ./Extension install
+          pnpm -C ./Extension package
 
       - name: Upload npm package
         uses: actions/upload-artifact@v7
