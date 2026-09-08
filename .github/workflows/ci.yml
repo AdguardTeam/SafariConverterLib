@@ -39,8 +39,8 @@ jobs:
     uses: AdGuardSoftwareLimited/actions/.github/workflows/check-fixme.yml@master
     with:
       team: mobile
-      # The hook's own grep pattern contains these words, which is why the hook
-      # excludes itself too.
+      # scripts/hooks/pre-commit greps for FIXME itself, so its source matches.
+      # The hook excludes itself for the same reason.
       check-fixme-exclude: |
         pre-commit
 
@@ -71,8 +71,8 @@ jobs:
       - name: Install pnpm
         run: npm install --global pnpm@10
 
-      # The team runner has no `make`, so these mirror the md-lint and js-*
-      # Makefile targets directly. One install serves all four steps.
+      # The team runner has no `make`, so the steps below mirror the md-lint
+      # and js-* Makefile targets directly, sharing this one install.
       - name: Install dependencies
         run: pnpm -C ./Extension install
 
