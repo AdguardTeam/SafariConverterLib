@@ -39,8 +39,9 @@ jobs:
     uses: AdGuardSoftwareLimited/actions/.github/workflows/check-fixme.yml@master
     with:
       team: mobile
-      # scripts/hooks/pre-commit greps for FIXME itself, so its source matches.
-      # The hook excludes itself for the same reason.
+      # scripts/hooks/pre-commit greps for the same keyword this check looks
+      # for, so its own source always matches; the hook excludes itself too.
+      # Do not spell that keyword out here — this file is scanned as well.
       check-fixme-exclude: |
         pre-commit
 

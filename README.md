@@ -399,7 +399,8 @@ Please refer to [DEVELOPMENT.md](DEVELOPMENT.md) for details.
 4. Check out the PR branch, run `make codegen` and push the result to the same
    branch. It reads the new version from the changelog, writes it to
    `Extension/package.json` and regenerates `ContentBlockerConverterVersion`.
-   CI fails while these disagree with the changelog.
+   CI fails while these disagree with the changelog. Do this before asking for
+   a review: a push dismisses approvals the PR already has.
 5. Merge the release PR. `Publish release` then tags the commit as `v*.*.*`,
    publishes [@adguard/safari-extension][adguard-safari-extension] to npm and
    creates a GitHub release with the `ConverterTool` binary on
