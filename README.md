@@ -396,11 +396,10 @@ Please refer to [DEVELOPMENT.md](DEVELOPMENT.md) for details.
 3. Run the `Prepare release` workflow and pass the tag **with** the `v` prefix,
    for example `v4.4.0`. It rolls `Unreleased` over to that version and opens a
    release PR.
-4. Check out the PR branch and run `VERSION=${version} make codegen` **without**
-   the `v` prefix, for example `VERSION=4.4.0 make codegen`. It sets the version
-   in `Extension/package.json` and regenerates `ContentBlockerConverterVersion`.
-   Push the result to the same branch; CI fails while these disagree with the
-   changelog.
+4. Check out the PR branch, run `make codegen` and push the result to the same
+   branch. It reads the new version from the changelog, writes it to
+   `Extension/package.json` and regenerates `ContentBlockerConverterVersion`.
+   CI fails while these disagree with the changelog.
 5. Merge the release PR. `Publish release` then tags the commit as `v*.*.*`,
    publishes [@adguard/safari-extension][adguard-safari-extension] to npm and
    creates a GitHub release with the `ConverterTool` binary on

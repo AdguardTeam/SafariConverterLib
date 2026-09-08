@@ -89,7 +89,7 @@ jobs:
             Sources/ContentBlockerConverter/ContentBlockerConverterVersion.swift | cut -d'"' -f2)
           echo "CHANGELOG.md=$changelog package.json=$package generated=$swift"
           if [ "$changelog" != "$package" ] || [ "$changelog" != "$swift" ]; then
-            echo "::error::Version mismatch. Run 'VERSION=$changelog make codegen' and commit the result."
+            echo "::error::Version mismatch. Run 'make codegen' and commit the result."
             exit 1
           fi
 

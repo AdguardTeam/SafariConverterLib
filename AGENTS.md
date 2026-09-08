@@ -314,7 +314,8 @@ No architecture violations detected.
   `README.md`. When changing project structure or public APIs, update
   `AGENTS.md`.
 - **Version tracking**: The library version is generated via codegen. Run
-  `make codegen VERSION=X.Y.Z` to update `ContentBlockerConverterVersion.swift`.
+  `make codegen` to update `ContentBlockerConverterVersion.swift` and
+  `Extension/package.json` from the latest released version in `CHANGELOG.md`.
 - **Changelog**: Update `CHANGELOG.md` for all user-visible changes in the
   Unreleased section.
 

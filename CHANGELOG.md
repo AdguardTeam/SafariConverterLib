@@ -7,9 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-[Unreleased]: https://github.com/AdguardTeam/SafariConverterLib/compare/v4.3.0...HEAD
-
-## [4.3.0]
+## [4.3.0] - 2026-06-04
 
 ### Added
 
@@ -28,11 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added "Safari affinity" section to `README.md` documenting the
   `AffinityRulesGrouper` API with usage examples.
 
-[#120]: https://github.com/AdguardTeam/SafariConverterLib/issues/120
-
-[4.3.0]: https://github.com/AdguardTeam/SafariConverterLib/compare/v4.2.2...4.3.0
-
-## [4.2.2]
+## [4.2.2] - 2026-03-25
 
 ### Added
 
@@ -48,96 +42,70 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed separator `^` conversion at the end of a rule pattern. Rules ending with `regexEndSeparator` are now split into two content blocker triggers — one matching the separator character class (`[/:&?]`) and one matching the end of the URL (`$`): [#110]
 
-[#110]: https://github.com/AdguardTeam/SafariConverterLib/issues/110
-
-[4.2.2]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v4.2.2
-
-## [4.2.1]
+## [4.2.1] - 2026-02-19
 
 ### Changed
 
 - Updated [@adguard/scriptlets] to `2.2.16`.
 
-[4.2.1]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v4.2.1
-
-## [4.2.0]
+## [4.2.0] - 2026-02-19
 
 ### Added
 
 - Support domain wildcards (`domain.*`) and domain regexes on Safari 26+ using `if-frame-url`/`unless-frame-url`, thanks to @hyeonjongyang: [#100]
 
-[#100]: https://github.com/AdguardTeam/SafariConverterLib/issues/100
-
-[4.2.0]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v4.2.0
-
-## [4.1.1]
+## [4.1.1] - 2026-02-02
 
 ### Fixed
 
 - Fixed a crash when extracting URL host on macOS 13.0–13.3 and iOS 16.0–16.3.
 
-## [4.1.0]
+## [4.1.0] - 2025-12-23
 
 ### Added
 
 - Adopted `$method` modifier by using Safari's `request-method` trigger field
   (Safari 26+), thanks to @hyeonjongyang: [#88]
 
-[#88]: https://github.com/AdguardTeam/SafariConverterLib/issues/88
-
-[4.1.0]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v4.1.0
-
-## [4.0.4]
+## [4.0.4] - 2025-08-15
 
 ### Changed
 
 - Updated `@adguard/safari-extension` to `2.2.9`: [#107]
 
-[#107]: https://github.com/AdguardTeam/SafariConverterLib/issues/107
-
-[4.0.4]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v4.0.4
-
-## [4.0.3]
+## [4.0.3] - 2025-08-09
 
 ### Fixed
 
 - Fixed the issue with matching subdomain wildcard rules, e.g. `sub.example.*`,
   that were not matched before, this is the second fix for [#106].
 
-[4.0.3]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v4.0.3
-
-## [4.0.2]
+## [4.0.2] - 2025-08-08
 
 ### Fixed
 
 - Fixed the issue with matching cosmetic rules that use `.*` in domains, e.g.
   `example.*###banner` or `example.*#%#//scriptlet('log', 'test')`: [#106]
 
-[#106]: https://github.com/AdguardTeam/SafariConverterLib/issues/106
+## [4.0.1] - 2025-08-01
 
-[4.0.2]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v4.0.2
+### Changed
 
-## [4.0.1]
+- A small change has been made to `@adguard/safari-extension` library and the
+  way `adguard` global variable is defined. It should simplify using the library
+  with webpack.
 
-A small change has been made to `@adguard/safari-extension` library and the way
-`adguard` global variable is defined. It should simplify using the library with
-webpack.
+## [4.0.0] - 2025-08-01
 
-[4.0.1]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v4.0.1
+### Changed
 
-## [4.0.0]
-
-### Breaking changes
-
-- In `@adguard/safari-extension` the interface of `ContentScript` has been
-  changed, it is now supposed to be used like this:
+- **BREAKING:** in `@adguard/safari-extension` the interface of `ContentScript`
+  has been changed, it is now supposed to be used like this:
 
   ```ts
   const contentScript = new ContentScript();
   contentScript.applyConfiguration(configuration);
   ```
-
-### Changed
 
 - Started using `browser.scripting.executeScript()` to inject scripts and JS
   into web pages. This approach allows us to avoid issues with websites' CSP
@@ -160,11 +128,6 @@ webpack.
     - Fixed the issue with matching multiple levels of subdomains. Before that
     change `||example.org` would not much `sub.sub.example.org`, now it does.
 
-[#95]: https://github.com/AdguardTeam/SafariConverterLib/issues/95
-[#96]: https://github.com/AdguardTeam/SafariConverterLib/issues/96
-[#98]: https://github.com/AdguardTeam/SafariConverterLib/issues/98
-[#102]: https://github.com/AdguardTeam/SafariConverterLib/issues/102
-
 ### Fixed
 
 - Fixed the issue with rules for TLD: [#99]
@@ -182,13 +145,7 @@ webpack.
   sub.example.org#@#.banner
   ```
 
-[#99]: https://github.com/AdguardTeam/SafariConverterLib/issues/99
-[#74]: https://github.com/AdguardTeam/SafariConverterLib/issues/74
-[#66]: https://github.com/AdguardTeam/SafariConverterLib/issues/66
-
-[4.0.0]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v4.0.0
-
-## [3.1.0]
+## [3.1.0] - 2025-07-11
 
 ### Changed
 
@@ -199,39 +156,27 @@ webpack.
   to migrate.
 - Updated [@adguard/scriptlets] to `2.2.8`: [#92]
 
-[#84]: https://github.com/AdguardTeam/SafariConverterLib/issues/84
-[#91]: https://github.com/AdguardTeam/SafariConverterLib/issues/91
-[#92]: https://github.com/AdguardTeam/SafariConverterLib/issues/92
-
 ### Fixed
 
 - Fixed bugs with parsing scriptlet arguments: 1-character arguments, escaped quotes: [#93]
 
-[#93]: https://github.com/AdguardTeam/SafariConverterLib/issues/93
-
-[3.1.0]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v3.1.0
-
-## [3.0.1]
+## [3.0.1] - 2025-07-10
 
 ### Fixed
 
 - `$jsinject` rules should not be included into regular content blockers: [#90]
 
-[#90]: https://github.com/AdguardTeam/SafariConverterLib/issues/90
+## [3.0.0] - 2025-04-17
 
-[3.0.1]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v3.0.1
+### Added
 
-## [3.0.0]
-
-### Added `ContentBlockerConverterVersion` [#78]
+#### `ContentBlockerConverterVersion` [#78]
 
 The library now exposes the version of its components and of the library itself.
 This information can be useful to the apps that are using that library. For
 example, to print it to the about page.
 
-[#78]: https://github.com/AdguardTeam/SafariConverterLib/issues/78
-
-### Added [FilterEngine]
+#### [FilterEngine]
 
 One of the main challenges when developing Safari extension is its async nature.
 For a content blocker it is critically important to be inject scripts and styles
@@ -261,9 +206,7 @@ In order to achieve that we developed `FilterEngine`. This `FilterEngine` is
 based on a binary trie implementation which allows zero-time deserialization
 and fast rules lookup at the same time.
 
-[FilterEngine]: ./Sources/FilterEngine/FilterEngine.swift
-
-### Added [@adguard/safari-extension][extensionreadme] and [WebExtension]
+#### [@adguard/safari-extension][extensionreadme] and [WebExtension]
 
 [FilterEngine] is a rather low-level component and integrating it would take
 a lot of work. To avoid that we implemented two new high-level components:
@@ -281,15 +224,14 @@ a lot of work. To avoid that we implemented two new high-level components:
 > `./webext/rules.txt`. [WebExtension] will be able to detect that the
 > serialized engine is missing and will rebuild it.
 
-[extensionreadme]: ./Extension/README.md
-[WebExtension]: ./Sources/FilterEngine/WebExtension.swift
-
-### Added `SafariVersion.autodetect()`
+#### `SafariVersion.autodetect()`
 
 Every app that uses SafariConverterLib had to come up with the Safari version
 auto-detection code. Adding this function will save some time.
 
-### Changed `ContentBlockerConverter`
+### Changed
+
+#### `ContentBlockerConverter`
 
 Several deprecated arguments were removed from the `convertArray` function:
 
@@ -297,7 +239,7 @@ Several deprecated arguments were removed from the `convertArray` function:
 - Removed `advancedBlockingFormat`. The old engine that was using `json`
   format is removed so now only plain text advanced rules format is required.
 
-### Changed `CommandLineWrapper`
+#### `CommandLineWrapper`
 
 - In accordance to the changes of `ContentBlockerConverter.convertArray()` we
   changed the arguments that the command line wrapper accepts.
@@ -307,16 +249,22 @@ Several deprecated arguments were removed from the `convertArray` function:
   or via an `--input-path` file.
 - Added `buildengine` command that builds the `FilterEngine` serialized binary.
 
-### Removed node module
+### Removed
+
+#### Node module
 
 AdGuard for Safari will soon switch from Electron so the node wrapper is not
 required anymore.
 
-[3.0.0]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v3.0.0
+## [2.1.1] - 2024-12-17
 
-## [2.1.1]
+### Added
 
-### Performance
+- Added `$from` as an alias of `$domain`: [#60] (partly, yet to support `$to`)
+
+### Changed
+
+#### Performance
 
 Several important changes were made to the conversion code that allowed us to
 increase the library's performance by about **~4 times**.
@@ -362,18 +310,7 @@ Here's how it was achieved:
 - Replaced `enum` with `OptionSet` for handling `NetworkRule` modifiers and
   content types.
 
-[profilebefore]: https://cdn.adtidy.org/content/blog/articles/safari_converter_2_1/profile_before.png
-[profileafter]: https://cdn.adtidy.org/content/blog/articles/safari_converter_2_1/profile_after.png
-[swiftutf8]: https://www.swift.org/blog/utf8-string/
-[makecontiguousutf8]: https://developer.apple.com/documentation/swift/string/makecontiguousutf8()
-
-### Added
-
-- Added `$from` as an alias of `$domain`: [#60] (partly, yet to support `$to`)
-
-[#60]: https://github.com/AdguardTeam/SafariConverterLib/issues/60
-
-### Changed
+#### Other changes
 
 - Improved the `domain.TLD` implementation. There is still no full support for
   matching `domain.TLD` (although, [in the future][iftopurlissue] we'll be able
@@ -393,9 +330,6 @@ Here's how it was achieved:
     - Improved unit tests, adding quite a lot of cases that were not covered by
     tests before.
 
-[iftopurlissue]: https://github.com/AdguardTeam/SafariConverterLib/issues/20
-[toptld]: https://github.com/AdguardTeam/FiltersRegistry/blob/master/scripts/wildcard-domain-processor/wildcard_domains.json
-
 ### Fixed
 
 - Improved Safari-compatible regular expression validation. In the past we
@@ -404,48 +338,31 @@ Here's how it was achieved:
   expressions (which made it much faster), but at the same time it is more
   thorough and careful. Check out `SafariRegex` to see how it's done.
 
-[2.1.1]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v2.1.1
-
-## [2.0.48]
+## [2.0.48] - 2023-10-25
 
 ### Added
 
 - Allow specifying the final CB JSON file size limit: [#56]
 
-[#56]: https://github.com/AdguardTeam/SafariConverterLib/issues/56
-
-[2.0.48]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v2.0.48
-
-## [2.0.43]
+## [2.0.43] - 2023-09-27
 
 ### Fixed
 
 - `$match-case` modifier does not work: [#55]
 
-[#55]: https://github.com/AdguardTeam/SafariConverterLib/issues/55
-
-[2.0.43]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v2.0.43
-
-## [2.0.40]
+## [2.0.40] - 2023-07-14
 
 ### Changed
 
 - Pseudo-classes `:not()` and `:is()` should be handled natively in the same
   way as `:has()`: [#47]
 
-[#47]: https://github.com/AdguardTeam/SafariConverterLib/issues/47
-
 ### Fixed
 
 - Do not split rules with many domains in the `unless-domain` and `if-domain`: [#51]
 - Exclude rules containing `if-domain` and `unless-domain` with regex values: [#53]
 
-[#51]: https://github.com/AdguardTeam/SafariConverterLib/issues/51
-[#53]: https://github.com/AdguardTeam/SafariConverterLib/issues/53
-
-[2.0.40]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v2.0.40
-
-## [2.0.39]
+## [2.0.39] - 2023-04-03
 
 ### Added
 
@@ -457,18 +374,13 @@ Here's how it was achieved:
 - Handling provided Safari version for minor version as well, not just the major
   one.
 
-[2.0.39]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v2.0.39
-[#43]: https://github.com/AdguardTeam/SafariConverterLib/issues/43
-
-## [2.0.38]
+## [2.0.38] - 2023-03-23
 
 ### Fixed
 
 - Handling provided Safari version.
 
-[2.0.38]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v2.0.38
-
-## [2.0.34]
+## [2.0.34] - 2022-12-08
 
 ### Fixed
 
@@ -476,9 +388,63 @@ Here's how it was achieved:
   Safari 16 is not supporting it yet.
   Corresponding [bug][webkit248868].
 
-[webkit248868]: https://bugs.webkit.org/show_bug.cgi?id=248868
-
+[Unreleased]: https://github.com/AdguardTeam/SafariConverterLib/compare/v4.3.0...HEAD
+[4.3.0]: https://github.com/AdguardTeam/SafariConverterLib/compare/v4.2.2...v4.3.0
+[4.2.2]: https://github.com/AdguardTeam/SafariConverterLib/compare/v4.2.1...v4.2.2
+[4.2.1]: https://github.com/AdguardTeam/SafariConverterLib/compare/v4.2.0...v4.2.1
+[4.2.0]: https://github.com/AdguardTeam/SafariConverterLib/compare/v4.1.1...v4.2.0
+[4.1.1]: https://github.com/AdguardTeam/SafariConverterLib/compare/v4.1.0...v4.1.1
+[4.1.0]: https://github.com/AdguardTeam/SafariConverterLib/compare/v4.0.4...v4.1.0
+[4.0.4]: https://github.com/AdguardTeam/SafariConverterLib/compare/v4.0.3...v4.0.4
+[4.0.3]: https://github.com/AdguardTeam/SafariConverterLib/compare/v4.0.2...v4.0.3
+[4.0.2]: https://github.com/AdguardTeam/SafariConverterLib/compare/v4.0.1...v4.0.2
+[4.0.1]: https://github.com/AdguardTeam/SafariConverterLib/compare/v4.0.0...v4.0.1
+[4.0.0]: https://github.com/AdguardTeam/SafariConverterLib/compare/v3.1.0...v4.0.0
+[3.1.0]: https://github.com/AdguardTeam/SafariConverterLib/compare/v3.0.1...v3.1.0
+[3.0.1]: https://github.com/AdguardTeam/SafariConverterLib/compare/v3.0.0...v3.0.1
+[3.0.0]: https://github.com/AdguardTeam/SafariConverterLib/compare/v2.1.1...v3.0.0
+[2.1.1]: https://github.com/AdguardTeam/SafariConverterLib/compare/v2.0.48...v2.1.1
+[2.0.48]: https://github.com/AdguardTeam/SafariConverterLib/compare/v2.0.43...v2.0.48
+[2.0.43]: https://github.com/AdguardTeam/SafariConverterLib/compare/v2.0.40...v2.0.43
+[2.0.40]: https://github.com/AdguardTeam/SafariConverterLib/compare/v2.0.39...v2.0.40
+[2.0.39]: https://github.com/AdguardTeam/SafariConverterLib/compare/v2.0.38...v2.0.39
+[2.0.38]: https://github.com/AdguardTeam/SafariConverterLib/compare/v2.0.34...v2.0.38
 [2.0.34]: https://github.com/AdguardTeam/SafariConverterLib/releases/tag/v2.0.34
-
+[#120]: https://github.com/AdguardTeam/SafariConverterLib/issues/120
+[#110]: https://github.com/AdguardTeam/SafariConverterLib/issues/110
+[#100]: https://github.com/AdguardTeam/SafariConverterLib/issues/100
+[#88]: https://github.com/AdguardTeam/SafariConverterLib/issues/88
+[#107]: https://github.com/AdguardTeam/SafariConverterLib/issues/107
+[#106]: https://github.com/AdguardTeam/SafariConverterLib/issues/106
+[#95]: https://github.com/AdguardTeam/SafariConverterLib/issues/95
+[#96]: https://github.com/AdguardTeam/SafariConverterLib/issues/96
+[#98]: https://github.com/AdguardTeam/SafariConverterLib/issues/98
+[#102]: https://github.com/AdguardTeam/SafariConverterLib/issues/102
+[#99]: https://github.com/AdguardTeam/SafariConverterLib/issues/99
+[#74]: https://github.com/AdguardTeam/SafariConverterLib/issues/74
+[#66]: https://github.com/AdguardTeam/SafariConverterLib/issues/66
+[#84]: https://github.com/AdguardTeam/SafariConverterLib/issues/84
+[#91]: https://github.com/AdguardTeam/SafariConverterLib/issues/91
+[#92]: https://github.com/AdguardTeam/SafariConverterLib/issues/92
+[#93]: https://github.com/AdguardTeam/SafariConverterLib/issues/93
+[#90]: https://github.com/AdguardTeam/SafariConverterLib/issues/90
+[#78]: https://github.com/AdguardTeam/SafariConverterLib/issues/78
+[FilterEngine]: ./Sources/FilterEngine/FilterEngine.swift
+[extensionreadme]: ./Extension/README.md
+[WebExtension]: ./Sources/FilterEngine/WebExtension.swift
+[profilebefore]: https://cdn.adtidy.org/content/blog/articles/safari_converter_2_1/profile_before.png
+[profileafter]: https://cdn.adtidy.org/content/blog/articles/safari_converter_2_1/profile_after.png
+[swiftutf8]: https://www.swift.org/blog/utf8-string/
+[makecontiguousutf8]: https://developer.apple.com/documentation/swift/string/makecontiguousutf8()
+[#60]: https://github.com/AdguardTeam/SafariConverterLib/issues/60
+[iftopurlissue]: https://github.com/AdguardTeam/SafariConverterLib/issues/20
+[toptld]: https://github.com/AdguardTeam/FiltersRegistry/blob/master/scripts/wildcard-domain-processor/wildcard_domains.json
+[#56]: https://github.com/AdguardTeam/SafariConverterLib/issues/56
+[#55]: https://github.com/AdguardTeam/SafariConverterLib/issues/55
+[#47]: https://github.com/AdguardTeam/SafariConverterLib/issues/47
+[#51]: https://github.com/AdguardTeam/SafariConverterLib/issues/51
+[#53]: https://github.com/AdguardTeam/SafariConverterLib/issues/53
+[#43]: https://github.com/AdguardTeam/SafariConverterLib/issues/43
+[webkit248868]: https://bugs.webkit.org/show_bug.cgi?id=248868
 [@adguard/extended-css]: https://github.com/AdguardTeam/ExtendedCss/blob/master/CHANGELOG.md
 [@adguard/scriptlets]: https://github.com/AdguardTeam/Scriptlets/blob/master/CHANGELOG.md
