@@ -345,7 +345,8 @@ Follow these rules (configured in `.markdownlint.json`):
 - Install [pnpm][pnpm]: `brew install pnpm`.
 - Install [SwiftLint][swiftlint]: `brew install swiftlint`.
 - Install [periphery][periphery]: `brew install periphery`.
-- Install [markdownlint-cli][markdownlint]: `npm install -g markdownlint-cli`.
+- No need to install [markdownlint-cli][markdownlint] separately: it is an
+  `Extension` devDependency, and `make md-lint` uses that local copy.
 - Install [jq][jq]: `brew install jq`.
 
 [nodejs]: https://nodejs.org/
