@@ -95,6 +95,18 @@ contains two important fields:
 > Please read the [extension's README][extension-readme] for the explanation
 > on how to use the advanced rules.
 
+In addition to that you can use `ContentBlockerConverterVersion` class to get
+the version of the library and its components in your app.
+
+```swift
+let version = ContentBlockerConverterVersion.library
+let scriptletsVersion = ContentBlockerConverterVersion.scriptlets
+let extendedCSSVersion = ContentBlockerConverterVersion.extendedCSS
+```
+
+This type is generated during the build from `CHANGELOG.md`, so the version is
+not stored anywhere in the repository.
+
 [ConversionResult]: Sources/ContentBlockerConverter/ConversionResult.swift
 [ContentBlockerConverter]: Sources/ContentBlockerConverter/ContentBlockerConverter.swift
 [makecontiguousutf8]: https://developer.apple.com/documentation/swift/string/makecontiguousutf8()

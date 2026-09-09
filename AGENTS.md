@@ -81,6 +81,7 @@ The library is consumed by iOS and macOS applications (adguard-ios, adguard-mini
 │   │   ├── Utils/                     # Engine utility tests
 │   │   └── Resources/                 # Engine test data
 │   └── WebKitCompilationTests/        # macOS-only WebKit compilation tests
+├── Plugins/                         # SwiftPM build plugins (version codegen)
 ├── scripts/                         # Build, test, and CI helper scripts
 │   ├── hooks/                       # Git hooks (pre-commit)
 │   ├── perf/                        # Performance profiling scripts
@@ -312,9 +313,11 @@ No architecture violations detected.
 - **Documentation updates**: When changing user-facing behavior, update
   `README.md`. When changing project structure or public APIs, update
   `AGENTS.md`.
-- **Version tracking**: The version lives only in `CHANGELOG.md`. It is never
-  committed to the source tree — the release build stamps it into the
-  artifacts.
+- **Version tracking**: The version lives only in `CHANGELOG.md`. The
+  `GenerateVersion` build plugin reads it from there and generates
+  `ContentBlockerConverterVersion` at build time (component versions come from
+  `Extension/package.json`), so nothing in the tree holds a version. For the
+  npm package the release workflow stamps it in before packaging.
 - **Changelog**: Update `CHANGELOG.md` for all user-visible changes in the
   Unreleased section.
 

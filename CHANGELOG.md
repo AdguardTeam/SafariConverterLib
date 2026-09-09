@@ -7,13 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Removed
-
-- **BREAKING:** removed `ContentBlockerConverterVersion`. The version is no
-  longer stored in the source tree — `CHANGELOG.md` is the only place it is
-  written, and the release build stamps it into the published artifacts. Read
-  the version from the package reference (the `v*.*.*` tag) instead.
-
 ## [4.3.0] - 2026-06-04
 
 ### Added
