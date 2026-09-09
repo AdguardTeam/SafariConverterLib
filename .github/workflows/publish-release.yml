@@ -22,14 +22,10 @@ permissions:
   contents: read
 
 jobs:
-  # A closed PR is not necessarily a merged one, and not every merged PR is a
-  # release. Only merged release-bump/* branches (the ones create-release-pr
-  # produces) may publish.
+  # tag-from-changelog already gates itself: its parse job runs only for a
+  # workflow_dispatch or a merged release-bump/* PR, and everything here
+  # depends on it, so a closed-but-unmerged PR skips the whole chain.
   tag:
-    if: >-
-      github.event_name == 'workflow_dispatch' ||
-      (github.event.pull_request.merged == true &&
-       startsWith(github.event.pull_request.head.ref, 'release-bump/'))
     uses: AdGuardSoftwareLimited/actions/.github/workflows/tag-from-changelog.yml@master
     with:
       ref: ${{ inputs.ref || github.event.pull_request.merge_commit_sha || github.ref_name }}
