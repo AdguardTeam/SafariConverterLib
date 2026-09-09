@@ -1,7 +1,6 @@
 name: Prepare release
 
-# Opens a release PR that finalizes CHANGELOG.md for the given tag.
-# After merge, publish-release.yml takes over.
+# Merging the PR this opens triggers publish-release.yml.
 
 on:
   workflow_dispatch:
@@ -11,7 +10,6 @@ on:
         required: true
         type: string
 
-# `contents: write` — push the release-bump branch
 # `id-token: write` — Octopass OIDC for PR creation
 permissions:
   contents: write

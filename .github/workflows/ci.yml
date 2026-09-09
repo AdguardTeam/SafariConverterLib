@@ -1,19 +1,14 @@
 name: CI
 
-# Lints, tests and builds on pull requests and pushes to master.
-#
-# Work is split by what actually needs macOS. SwiftLint and swift-format have
-# purpose-built reusable workflows that run in Docker on a Linux team runner,
-# and the JS half needs nothing but Node — so only the Swift toolchain and
-# WebKit tests occupy a scarce ephemeral-mac VM.
+# Only the Swift toolchain and the WebKit tests need macOS; both Swift linters
+# have reusable workflows that run in Docker on a Linux team runner.
 
 on:
   pull_request:
   push:
     branches: [master]
 
-# kv-get is an unauthenticated fetch and every job only reads the repo,
-# so no OIDC token is needed here.
+# kv-get is an unauthenticated fetch, so no OIDC token is needed.
 permissions:
   contents: read
 
@@ -22,8 +17,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Image tags must be exact, never :latest, so the current one is resolved
-  # from the KV store at the start of every run.
+  # Image tags must be exact, never :latest.
   resolve-runner:
     runs-on: [team-mobile]
     outputs:
@@ -34,30 +28,25 @@ jobs:
         with:
           key: build-images/macos
 
-  # The repo's own pre-commit hook warns about these; this enforces it in CI.
   check-fixme:
     uses: AdGuardSoftwareLimited/actions/.github/workflows/check-fixme.yml@master
     with:
       team: mobile
-      # scripts/hooks/pre-commit greps for the same keyword this check looks
-      # for, so its own source always matches; the hook excludes itself too.
+      # The hook greps for the same keyword, so its own source always matches.
       # Do not spell that keyword out here — this file is scanned as well.
       check-fixme-exclude: |
         pre-commit
 
-  # make swiftlint-lint — runs --strict, reads .swiftlint.yml from the root.
   swiftlint:
     uses: AdGuardSoftwareLimited/actions/.github/workflows/lint-swiftlint.yml@master
     with:
       team: mobile
 
-  # make swiftformat-lint — runs --strict, reads .swift-format from the root.
   swiftformat:
     uses: AdGuardSoftwareLimited/actions/.github/workflows/lint-swiftformat.yml@master
     with:
       team: mobile
 
-  # markdownlint, ESLint, vitest and the package build: Node only, no macOS.
   js:
     runs-on: team-mobile
     steps:
@@ -67,13 +56,13 @@ jobs:
         with:
           node-version: '22'
 
-      # Pinned to the major version the lockfile and the macOS image use.
-      # pnpm 11+ turns ignored dependency build scripts into a hard error.
+      # Pinned: pnpm 11+ turns an ignored dependency build script into a
+      # hard error, and the lockfile and macOS image are both on 10.
       - name: Install pnpm
         run: npm install --global pnpm@10
 
-      # The team runner has no `make`, so the steps below mirror the md-lint
-      # and js-* Makefile targets directly, sharing this one install.
+      # The team runner has no `make`, so the steps below mirror the
+      # md-lint and js-* targets directly.
       - name: Install dependencies
         run: pnpm -C ./Extension install
 
@@ -89,7 +78,6 @@ jobs:
       - name: Build JS
         run: pnpm -C ./Extension build
 
-  # Dead-code analysis needs an index store, so it stays on macOS.
   periphery:
     needs: [resolve-runner]
     runs-on:
@@ -106,9 +94,8 @@ jobs:
       - name: Periphery scan
         run: make periphery-lint
 
-  # Swift tests and build. make test also covers webkit-test, so there is no
-  # separate WebKit job: with a single macOS image it would be pure duplication.
-  # js-test is excluded here because the js job above already ran it.
+  # No separate WebKit job: with a single macOS image it would duplicate this
+  # one. js-test is left out because the js job above already ran it.
   swift:
     needs: [resolve-runner]
     runs-on:
@@ -121,7 +108,6 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      # webkit-test prints the WebKit version itself.
       - name: Swift tests
         run: make swift-test webkit-test filelock-test command-line-wrapper-test
 

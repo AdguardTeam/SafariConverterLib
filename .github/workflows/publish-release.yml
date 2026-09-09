@@ -1,13 +1,6 @@
 name: Publish release
 
-# Tags the release commit, builds the release artifacts, publishes the JS
-# package to npm and creates a GitHub Release on the public mirror.
-#
-# Replaces the Bamboo "Converter - build for release" plan and the
-# "Converter - deploy" deployment (npmjs + GitHub environments).
-
 on:
-  # Release PRs are always internal, created by prepare-release.yml.
   pull_request:
     types: [closed]
     branches: [master]
@@ -22,20 +15,14 @@ permissions:
   contents: read
 
 jobs:
-  # tag-from-changelog already gates itself: its parse job runs only for a
-  # workflow_dispatch or a merged release-bump/* PR, and everything here
-  # depends on it, so a closed-but-unmerged PR skips the whole chain.
   tag:
     uses: AdGuardSoftwareLimited/actions/.github/workflows/tag-from-changelog.yml@master
     with:
       ref: ${{ inputs.ref || github.event.pull_request.merge_commit_sha || github.ref_name }}
       team: mobile
-    # `contents: write` — create the git tag
     permissions:
       contents: write
 
-  # swift build -c release needs the Swift toolchain, so this half runs on
-  # an ephemeral macOS VM.
   resolve-runner:
     needs: tag
     runs-on: [team-mobile]
@@ -71,7 +58,6 @@ jobs:
           path: .build/release/ConverterTool
           if-no-files-found: error
 
-  # The npm package is pure Node, so it does not need a macOS VM.
   build-js:
     needs: tag
     runs-on: team-mobile
@@ -84,17 +70,17 @@ jobs:
         with:
           node-version: '22'
 
-      # Pinned to the major version the lockfile and the macOS image use.
-      # pnpm 11+ turns ignored dependency build scripts into a hard error.
+      # Pinned: pnpm 11+ turns an ignored dependency build script into a
+      # hard error, and the lockfile and macOS image are both on 10.
       - name: Install pnpm
         run: npm install --global pnpm@10
 
-      # The version is not kept in source: package.json carries a 0.0.0
-      # placeholder, and the real one comes from the changelog via the tag job.
+      # package.json carries a 0.0.0 placeholder; the version is not kept
+      # in source.
       - name: Inject version into package.json
         run: npm --prefix ./Extension pkg set version="${{ needs.tag.outputs.version }}"
 
-      # The team runner has no `make`, so this mirrors the js-release target.
+      # The team runner has no `make`.
       - name: Package
         run: |
           pnpm -C ./Extension install
@@ -113,14 +99,11 @@ jobs:
     with:
       artifact-name: npm-package
       package-file: adguard-safari-extension.tgz
-    # `contents: read` — download artifact only
     # `id-token: write` — npm Trusted Publishing via OIDC
     permissions:
       contents: read
       id-token: write
 
-  # Mirrors the tag to the public repo and creates the GitHub Release there
-  # with the changelog section and the ConverterTool binary attached.
   mirror-and-release:
     needs: [tag, build-swift, publish-npm]
     uses: AdGuardSoftwareLimited/actions/.github/workflows/mirror-and-release.yml@master
@@ -133,7 +116,6 @@ jobs:
       prerelease: ${{ needs.tag.outputs.prerelease == 'true' }}
     secrets: inherit
     # `actions: write` — disable workflows in the public mirror
-    # `contents: write` — create GitHub Release on public repo
     # `id-token: write` — Octopass token for mirror push
     permissions:
       actions: write

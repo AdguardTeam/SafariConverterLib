@@ -5,8 +5,7 @@
 .POSIX:
 
 PNPM = pnpm -C ./Extension
-# markdownlint-cli comes from the Extension devDependencies. Resolve its binary
-# explicitly: `npx markdownlint` picks the markdownlint library instead, which
+# Resolved explicitly: `npx markdownlint` picks the markdownlint library, which
 # has no executable.
 MARKDOWNLINT = ./Extension/node_modules/.bin/markdownlint
 

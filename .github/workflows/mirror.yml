@@ -1,13 +1,10 @@
 name: Mirror
 
-# Mirrors code to the public repo on every push to master.
-
 on:
   push:
     branches:
       - master
 
-# `contents: read` — checkout source repo
 # `actions: write` — disable workflows in the public mirror
 # `id-token: write` — Octopass token for push to public repo
 permissions:

@@ -405,9 +405,6 @@ Please refer to [DEVELOPMENT.md](DEVELOPMENT.md) for details.
    release with the `ConverterTool` binary on
    [SafariConverterLib][safari-converter-lib].
 
-The version is never stored in the source tree: `CHANGELOG.md` is the only
-place it is written, and the build stamps it into the artifacts.
-
 [semver]: https://semver.org/
 [adguard-safari-extension]: https://www.npmjs.com/package/@adguard/safari-extension
 [safari-converter-lib]: https://github.com/AdguardTeam/SafariConverterLib

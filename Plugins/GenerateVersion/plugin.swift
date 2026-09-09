@@ -1,15 +1,11 @@
 import Foundation
 import PackagePlugin
 
-/// Generates `ContentBlockerConverterVersion` at build time.
+/// Generates `ContentBlockerConverterVersion` from CHANGELOG.md, the only place
+/// the version is written. Component versions come from Extension/package.json.
 ///
-/// The version is never stored in the repository: CHANGELOG.md is the only
-/// place it is written, and this plugin reads the most recent released section
-/// from it. Component versions come from Extension/package.json, which is the
-/// source of truth for the JS dependencies.
-///
-/// Running as a build tool plugin means consumers get the constant too — they
-/// compile the package from source, and the plugin runs as part of that build.
+/// It runs during a consumer's build too, since they compile the package from
+/// source — which is what keeps the constant available without committing it.
 @main
 struct GenerateVersion: BuildToolPlugin {
     func createBuildCommands(context: PluginContext, target: Target) throws -> [Command] {
@@ -41,9 +37,8 @@ struct GenerateVersion: BuildToolPlugin {
 
         try source.write(toFile: output.string, atomically: true, encoding: .utf8)
 
-        // The file is already written above; the command exists so that SwiftPM
-        // registers the output as a source file and re-runs the plugin whenever
-        // one of the inputs changes.
+        // The command exists so that SwiftPM treats the output as a source
+        // file and re-runs the plugin when an input changes.
         return [
             .buildCommand(
                 displayName: "Generate ContentBlockerConverterVersion.swift (\(library))",

@@ -39,8 +39,6 @@ let package = Package(
                 .product(name: "Punycode", package: "PunycodeSwift"),
                 .product(name: "PublicSuffixList", package: "swift-psl"),
             ],
-            // Generates ContentBlockerConverterVersion from CHANGELOG.md at
-            // build time, so no version is stored in the repository.
             plugins: ["GenerateVersion"]
         ),
         .plugin(
