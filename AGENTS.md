@@ -81,12 +81,12 @@ The library is consumed by iOS and macOS applications (adguard-ios, adguard-mini
 │   │   ├── Utils/                     # Engine utility tests
 │   │   └── Resources/                 # Engine test data
 │   └── WebKitCompilationTests/        # macOS-only WebKit compilation tests
+├── Plugins/                         # SwiftPM build plugins (version codegen)
 ├── scripts/                         # Build, test, and CI helper scripts
 │   ├── hooks/                       # Git hooks (pre-commit)
-│   ├── make/                        # Build codegen scripts
 │   ├── perf/                        # Performance profiling scripts
 │   └── tests/                       # Integration test scripts
-├── bamboo-specs/                    # CI pipeline definitions
+├── .github/workflows/               # CI/CD pipeline definitions
 ├── Package.swift                    # Swift Package Manager manifest
 ├── Makefile                         # Build/test/lint commands
 ├── README.md                        # User-facing documentation
@@ -313,8 +313,11 @@ No architecture violations detected.
 - **Documentation updates**: When changing user-facing behavior, update
   `README.md`. When changing project structure or public APIs, update
   `AGENTS.md`.
-- **Version tracking**: The library version is generated via codegen. Run
-  `make codegen VERSION=X.Y.Z` to update `ContentBlockerConverterVersion.swift`.
+- **Version tracking**: The version lives only in `CHANGELOG.md`. The
+  `GenerateVersion` build plugin reads it from there and generates
+  `ContentBlockerConverterVersion` at build time (component versions come from
+  `Extension/package.json`), so nothing in the tree holds a version. For the
+  npm package the release workflow stamps it in before packaging.
 - **Changelog**: Update `CHANGELOG.md` for all user-visible changes in the
   Unreleased section.
 
@@ -343,16 +346,13 @@ Follow these rules (configured in `.markdownlint.json`):
 - Install [Node.js][nodejs]: recommend to use [nvm][nvm] for that.
 - Install [pnpm][pnpm]: `brew install pnpm`.
 - Install [SwiftLint][swiftlint]: `brew install swiftlint`.
-- Install [xcbeautify][xcbeautify]: `brew install xcbeautify`.
 - Install [periphery][periphery]: `brew install periphery`.
-- Install [markdownlint-cli][markdownlint]: `npm install -g markdownlint-cli`.
-- Install [jq][jq]: `brew install jq`.
+- No need to install [markdownlint-cli][markdownlint] separately: it is an
+  `Extension` devDependency, and `make md-lint` uses that local copy.
 
 [nodejs]: https://nodejs.org/
 [nvm]: https://github.com/nvm-sh/nvm
 [pnpm]: https://pnpm.io/
-[xcbeautify]: https://github.com/cpisciotta/xcbeautify
-[jq]: https://jqlang.org/
 
 ### Building
 

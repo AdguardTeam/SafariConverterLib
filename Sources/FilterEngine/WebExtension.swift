@@ -110,9 +110,13 @@ extension WebExtension {
     /// Dictionary to store WebExtension instances by (groupID, version)
     private static var instances: [InstanceKey: WebExtension] = [:]
 
-    // periphery:ignore - fields are for synthesized Hashable implementation.
     private struct InstanceKey: Hashable {
+        // The fields are only read by the synthesized Hashable implementation,
+        // which periphery cannot see. The comments must sit on the fields: on
+        // the struct periphery reports the ignore itself as superfluous.
+        // periphery:ignore
         let groupID: String
+        // periphery:ignore
         let version: Double
     }
 

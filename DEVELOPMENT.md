@@ -26,19 +26,16 @@ This is a library that provides a compatibility layer between
 - Install [Node.js][nodejs]: recommend to use [nvm][nvm] for that.
 - Install [pnpm][pnpm]: `brew install pnpm`.
 - Install [SwiftLint][swiftlint]: `brew install swiftlint`.
-- Install [xcbeautify][xcbeautify]: `brew install xcbeautify`.
 - Install [periphery][periphery]: `brew install periphery`.
-- Install [markdownlint-cli][markdownlint]: `npm install -g markdownlint-cli`.
-- Install [jq][jq]: `brew install jq`.
+- No need to install [markdownlint-cli][markdownlint] separately: it is an
+  `Extension` devDependency, and `make md-lint` uses that local copy.
 
 [nodejs]: https://nodejs.org/
 [nvm]: https://github.com/nvm-sh/nvm
 [pnpm]: https://pnpm.io/
 [swiftlint]: https://github.com/realm/SwiftLint
-[xcbeautify]: https://github.com/cpisciotta/xcbeautify
 [periphery]: https://github.com/peripheryapp/periphery
 [markdownlint]: https://www.npmjs.com/package/markdownlint-cli
-[jq]: https://jqlang.org/
 
 ### Building
 

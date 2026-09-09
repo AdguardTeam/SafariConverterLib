@@ -1,0 +1,123 @@
+name: Publish release
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [master]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Ref to publish manually
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  tag:
+    uses: AdGuardSoftwareLimited/actions/.github/workflows/tag-from-changelog.yml@master
+    with:
+      ref: ${{ inputs.ref || github.event.pull_request.merge_commit_sha || github.ref_name }}
+      team: mobile
+    permissions:
+      contents: write
+
+  resolve-runner:
+    needs: tag
+    runs-on: [team-mobile]
+    outputs:
+      macos: ${{ steps.kv.outputs.value }}
+    steps:
+      - uses: AdGuardSoftwareLimited/actions/actions/kv-get@master
+        id: kv
+        with:
+          key: build-images/macos
+
+  build-swift:
+    needs: [tag, resolve-runner]
+    runs-on:
+      - ephemeral
+      - ephemeral-mac
+      - ${{ needs.resolve-runner.outputs.macos }}
+      - ephemeral-limit-memory-8192
+      - ephemeral-limit-cpu-4
+      - ephemeral-limit-disk-gb-40
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.tag.outputs.tag }}
+
+      - name: Build release binary
+        run: make swift-release
+
+      - name: Upload ConverterTool
+        uses: actions/upload-artifact@v7
+        with:
+          name: converter-tool
+          path: .build/release/ConverterTool
+          if-no-files-found: error
+
+  build-js:
+    needs: tag
+    runs-on: team-mobile
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.tag.outputs.tag }}
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+
+      # Pinned: pnpm 11+ turns an ignored dependency build script into a
+      # hard error, and the lockfile and macOS image are both on 10.
+      - name: Install pnpm
+        run: npm install --global pnpm@10
+
+      # package.json carries a 0.0.0 placeholder; the version is not kept
+      # in source.
+      - name: Inject version into package.json
+        run: npm --prefix ./Extension pkg set version="${{ needs.tag.outputs.version }}"
+
+      # The team runner has no `make`.
+      - name: Package
+        run: |
+          pnpm -C ./Extension install
+          pnpm -C ./Extension package
+
+      - name: Upload npm package
+        uses: actions/upload-artifact@v7
+        with:
+          name: npm-package
+          path: Extension/adguard-safari-extension.tgz
+          if-no-files-found: error
+
+  publish-npm:
+    needs: build-js
+    uses: AdGuardSoftwareLimited/actions/.github/workflows/deploy-to-npm.yml@master
+    with:
+      artifact-name: npm-package
+      package-file: adguard-safari-extension.tgz
+    # `id-token: write` — npm Trusted Publishing via OIDC
+    permissions:
+      contents: read
+      id-token: write
+
+  mirror-and-release:
+    needs: [tag, build-swift, publish-npm]
+    uses: AdGuardSoftwareLimited/actions/.github/workflows/mirror-and-release.yml@master
+    with:
+      team: mobile
+      target_repo: AdguardTeam/SafariConverterLib
+      tag: ${{ needs.tag.outputs.tag }}
+      changelog: ${{ needs.tag.outputs.changelog }}
+      artifact_name: converter-tool
+      prerelease: ${{ needs.tag.outputs.prerelease == 'true' }}
+    secrets: inherit
+    # `actions: write` — disable workflows in the public mirror
+    # `id-token: write` — Octopass token for mirror push
+    permissions:
+      actions: write
+      contents: write
+      id-token: write

@@ -5,27 +5,23 @@
 .POSIX:
 
 PNPM = pnpm -C ./Extension
+# Resolved explicitly: `npx markdownlint` picks the markdownlint library, which
+# has no executable.
+MARKDOWNLINT = ./Extension/node_modules/.bin/markdownlint
 
 # Init the repo
 
 init: tools
 	git config core.hooksPath ./scripts/hooks
 
-# Generate ContentBlockerConverterVersion.swift file
-codegen:
-	./scripts/make/verifychangelog.sh $(VERSION)
-	./scripts/make/codegen.sh $(VERSION)
-
 # Makes sure that the necessary tools are installed
 tools:
 	swift --version
 	swiftlint --version
-	xcbeautify --version
 	periphery version
 	node --version
 	npm --version
 	pnpm --version
-	npx markdownlint --version
 
 # Building debug builds
 
@@ -52,7 +48,8 @@ js-release:
 lint: md-lint swift-lint js-lint
 
 md-lint:
-	npx markdownlint .
+	$(PNPM) install
+	$(MARKDOWNLINT) .
 
 swift-lint: swiftlint-lint swiftformat-lint periphery-lint
 

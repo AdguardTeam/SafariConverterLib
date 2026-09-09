@@ -1,0 +1,115 @@
+name: CI
+
+# Only the Swift toolchain and the WebKit tests need macOS; both Swift linters
+# have reusable workflows that run in Docker on a Linux team runner.
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+# kv-get is an unauthenticated fetch, so no OIDC token is needed.
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Image tags must be exact, never :latest.
+  resolve-runner:
+    runs-on: [team-mobile]
+    outputs:
+      macos: ${{ steps.kv.outputs.value }}
+    steps:
+      - uses: AdGuardSoftwareLimited/actions/actions/kv-get@master
+        id: kv
+        with:
+          key: build-images/macos
+
+  check-fixme:
+    uses: AdGuardSoftwareLimited/actions/.github/workflows/check-fixme.yml@master
+    with:
+      team: mobile
+      # The hook greps for the same keyword, so its own source always matches.
+      # Do not spell that keyword out here — this file is scanned as well.
+      check-fixme-exclude: |
+        pre-commit
+
+  swiftlint:
+    uses: AdGuardSoftwareLimited/actions/.github/workflows/lint-swiftlint.yml@master
+    with:
+      team: mobile
+
+  swiftformat:
+    uses: AdGuardSoftwareLimited/actions/.github/workflows/lint-swiftformat.yml@master
+    with:
+      team: mobile
+
+  js:
+    runs-on: team-mobile
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+
+      # Pinned: pnpm 11+ turns an ignored dependency build script into a
+      # hard error, and the lockfile and macOS image are both on 10.
+      - name: Install pnpm
+        run: npm install --global pnpm@10
+
+      # The team runner has no `make`, so the steps below mirror the
+      # md-lint and js-* targets directly.
+      - name: Install dependencies
+        run: pnpm -C ./Extension install
+
+      - name: Lint markdown
+        run: ./Extension/node_modules/.bin/markdownlint .
+
+      - name: Lint JS
+        run: pnpm -C ./Extension lint
+
+      - name: Test JS
+        run: CI=1 pnpm -C ./Extension test
+
+      - name: Build JS
+        run: pnpm -C ./Extension build
+
+  periphery:
+    needs: [resolve-runner]
+    runs-on:
+      - ephemeral
+      - ephemeral-mac
+      - ${{ needs.resolve-runner.outputs.macos }}
+      - ephemeral-limit-memory-8192
+      - ephemeral-limit-cpu-4
+      - ephemeral-limit-disk-gb-40
+    steps:
+      - uses: actions/checkout@v5
+      - name: Check tooling
+        run: make tools
+      - name: Periphery scan
+        run: make periphery-lint
+
+  # No separate WebKit job: with a single macOS image it would duplicate this
+  # one. js-test is left out because the js job above already ran it.
+  swift:
+    needs: [resolve-runner]
+    runs-on:
+      - ephemeral
+      - ephemeral-mac
+      - ${{ needs.resolve-runner.outputs.macos }}
+      - ephemeral-limit-memory-8192
+      - ephemeral-limit-cpu-4
+      - ephemeral-limit-disk-gb-40
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Swift tests
+        run: make swift-test webkit-test filelock-test command-line-wrapper-test
+
+      - name: Swift build
+        run: make swift-build

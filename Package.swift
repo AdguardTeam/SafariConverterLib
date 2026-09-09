@@ -38,7 +38,12 @@ let package = Package(
             dependencies: [
                 .product(name: "Punycode", package: "PunycodeSwift"),
                 .product(name: "PublicSuffixList", package: "swift-psl"),
-            ]
+            ],
+            plugins: ["GenerateVersion"]
+        ),
+        .plugin(
+            name: "GenerateVersion",
+            capability: .buildTool()
         ),
         .target(
             name: "FilterEngine",
