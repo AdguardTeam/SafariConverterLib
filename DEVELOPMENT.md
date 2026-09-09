@@ -29,7 +29,6 @@ This is a library that provides a compatibility layer between
 - Install [periphery][periphery]: `brew install periphery`.
 - No need to install [markdownlint-cli][markdownlint] separately: it is an
   `Extension` devDependency, and `make md-lint` uses that local copy.
-- Install [jq][jq]: `brew install jq`.
 
 [nodejs]: https://nodejs.org/
 [nvm]: https://github.com/nvm-sh/nvm
@@ -37,7 +36,6 @@ This is a library that provides a compatibility layer between
 [swiftlint]: https://github.com/realm/SwiftLint
 [periphery]: https://github.com/peripheryapp/periphery
 [markdownlint]: https://www.npmjs.com/package/markdownlint-cli
-[jq]: https://jqlang.org/
 
 ### Building
 

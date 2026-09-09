@@ -83,7 +83,6 @@ The library is consumed by iOS and macOS applications (adguard-ios, adguard-mini
 │   └── WebKitCompilationTests/        # macOS-only WebKit compilation tests
 ├── scripts/                         # Build, test, and CI helper scripts
 │   ├── hooks/                       # Git hooks (pre-commit)
-│   ├── make/                        # Build codegen scripts
 │   ├── perf/                        # Performance profiling scripts
 │   └── tests/                       # Integration test scripts
 ├── .github/workflows/               # CI/CD pipeline definitions
@@ -313,9 +312,9 @@ No architecture violations detected.
 - **Documentation updates**: When changing user-facing behavior, update
   `README.md`. When changing project structure or public APIs, update
   `AGENTS.md`.
-- **Version tracking**: The library version is generated via codegen. Run
-  `make codegen` to update `ContentBlockerConverterVersion.swift` and
-  `Extension/package.json` from the latest released version in `CHANGELOG.md`.
+- **Version tracking**: The version lives only in `CHANGELOG.md`. It is never
+  committed to the source tree — the release build stamps it into the
+  artifacts.
 - **Changelog**: Update `CHANGELOG.md` for all user-visible changes in the
   Unreleased section.
 
@@ -347,12 +346,10 @@ Follow these rules (configured in `.markdownlint.json`):
 - Install [periphery][periphery]: `brew install periphery`.
 - No need to install [markdownlint-cli][markdownlint] separately: it is an
   `Extension` devDependency, and `make md-lint` uses that local copy.
-- Install [jq][jq]: `brew install jq`.
 
 [nodejs]: https://nodejs.org/
 [nvm]: https://github.com/nvm-sh/nvm
 [pnpm]: https://pnpm.io/
-[jq]: https://jqlang.org/
 
 ### Building
 

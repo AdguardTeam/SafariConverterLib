@@ -15,17 +15,11 @@ MARKDOWNLINT = ./Extension/node_modules/.bin/markdownlint
 init: tools
 	git config core.hooksPath ./scripts/hooks
 
-# Generate ContentBlockerConverterVersion.swift file. The version comes from
-# CHANGELOG.md, the same source the release tag is derived from.
-codegen:
-	./scripts/make/codegen.sh
-
 # Makes sure that the necessary tools are installed
 tools:
 	swift --version
 	swiftlint --version
 	periphery version
-	jq --version
 	node --version
 	npm --version
 	pnpm --version

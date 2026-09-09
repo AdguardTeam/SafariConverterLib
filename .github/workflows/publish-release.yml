@@ -89,6 +89,11 @@ jobs:
       - name: Install pnpm
         run: npm install --global pnpm@10
 
+      # The version is not kept in source: package.json carries a 0.0.0
+      # placeholder, and the real one comes from the changelog via the tag job.
+      - name: Inject version into package.json
+        run: npm --prefix ./Extension pkg set version="${{ needs.tag.outputs.version }}"
+
       # The team runner has no `make`, so this mirrors the js-release target.
       - name: Package
         run: |

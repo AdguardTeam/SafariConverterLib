@@ -95,15 +95,6 @@ contains two important fields:
 > Please read the [extension's README][extension-readme] for the explanation
 > on how to use the advanced rules.
 
-In addition to that you can use `ContentBlockerConverterVersion` class to get
-the version of the library and its components in your app.
-
-```swift
-let version = ContentBlockerConverterVersion.library
-let scriptletsVersion = ContentBlockerConverterVersion.scriptlets
-let extendedCSSVersion = ContentBlockerConverterVersion.extendedCSS
-```
-
 [ConversionResult]: Sources/ContentBlockerConverter/ConversionResult.swift
 [ContentBlockerConverter]: Sources/ContentBlockerConverter/ContentBlockerConverter.swift
 [makecontiguousutf8]: https://developer.apple.com/documentation/swift/string/makecontiguousutf8()
@@ -396,15 +387,14 @@ Please refer to [DEVELOPMENT.md](DEVELOPMENT.md) for details.
 3. Run the `Prepare release` workflow and pass the tag **with** the `v` prefix,
    for example `v4.4.0`. It rolls `Unreleased` over to that version and opens a
    release PR.
-4. Check out the PR branch, run `make codegen` and push the result to the same
-   branch. It reads the new version from the changelog, writes it to
-   `Extension/package.json` and regenerates `ContentBlockerConverterVersion`.
-   CI fails while these disagree with the changelog. Do this before asking for
-   a review: a push dismisses approvals the PR already has.
-5. Merge the release PR. `Publish release` then tags the commit as `v*.*.*`,
-   publishes [@adguard/safari-extension][adguard-safari-extension] to npm and
-   creates a GitHub release with the `ConverterTool` binary on
+4. Merge the release PR. `Publish release` then tags the commit as `v*.*.*`,
+   stamps the version into the npm package, publishes
+   [@adguard/safari-extension][adguard-safari-extension] and creates a GitHub
+   release with the `ConverterTool` binary on
    [SafariConverterLib][safari-converter-lib].
+
+The version is never stored in the source tree: `CHANGELOG.md` is the only
+place it is written, and the build stamps it into the artifacts.
 
 [semver]: https://semver.org/
 [adguard-safari-extension]: https://www.npmjs.com/package/@adguard/safari-extension
