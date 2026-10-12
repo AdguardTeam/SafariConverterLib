@@ -71,6 +71,17 @@ Run `make init` to setup pre-commit hooks.
 
 [swift-format]: https://github.com/swiftlang/swift-format
 
+### CocoaPods
+
+CocoaPods is only needed when working on the podspecs. Install it with
+`brew install cocoapods` and verify a spec with
+`pod spec lint ContentBlockerConverter.podspec`.
+
+- `scripts/update-podspec-versions.sh <version>` - bumps `spec.version` in both
+  own podspecs; the `Prepare release` workflow runs it.
+- `scripts/check-podspec-versions.py` - checks the bridge podspecs against
+  `Package.resolved`.
+
 ## Code Organization
 
 The code is organized in the following way:

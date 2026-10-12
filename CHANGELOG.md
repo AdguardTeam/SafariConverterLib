@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- CocoaPods support: podspecs for `ContentBlockerConverter` and `FilterEngine`,
+  plus bridge podspecs for the SwiftPM dependencies.
+
 ## [4.3.0] - 2026-06-04
 
 ### Added
