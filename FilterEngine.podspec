@@ -1,6 +1,6 @@
 Pod::Spec.new do |spec|
   spec.name = 'FilterEngine'
-  spec.version = '4.3.0'
+  spec.version = '4.3.1'
   spec.summary = 'Advanced rules engine for Safari web extensions.'
   spec.description = <<~DESC
     FilterEngine is the advanced blocking module of SafariConverterLib. It

@@ -1,6 +1,6 @@
 Pod::Spec.new do |spec|
   spec.name = 'ContentBlockerConverter'
-  spec.version = '4.3.0'
+  spec.version = '4.3.1'
   spec.summary = 'Converts AdGuard filtering rules into Safari content blocking rules.'
   spec.description = <<~DESC
     ContentBlockerConverter is the core module of SafariConverterLib. It turns
