@@ -14,7 +14,7 @@ Pod::Spec.new do |spec|
     :git => 'https://github.com/AdguardTeam/SafariConverterLib.git',
     :tag => "v#{spec.version}"
   }
-  spec.swift_versions = ['5.9']
+  spec.swift_versions = ['5.6']
   spec.ios.deployment_target = '13.0'
   spec.osx.deployment_target = '11.0'
   spec.source_files = 'Sources/FilterEngine/**/*.swift'
