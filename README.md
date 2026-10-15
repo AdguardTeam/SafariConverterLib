@@ -113,6 +113,22 @@ not stored anywhere in the repository.
 [safariblocker]: https://github.com/ameshkov/safari-blocker
 [extension-readme]: Extension/README.md
 
+#### Using with CocoaPods
+
+The library is also packaged as CocoaPods pods. `FilterEngine` depends on
+`ContentBlockerConverter`, so both are installed together. Replace `vX.Y.Z` with
+a release tag that contains the podspecs:
+
+```ruby
+pod 'ContentBlockerConverter', :git => 'https://github.com/AdguardTeam/SafariConverterLib.git', :tag => 'vX.Y.Z'
+pod 'FilterEngine', :git => 'https://github.com/AdguardTeam/SafariConverterLib.git', :tag => 'vX.Y.Z'
+pod 'PunycodeSwift', :podspec => 'https://raw.githubusercontent.com/AdguardTeam/SafariConverterLib/vX.Y.Z/PunycodeSwift.podspec'
+pod 'swift-psl', :podspec => 'https://raw.githubusercontent.com/AdguardTeam/SafariConverterLib/vX.Y.Z/swift-psl.podspec'
+```
+
+`PunycodeSwift` and `swift-psl` are bridge pods: the upstream projects publish
+no podspec, so this repository provides specs that build them from source.
+
 ### Command-line interface
 
 Converter can be built as a command-line tool with the following interface:
@@ -397,8 +413,8 @@ Please refer to [DEVELOPMENT.md](DEVELOPMENT.md) for details.
 2. Make sure the changes are described under `## [Unreleased]` in
    [CHANGELOG.md](CHANGELOG.md).
 3. Run the `Prepare release` workflow and pass the tag **with** the `v` prefix,
-   for example `v4.4.0`. It rolls `Unreleased` over to that version and opens a
-   release PR.
+   for example `v4.4.0`. It rolls `Unreleased` over to that version, bumps
+   `spec.version` in the podspecs and opens a release PR.
 4. Merge the release PR. `Publish release` then tags the commit as `v*.*.*`,
    stamps the version into the npm package, publishes
    [@adguard/safari-extension][adguard-safari-extension] and creates a GitHub
@@ -414,6 +430,10 @@ Please refer to [DEVELOPMENT.md](DEVELOPMENT.md) for details.
 - [Punycode][punycode]
 - [ArgumentParser][argumentparser]
 - [swift-psl][swift-psl]
+
+CocoaPods consumers get Punycode and swift-psl through the bridge podspecs
+shipped in this repository. ArgumentParser is only used by the CLI tool and is
+not part of the pods.
 
 [punycode]: https://github.com/gumob/PunycodeSwift
 [argumentparser]: https://github.com/apple/swift-argument-parser

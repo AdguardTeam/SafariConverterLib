@@ -37,6 +37,16 @@ jobs:
       check-fixme-exclude: |
         pre-commit
 
+  # Bridge podspecs mirror the SwiftPM dependencies, so their versions must be
+  # updated together with Package.resolved.
+  podspec-versions:
+    runs-on: [team-mobile]
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Check bridge podspecs against Package.resolved
+        run: python3 scripts/check-podspec-versions.py
+
   swiftlint:
     uses: AdGuardSoftwareLimited/actions/.github/workflows/lint-swiftlint.yml@master
     with:

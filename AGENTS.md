@@ -13,6 +13,7 @@
     - [Code Quality](#code-quality)
     - [Testing](#testing)
     - [Dependency Management](#dependency-management)
+    - [CocoaPods](#cocoapods)
     - [Configuration & Documentation](#configuration--documentation)
     - [Markdown Formatting](#markdown-formatting)
 
@@ -85,9 +86,15 @@ The library is consumed by iOS and macOS applications (adguard-ios, adguard-mini
 ├── scripts/                         # Build, test, and CI helper scripts
 │   ├── hooks/                       # Git hooks (pre-commit)
 │   ├── perf/                        # Performance profiling scripts
-│   └── tests/                       # Integration test scripts
+│   ├── tests/                       # Integration test scripts
+│   ├── check-podspec-versions.py    # Bridge podspecs vs Package.resolved
+│   └── update-podspec-versions.sh   # Podspec version bump for releases
 ├── .github/workflows/               # CI/CD pipeline definitions
 ├── Package.swift                    # Swift Package Manager manifest
+├── ContentBlockerConverter.podspec  # CocoaPods spec for the converter module
+├── FilterEngine.podspec             # CocoaPods spec for the engine module
+├── PunycodeSwift.podspec            # Bridge spec for the PunycodeSwift dependency
+├── swift-psl.podspec                # Bridge spec for the swift-psl dependency
 ├── Makefile                         # Build/test/lint commands
 ├── README.md                        # User-facing documentation
 ├── DEVELOPMENT.md                   # Developer setup guide
@@ -303,6 +310,27 @@ No architecture violations detected.
 - `swift-psl` uses a version range (`"1.1.0"..<"2.0.0"`) instead of exact
   pinning. This should be fixed by pinning to a specific version.
 
+Bridge podspecs mirror the versions resolved by SwiftPM. When `Package.resolved`
+changes, update the matching podspec: `scripts/check-podspec-versions.py`
+(CI job `podspec-versions`) fails otherwise.
+
+### CocoaPods
+
+The library ships podspecs so it can be consumed from CocoaPods projects. Keep
+these constraints in mind when changing them:
+
+- One pod per module: `ContentBlockerConverter` and `FilterEngine`. CocoaPods
+  cannot expose two modules from a single pod.
+- `PunycodeSwift.podspec` and `swift-psl.podspec` are bridge specs for the
+  SwiftPM dependencies that publish no podspec of their own. Consumers reference
+  them with `:podspec => URL`, because their `source` points at the third-party
+  repositories.
+- `swift-psl` relies on `Bundle.module`, which only SwiftPM generates. The
+  bridge defines that symbol in a `prepare_command` shim and ships the data
+  files through `resource_bundles`.
+- Verify changes with `pod spec lint <name>.podspec` and check the resolved
+  version with `pod ipc spec <name>.podspec`.
+
 ### Configuration & Documentation
 
 - **Runtime configuration**: The library is configured programmatically via
@@ -313,11 +341,13 @@ No architecture violations detected.
 - **Documentation updates**: When changing user-facing behavior, update
   `README.md`. When changing project structure or public APIs, update
   `AGENTS.md`.
-- **Version tracking**: The version lives only in `CHANGELOG.md`. The
-  `GenerateVersion` build plugin reads it from there and generates
-  `ContentBlockerConverterVersion` at build time (component versions come from
-  `Extension/package.json`), so nothing in the tree holds a version. For the
-  npm package the release workflow stamps it in before packaging.
+- **Version tracking**: For SwiftPM and npm the version lives only in
+  `CHANGELOG.md`. The `GenerateVersion` build plugin reads it from there and
+  generates `ContentBlockerConverterVersion` at build time (component versions
+  come from `Extension/package.json`). For the npm package the release workflow
+  stamps it in before packaging. The CocoaPods podspecs are the exception: they
+  carry a literal `spec.version`, bumped by the `Prepare release` workflow
+  together with the changelog.
 - **Changelog**: Update `CHANGELOG.md` for all user-visible changes in the
   Unreleased section.
 
