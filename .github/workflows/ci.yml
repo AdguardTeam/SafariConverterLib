@@ -87,6 +87,9 @@ jobs:
       - ephemeral-job-key-${{ github.run_id }}-${{ github.job }}-${{ strategy.job-index || 0 }}
     steps:
       - uses: actions/checkout@v5
+      # The ephemeral image does not ship pnpm, so install it like the js job.
+      - name: Install pnpm
+        run: npm install --global pnpm@10
       - name: Check tooling
         run: make tools
       - name: Periphery scan
