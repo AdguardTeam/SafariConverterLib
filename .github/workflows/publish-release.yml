@@ -23,23 +23,12 @@ jobs:
     permissions:
       contents: write
 
-  resolve-runner:
-    needs: tag
-    runs-on: [team-mobile]
-    outputs:
-      macos: ${{ steps.kv.outputs.value }}
-    steps:
-      - uses: AdGuardSoftwareLimited/actions/actions/kv-get@master
-        id: kv
-        with:
-          key: build-images/macos
-
   build-swift:
-    needs: [tag, resolve-runner]
+    needs: tag
     runs-on:
       - ephemeral
       - ephemeral-mac
-      - ${{ needs.resolve-runner.outputs.macos }}
+      - registry.int.agrd.dev/macos/tahoe-github-xcode26.4.1-26.11:@edge
       - ephemeral-limit-memory-8192
       - ephemeral-limit-cpu-4
       - ephemeral-limit-disk-gb-40

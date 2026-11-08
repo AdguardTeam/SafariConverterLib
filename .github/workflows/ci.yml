@@ -8,7 +8,6 @@ on:
   push:
     branches: [master]
 
-# kv-get is an unauthenticated fetch, so no OIDC token is needed.
 permissions:
   contents: read
 
@@ -17,17 +16,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Image tags must be exact, never :latest.
-  resolve-runner:
-    runs-on: [team-mobile]
-    outputs:
-      macos: ${{ steps.kv.outputs.value }}
-    steps:
-      - uses: AdGuardSoftwareLimited/actions/actions/kv-get@master
-        id: kv
-        with:
-          key: build-images/macos
-
   check-fixme:
     uses: AdGuardSoftwareLimited/actions/.github/workflows/check-fixme.yml@master
     with:
@@ -89,11 +77,10 @@ jobs:
         run: pnpm -C ./Extension build
 
   periphery:
-    needs: [resolve-runner]
     runs-on:
       - ephemeral
       - ephemeral-mac
-      - ${{ needs.resolve-runner.outputs.macos }}
+      - registry.int.agrd.dev/macos/tahoe-github-xcode26.4.1-26.11:@edge
       - ephemeral-limit-memory-8192
       - ephemeral-limit-cpu-4
       - ephemeral-limit-disk-gb-40
@@ -108,11 +95,10 @@ jobs:
   # No separate WebKit job: with a single macOS image it would duplicate this
   # one. js-test is left out because the js job above already ran it.
   swift:
-    needs: [resolve-runner]
     runs-on:
       - ephemeral
       - ephemeral-mac
-      - ${{ needs.resolve-runner.outputs.macos }}
+      - registry.int.agrd.dev/macos/tahoe-github-xcode26.4.1-26.11:@edge
       - ephemeral-limit-memory-8192
       - ephemeral-limit-cpu-4
       - ephemeral-limit-disk-gb-40
