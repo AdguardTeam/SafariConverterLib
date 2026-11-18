@@ -329,11 +329,11 @@ additional extension.
   a style block are rejected if their styles can load external resources:
     - `url()`, `image-set()` and `-webkit-image-set()` in any form: letter
       case, CSS escapes and string arguments.
-    - `@import` and unclosed comments.
+    - `@import`.
     - Known over-blocks: `@namespace url()` in CSS injection rules, at-rule
-      names in pseudo-class arguments of rules with a style block, `{`
-      inside string arguments of selectors, and `url()` inside quoted style
-      values.
+      names in pseudo-class arguments of rules with a style block, and
+      `url()` inside quoted values, selector strings or comments of scanned
+      rules.
 
 - [Non-basic rules modifiers][nonbasicmodifiers] are supported with some
   limitations:

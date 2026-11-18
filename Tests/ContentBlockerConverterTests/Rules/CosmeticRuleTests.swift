@@ -350,8 +350,6 @@ final class CosmeticRuleTests: XCTestCase {
             // @import.
             #"#$#@import "https://example.org/x.css"; body { color: red }"#,
             #"#$#@\69 mport "https://example.org/x.css"; body { color: red }"#,
-            // Unclosed comment.
-            "#$#body { background: red; /* }",
             // Other url forms.
             "#$#.banner { background: URL(data:image/png;base64,iVBORw0KGgo=) }",
             "#$#.banner { background: URL() }",
@@ -408,6 +406,19 @@ final class CosmeticRuleTests: XCTestCase {
             // anything, but it is cut by the literal-free style block
             // scan.
             #"#?#div { content: "url(https://example.org)"; color: red }"#,
+            // Known over-block: the scan does not track strings and
+            // comments, so url( inside them is rejected too.
+            #"#$#.banner::before { content: "url(https://example.org)" }"#,
+            #"#$#p::before { content: "\" url("; color: red }"#,
+            #"#$#.banner { background: /* url(https://example.org) */ red }"#,
+            // Over-block since the literal-free scan: the join
+            // composition is dead because a rule with the url( text is
+            // rejected regardless of strings and comments.
+            #"#$#p { content: "*/background: URL(https://example.org); } /*" }"#,
+            // Known over-block: an at-rule name inside a string.
+            "#$#p::before { content: \"@import url(\" }",
+            // Known over-block: url( inside a selector string.
+            "#?#a[href*=\"url(\"] { color: red }",
         ]
 
         for ruleText in forbiddenRules {
@@ -419,18 +430,16 @@ final class CosmeticRuleTests: XCTestCase {
 
         // Rules that must not be rejected.
         let allowedRules = [
-            // url( inside a string literal.
-            #"#$#.banner::before { content: "url(https://example.org)" }"#,
-            // An escaped quote does not close the string.
-            #"#$#p::before { content: "\" url("; color: red }"#,
             // Escaped parentheses do not call anything.
             #"#$#.banner { background: url\28 https://example.org\29 }"#,
             // A space before the parenthesis.
             "#$#.banner { background: url (https://example.org) }",
             // A comment breaks the name.
             #"#$#.banner { background: ur/*c*/l(https://example.org) }"#,
-            // url( inside a closed comment.
-            #"#$#.banner { background: /* url(https://example.org) */ red }"#,
+            // No literal tracking: unclosed comments are not rejected
+            // anymore, and the join composition is dead because a rule
+            // with the url( text is rejected outright.
+            "#$#body { background: red; /* }",
             // Regular functions and names.
             "#$#.banner { color: rgb(1, 2, 3) }",
             "#$#.banner { width: calc(100% - 10px) }",
@@ -448,12 +457,6 @@ final class CosmeticRuleTests: XCTestCase {
             "#$#p::before { content: \"a\\\nurl(https://example.org)\" }",
             // url( inside a string in the selector.
             #"##a[href*="url("] { display: none }"#,
-            // The second rule of the composition pair: it is inert on
-            // its own, the composition is neutralized by rejecting the
-            // first rule of the pair (the unclosed comment).
-            #"#$#p { content: "*/background: URL(https://example.org); } /*" }"#,
-            // Both keywords are inside a string literal.
-            "#$#p::before { content: \"@import url(\" }",
             // @import inside an attribute selector string.
             #"##a[href^="@import"]"#,
             // Form feed outside strings is just a whitespace.
@@ -461,8 +464,6 @@ final class CosmeticRuleTests: XCTestCase {
             // `{` inside a string argument of the selector does not
             // reject the rule by the style block scan.
             "#$?#div:has-text(\"{x}\") { color: red }",
-            // url( inside a string in an extended CSS selector.
-            "#?#a[href*=\"url(\"] { color: red }",
             // Script rules are not applied by ExtendedCss and must not
             // hit the style block scan.
             "example.org#%#document.querySelectorAll('a:has(img)').forEach(a => { a.href = new URL(a.href).href })",

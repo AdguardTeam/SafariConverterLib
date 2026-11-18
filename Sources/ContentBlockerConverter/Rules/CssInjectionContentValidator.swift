@@ -12,13 +12,17 @@ import Foundation
 /// * Different case, e.g. `URL(`;
 /// * CSS escapes, e.g. `\75 rl(`;
 /// * String arguments, e.g. `image-set("https://..." 1x)`;
-/// * The `@import` at-rule, e.g. `@import "https://..."`;
-/// * An unclosed comment that swallows a part of another rule when
-///   the rules are joined into a single stylesheet.
+/// * The `@import` at-rule, e.g. `@import "https://..."`.
 ///
-/// That's why the content is scanned byte by byte. The scanning is
-/// linear: names are accumulated character by character, and strings
-/// and comments are skipped entirely.
+/// That's why the content is scanned byte by byte. The scanner
+/// deliberately does not track strings and comments: the consumers,
+/// WebKit CSSOM and ExtendedCss with its own quote pairing rule,
+/// diverge from the CSS tokenization, and selective skipping of
+/// literals enabled two confirmed bypasses. Any `url(`, `image-set(`
+/// or `@import` occurrence in the rule text is rejected regardless of
+/// its context. The cost is over-blocking `url(` inside quoted values,
+/// selector strings or comments, which never load anything: the
+/// repository fixtures contain none of those.
 final class CssInjectionContentValidator {
     /// CSS functions that can load external resources.
     private static let FORBIDDEN_FUNCTIONS = [
@@ -53,66 +57,25 @@ final class CssInjectionContentValidator {
     ///
     /// - Returns: true if the content can load external resources.
     func containsForbiddenStyles() -> Bool {
-        return scanContent(startingAt: 0, tracksLiterals: true)
-    }
-
-    /// Checks the style block of the rule content for forbidden styles.
-    ///
-    /// ExtendedCss, which applies extended CSS rules, does not lex the
-    /// content as CSS: it splits the rule at one of the `{` characters
-    /// and applies the tail as a style block. Its tokenizer pairs the
-    /// value quotes by its own rule: an opening quote is unconditional,
-    /// while a closing one is only allowed when the value buffer does
-    /// not end with a backslash, without counting the backslashes. CSS
-    /// pairs them by the escape parity, and the difference, e.g.
-    /// `"a\\" x"`, makes a quote pair for one of them and not for the
-    /// other. A string opened that way can swallow the style block for
-    /// the whole-content scan.
-    ///
-    /// Instead of mirroring the ExtendedCss tokenizer, this scan does
-    /// not track strings and comments at all: any applied declaration
-    /// is present in the tail verbatim, so a `url(` or `image-set(`
-    /// call in an applied value is always visible as a decodable name
-    /// followed by a literal parenthesis, quoted or not. Scanning from
-    /// the first `{` is enough, as without the literal tracking nothing
-    /// can blind the scan.
-    ///
-    /// This over-blocks `url(` inside quoted style values, e.g.
-    /// `content: "url(x)"`, which never loads anything, just like the
-    /// other known over-blocks.
-    func containsForbiddenStylesInStyleBlock() -> Bool {
-        guard let styleBlockStart = bytes.firstIndex(of: Chars.CURLY_BRACKET_OPEN) else {
-            return false
-        }
-
-        let start = bytes.distance(from: bytes.startIndex, to: styleBlockStart)
-        return scanContent(startingAt: start, tracksLiterals: false)
+        return scanContent()
     }
 
     // MARK: - Scanning
 
-    /// Scans the content from the starting index to its end.
-    ///
-    /// When `tracksLiterals` is true, strings and comments are skipped
-    /// entirely. When it is false, quotes and comment starts are treated
-    /// as regular name boundaries instead: this is used for the style
-    /// block scan, see `containsForbiddenStylesInStyleBlock`.
+    /// Scans the whole content.
     ///
     /// The name that is currently accumulated is checked when it ends,
     /// i.e. at the first character that cannot be a part of it. Escaped
     /// characters never end the name: they are appended to it as is,
     /// so `u\72 l(` is still `url(`, while `url\28 x\29` does not call
     /// anything at all.
-    private func scanContent(startingAt: Int, tracksLiterals: Bool) -> Bool {
-        var index = startingAt
+    private func scanContent() -> Bool {
+        var index = 0
         var name = ""
         var atName = false
 
         // Checks the accumulated name right before the character that
-        // ends it. Besides the function call parenthesis, this is
-        // called before strings and comments too: per CSS Syntax,
-        // `@import"..."` is a valid at-rule, no whitespace between the
-        // tokens is required.
+        // ends it: a forbidden function call or a forbidden at-rule.
         func endsForbiddenName(_ char: UInt8) -> Bool {
             if char == Chars.BRACKET_OPEN && Self.FORBIDDEN_FUNCTIONS.contains(name) {
                 return true
@@ -122,33 +85,7 @@ final class CssInjectionContentValidator {
         }
 
         while let char = charAt(index) {
-            if tracksLiterals, char == Chars.SLASH, charAt(index + 1) == Chars.WILDCARD {
-                if endsForbiddenName(char) {
-                    return true
-                }
-
-                // A comment is skipped entirely. An unclosed one may
-                // swallow a part of the rule that follows this one in
-                // the joined stylesheet, so it is forbidden as well.
-                guard let end = skipComment(startingAt: index) else {
-                    return true
-                }
-
-                name = ""
-                atName = false
-                index = end
-            } else if tracksLiterals, char == Chars.QUOTE_DOUBLE || char == Chars.QUOTE_SINGLE {
-                if endsForbiddenName(char) {
-                    return true
-                }
-
-                // A string is skipped entirely: styles inside it, e.g.
-                // `content: "url(x)"`, do not load anything.
-                index = skipString(startingAt: index, delimiter: char)
-
-                name = ""
-                atName = false
-            } else if char == Chars.BACKSLASH {
+            if char == Chars.BACKSLASH {
                 let escape = parseCssEscape(startIndex: index + 1)
                 name.append(Self.escapedCharacter(codePoint: escape.codePoint))
                 index = escape.endIndex
@@ -175,58 +112,6 @@ final class CssInjectionContentValidator {
 
         // The content may end right after the name, e.g. `@import`.
         return atName && Self.FORBIDDEN_AT_RULES.contains(name)
-    }
-
-    /// Skips a comment that starts at `startingAt`, i.e. at the `/` of
-    /// its `/*` opening.
-    ///
-    /// Comments are closed with `*/` and may contain newlines. A comment
-    /// breaks the name, `ur/*c*/l(` is not `url(`.
-    ///
-    /// - Returns: the index right after the comment, or nil if the
-    ///   comment is not closed.
-    private func skipComment(startingAt: Int) -> Int? {
-        var position = startingAt + 2
-
-        while let char = charAt(position) {
-            if char == Chars.WILDCARD, charAt(position + 1) == Chars.SLASH {
-                return position + 2
-            }
-
-            position += 1
-        }
-
-        return nil
-    }
-
-    /// Skips a string literal that starts at `startingAt`, i.e. at its
-    /// opening quote.
-    ///
-    /// Escapes never close the string, not even an escaped newline. The
-    /// matching unescaped delimiter closes it. An unescaped newline
-    /// terminates it as a bad string instead of continuing it, so the
-    /// returned index is right after the newline and the rest of the
-    /// content is still scanned for forbidden styles.
-    ///
-    /// - Returns: the index right after the string.
-    private func skipString(startingAt: Int, delimiter: UInt8) -> Int {
-        var position = startingAt + 1
-
-        while let char = charAt(position) {
-            if char == Chars.BACKSLASH {
-                // Escapes never close the string.
-                position = parseCssEscape(startIndex: position + 1).endIndex
-            } else if char == delimiter || Self.isCssNewline(char) {
-                // The matching delimiter closes the string, unescaped
-                // newlines make it a bad string.
-                return position + 1
-            } else {
-                position += 1
-            }
-        }
-
-        // An unclosed string simply ends with the content.
-        return position
     }
 
     /// Checks if the character can be a part of a CSS name.
@@ -313,14 +198,6 @@ final class CssInjectionContentValidator {
         }
 
         return Character(scalar)
-    }
-
-    /// Checks if the byte is a newline, i.e. a line feed, a carriage
-    /// return or a form feed. Per CSS Syntax 3, the preprocessor
-    /// normalizes CR, FF and CRLF to a single LF, so all of them
-    /// terminate strings as bad strings.
-    private static func isCssNewline(_ char: UInt8) -> Bool {
-        return char == 0x0A || char == 0x0D || char == 0x0C
     }
 
     /// Checks if the byte is a CSS whitespace. A hex escape may be followed
