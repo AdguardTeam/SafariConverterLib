@@ -144,7 +144,11 @@ public class CosmeticRule: Rule {
             isExtendedCss = true
         }
 
-        if isInjectCss && content.range(of: "url(") != nil {
+        // Style blocks of element hiding rules load external resources too,
+        // so both rule families are scanned, over-blocking :matches-css(url(...)).
+        if (isInjectCss || isElemhide)
+            && CssInjectionContentValidator(content: content).containsForbiddenStyles()
+        {
             throw SyntaxError.invalidRule(message: "Forbidden style in a CSS rule")
         }
 

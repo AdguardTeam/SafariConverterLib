@@ -310,5 +310,158 @@ final class CosmeticRuleTests: XCTestCase {
         XCTAssertThrowsError(
             try CosmeticRule(ruleText: "#$?#.banner { background: url(test.png) }")
         )
+
+        // Rules that must be rejected.
+        let forbiddenRules = [
+            // Different case.
+            "#$#.banner { background: URL(test.png) }",
+            "#$#.banner { background: Url(test.png) }",
+            "#$#.banner { background: uRl(test.png) }",
+            // CSS escapes.
+            #"#$#.banner { background: \75 rl(https://example.org) }"#,
+            #"#$#.banner { background: \000075rl(https://example.org) }"#,
+            #"#$#.banner { background: \75rl(https://example.org) }"#,
+            #"#$#.banner { background: u\72 l(https://example.org) }"#,
+            #"#$#.banner { background: ur\6c(https://example.org) }"#,
+            #"#$#.banner { background: \75\52\4C(https://example.org) }"#,
+            // image-set in different spellings.
+            #"#$#.banner { background: image-set("https://example.org" 1x) }"#,
+            #"#$#.banner { background: IMAGE-SET("https://example.org" 1x) }"#,
+            #"#$#.banner { background: image-\73 et("https://example.org" 1x) }"#,
+            #"#$#.banner { background: -webkit-image-set("https://example.org" 1x) }"#,
+            // Nested url in a function that is not forbidden on its own.
+            "#$#.banner { background: -webkit-cross-fade(URL(a), URL(b), 50%) }",
+            // Different CSS properties.
+            "#$#.banner { cursor: URL(test.png) }",
+            "#$#.banner { list-style-image: URL(test.png) }",
+            "#$#.banner { border-image: URL(test.png) }",
+            // String form with spaces.
+            #"#$#.banner { background: URL( "https://example.org" ) }"#,
+            // Via a CSS variable.
+            "#$#.banner { --u: URL(https://example.org); background: var(--u) }",
+            // Conditional beacon.
+            #"#$#input[value^="a"] { background: URL(https://example.org/a) }"#,
+            // Generic rule without domains.
+            "#$#body { background: URL(https://example.org) }",
+            // @font-face.
+            "#$#@font-face { font-family: t; src: URL(https://example.org/font.woff2) }",
+            // All CSS injection markers.
+            "#@$#.banner { background: URL(test.png) }",
+            "#$?#.banner:has(.child) { background: URL(test.png) }",
+            "#@$?#.banner:has(.child) { background: URL(test.png) }",
+            // @import.
+            #"#$#@import "https://example.org/x.css"; body { color: red }"#,
+            #"#$#@\69 mport "https://example.org/x.css"; body { color: red }"#,
+            // Unclosed comment.
+            "#$#body { background: red; /* }",
+            // Other url forms.
+            "#$#.banner { background: URL(data:image/png;base64,iVBORw0KGgo=) }",
+            "#$#.banner { background: URL() }",
+            // An unescaped newline terminates the string, but the rest
+            // of the rule is still scanned.
+            "#$#p::before { content: \"abc\nurl(https://example.org) }",
+            // CRLF after a hex escape counts as a single whitespace.
+            "#$#.banner { background: ur\\6c\r\n(https://example.org) }",
+            // At-rule at the very end of the content.
+            "#$?#@import",
+            // Element hiding rules with style blocks.
+            "#?##div { background: URL(https://example.org) }",
+            "##div:has-text(x) { background: url(https://example.org) }",
+            "#@?##div { background: URL(https://example.org) }",
+            // @import followed by a string or a comment, no whitespace.
+            "#$#@import\"https://example.org/x.css\";a{}",
+            "#$#@import'https://example.org/x.css';a{}",
+            "#$#@import/*b*/\"https://example.org/x.css\";a{}",
+            #"#$#@im\70 ort"https://example.org/x.css";a{}"#,
+            // Element hiding at-rule.
+            "#?#@import\"https://example.org/x.css\"",
+            // Form feed terminates the string as a bad string, so the
+            // rest of the rule is still scanned. The #$?# marker is
+            // used because the ABP mask of the #$# one turns rules
+            // with form feeds into scriptlets before the guard.
+            "#$?#.banner { content: \"a\u{0C}; background: url(https://example.org) }",
+            // Over-block: the :has-text argument does not load anything,
+            // but the whole rule content is scanned by design.
+            "#$?#.banner:has-text(@import) { color: red }",
+            // Over-block: :matches-css reads the styles, it does not
+            // load anything.
+            "##div:matches-css(background-image: url(https://example.org))",
+            // Known over-block: @namespace never loads anything, but it
+            // is cut by the url( in it.
+            "#$?##@namespace url(http://www.w3.org/2000/svg)",
+            // Plain element hiding rule.
+            "##div { background: url(https://example.org) }",
+        ]
+
+        for ruleText in forbiddenRules {
+            XCTAssertThrowsError(
+                try CosmeticRule(ruleText: ruleText),
+                "Rule must be rejected: \(ruleText)"
+            )
+        }
+
+        // Rules that must not be rejected.
+        let allowedRules = [
+            // url( inside a string literal.
+            #"#$#.banner::before { content: "url(https://example.org)" }"#,
+            // An escaped quote does not close the string.
+            #"#$#p::before { content: "\" url("; color: red }"#,
+            // Escaped parentheses do not call anything.
+            #"#$#.banner { background: url\28 https://example.org\29 }"#,
+            // A space before the parenthesis.
+            "#$#.banner { background: url (https://example.org) }",
+            // A comment breaks the name.
+            #"#$#.banner { background: ur/*c*/l(https://example.org) }"#,
+            // url( inside a closed comment.
+            #"#$#.banner { background: /* url(https://example.org) */ red }"#,
+            // Regular functions and names.
+            "#$#.banner { color: rgb(1, 2, 3) }",
+            "#$#.banner { width: calc(100% - 10px) }",
+            "#$#.banner { color: var(--color) }",
+            "#$#.banner { background: linear-gradient(red, blue) }",
+            "#$#.banner { content: attr(data-label) }",
+            "#$#.banner { background: my-url(test.png) }",
+            "#$#.banner { --url: red }",
+            "#$#.banner { background: -webkit-cross-fade(linear-gradient(red, blue), linear-gradient(green, yellow), 50%) }",
+            // Escaped code points do not break the name.
+            #"#$#.banner { background: ur\fffdl(https://example.org) }"#,
+            // An escaped `@` does not start an at-rule.
+            #"#$#.banner.email\@import { color: red }"#,
+            // An escaped newline does not close the string.
+            "#$#p::before { content: \"a\\\nurl(https://example.org)\" }",
+            // url( inside a string in the selector.
+            #"##a[href*="url("] { display: none }"#,
+            // The second rule of the composition pair: it is inert on
+            // its own, the composition is neutralized by rejecting the
+            // first rule of the pair (the unclosed comment).
+            #"#$#p { content: "*/background: URL(https://example.org); } /*" }"#,
+            // Both keywords are inside a string literal.
+            "#$#p::before { content: \"@import url(\" }",
+            // @import inside an attribute selector string.
+            #"##a[href^="@import"]"#,
+            // Form feed outside strings is just a whitespace.
+            "#$?#.banner { color: red;\u{0C}border: none }",
+        ]
+
+        for ruleText in allowedRules {
+            XCTAssertNoThrow(
+                try CosmeticRule(ruleText: ruleText),
+                "Rule must not be rejected: \(ruleText)"
+            )
+        }
+
+        // uBO :style() rules are converted to CSS injection rules, so they
+        // must be checked by the conversion result and not by createRule.
+        let forbiddenUboRules = RuleFactory.createRules(
+            lines: ["example.com##h1:style(background: URL(https://example.org))"],
+            for: DEFAULT_SAFARI_VERSION
+        )
+        XCTAssertTrue(forbiddenUboRules.isEmpty)
+
+        let allowedUboRules = RuleFactory.createRules(
+            lines: ["example.com##h1:style(background-color: blue !important)"],
+            for: DEFAULT_SAFARI_VERSION
+        )
+        XCTAssertEqual(allowedUboRules.count, 1)
     }
 }

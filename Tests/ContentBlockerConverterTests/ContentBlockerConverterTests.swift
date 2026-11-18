@@ -1830,6 +1830,29 @@ final class ContentBlockerConverterTests: XCTestCase {
         runTests(testCases)
     }
 
+    func testConvertArrayCSSInjectionForbiddenStyles() {
+        let testCases: [TestCase] = [
+            TestCase(
+                // Rules with forbidden CSS are dropped instead of breaking
+                // the whole conversion.
+                rules: [
+                    "#$#body { background: URL(https://example.org) }",
+                    "#$#body { color: red }",
+                ],
+                advancedBlocking: true,
+                expectedSafariRulesJSON: ConversionResult.EMPTY_RESULT_JSON,
+                expectedAdvancedRulesText: "#$#body { color: red }",
+                expectedSourceRulesCount: 1,
+                expectedSourceSafariCompatibleRulesCount: 0,
+                expectedSafariRulesCount: 0,
+                expectedAdvancedRulesCount: 1,
+                expectedErrorsCount: 1
+            )
+        ]
+
+        runTests(testCases)
+    }
+
     func testConvertArrayPatternWithSpecialCharacters() {
         let testCases: [TestCase] = [
             TestCase(
