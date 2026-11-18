@@ -144,12 +144,24 @@ public class CosmeticRule: Rule {
             isExtendedCss = true
         }
 
-        // Style blocks of element hiding rules load external resources too,
-        // so both rule families are scanned, over-blocking :matches-css(url(...)).
-        if (isInjectCss || isElemhide)
-            && CssInjectionContentValidator(content: content).containsForbiddenStyles()
-        {
-            throw SyntaxError.invalidRule(message: "Forbidden style in a CSS rule")
+        // Only rules that can inject CSS are scanned. Style blocks of extended
+        // element hiding rules load external resources too: ExtendedCss applies
+        // them via `node.style.setProperty`. Plain element hiding rules end up
+        // as css-display-none selectors that WebKit discards, and whitelist
+        // rules never reach the engine (`FilterRule.init(from:)` throws on them),
+        // so neither needs the scan. Extended rules without a style block get
+        // only the fixed `display:none!important;` appended by the extension.
+        let needsScan =
+            !isWhiteList
+            && (isInjectCss
+                || (isElemhide && isExtendedCss && content.utf8.contains(Chars.CURLY_BRACKET_OPEN)))
+        if needsScan {
+            let validator = CssInjectionContentValidator(content: content)
+            if validator.containsForbiddenStyles()
+                || (isExtendedCss && validator.containsForbiddenStylesInStyleBlock())
+            {
+                throw SyntaxError.invalidRule(message: "Forbidden style in a CSS rule")
+            }
         }
 
         if isWhiteList && pathModifier != nil {

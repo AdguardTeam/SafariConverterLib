@@ -345,10 +345,8 @@ final class CosmeticRuleTests: XCTestCase {
             "#$#body { background: URL(https://example.org) }",
             // @font-face.
             "#$#@font-face { font-family: t; src: URL(https://example.org/font.woff2) }",
-            // All CSS injection markers.
-            "#@$#.banner { background: URL(test.png) }",
+            // CSS injection markers that reach the engine.
             "#$?#.banner:has(.child) { background: URL(test.png) }",
-            "#@$?#.banner:has(.child) { background: URL(test.png) }",
             // @import.
             #"#$#@import "https://example.org/x.css"; body { color: red }"#,
             #"#$#@\69 mport "https://example.org/x.css"; body { color: red }"#,
@@ -364,17 +362,14 @@ final class CosmeticRuleTests: XCTestCase {
             "#$#.banner { background: ur\\6c\r\n(https://example.org) }",
             // At-rule at the very end of the content.
             "#$?#@import",
-            // Element hiding rules with style blocks.
+            // Extended element hiding rules with style blocks.
             "#?##div { background: URL(https://example.org) }",
             "##div:has-text(x) { background: url(https://example.org) }",
-            "#@?##div { background: URL(https://example.org) }",
             // @import followed by a string or a comment, no whitespace.
             "#$#@import\"https://example.org/x.css\";a{}",
             "#$#@import'https://example.org/x.css';a{}",
             "#$#@import/*b*/\"https://example.org/x.css\";a{}",
             #"#$#@im\70 ort"https://example.org/x.css";a{}"#,
-            // Element hiding at-rule.
-            "#?#@import\"https://example.org/x.css\"",
             // Form feed terminates the string as a bad string, so the
             // rest of the rule is still scanned. The #$?# marker is
             // used because the ABP mask of the #$# one turns rules
@@ -383,14 +378,25 @@ final class CosmeticRuleTests: XCTestCase {
             // Over-block: the :has-text argument does not load anything,
             // but the whole rule content is scanned by design.
             "#$?#.banner:has-text(@import) { color: red }",
-            // Over-block: :matches-css reads the styles, it does not
-            // load anything.
-            "##div:matches-css(background-image: url(https://example.org))",
             // Known over-block: @namespace never loads anything, but it
             // is cut by the url( in it.
             "#$?##@namespace url(http://www.w3.org/2000/svg)",
-            // Plain element hiding rule.
-            "##div { background: url(https://example.org) }",
+            // A string opened in the selector can swallow the style
+            // block for the whole-content scan, so the style block is
+            // scanned separately.
+            "#?#div:has-text(\"), * { background: url(\"https://example.org\") }",
+            "#$?#div:has-text(\"), * { background: url(\"https://example.org\") }",
+            "##div:has-text(\"), * { background: url(\"https://example.org\") }",
+            "#$?#div:has-text('), * { background: url('https://example.org') }",
+            // A quote between the first `{` and the one ExtendedCss
+            // picks at shifts the string pairing, so a scan starts at
+            // every `{`.
+            "#?#div:has-text({\"), * { background: url(\"https://example.org\") }",
+            "#$?#div:has-text({\"), * { background: url(\"https://example.org\") }",
+            "##div:has-text({\"), * { background: url(\"https://example.org\") }",
+            "example.org#$?#div:has-text(x{y'z), #b1 { background: url(\"https://example.org/v6\") }",
+            // Protocol-relative URL.
+            "#$?#div:has-text({\"), * { background: url(//example.org/x) }",
         ]
 
         for ruleText in forbiddenRules {
@@ -441,6 +447,30 @@ final class CosmeticRuleTests: XCTestCase {
             #"##a[href^="@import"]"#,
             // Form feed outside strings is just a whitespace.
             "#$?#.banner { color: red;\u{0C}border: none }",
+            // `{` inside a string argument of the selector does not
+            // reject the rule by the style block scan.
+            "#$?#div:has-text(\"{x}\") { color: red }",
+            // url( inside a string in an extended CSS selector.
+            "#?#a[href*=\"url(\"] { color: red }",
+            // Script rules are not applied by ExtendedCss and must not
+            // hit the style block scan.
+            "example.org#%#document.querySelectorAll('a:has(img)').forEach(a => { a.href = new URL(a.href).href })",
+            // Multiple style blocks, all clean.
+            "#$?#a { color: red } b { background: blue }",
+            // Plain element hiding rules end up as css-display-none
+            // selectors that WebKit discards.
+            "##div { background: url(https://example.org) }",
+            // Whitelist rules never reach the engine, `FilterRule.init(from:)`
+            // throws on them.
+            "#@$#.banner { background: URL(test.png) }",
+            "#@$?#.banner:has(.child) { background: URL(test.png) }",
+            "#@?##div { background: URL(https://example.org) }",
+            // Extended rules without a style block get only the fixed
+            // display:none!important appended.
+            "##div:matches-css(background-image: url(https://example.org))",
+            // At-rules are not supported by ExtendedCss, the selector
+            // is invalid and the rule is skipped.
+            "#?#@import\"https://example.org/x.css\"",
         ]
 
         for ruleText in allowedRules {

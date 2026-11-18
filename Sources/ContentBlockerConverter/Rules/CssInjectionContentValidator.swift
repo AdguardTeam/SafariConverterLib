@@ -19,7 +19,7 @@ import Foundation
 /// That's why the content is scanned byte by byte. The scanning is
 /// linear: names are accumulated character by character, and strings
 /// and comments are skipped entirely.
-public final class CssInjectionContentValidator {
+final class CssInjectionContentValidator {
     /// CSS functions that can load external resources.
     private static let FORBIDDEN_FUNCTIONS = [
         "url",
@@ -45,28 +45,64 @@ public final class CssInjectionContentValidator {
     /// - Parameter content: CSS injection rule content, i.e. if the rule
     ///   text is `example.org#$#body { background: url(x) }`, it will be
     ///   `body { background: url(x) }`.
-    public init(content: String) {
+    init(content: String) {
         self.bytes = content.utf8
     }
 
     /// Checks if the content contains forbidden styles.
     ///
     /// - Returns: true if the content can load external resources.
-    public func containsForbiddenStyles() -> Bool {
-        return scanContent()
+    func containsForbiddenStyles() -> Bool {
+        return scanContent(startingAt: 0)
+    }
+
+    /// Checks the style block of the rule content for forbidden styles.
+    ///
+    /// ExtendedCss, which applies extended CSS rules, does not lex the
+    /// content as CSS: it splits the rule at one of the `{` characters
+    /// and applies the tail as a style block. A string opened in the
+    /// selector part can swallow the style block for the whole-content
+    /// scan, so the style blocks are scanned separately.
+    ///
+    /// Every `{` is a possible split, so a scan starts at each of them:
+    /// a quote between an earlier `{` and the split ExtendedCss picks
+    /// would shift the string pairing of a scan started there. If a
+    /// split is applied, there are no quotes between it and the
+    /// property names — the style block parser rejects them, as well
+    /// as unbalanced quotes in the values — so the scan started at it
+    /// reaches the declarations with a fresh lexer state.
+    ///
+    /// A quote inside a value does not blind the scan either: a
+    /// balanced value string never loads anything, and an unbalanced
+    /// one makes the style block parser reject the whole rule.
+    ///
+    /// This over-blocks rules with a `{` inside a string argument of
+    /// the selector, e.g. `:has-text("{ url(")`, just like the other
+    /// known over-blocks.
+    func containsForbiddenStylesInStyleBlock() -> Bool {
+        var position = 0
+        while let char = charAt(position) {
+            if char == Chars.CURLY_BRACKET_OPEN, scanContent(startingAt: position) {
+                return true
+            }
+
+            position += 1
+        }
+
+        return false
     }
 
     // MARK: - Scanning
 
-    /// Scans the whole content.
+    /// Scans the content from the starting index to its end.
     ///
     /// The name that is currently accumulated is checked when it ends,
     /// i.e. at the first character that cannot be a part of it. Escaped
     /// characters never end the name: they are appended to it as is,
     /// so `u\72 l(` is still `url(`, while `url\28 x\29` does not call
     /// anything at all.
-    private func scanContent() -> Bool {
-        var index = 0
+    private func scanContent(startingAt: Int) -> Bool {
+        var index = startingAt
         var name = ""
         var atName = false
 
