@@ -53,55 +53,57 @@ final class CssInjectionContentValidator {
     ///
     /// - Returns: true if the content can load external resources.
     func containsForbiddenStyles() -> Bool {
-        return scanContent(startingAt: 0)
+        return scanContent(startingAt: 0, tracksLiterals: true)
     }
 
     /// Checks the style block of the rule content for forbidden styles.
     ///
     /// ExtendedCss, which applies extended CSS rules, does not lex the
     /// content as CSS: it splits the rule at one of the `{` characters
-    /// and applies the tail as a style block. A string opened in the
-    /// selector part can swallow the style block for the whole-content
-    /// scan, so the style blocks are scanned separately.
+    /// and applies the tail as a style block. Its tokenizer pairs the
+    /// value quotes by its own rule: an opening quote is unconditional,
+    /// while a closing one is only allowed when the value buffer does
+    /// not end with a backslash, without counting the backslashes. CSS
+    /// pairs them by the escape parity, and the difference, e.g.
+    /// `"a\\" x"`, makes a quote pair for one of them and not for the
+    /// other. A string opened that way can swallow the style block for
+    /// the whole-content scan.
     ///
-    /// Every `{` is a possible split, so a scan starts at each of them:
-    /// a quote between an earlier `{` and the split ExtendedCss picks
-    /// would shift the string pairing of a scan started there. If a
-    /// split is applied, there are no quotes between it and the
-    /// property names — the style block parser rejects them, as well
-    /// as unbalanced quotes in the values — so the scan started at it
-    /// reaches the declarations with a fresh lexer state.
+    /// Instead of mirroring the ExtendedCss tokenizer, this scan does
+    /// not track strings and comments at all: any applied declaration
+    /// is present in the tail verbatim, so a `url(` or `image-set(`
+    /// call in an applied value is always visible as a decodable name
+    /// followed by a literal parenthesis, quoted or not. Scanning from
+    /// the first `{` is enough, as without the literal tracking nothing
+    /// can blind the scan.
     ///
-    /// A quote inside a value does not blind the scan either: a
-    /// balanced value string never loads anything, and an unbalanced
-    /// one makes the style block parser reject the whole rule.
-    ///
-    /// This over-blocks rules with a `{` inside a string argument of
-    /// the selector, e.g. `:has-text("{ url(")`, just like the other
-    /// known over-blocks.
+    /// This over-blocks `url(` inside quoted style values, e.g.
+    /// `content: "url(x)"`, which never loads anything, just like the
+    /// other known over-blocks.
     func containsForbiddenStylesInStyleBlock() -> Bool {
-        var position = 0
-        while let char = charAt(position) {
-            if char == Chars.CURLY_BRACKET_OPEN, scanContent(startingAt: position) {
-                return true
-            }
-
-            position += 1
+        guard let styleBlockStart = bytes.firstIndex(of: Chars.CURLY_BRACKET_OPEN) else {
+            return false
         }
 
-        return false
+        let start = bytes.distance(from: bytes.startIndex, to: styleBlockStart)
+        return scanContent(startingAt: start, tracksLiterals: false)
     }
 
     // MARK: - Scanning
 
     /// Scans the content from the starting index to its end.
     ///
+    /// When `tracksLiterals` is true, strings and comments are skipped
+    /// entirely. When it is false, quotes and comment starts are treated
+    /// as regular name boundaries instead: this is used for the style
+    /// block scan, see `containsForbiddenStylesInStyleBlock`.
+    ///
     /// The name that is currently accumulated is checked when it ends,
     /// i.e. at the first character that cannot be a part of it. Escaped
     /// characters never end the name: they are appended to it as is,
     /// so `u\72 l(` is still `url(`, while `url\28 x\29` does not call
     /// anything at all.
-    private func scanContent(startingAt: Int) -> Bool {
+    private func scanContent(startingAt: Int, tracksLiterals: Bool) -> Bool {
         var index = startingAt
         var name = ""
         var atName = false
@@ -120,7 +122,7 @@ final class CssInjectionContentValidator {
         }
 
         while let char = charAt(index) {
-            if char == Chars.SLASH, charAt(index + 1) == Chars.WILDCARD {
+            if tracksLiterals, char == Chars.SLASH, charAt(index + 1) == Chars.WILDCARD {
                 if endsForbiddenName(char) {
                     return true
                 }
@@ -135,7 +137,7 @@ final class CssInjectionContentValidator {
                 name = ""
                 atName = false
                 index = end
-            } else if char == Chars.QUOTE_DOUBLE || char == Chars.QUOTE_SINGLE {
+            } else if tracksLiterals, char == Chars.QUOTE_DOUBLE || char == Chars.QUOTE_SINGLE {
                 if endsForbiddenName(char) {
                     return true
                 }

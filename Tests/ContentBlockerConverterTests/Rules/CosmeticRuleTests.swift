@@ -397,6 +397,17 @@ final class CosmeticRuleTests: XCTestCase {
             "example.org#$?#div:has-text(x{y'z), #b1 { background: url(\"https://example.org/v6\") }",
             // Protocol-relative URL.
             "#$?#div:has-text({\"), * { background: url(//example.org/x) }",
+            // ExtendedCss pairs the value quotes by its own rule, so a
+            // `\\` before a quote makes it pair for the CSS lexer and
+            // not for the ExtendedCss tokenizer: the style block scan
+            // does not track literals at all.
+            #"#?#div { color: "a\\" x"; background: url("https://example.org/x") }"#,
+            #"#$?#div { color: "a\\" x"; background: url("https://example.org/x") }"#,
+            #"#?#div { color: "a\\" x"; background: url(//example.org/x) }"#,
+            // Over-block: url() inside a quoted style value never loads
+            // anything, but it is cut by the literal-free style block
+            // scan.
+            #"#?#div { content: "url(https://example.org)"; color: red }"#,
         ]
 
         for ruleText in forbiddenRules {

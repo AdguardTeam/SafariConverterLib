@@ -331,8 +331,9 @@ additional extension.
       case, CSS escapes and string arguments.
     - `@import` and unclosed comments.
     - Known over-blocks: `@namespace url()` in CSS injection rules, at-rule
-      names in pseudo-class arguments of rules with a style block, and `{`
-      inside string arguments of selectors.
+      names in pseudo-class arguments of rules with a style block, `{`
+      inside string arguments of selectors, and `url()` inside quoted style
+      values.
 
 - [Non-basic rules modifiers][nonbasicmodifiers] are supported with some
   limitations:
