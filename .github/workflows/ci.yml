@@ -100,8 +100,19 @@ jobs:
       - ephemeral-job-key-${{ github.run_id }}-${{ github.job }}-${{ strategy.job-index || 0 }}
     steps:
       - uses: actions/checkout@v5
+
+      # `make tools` verifies pnpm, but the ephemeral macOS image no longer
+      # ships it. Install it explicitly like the js job does.
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+
+      - name: Install pnpm
+        run: npm install --global pnpm@10
+
       - name: Check tooling
         run: make tools
+
       - name: Periphery scan
         run: make periphery-lint
 
