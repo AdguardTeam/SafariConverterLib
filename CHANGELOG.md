@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- CSS injection rules and extended element hiding rules with a style block
+  are now rejected if they contain `url()`, `image-set()` or `@import`
+  anywhere in the rule text.
+
 ### Deprecated
 
 ### Removed
@@ -18,6 +22,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 ### Security
+
+- CSS injection rules and extended element hiding rules with a style block
+  can no longer load external resources (GHSA-m8p4-xghg-8g4c).
 
 ## [4.3.1] - 2026-10-15
 

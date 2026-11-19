@@ -144,7 +144,18 @@ public class CosmeticRule: Rule {
             isExtendedCss = true
         }
 
-        if isInjectCss && content.range(of: "url(") != nil {
+        // Only rules that can inject CSS are scanned. Style blocks of extended
+        // element hiding rules load external resources too: ExtendedCss applies
+        // them via `node.style.setProperty`. Plain element hiding rules end up
+        // as css-display-none selectors that WebKit discards, and whitelist
+        // rules never reach the engine, so neither needs the scan. The scan
+        // over-blocks by design: it does not track strings or comments, so any
+        // `url(`/`image-set(`/`@import` in the rule text is rejected.
+        let needsScan =
+            !isWhiteList
+            && (isInjectCss
+                || (isElemhide && isExtendedCss && content.utf8.contains(Chars.CURLY_BRACKET_OPEN)))
+        if needsScan && CssInjectionContentValidator(content: content).containsForbiddenStyles() {
             throw SyntaxError.invalidRule(message: "Forbidden style in a CSS rule")
         }
 
